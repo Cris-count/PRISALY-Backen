@@ -154,6 +154,59 @@ class CasoApplicationServiceTest {
         assertTrue(locked.contenidoEvaluableBloqueado());
     }
 
+    @Test
+    void replaceEvaluableContentWithDifferentCaseId_isRejected() {
+        Caso original = completeDraft("caso-original");
+        Caso replacement = completeDraft("caso-distinto");
+
+        CasoDomainException error = assertThrows(
+                CasoDomainException.class,
+                () -> service.replaceEvaluableContent("docente-1", original, replacement));
+
+        assertEquals(CasoApplicationService.CODE_CASE_ID_MISMATCH, error.code());
+    }
+
+    @Test
+    void replaceEvaluableContentWithDifferentTeacher_isRejected() {
+        Caso original = completeDraft("caso-original");
+        Caso replacement = completeCaseBuilder(original.id())
+                .withDocenteId("docente-2")
+                .buildDraft();
+
+        CasoDomainException error = assertThrows(
+                CasoDomainException.class,
+                () -> service.replaceEvaluableContent("docente-1", original, replacement));
+
+        assertEquals(CasoApplicationService.CODE_CASE_OWNER_MISMATCH, error.code());
+    }
+
+    @Test
+    void replaceEvaluableContentWithSameIdentityAndTeacher_returnsReplacement() {
+        Caso original = completeDraft("caso-original");
+        Caso replacement = completeCaseBuilder(original.id())
+                .withTitulo("Contenido actualizado")
+                .buildDraft();
+
+        Caso result = service.replaceEvaluableContent("docente-1", original, replacement);
+
+        assertEquals(replacement, result);
+        assertEquals("Caso de psicologia social", original.titulo());
+    }
+
+    @Test
+    void unauthorizedTeacherCannotReplaceEvaluableContent() {
+        Caso original = completeDraft("caso-original");
+        Caso replacement = completeDraft("caso-distinto");
+        when(authorizationPort.canModifyCase("docente-sin-permiso", original.id()))
+                .thenReturn(false);
+
+        CasoDomainException error = assertThrows(
+                CasoDomainException.class,
+                () -> service.replaceEvaluableContent("docente-sin-permiso", original, replacement));
+
+        assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
+    }
+
     private Caso completeDraft(String caseId) {
         return completeCaseBuilder(caseId).buildDraft();
     }

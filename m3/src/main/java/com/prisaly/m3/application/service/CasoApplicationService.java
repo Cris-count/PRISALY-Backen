@@ -13,6 +13,8 @@ import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
 public final class CasoApplicationService {
 
     public static final String CODE_FORBIDDEN = "FORBIDDEN";
+    public static final String CODE_CASE_ID_MISMATCH = "CASE_ID_MISMATCH";
+    public static final String CODE_CASE_OWNER_MISMATCH = "CASE_OWNER_MISMATCH";
 
     private final CaseAuthorizationPort authorizationPort;
 
@@ -37,6 +39,16 @@ public final class CasoApplicationService {
     public Caso replaceEvaluableContent(String userId, Caso caso, Caso replacementDraft) {
         assertCanModify(userId, caso.id());
         ContenidoEvaluableLock.assertEditable(caso);
+        if (!caso.id().equals(replacementDraft.id())) {
+            throw new CasoDomainException(
+                    CODE_CASE_ID_MISMATCH,
+                    "Evaluable content replacement must preserve the case id");
+        }
+        if (!caso.docenteId().equals(replacementDraft.docenteId())) {
+            throw new CasoDomainException(
+                    CODE_CASE_OWNER_MISMATCH,
+                    "Evaluable content replacement must preserve the case teacher id");
+        }
         return replacementDraft;
     }
 
