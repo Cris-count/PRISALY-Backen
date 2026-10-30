@@ -1,22 +1,25 @@
-# Docker persistence evidence (M1)
+# Docker persistence evidence (M1) — Fase 0
 
-## Attempted on 2026-10-30
+## Result (2026-10-30)
 
-`docker compose up -d` failed because Docker Desktop Linux engine was not running:
+PostgreSQL **16.15** via `compose.yaml` is operational.
 
-`failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine`
+| Check | Result |
+| --- | --- |
+| `docker compose up -d` | OK — image `postgres:16.15` pulled |
+| Health | `healthy` / `pg_isready` accepting connections |
+| Version | `PostgreSQL 16.15 (Debian 16.15-1.pgdg13+2)` |
+| Named volume | `prisaly_pg_data` |
+| Probe insert | `m1_persist_probe (1, before-restart)` |
+| After `docker compose restart postgres` | Same row recovered — **PASS** |
 
-## Commands to run when Docker is available
+Commands used (no `down -v`):
 
 ```powershell
-cd PRISALY-Backend
-copy .env.example .env
 docker compose up -d
-docker compose ps
-docker compose exec postgres pg_isready -U prisaly -d prisaly
-docker compose exec postgres psql -U prisaly -d prisaly -c "CREATE TABLE IF NOT EXISTS m1_persist_probe(id int primary key, note text); INSERT INTO m1_persist_probe(id, note) VALUES (1, 'before-restart') ON CONFLICT (id) DO UPDATE SET note = EXCLUDED.note;"
+docker compose exec -T postgres pg_isready -U prisaly -d prisaly
+docker compose exec -T postgres psql -U prisaly -d prisaly -c "CREATE TABLE IF NOT EXISTS m1_persist_probe(id int primary key, note text); INSERT INTO m1_persist_probe(id, note) VALUES (1, 'before-restart') ON CONFLICT (id) DO UPDATE SET note = EXCLUDED.note;"
 docker compose restart postgres
-docker compose exec postgres psql -U prisaly -d prisaly -c "SELECT * FROM m1_persist_probe;"
+docker compose exec -T postgres psql -U prisaly -d prisaly -c "SELECT * FROM m1_persist_probe;"
+docker compose exec -T postgres psql -U prisaly -d prisaly -c "SELECT version();"
 ```
-
-Expected: row `(1, before-restart)` after restart. Do not use `docker compose down -v`.
