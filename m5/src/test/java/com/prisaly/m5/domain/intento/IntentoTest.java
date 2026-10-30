@@ -107,4 +107,30 @@ class IntentoTest {
         assertEquals(EstadoIntento.EN_CURSO, intento.estado());
         assertEquals(Optional.empty(), intento.motivoFinalizacion());
     }
+
+    @Test
+    @DisplayName("8. un motivo nulo sobre un intento Finalizado no altera estado ni motivo")
+    void motivoNuloSobreIntentoFinalizadoConservaElEstado() {
+        Intento intento = Intento.iniciar();
+        intento.finalizar(MotivoFinalizacion.TIEMPO_VENCIDO);
+
+        assertThrows(MotivoFinalizacionRequeridoException.class, () -> intento.finalizar(null));
+
+        assertEquals(EstadoIntento.FINALIZADO, intento.estado());
+        assertEquals(Optional.of(MotivoFinalizacion.TIEMPO_VENCIDO), intento.motivoFinalizacion());
+    }
+
+    @Test
+    @DisplayName("9. los rechazos repetidos de finalización mantienen el intento intacto")
+    void rechazosRepetidosMantienenElIntentoIntacto() {
+        Intento intento = Intento.iniciar();
+        intento.finalizar(MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+
+        for (MotivoFinalizacion motivo : MotivoFinalizacion.values()) {
+            assertThrows(TransicionIntentoInvalidaException.class, () -> intento.finalizar(motivo));
+        }
+
+        assertEquals(EstadoIntento.FINALIZADO, intento.estado());
+        assertEquals(Optional.of(MotivoFinalizacion.ENTREGA_ESTUDIANTE), intento.motivoFinalizacion());
+    }
 }
