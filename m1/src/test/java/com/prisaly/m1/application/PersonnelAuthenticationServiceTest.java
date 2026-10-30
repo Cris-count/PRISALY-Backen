@@ -9,10 +9,10 @@ import static org.mockito.Mockito.when;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.service.IdentityAccessService;
+import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.application.service.PersonnelAuthenticationService;
 import com.prisaly.m1.domain.rule.IdentityDomainException;
 import com.prisaly.m1.infrastructure.persistence.RolEntity;
-import com.prisaly.m1.infrastructure.persistence.RolRepository;
 import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
 import com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStore;
@@ -33,11 +33,11 @@ class PersonnelAuthenticationServiceTest {
     @Mock
     private UsuarioRepository usuarioRepository;
     @Mock
-    private RolRepository rolRepository;
-    @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
     private IdentityAccessService identityAccessService;
+    @Mock
+    private IdentityCatalogService identityCatalogService;
 
     private ProvisionalAccessTokenStore tokenStore;
     private PersonnelAuthenticationService service;
@@ -46,7 +46,11 @@ class PersonnelAuthenticationServiceTest {
     void setUp() {
         tokenStore = new ProvisionalAccessTokenStore();
         service = new PersonnelAuthenticationService(
-                usuarioRepository, rolRepository, passwordEncoder, tokenStore, identityAccessService);
+                usuarioRepository,
+                passwordEncoder,
+                tokenStore,
+                identityAccessService,
+                identityCatalogService);
     }
 
     @Test
@@ -96,7 +100,9 @@ class PersonnelAuthenticationServiceTest {
 
     @Test
     void m1T04_duplicateEmail_rejected() {
-        when(usuarioRepository.existsByCorreoIgnoreCase("ana@prisaly.test")).thenReturn(true);
+        when(identityCatalogService.registerUser("Ana", "ana@prisaly.test", "secret", "Docente"))
+                .thenThrow(new IdentityDomainException(
+                        IdentityCatalogService.CODE_DUPLICATE_EMAIL, "Email already registered"));
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
