@@ -1,72 +1,99 @@
 # PRISALY Backend
 
-Modular monolith (M1–M7) on Spring Boot 4.1.2 / Java 21. Shared PostgreSQL 16.15 via Docker Compose.
+Modular monolith (M1–M7) on Spring Boot 4.1.2 / Java 21. Shared PostgreSQL **16.15** via Docker Compose. Schema BD-005.2 via Flyway **V001–V009**.
 
 ## Prerequisites
 
 - JDK 21+ (project compiles with `--release 21`)
 - Docker Desktop with Linux engine
-- Maven Wrapper (`mvnw.cmd` on Windows)
+- Maven Wrapper (`mvnw.cmd` on Windows / `./mvnw` on Unix)
 
-## Database (Integrante 1)
+## Environment
 
 ```powershell
 copy .env.example .env
-# edit POSTGRES_PASSWORD / DATABASE_PASSWORD locally — do not commit .env
-
-docker compose up -d
-docker compose ps
-docker compose logs -f postgres
+# Set POSTGRES_PASSWORD and DATABASE_PASSWORD locally — never commit .env
 ```
 
-Wait until health is `healthy` (`pg_isready`). Spring should use:
+| Variable | Purpose |
+| --- | --- |
+| `POSTGRES_DB` / `POSTGRES_USER` / `POSTGRES_PASSWORD` | Compose Postgres |
+| `POSTGRES_PORT` | Host port (default `5432`) |
+| `DATABASE_URL` | JDBC URL for the Spring process |
+| `DATABASE_USER` / `DATABASE_PASSWORD` | Must match Compose credentials |
+| `APP_PORT` | API port (default `8080`) |
+| `CORS_ORIGINS` | Front origins (default `http://localhost:4200`) |
 
-- `DATABASE_URL=jdbc:postgresql://localhost:5432/prisaly`
-- `DATABASE_USER` / `DATABASE_PASSWORD` matching Compose
+## Clean start (reproducible)
+
+```powershell
+copy .env.example .env
+docker compose up -d
+docker compose ps
+# wait until health = healthy
+
+$env:DATABASE_URL="jdbc:postgresql://localhost:5432/prisaly?sslmode=disable"
+$env:DATABASE_USER="prisaly"
+$env:DATABASE_PASSWORD="<same as .env>"
+.\mvnw.cmd -B -pl app -am package -DskipTests
+java -jar app\target\app-0.0.1-SNAPSHOT.jar
+```
+
+On first boot Flyway applies `app/src/main/resources/db/migration/V001`…`V009` and creates the 21 BD-005.2 tables. JPA uses `ddl-auto=validate` and `hibernate.globally_quoted_identifiers=true` (quoted identifiers in SQL).
+
+> Note: prefer the packaged jar (or `spring-boot:run` from the `app` module with dependencies already installed). Running `spring-boot:run` on the reactor parent fails because the parent POM has no main class.
 
 ### Persist after restart
 
 ```powershell
 docker compose restart postgres
-# Do NOT use: docker compose down -v  (that deletes the named volume)
+# Do NOT use: docker compose down -v  (deletes named volume prisaly_pg_data)
 ```
 
 ### Diagnostics
 
 ```powershell
 docker compose exec postgres pg_isready -U prisaly -d prisaly
+docker compose exec postgres psql -U prisaly -d prisaly -c "SELECT version, success FROM flyway_schema_history ORDER BY installed_rank;"
 docker volume inspect prisaly_pg_data
 ```
 
-## Flyway
+Evidence notes: `docs/M1-DOCKER-EVIDENCE.md`, `docs/M1-FLYWAY-APPLY.md`.
 
-Canonical path: `app/src/main/resources/db/migration`.
+## Module responsibilities
 
-Historical **V001–V009** were not present in this repository at M1 bootstrap. See [docs/M1-FLYWAY-BLOCKER.md](docs/M1-FLYWAY-BLOCKER.md). Do not invent substitute V001–V009 files.
+| Module | Responsibility |
+| --- | --- |
+| `app` | Boot, HTTP/Security wiring, Flyway classpath, Compose consumers |
+| `m1` | Identity & access (Usuario, Rol, Permiso, UsuarioPermiso, auth contracts) |
+| `m2`–`m7` | Domain modules; depend on shared DB + M1 contracts when integrating |
 
-## Run the API
+Integration branch for M1 work: `feature/m1-identidad-acceso`. Do not force-push `main`/`develop`. Merge only via reviewed PR.
+
+## Compile
 
 ```powershell
-$env:DATABASE_URL="jdbc:postgresql://localhost:5432/prisaly"
-$env:DATABASE_USER="prisaly"
-$env:DATABASE_PASSWORD="change_me_local_only"
-.\mvnw.cmd -B -pl app -am spring-boot:run
+.\mvnw.cmd -B -pl app -am package -DskipTests
 ```
-
-- Health: `GET http://localhost:8080/api/health`
-- Personnel auth (ARQ-008.3): `POST http://localhost:8080/api/v1/personal/autenticar`
 
 ## Tests
 
 ```powershell
-.\mvnw.cmd -B test
+.\mvnw.cmd -B -pl m1 test
 .\mvnw.cmd -B -pl m1 -am -Pdocker-it verify
 ```
 
+`-Pdocker-it` runs Failsafe ITs (Testcontainers Postgres 16.15 + canonical Flyway).
+
+## API smoke
+
+- Health: `GET http://localhost:8080/api/health`
+- Personnel auth (ARQ-008.3): `POST http://localhost:8080/api/v1/personal/autenticar`
+
 ## Bruno
 
-Open the `bruno/` folder in Bruno. Use environment `local` (`baseUrl=http://localhost:8080/api`).
+Open `bruno/` in Bruno. Environment `local` → `baseUrl=http://localhost:8080/api`.
 
 ## Technical debt
 
-`TD-M1-AUTH-PROVISIONAL`: opaque in-memory bearer tokens for local integration only. Not an M1 security closure. Exit criteria in `m1/docs/TD-M1-AUTH-PROVISIONAL.md`.
+`TD-M1-AUTH-PROVISIONAL`: opaque in-memory bearer tokens for local integration only. Exit criteria in `m1/docs/TD-M1-AUTH-PROVISIONAL.md`.
