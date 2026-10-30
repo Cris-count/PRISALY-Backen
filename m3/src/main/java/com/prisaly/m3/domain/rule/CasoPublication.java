@@ -24,6 +24,7 @@ public final class CasoPublication {
                 caso.id(),
                 caso.titulo(),
                 caso.docenteId(),
+                caso.tiempoEstimadoSegundos(),
                 CasoEstado.PUBLICADO,
                 caso.escenarios(),
                 caso.rubrica(),

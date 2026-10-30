@@ -23,6 +23,7 @@ public final class CasoBuilder {
     private String id;
     private String titulo;
     private String docenteId;
+    private Integer tiempoEstimadoSegundos;
     private final List<EscenarioDraft> escenarios;
     private String rubricaId;
     private final List<CriterioRubrica> criterios;
@@ -44,6 +45,11 @@ public final class CasoBuilder {
 
     public CasoBuilder withDocenteId(String ownerDocenteId) {
         this.docenteId = ownerDocenteId;
+        return this;
+    }
+
+    public CasoBuilder withTiempoEstimadoSegundos(int tiempoEstimadoSegundos) {
+        this.tiempoEstimadoSegundos = tiempoEstimadoSegundos;
         return this;
     }
 
@@ -74,6 +80,11 @@ public final class CasoBuilder {
             throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case teacher id is required");
         }
 
+        if (tiempoEstimadoSegundos == null) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case estimated time is required");
+        }
+        CasoValidation.assertValidEstimatedTime(tiempoEstimadoSegundos);
+
         List<Escenario> builtEscenarios = new ArrayList<>();
         for (EscenarioDraft draft : escenarios) {
             builtEscenarios.add(draft.toEscenario());
@@ -88,6 +99,7 @@ public final class CasoBuilder {
                 id,
                 titulo,
                 docenteId,
+                tiempoEstimadoSegundos,
                 CasoEstado.BORRADOR,
                 List.copyOf(builtEscenarios),
                 rubrica,

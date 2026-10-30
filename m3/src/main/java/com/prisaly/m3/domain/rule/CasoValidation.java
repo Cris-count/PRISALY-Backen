@@ -11,11 +11,20 @@ import com.prisaly.m3.domain.model.Rubrica;
 public final class CasoValidation {
 
     public static final String CODE_CASE_INCOMPLETE = "CASE_INCOMPLETE";
+    public static final String CODE_INVALID_ESTIMATED_TIME = "INVALID_ESTIMATED_TIME";
     public static final String CODE_INVALID_QUESTION = "INVALID_QUESTION";
     public static final String CODE_INCONSISTENT_OPTIONS = "INCONSISTENT_OPTIONS";
     public static final String CODE_INCOMPLETE_RUBRIC = "INCOMPLETE_RUBRIC";
 
     private CasoValidation() {
+    }
+
+    public static void assertValidEstimatedTime(int tiempoEstimadoSegundos) {
+        if (tiempoEstimadoSegundos <= 0) {
+            throw new CasoDomainException(
+                    CODE_INVALID_ESTIMATED_TIME,
+                    "Case estimated time in seconds must be greater than zero");
+        }
     }
 
     public static void assertPublishable(Caso caso) {

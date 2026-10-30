@@ -1,5 +1,6 @@
 package com.prisaly.m3.domain.model;
 
+import com.prisaly.m3.domain.rule.CasoValidation;
 import java.util.List;
 
 /**
@@ -10,6 +11,7 @@ public record Caso(
         String id,
         String titulo,
         String docenteId,
+        int tiempoEstimadoSegundos,
         CasoEstado estado,
         List<Escenario> escenarios,
         Rubrica rubrica,
@@ -17,6 +19,7 @@ public record Caso(
 ) {
 
     public Caso {
+        CasoValidation.assertValidEstimatedTime(tiempoEstimadoSegundos);
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Caso.id is required");
         }
