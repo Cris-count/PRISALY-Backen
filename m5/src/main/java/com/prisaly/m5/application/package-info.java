@@ -38,20 +38,12 @@
  * de repetición; en la rama de M1, el consumo ocurre en PostgreSQL al
  * insertar el intento (V007), en la misma transacción.
  *
- * <h2>Transacciones y concurrencia (pendiente del adaptador PostgreSQL)</h2>
- * <ul>
- *   <li>Cada caso de uso es una unidad de trabajo: cargar, mutar el agregado
- *       y guardar deben ocurrir en una sola transacción. Hoy no hay
- *       transacciones reales: llamar a {@code guardar} no las garantiza.</li>
- *   <li>Riesgo de actualización perdida: dos solicitudes que cargan el mismo
- *       intento EnCurso (por ejemplo, registrar una respuesta y finalizar por
- *       tiempo) podrían sobrescribirse. El adaptador deberá bloquear la fila
- *       del intento al cargarla o usar control optimista; la tabla
- *       {@code "Intento"} de la rama de M1 no tiene columna de versión, y
- *       {@code "Respuesta"."revision"} cubre solo cada respuesta.</li>
- *   <li>La base de la rama de M1 ya protege invariantes: un único intento
- *       EnCurso por participación, estados limitados a EnCurso/Finalizado sin
- *       regreso, y una respuesta por (intento, pregunta).</li>
- * </ul>
+ * <h2>Transacciones y concurrencia</h2>
+ * Esta capa no abre transacciones. En infraestructura,
+ * {@code FachadaParticipacionTransaccional} ejecuta cada caso de uso en una
+ * transacción y el adaptador JPA bloquea la fila del intento al cargarla
+ * ({@code SELECT ... FOR UPDATE}), lo que evita actualizaciones perdidas
+ * entre operaciones simultáneas sobre el mismo intento. Detalle y
+ * limitaciones en {@link com.prisaly.m5.infrastructure}.
  */
 package com.prisaly.m5.application;
