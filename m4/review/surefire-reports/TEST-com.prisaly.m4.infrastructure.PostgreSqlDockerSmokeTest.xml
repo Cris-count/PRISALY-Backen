@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.PostgreSqlDockerSmokeTest" time="6.231" tests="1" errors="0" skipped="0" failures="0" flakes="0">
   <testcase name="testPostgreSqlConnection" classname="Verificación de conexión a PostgreSQL 16 en Docker (Fase 1)" time="6.229">
     <system-out><![CDATA[12:48:56.904 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
@@ -7,12 +7,12 @@
 12:48:57.461 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
 12:48:58.251 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
 12:48:58.253 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
-12:48:58.286 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+12:48:58.286 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
   Server Version: 29.8.2
   API Version: 1.56
   Operating System: Docker Desktop
   Total Memory: 7606 MB
-  Labels: 
+  Labels:
     com.docker.desktop.address=npipe://\\.\pipe\docker_cli
 12:48:58.434 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
 12:48:58.566 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/

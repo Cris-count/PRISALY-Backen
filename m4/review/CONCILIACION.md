@@ -54,4 +54,4 @@ La ejecución Testcontainers es local, no certifica la infraestructura oficial d
 Conservar la implementación original y sus pruebas. Commits separados para implementación y para conciliación/evidencias. PR en borrador hacia develop; cuerpo preparado en PR_BODY.md. Solicitar revisiones del Integrante 1 y responsables M3/M5 cuando se conozcan sus usuarios GitHub; no inferirlos de autores Git. No mezclar las ramas de otros integrantes.
 
 Bloqueos: BD-005.2 y V001–V009; aprobación de esquema por Integrante 1; adaptadores reales M1/M3/M5 (y M7); prueba real F3-03; participaciones/intentos; validación en Docker oficial; revisores identificados. Las 66 pruebas verdes no cierran estos bloqueos.
-
+Los reportes adjuntos excluyen un XML Surefire antiguo de SesionAcademicaPostgreSqlIT, que corresponde exclusivamente a Failsafe en la ejecución actual. Se normalizaron espacios finales de las evidencias.

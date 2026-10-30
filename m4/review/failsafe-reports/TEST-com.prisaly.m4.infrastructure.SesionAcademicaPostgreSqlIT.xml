@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT" time="15.954" tests="17" errors="0" skipped="0" failures="0" flakes="0">
   <testcase name="bloqueoOptimistaEnModificacionConcurrente" classname="Fase 6: Pruebas de Concurrencia" time="0.738">
     <system-out><![CDATA[12:49:05.679 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
@@ -7,12 +7,12 @@
 12:49:06.107 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
 12:49:06.797 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
 12:49:06.799 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
-12:49:06.831 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+12:49:06.831 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
   Server Version: 29.8.2
   API Version: 1.56
   Operating System: Docker Desktop
   Total Memory: 7606 MB
-  Labels: 
+  Labels:
     com.docker.desktop.address=npipe://\\.\pipe\docker_cli
 12:49:06.971 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
 12:49:07.090 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
