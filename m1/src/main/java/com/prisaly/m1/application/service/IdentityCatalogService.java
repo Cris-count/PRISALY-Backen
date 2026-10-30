@@ -142,6 +142,14 @@ public class IdentityCatalogService {
         usuarioPermisoRepository.saveAndFlush(assignment);
     }
 
+    @Transactional
+    public void deactivateUser(UUID idUsuario) {
+        UsuarioEntity usuario = usuarioRepository.findById(idUsuario)
+                .orElseThrow(() -> new IdentityDomainException(CODE_USER_NOT_FOUND, "User not found"));
+        usuario.changeEstado("Inactivo", OffsetDateTime.now());
+        usuarioRepository.saveAndFlush(usuario);
+    }
+
     public static String normalizeEmail(String correo) {
         if (correo == null || correo.isBlank()) {
             throw new IllegalArgumentException("correo is required");
