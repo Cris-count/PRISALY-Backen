@@ -1,0 +1,141 @@
+package com.prisaly.m3.domain.builder;
+
+import com.prisaly.m3.domain.model.Caso;
+import com.prisaly.m3.domain.model.CasoEstado;
+import com.prisaly.m3.domain.model.CriterioRubrica;
+import com.prisaly.m3.domain.model.Escenario;
+import com.prisaly.m3.domain.model.OpcionRespuesta;
+import com.prisaly.m3.domain.model.Pregunta;
+import com.prisaly.m3.domain.model.Rubrica;
+import com.prisaly.m3.domain.rule.CasoDomainException;
+import com.prisaly.m3.domain.rule.CasoValidation;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Builds a complete academic case structure. Incomplete drafts are allowed;
+ * invalid single-choice questions are rejected immediately with an identifiable error.
+ */
+public final class CasoBuilder {
+
+    public static final String CODE_BUILDER_INCOMPLETE = "BUILDER_INCOMPLETE";
+
+    private String id;
+    private String titulo;
+    private String docenteId;
+    private final List<EscenarioDraft> escenarios;
+    private String rubricaId;
+    private final List<CriterioRubrica> criterios;
+
+    public CasoBuilder() {
+        this.escenarios = new ArrayList<>();
+        this.criterios = new ArrayList<>();
+    }
+
+    public CasoBuilder withId(String caseId) {
+        this.id = caseId;
+        return this;
+    }
+
+    public CasoBuilder withTitulo(String caseTitle) {
+        this.titulo = caseTitle;
+        return this;
+    }
+
+    public CasoBuilder withDocenteId(String ownerDocenteId) {
+        this.docenteId = ownerDocenteId;
+        return this;
+    }
+
+    public CasoBuilder withRubricaId(String rubricId) {
+        this.rubricaId = rubricId;
+        return this;
+    }
+
+    public CasoBuilder addCriterio(String criterioId, String descripcion, int puntaje) {
+        this.criterios.add(new CriterioRubrica(criterioId, descripcion, puntaje));
+        return this;
+    }
+
+    public EscenarioStep addEscenario(String escenarioId, String descripcion) {
+        EscenarioDraft draft = new EscenarioDraft(escenarioId, descripcion);
+        this.escenarios.add(draft);
+        return new EscenarioStep(this, draft);
+    }
+
+    public Caso buildDraft() {
+        if (id == null || id.isBlank()) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case id is required");
+        }
+        if (titulo == null || titulo.isBlank()) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case title is required");
+        }
+        if (docenteId == null || docenteId.isBlank()) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case teacher id is required");
+        }
+
+        List<Escenario> builtEscenarios = new ArrayList<>();
+        for (EscenarioDraft draft : escenarios) {
+            builtEscenarios.add(draft.toEscenario());
+        }
+
+        Rubrica rubrica = null;
+        if (rubricaId != null && !rubricaId.isBlank()) {
+            rubrica = new Rubrica(rubricaId, List.copyOf(criterios));
+        }
+
+        return new Caso(
+                id,
+                titulo,
+                docenteId,
+                CasoEstado.BORRADOR,
+                List.copyOf(builtEscenarios),
+                rubrica,
+                false);
+    }
+
+    /**
+     * Fluent step that adds validated single-choice questions to a scenario.
+     */
+    public static final class EscenarioStep {
+
+        private final CasoBuilder builder;
+        private final EscenarioDraft draft;
+
+        private EscenarioStep(CasoBuilder builder, EscenarioDraft draft) {
+            this.builder = builder;
+            this.draft = draft;
+        }
+
+        public EscenarioStep addPreguntaSeleccionUnica(
+                String preguntaId,
+                String enunciado,
+                List<OpcionRespuesta> opciones) {
+            Pregunta pregunta = new Pregunta(preguntaId, enunciado, opciones);
+            CasoValidation.assertValidSingleChoiceQuestion(pregunta);
+            draft.preguntas.add(pregunta);
+            return this;
+        }
+
+        public CasoBuilder and() {
+            return builder;
+        }
+    }
+
+    private static final class EscenarioDraft {
+
+        private final String id;
+        private final String descripcion;
+        private final List<Pregunta> preguntas;
+
+        private EscenarioDraft(String id, String descripcion) {
+            this.id = id;
+            this.descripcion = descripcion;
+            this.preguntas = new ArrayList<>();
+        }
+
+        private Escenario toEscenario() {
+            return new Escenario(id, descripcion, List.copyOf(preguntas));
+        }
+    }
+}
