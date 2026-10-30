@@ -2,10 +2,14 @@ package com.prisaly.m3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
@@ -14,10 +18,18 @@ import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m3.domain.model.OpcionRespuesta;
+import com.prisaly.m3.domain.model.CriterioRubrica;
+import com.prisaly.m3.domain.model.Escenario;
+import com.prisaly.m3.domain.model.Pregunta;
+import com.prisaly.m3.domain.model.Rubrica;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.domain.rule.CasoValidation;
 import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -258,6 +270,178 @@ class CasoApplicationServiceTest {
 
             assertEquals(CasoValidation.CODE_INVALID_ESTIMATED_TIME, error.code());
         }
+    }
+
+    @Test
+    void independentCopyRejectsSourceCaseId() {
+        Caso source = completeDraft("origen");
+
+        CasoDomainException error = assertThrows(CasoDomainException.class,
+                () -> service.createIndependentCopy("docente-1", source, source.id()));
+
+        assertEquals(ContenidoEvaluableLock.CODE_COPY_CASE_ID_EQUALS_SOURCE, error.code());
+    }
+
+    @Test
+    void independentCopyRebuildsAllAcademicRecordsAndPreservesContent() {
+        Caso source = richCopySource();
+        Caso snapshot = richCopySource();
+
+        Caso copy = service.createIndependentCopy("docente-1", source, "destino");
+
+        assertEquals("destino", copy.id());
+        assertEquals(source.titulo(), copy.titulo());
+        assertEquals(source.docenteId(), copy.docenteId());
+        assertEquals(source.tiempoEstimadoSegundos(), copy.tiempoEstimadoSegundos());
+        assertEquals(CasoEstado.BORRADOR, copy.estado());
+        assertFalse(copy.contenidoEvaluableBloqueado());
+        assertEquals(snapshot, source);
+        assertEquals(source.escenarios().size(), copy.escenarios().size());
+        for (int i = 0; i < source.escenarios().size(); i++) {
+            Escenario original = source.escenarios().get(i);
+            Escenario copied = copy.escenarios().get(i);
+            assertNotSame(original, copied);
+            assertEquals(original.descripcion(), copied.descripcion());
+            assertEquals(original.preguntas().size(), copied.preguntas().size());
+            for (int j = 0; j < original.preguntas().size(); j++) {
+                Pregunta question = original.preguntas().get(j);
+                Pregunta copiedQuestion = copied.preguntas().get(j);
+                assertNotSame(question, copiedQuestion);
+                assertEquals(question.enunciado(), copiedQuestion.enunciado());
+                assertEquals(question.opciones().size(), copiedQuestion.opciones().size());
+                for (int k = 0; k < question.opciones().size(); k++) {
+                    OpcionRespuesta option = question.opciones().get(k);
+                    OpcionRespuesta copiedOption = copiedQuestion.opciones().get(k);
+                    assertNotSame(option, copiedOption);
+                    assertEquals(option.texto(), copiedOption.texto());
+                    assertEquals(option.esCorrecta(), copiedOption.esCorrecta());
+                }
+            }
+        }
+        assertNotSame(source.rubrica(), copy.rubrica());
+        assertEquals(source.rubrica().criterios().size(), copy.rubrica().criterios().size());
+        for (int i = 0; i < source.rubrica().criterios().size(); i++) {
+            CriterioRubrica original = source.rubrica().criterios().get(i);
+            CriterioRubrica copied = copy.rubrica().criterios().get(i);
+            assertNotSame(original, copied);
+            assertEquals(original.descripcion(), copied.descripcion());
+            assertEquals(original.puntaje(), copied.puntaje());
+        }
+        List<String> ids = internalIds(copy);
+        ids.forEach(id -> assertEquals(id, UUID.fromString(id).toString()));
+        assertEquals(ids.size(), new HashSet<>(ids).size());
+        assertFalse(ids.contains(copy.id()));
+        assertTrue(Collections.disjoint(internalIds(source), ids));
+    }
+
+    @Test
+    void twoIndependentCopiesHaveDifferentInternalIds() {
+        Caso source = richCopySource();
+        Caso first = service.createIndependentCopy("docente-1", source, "primera");
+        Caso second = service.createIndependentCopy("docente-1", source, "segunda");
+
+        assertTrue(Collections.disjoint(internalIds(first), internalIds(second)));
+    }
+
+    @Test
+    void independentCopyPreservesNullRubricAndEmptyScenarios() {
+        Caso source = new Caso("vacio", "Borrador", "docente-1", ESTIMATED_TIME_SECONDS,
+                CasoEstado.BORRADOR, List.of(), null, false);
+
+        Caso copy = service.createIndependentCopy("docente-1", source, "copia-vacia");
+
+        assertTrue(copy.escenarios().isEmpty());
+        assertNull(copy.rubrica());
+    }
+
+    @Test
+    void independentCopyPreservesEmptyNestedCollectionsWithoutPublicationValidation() {
+        Caso source = new Caso("incompleto", "Borrador", "docente-1", ESTIMATED_TIME_SECONDS,
+                CasoEstado.BORRADOR,
+                List.of(new Escenario("e1", "Sin preguntas", List.of()),
+                        new Escenario("e2", "Sin opciones",
+                                List.of(new Pregunta("p1", "Pregunta incompleta", List.of())))),
+                new Rubrica("r1", List.of()), false);
+
+        Caso copy = service.createIndependentCopy("docente-1", source, "copia-incompleta");
+
+        assertEquals(2, copy.escenarios().size());
+        assertTrue(copy.escenarios().get(0).preguntas().isEmpty());
+        assertTrue(copy.escenarios().get(1).preguntas().get(0).opciones().isEmpty());
+        assertTrue(copy.rubrica().criterios().isEmpty());
+        assertNotSame(source.rubrica(), copy.rubrica());
+    }
+
+    @Test
+    void independentCopyChecksSourceAuthorizationBeforeRootIdentity() {
+        Caso source = completeDraft("origen");
+        when(authorizationPort.canModifyCase("sin-permiso", source.id())).thenReturn(false);
+
+        CasoDomainException error = assertThrows(CasoDomainException.class,
+                () -> service.createIndependentCopy("sin-permiso", source, source.id()));
+
+        assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
+    }
+
+    @Test
+    void independentCopyRejectsUnauthorizedDestinationWithoutChangingSource() {
+        Caso source = richCopySource();
+        Caso snapshot = richCopySource();
+        when(authorizationPort.canModifyCase("docente-1", "destino")).thenReturn(false);
+
+        CasoDomainException error = assertThrows(CasoDomainException.class,
+                () -> service.createIndependentCopy("docente-1", source, "destino"));
+
+        assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
+        verify(authorizationPort).canModifyCase("docente-1", source.id());
+        assertEquals(snapshot, source);
+    }
+
+    @Test
+    void independentCopyDoesNotAuthorizeDestinationWhenSourceIsForbidden() {
+        Caso source = completeDraft("origen");
+        when(authorizationPort.canModifyCase("sin-permiso", source.id())).thenReturn(false);
+
+        CasoDomainException error = assertThrows(CasoDomainException.class,
+                () -> service.createIndependentCopy("sin-permiso", source, "destino"));
+
+        assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
+        verify(authorizationPort, never()).canModifyCase("sin-permiso", "destino");
+    }
+
+    private Caso richCopySource() {
+        List<Escenario> scenarios = new ArrayList<>();
+        for (int i = 0; i < 2; i++) {
+            List<Pregunta> questions = new ArrayList<>();
+            for (int j = 0; j < 2; j++) {
+                String prefix = i + "-" + j;
+                questions.add(new Pregunta("p-" + prefix, "Enunciado " + prefix,
+                        List.of(new OpcionRespuesta("o-" + prefix + "-a", "Respuesta A " + prefix, false),
+                                new OpcionRespuesta("o-" + prefix + "-b", "Respuesta B " + prefix, true))));
+            }
+            scenarios.add(new Escenario("e-" + i, "Escenario " + i, questions));
+        }
+        return new Caso("origen", "Caso original", "docente-1", ESTIMATED_TIME_SECONDS,
+                CasoEstado.PUBLICADO, scenarios,
+                new Rubrica("rubrica-original", List.of(
+                        new CriterioRubrica("c1", "Primer criterio", 10),
+                        new CriterioRubrica("c2", "Segundo criterio", 20))), true);
+    }
+
+    private List<String> internalIds(Caso caso) {
+        List<String> ids = new ArrayList<>();
+        for (Escenario escenario : caso.escenarios()) {
+            ids.add(escenario.id());
+            for (Pregunta pregunta : escenario.preguntas()) {
+                ids.add(pregunta.id());
+                pregunta.opciones().forEach(opcion -> ids.add(opcion.id()));
+            }
+        }
+        if (caso.rubrica() != null) {
+            ids.add(caso.rubrica().id());
+            caso.rubrica().criterios().forEach(criterio -> ids.add(criterio.id()));
+        }
+        return ids;
     }
 
     private Caso completeDraft(String caseId) {
