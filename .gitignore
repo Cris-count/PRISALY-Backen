@@ -1,3 +1,11 @@
+target/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.mvn/wrapper/maven-wrapper.jar
+
 .env
 .env.local
 .env.*.local
@@ -6,7 +14,6 @@
 node_modules/
 dist/
 build/
-target/
 out/
 __pycache__/
 .venv/
@@ -16,7 +23,6 @@ venv/
 .pytest_cache/
 .mypy_cache/
 
-.idea/
 .vscode/
 *.log
 *.tmp
