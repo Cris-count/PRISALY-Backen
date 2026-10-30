@@ -95,4 +95,9 @@ public class UsuarioEntity {
     public boolean isActive() {
         return "Activo".equalsIgnoreCase(estado);
     }
+
+    public void replacePasswordHash(String passwordHash, OffsetDateTime when) {
+        this.passwordHash = passwordHash;
+        this.fechaActualizacion = when;
+    }
 }

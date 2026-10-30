@@ -1,6 +1,7 @@
 package com.prisaly.m1.infrastructure.persistence;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -14,4 +15,10 @@ public interface UsuarioPermisoRepository extends JpaRepository<UsuarioPermisoEn
             where up.idUsuario = :idUsuario and up.habilitado = true
             """)
     List<UsuarioPermisoEntity> findByIdUsuarioAndHabilitadoTrue(@Param("idUsuario") UUID idUsuario);
+
+    List<UsuarioPermisoEntity> findByIdUsuario(UUID idUsuario);
+
+    Optional<UsuarioPermisoEntity> findByIdUsuarioAndIdPermiso(UUID idUsuario, Integer idPermiso);
+
+    boolean existsByIdUsuarioAndIdPermiso(UUID idUsuario, Integer idPermiso);
 }
