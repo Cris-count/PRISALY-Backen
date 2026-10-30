@@ -17,8 +17,8 @@ import com.prisaly.m5.domain.respuesta.ValorRespuesta;
  * pasar una única vez a Finalizado, dejando registrado el motivo. Finalizado
  * es terminal: no hay regreso a EnCurso ni cambios posteriores.
  *
- * <p>Mientras está EnCurso admite como máximo una respuesta por pregunta.
- * Toda operación rechazada deja intactos el estado, el motivo y las
+ * <p>Mientras está EnCurso admite como máximo una respuesta por pregunta,
+ * que provisionalmente puede reemplazarse. * Toda operación rechazada deja intactos el estado, el motivo y las
  * respuestas. Los argumentos se validan antes que el estado.
  *
  * <p>Deliberadamente no incluye identificador, participación, sesión ni
@@ -72,6 +72,30 @@ public final class Intento {
         verificarModificable("registrar una respuesta");
         if (respuestas.containsKey(pregunta)) {
             throw new RespuestaDuplicadaException(pregunta);
+        }
+        respuestas.put(pregunta, respuesta);
+        return respuesta;
+    }
+
+    /**
+     * Reemplaza la respuesta ya registrada para una pregunta.
+     *
+     * <p><strong>Decisión provisional de diseño, pendiente de ratificación
+     * académica:</strong> se permite cambiar una respuesta mientras el intento
+     * siga EnCurso. Si se decide lo contrario, basta con retirar esta
+     * operación; el registro inicial no depende de ella. La respuesta
+     * reemplazada conserva su posición en el orden de consulta.
+     *
+     * @return la nueva respuesta
+     * @throws DatoRespuestaInvalidoException si la pregunta o el valor son nulos
+     * @throws IntentoFinalizadoException si el intento ya está Finalizado
+     * @throws RespuestaNoRegistradaException si la pregunta no tiene respuesta
+     */
+    public Respuesta actualizarRespuesta(ReferenciaPregunta pregunta, ValorRespuesta valor) {
+        Respuesta respuesta = new Respuesta(pregunta, valor);
+        verificarModificable("actualizar una respuesta");
+        if (!respuestas.containsKey(pregunta)) {
+            throw new RespuestaNoRegistradaException(pregunta);
         }
         respuestas.put(pregunta, respuesta);
         return respuesta;
