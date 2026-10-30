@@ -1,0 +1,26 @@
+meta {
+  name: acceso-estudiante-validar
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/v1/acceso-estudiante/validar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "estudiante@prisaly.test",
+    "codigo": "PENDIENTE-M4-M5"
+  }
+}
+
+assert {
+  res.status: eq 501
+}
