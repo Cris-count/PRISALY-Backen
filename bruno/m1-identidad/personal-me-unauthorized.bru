@@ -1,0 +1,15 @@
+meta {
+  name: personal-me-unauthorized
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/me
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+}

@@ -2,13 +2,16 @@ spring:
   application:
     name: prisaly-backend
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prisaly}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prisaly?sslmode=disable}
     username: ${DATABASE_USER:prisaly}
     password: ${DATABASE_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
+    properties:
+      hibernate:
+        globally_quoted_identifiers: true
   flyway:
     enabled: true
 
