@@ -1,25 +1,35 @@
 # Blocker: historical Flyway migrations V001–V009
 
-## Inspection result (2026-10-30)
+## Fase 0 inspection (2026-10-30)
 
-- Canonical Flyway path: `app/src/main/resources/db/migration` (only `.gitkeep` present).
-- `origin/main` and `origin/develop` both at `288f9aa` at inspection time (re-check before any PR).
-- Workspace search under `PRISALY`: no `V001*.sql` … `V009*.sql`, no `PRISALY_INCREMENTO_*.zip`, no `PRISALY_CIERRE_TECNICO_*.zip`.
-- Remote feature branches: M4 adds a **proposed** `V010` and states that V001–V009 are absent from this repository. That file is not restored into `app` by M1 (avoids duplicate/non-canonical migrations).
+This blocker is about the **current Spring Boot repository**, not the whole PRISALY project history. The team reports V001–V009 existed in historical packages (Increment 1 / cierre técnico). They are still missing from this machine’s searchable locations.
 
-## Policy
+### Searched
 
-Per Integrante 1 order: restore V001–V009 **only** from an authorized project package, without rewriting content and without substitute versions named as V001–V009.
+| Location | Result |
+| --- | --- |
+| `PRISALY-Backend/app/src/main/resources/db/migration` | only `.gitkeep` |
+| Workspace `PRISALY` | no `V001*.sql`…`V009*.sql`, no `PRISALY_INCREMENTO_*.zip`, no `PRISALY_CIERRE_TECNICO_*.zip` |
+| `Downloads` (PRISALY* files) | UML/OCL/pptx/dbml and `PRISALY_Entrega_Integrante_3_Parcial.zip` — **no Flyway SQL** |
+| GitHub `Cris-count/PRISALY-Backen` branches | no V001–V009; M4 notes their absence |
+| Filenames of record | `V001__bd0052_estructura.sql` … `V009__rf09_caso_publicado.sql` |
 
-## Impact
+### Policy
 
-- Production Flyway folder stays empty until the authorized SQL arrives.
-- M1 persistence integration tests use a **test-only** schema fixture derived from BD-005.2 M1 tables (`Usuario`, `Rol`, `Permiso`, `UsuarioPermiso`). That fixture is **not** a historical migration and must be replaced by the official V001–V009 baseline when available.
-- `spring.jpa.hibernate.ddl-auto` remains `none` in the default profile. Profile `db-validate` may set `validate` once official migrations and entities are aligned.
+Restore **only** from an authorized package, without rewriting content and without substitute files named V001–V009.
 
-## Exit criteria to clear this blocker
+### What is needed from the team
 
-1. Authorized zip/source provided by the team.
-2. Files copied unchanged into `app/src/main/resources/db/migration/`.
-3. `docker compose up` + app start applies V001–V009 in order.
-4. Remove or stop using the test-only M1 fixture for baseline schema.
+Provide one of:
+
+- `PRISALY_INCREMENTO_1.zip`
+- `PRISALY_CIERRE_TECNICO_2026-10-28.zip` / `PRISALY_CIERRE_TECNICO_FINAL.zip`
+- Or a folder already containing the nine authorized `.sql` files
+
+Then M1 will copy them unchanged into `app/src/main/resources/db/migration/`, verify Flyway order on the running Postgres 16.15 container, and clear this blocker.
+
+### Until then
+
+- Canonical Flyway path stays empty of historical SQL.
+- Docker Postgres is ready (see `M1-DOCKER-EVIDENCE.md`).
+- Do **not** start treating auth UI as done; Phase 1 persistence against official schema waits on this restore.
