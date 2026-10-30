@@ -100,4 +100,9 @@ public class UsuarioEntity {
         this.passwordHash = passwordHash;
         this.fechaActualizacion = when;
     }
+
+    public void changeEstado(String estado, OffsetDateTime when) {
+        this.estado = estado;
+        this.fechaActualizacion = when;
+    }
 }

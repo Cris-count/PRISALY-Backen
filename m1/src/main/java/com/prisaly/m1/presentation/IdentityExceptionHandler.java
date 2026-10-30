@@ -14,10 +14,9 @@ public class IdentityExceptionHandler {
     @ExceptionHandler(IdentityDomainException.class)
     public ResponseEntity<ErrorResponse> handleDomain(IdentityDomainException ex) {
         HttpStatus status = switch (ex.code()) {
-            case "AUTH_FAILED" -> HttpStatus.UNAUTHORIZED;
+            case "AUTH_FAILED", "UNAUTHENTICATED" -> HttpStatus.UNAUTHORIZED;
             case "DUPLICATE_EMAIL" -> HttpStatus.CONFLICT;
-            case "UNAUTHENTICATED" -> HttpStatus.UNAUTHORIZED;
-            case "USER_INACTIVE", "USER_NOT_FOUND" -> HttpStatus.FORBIDDEN;
+            case "USER_INACTIVE", "USER_NOT_FOUND", "FORBIDDEN" -> HttpStatus.FORBIDDEN;
             default -> HttpStatus.BAD_REQUEST;
         };
         return ResponseEntity.status(status).body(new ErrorResponse(ex.code(), ex.getMessage()));
