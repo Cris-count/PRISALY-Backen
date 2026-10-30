@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: prisaly-backend
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prisaly}
+    username: ${DATABASE_USER:prisaly}
+    password: ${DATABASE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+  flyway:
+    enabled: true
+
+server:
+  port: ${APP_PORT:8080}
+  servlet:
+    context-path: /api
+
+prisaly:
+  cors:
+    allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
