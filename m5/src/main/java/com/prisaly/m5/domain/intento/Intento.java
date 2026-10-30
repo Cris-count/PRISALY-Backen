@@ -18,8 +18,9 @@ import com.prisaly.m5.domain.respuesta.ValorRespuesta;
  * es terminal: no hay regreso a EnCurso ni cambios posteriores.
  *
  * <p>Mientras está EnCurso admite como máximo una respuesta por pregunta,
- * que provisionalmente puede reemplazarse. * Toda operación rechazada deja intactos el estado, el motivo y las
- * respuestas. Los argumentos se validan antes que el estado.
+ * que provisionalmente puede reemplazarse. Toda operación rechazada deja
+ * intactos el estado, el motivo y las respuestas. Los argumentos se validan
+ * antes que el estado.
  *
  * <p>Deliberadamente no incluye identificador, participación, sesión ni
  * marcas de tiempo: esos atributos y relaciones dependen de BD-005.2 y de los
