@@ -36,12 +36,27 @@ $env:DATABASE_URL="jdbc:postgresql://localhost:5432/prisaly?sslmode=disable"
 $env:DATABASE_USER="prisaly"
 $env:DATABASE_PASSWORD="<same as .env>"
 .\mvnw.cmd -B -pl app -am package -DskipTests
-java -jar app\target\app-0.0.1-SNAPSHOT.jar
 ```
 
 On first boot Flyway applies `app/src/main/resources/db/migration/V001`…`V009` and creates the 21 BD-005.2 tables. JPA uses `ddl-auto=validate` and `hibernate.globally_quoted_identifiers=true` (quoted identifiers in SQL).
 
-> Note: prefer the packaged jar (or `spring-boot:run` from the `app` module with dependencies already installed). Running `spring-boot:run` on the reactor parent fails because the parent POM has no main class.
+### Recommended: run JAR on the Compose network
+
+Host JDBC to `localhost:5432` can fail on some Windows/Docker Desktop setups (`Connection reset`). Prefer attaching the JAR to the Compose network (verified in `docs/M1-JAR-BOOT-EVIDENCE.md`):
+
+```powershell
+docker run --rm --name prisaly-app --network prisaly-backend_default -p 8080:8080 `
+  -e "DATABASE_URL=jdbc:postgresql://postgres:5432/prisaly?sslmode=disable" `
+  -e "DATABASE_USER=<from .env>" `
+  -e "DATABASE_PASSWORD=<from .env>" `
+  -e "APP_PORT=8080" `
+  -e "CORS_ORIGINS=http://localhost:4200" `
+  -v "${PWD}/app/target:/app:ro" `
+  -w /app eclipse-temurin:21-jre `
+  java -jar app-0.0.1-SNAPSHOT.jar
+```
+
+> Running `spring-boot:run` on the reactor parent fails (no main class). Use `-pl app` after `install`, or the jar recipe above.
 
 ### Persist after restart
 
@@ -81,9 +96,10 @@ Integration branch for M1 work: `feature/m1-identidad-acceso`. Do not force-push
 ```powershell
 .\mvnw.cmd -B -pl m1 test
 .\mvnw.cmd -B -pl m1 -am -Pdocker-it verify
+.\mvnw.cmd -B -pl app -am -Pdocker-it verify
 ```
 
-`-Pdocker-it` runs Failsafe ITs (Testcontainers Postgres 16.15 + canonical Flyway).
+`-Pdocker-it` runs Failsafe ITs (Testcontainers Postgres 16.15 + canonical Flyway). App profile covers HTTP security (401/403).
 
 ## API smoke
 
