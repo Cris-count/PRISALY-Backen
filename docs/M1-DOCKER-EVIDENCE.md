@@ -12,6 +12,7 @@ PostgreSQL **16.15** via `compose.yaml` is operational.
 | Named volume | `prisaly_pg_data` |
 | Probe insert | `m1_persist_probe (1, before-restart)` |
 | After `docker compose restart postgres` | Same row recovered — **PASS** |
+| Later note | Probe table dropped before Flyway apply; volume still holds migrated BD-005.2 (see `M1-FLYWAY-APPLY.md`) |
 
 Commands used (no `down -v`):
 
