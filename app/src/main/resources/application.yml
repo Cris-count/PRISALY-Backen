@@ -2,7 +2,7 @@ spring:
   application:
     name: prisaly-backend
   datasource:
-    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prisaly}
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/prisaly?sslmode=disable}
     username: ${DATABASE_USER:prisaly}
     password: ${DATABASE_PASSWORD:}
   jpa:
