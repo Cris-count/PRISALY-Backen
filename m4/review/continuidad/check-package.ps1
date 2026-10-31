@@ -27,7 +27,8 @@ try {
         $moduleArchive = [IO.Compression.ZipArchive]::new($moduleBytes, [IO.Compression.ZipArchiveMode]::Read, $true)
         try {
             $stubs = @($moduleArchive.Entries | Where-Object { $_.FullName -match 'StubAdapter|TestM4Application' })
-            $v010 = @($moduleArchive.Entries | Where-Object { $_.FullName -match 'V010.*\.sql$' })
+            $v010 = @($moduleArchive.Entries | Where-Object { $_.FullName -match '^db/migration/V010.*\.sql$' })
+            $archivedV010 = @($moduleArchive.Entries | Where-Object { $_.FullName -match '^db/m4-propuesta/V010.*\.sql$' })
             $config = $moduleArchive.GetEntry('com/prisaly/m4/infrastructure/config/M4ProviderAutoConfiguration.class')
             $importEntry = $moduleArchive.GetEntry('META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports')
             if ($null -eq $config -or $null -eq $importEntry) { throw 'Falta configuración segura M4' }
@@ -35,7 +36,8 @@ try {
             try { $importText = $reader.ReadToEnd() } finally { $reader.Dispose() }
             $expectedConfigurations = @(
                 'com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration',
-                'com.prisaly.m4.infrastructure.config.M4ProgramacionConsultaAutoConfiguration'
+                'com.prisaly.m4.infrastructure.config.M4ProgramacionConsultaAutoConfiguration',
+                'com.prisaly.m4.infrastructure.config.M4SchemaAutoConfiguration'
             )
             $actualConfigurations = @($importText -split '\r?\n' | Where-Object { $_.Trim() })
             if (@(Compare-Object $expectedConfigurations $actualConfigurations).Count -ne 0) {
@@ -46,12 +48,21 @@ try {
                     throw "Falta clase de autoconfiguración: $configurationName"
                 }
             }
-            if ($stubs.Count -ne 0 -or $directStubs.Count -ne 0 -or $directV010.Count -ne 0 -or $v010.Count -ne 1) {
+            if ($stubs.Count -ne 0 -or $directStubs.Count -ne 0 -or $directV010.Count -ne 0 -or $v010.Count -ne 0 -or $archivedV010.Count -ne 1) {
                 throw 'Stubs o duplicación de V010 en paquete productivo'
             }
+            $legacyStates = @($moduleArchive.Entries | Where-Object { $_.FullName -match '/(Programada|Abierta|Cerrada|Cancelada)State.class$' })
+            if ($legacyStates.Count -ne 0) { throw 'El paquete conserva clases State incompatibles' }
+            $archivedStream = $archivedV010[0].Open()
+            $hashAlgorithm = [Security.Cryptography.SHA256]::Create()
+            try { $archivedHash = [BitConverter]::ToString($hashAlgorithm.ComputeHash($archivedStream)).Replace('-', '') }
+            finally { $archivedStream.Dispose(); $hashAlgorithm.Dispose() }
+            $sourceHash = (Get-FileHash -LiteralPath (Join-Path $repositoryRoot 'm4/src/main/resources/db/migration/V010__m4_sesiones_convocatorias.sql') -Algorithm SHA256).Hash
+            if ($archivedHash -ne $sourceHash) { throw 'El archivo histórico V010 fue alterado al empaquetar' }
             $findings += "SHA256 M4 local/anidado: $nestedHash (idénticos)"
             $findings += "StubAdapter/TestM4Application: app=$($directStubs.Count), módulo M4=$($stubs.Count)"
-            $findings += "V010: app=$($directV010.Count), módulo M4=$($v010.Count)"
+            $findings += "V010 automática: app=$($directV010.Count), módulo M4=$($v010.Count); archivo histórico=$($archivedV010.Count), SHA256 idéntico al fuente"
+            $findings += 'Estados propuestos obsoletos: 0 clases; tres autoconfiguraciones verificadas'
             $findings += 'M4ProviderAutoConfiguration y AutoConfiguration.imports: presentes y verificados'
             $findings += 'Verificación del paquete local; no certifica compatibilidad del esquema ni integración funcional entre módulos.'
         } finally { $moduleArchive.Dispose() }

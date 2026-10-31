@@ -1,5 +1,7 @@
 # M4 — Estado al preparar el commit «M4 listo para integracion»
 
+**Estado vigente, 31/10/2026:** consultar [conciliación BD-005.2](conciliacion-bd0052/INFORME.md). Las afirmaciones siguientes son históricas: la nueva fase corrige las escrituras, los estados y la reasignación sobre las tablas oficiales. La aplicación compartida de V010 y la integración académica completa siguen pendientes; PR #2 continúa en borrador.
+
 Actualización posterior al merge de develop: consultar [adaptación de contratos](adaptacion-contratos/INFORME.md). Este documento conserva la instantánea del commit 5e05888 y no incorpora por sí mismo la fase posterior.
 
 Fecha: 31 de octubre de 2026. El título del commit fue solicitado por el usuario; no constituye aprobación de merge, compatibilidad BD-005.2 ni certificación de integración completa.

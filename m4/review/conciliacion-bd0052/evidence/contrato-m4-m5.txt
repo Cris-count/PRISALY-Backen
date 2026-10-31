@@ -1,0 +1,7 @@
+CONTRATO OK titular correcto: permitido por control de titularidad, no elegibilidad temporal
+CONTRATO OK intento inexistente: 404
+CONTRATO OK estudiante ajeno: vacio M4 produce 404, no el 403 provisional
+CONTRATO OK sin identidad: 401 antes de consultar contexto
+CONTRATO OK BRECHA CONFIRMADA: error tecnico M4 no esta traducido a 503 por M5
+CONTRATO OK DD-02: proveedor productivo actual M1 mantiene denegacion segura
+CONTRATO RESULTADO: 6 comprobaciones; ensamblaje temporal, identidad fixture, sin iniciar/reanudar ni conectar fachadas productivas.
