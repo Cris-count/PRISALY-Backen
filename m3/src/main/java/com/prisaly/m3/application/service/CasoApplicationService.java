@@ -5,7 +5,9 @@ import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.domain.rule.CasoPublication;
+import com.prisaly.m3.domain.rule.CasoValidation;
 import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
+import java.util.Objects;
 
 /**
  * Application use cases for academic cases. Coordinates authorization and domain rules.
@@ -15,6 +17,7 @@ public final class CasoApplicationService {
     public static final String CODE_FORBIDDEN = "FORBIDDEN";
     public static final String CODE_CASE_ID_MISMATCH = "CASE_ID_MISMATCH";
     public static final String CODE_CASE_OWNER_MISMATCH = "CASE_OWNER_MISMATCH";
+    public static final String CODE_CASE_METADATA_CHANGE_PENDING = "CASE_METADATA_CHANGE_PENDING";
 
     private final CaseAuthorizationPort authorizationPort;
 
@@ -48,6 +51,17 @@ public final class CasoApplicationService {
             throw new CasoDomainException(
                     CODE_CASE_OWNER_MISMATCH,
                     "Evaluable content replacement must preserve the case teacher id");
+        }
+        CasoValidation.assertNotArchived(replacementDraft);
+        // This content operation must not become an activation or audit-date operation.
+        // Reject differences rather than silently discarding or manufacturing metadata.
+        if (caso.activo() != replacementDraft.activo()
+                || !Objects.equals(caso.fechaCreacion(), replacementDraft.fechaCreacion())
+                || !Objects.equals(caso.fechaActualizacion(), replacementDraft.fechaActualizacion())
+                || !Objects.equals(caso.fechaBloqueoAcademico(), replacementDraft.fechaBloqueoAcademico())
+                || caso.contenidoEvaluableBloqueado() != replacementDraft.contenidoEvaluableBloqueado()) {
+            throw new CasoDomainException(CODE_CASE_METADATA_CHANGE_PENDING,
+                    "Content replacement cannot change activity or academic/audit locking metadata");
         }
         return replacementDraft;
     }
