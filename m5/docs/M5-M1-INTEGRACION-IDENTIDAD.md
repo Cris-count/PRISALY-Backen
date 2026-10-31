@@ -30,9 +30,17 @@ Fuente: `ab926ec` (`feature/m1-identidad-acceso`) y `docs/M1-M5-STUDENT-IDENTITY
 | Sin dependencia de Spring Security | No lee `SecurityContext` | El adaptador no lee contexto ni parámetros del cliente |
 | Errores de proveedor no previstos | — | Se propagan: nunca conceden acceso |
 
-Ajuste ya aplicado en esta rama: `EstudianteNoIdentificadoException` se traduce a
-**403 `STUDENT_IDENTITY_UNAVAILABLE`**, como indica el contrato de M1 (antes
-era 401). El 401 sin credenciales lo sigue respondiendo la cadena compartida.
+Ajuste aplicado en esta rama (`5c7bd7b`): `EstudianteNoIdentificadoException`
+se traduce a **403 `STUDENT_IDENTITY_UNAVAILABLE`** (antes era 401). Es
+**provisional y está en disputa**:
+
+- El contrato de M1 asigna 403 a "autenticado sin contexto de estudiante".
+  `STUDENT_IDENTITY_UNAVAILABLE` (DD-02 abierta) es un código de dominio, y M1
+  dice que no es una regla HTTP global.
+- M4 traduce ese mismo código a 503 `M4-PROVEEDOR-NO-DISPONIBLE`.
+
+Ver la decisión 7 de `M5-REST-DEPENDENCIAS-Y-DECISIONES.md`. El 401 sin
+credenciales lo sigue respondiendo la cadena compartida.
 
 ## 3. Adaptador preparado (parche, sin aplicar)
 
@@ -67,11 +75,12 @@ Cadena en BD-005.2: `Intento."idParticipacion"` → `Participacion."idConvocator
 → `Convocatoria."idEstudiante"`.
 
 - `Intento` y `Participacion` son tablas de M5, así que M5 resuelve ese tramo.
-- `Convocatoria` es de M4. El último paso requiere un **contrato Java de M4**
-  (convocatoria → estudiante), no consultas a sus tablas ni a sus repositorios.
+- `Convocatoria` es de M4. El contrato Java de M4 está **publicado, pendiente
+  de conciliación e integración**: `ProgramacionParticipacionPort`
+  (`315746e`, PR #2). Ver `M5-M4-CONCILIACION-PROGRAMACION.md`.
 - El titular se compara con `studentId` de M1, nunca con un identificador
   enviado por Angular.
-- Sin el contrato de M4, `TitularidadIntentos` no tiene implementación y el
+- Hasta integrar M4, `TitularidadIntentos` no tiene implementación y el
   control de acceso no se conecta: **la denegación se mantiene**.
 
 ## 5. Escenarios de prueba
@@ -88,11 +97,11 @@ Cadena en BD-005.2: `Intento."idParticipacion"` → `Participacion."idConvocator
 
 Todas usan dobles (titularidad simulada; identidad de M1 simulada salvo en 4
 y 5). **No equivalen a una integración real M1–M5.** Esa integración necesita
-DD-02, el contrato de M4 y controladores con rutas de ARQ-008.3.
+DD-02, integrar y conciliar el contrato de M4, y controladores con rutas de ARQ-008.3.
 
 ## 6. Bloqueos
 
 1. Autorización para integrar `develop` (`03b0899`) en la rama M5.
 2. DD-02: autenticación real del estudiante (M1).
-3. Contrato Java de M4 para el titular de la convocatoria.
+3. Integración y conciliación del contrato de M4 (publicado en `315746e`; aún no está en develop).
 4. ARQ-008.3: rutas de estudiante (sin ellas no hay controladores).
