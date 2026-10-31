@@ -14,6 +14,11 @@
     <name>m3</name>
 
     <dependencies>
+        <!-- Exact JSONB fingerprint parsing; version managed by Spring Boot's Jackson 2 BOM. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>

@@ -1,6 +1,7 @@
 package com.prisaly.m3.domain.rule;
 
 import com.prisaly.m3.domain.model.Caso;
+import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m3.domain.model.Escenario;
 import com.prisaly.m3.domain.model.Pregunta;
 import com.prisaly.m3.domain.model.Rubrica;
@@ -11,6 +12,7 @@ import com.prisaly.m3.domain.model.Rubrica;
 public final class CasoValidation {
 
     public static final String CODE_CASE_INCOMPLETE = "CASE_INCOMPLETE";
+    public static final String CODE_ARCHIVED_CASE_OPERATION_PENDING = "ARCHIVED_CASE_OPERATION_PENDING";
     public static final String CODE_INVALID_ESTIMATED_TIME = "INVALID_ESTIMATED_TIME";
     public static final String CODE_INVALID_QUESTION = "INVALID_QUESTION";
     public static final String CODE_INCONSISTENT_OPTIONS = "INCONSISTENT_OPTIONS";
@@ -28,6 +30,7 @@ public final class CasoValidation {
     }
 
     public static void assertPublishable(Caso caso) {
+        assertNotArchived(caso);
         if (caso.questionCount() == 0) {
             throw new CasoDomainException(
                     CODE_CASE_INCOMPLETE,
@@ -39,6 +42,14 @@ public final class CasoValidation {
             }
         }
         assertRubricComplete(caso.rubrica());
+    }
+
+    /** Structural safeguard until operations on archived cases are approved. */
+    public static void assertNotArchived(Caso caso) {
+        if (caso.estado() == CasoEstado.ARCHIVADO) {
+            throw new CasoDomainException(CODE_ARCHIVED_CASE_OPERATION_PENDING,
+                    "Operations on archived cases require an approved policy");
+        }
     }
 
     public static void assertValidSingleChoiceQuestion(Pregunta pregunta) {

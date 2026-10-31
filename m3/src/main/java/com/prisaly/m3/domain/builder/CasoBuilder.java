@@ -11,6 +11,7 @@ import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.domain.rule.CasoValidation;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Instant;
 
 /**
  * Builds a complete academic case structure. Incomplete drafts are allowed;
@@ -24,8 +25,14 @@ public final class CasoBuilder {
     private String titulo;
     private String docenteId;
     private Integer tiempoEstimadoSegundos;
+    private String historia;
+    private String desarrolloSituacional;
+    private boolean activo = true; // V001 default; no activation operation is introduced.
+    private Instant fechaCreacion;
+    private Instant fechaActualizacion;
     private final List<EscenarioDraft> escenarios;
     private String rubricaId;
+    private Rubrica explicitRubrica;
     private final List<CriterioRubrica> criterios;
 
     public CasoBuilder() {
@@ -53,8 +60,40 @@ public final class CasoBuilder {
         return this;
     }
 
+    public CasoBuilder withHistoria(String historia) {
+        this.historia = historia;
+        return this;
+    }
+
+    public CasoBuilder withDesarrolloSituacional(String desarrolloSituacional) {
+        this.desarrolloSituacional = desarrolloSituacional;
+        return this;
+    }
+
+    public CasoBuilder withActivo(boolean activo) {
+        this.activo = activo;
+        return this;
+    }
+
+    /** Carries a supplied instant; never generates a creation date. */
+    public CasoBuilder withFechaCreacion(Instant fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+        return this;
+    }
+
+    public CasoBuilder withFechaActualizacion(Instant fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
+        return this;
+    }
+
     public CasoBuilder withRubricaId(String rubricId) {
         this.rubricaId = rubricId;
+        return this;
+    }
+
+    /** Carries supplied structural metadata and explicit associations unchanged. */
+    public CasoBuilder withRubrica(Rubrica rubrica) {
+        this.explicitRubrica = java.util.Objects.requireNonNull(rubrica, "rubrica");
         return this;
     }
 
@@ -65,6 +104,14 @@ public final class CasoBuilder {
 
     public EscenarioStep addEscenario(String escenarioId, String descripcion) {
         EscenarioDraft draft = new EscenarioDraft(escenarioId, descripcion);
+        this.escenarios.add(draft);
+        return new EscenarioStep(this, draft);
+    }
+
+    /** Explicit physical content; keeps supplied orders, including gaps. */
+    public EscenarioStep addEscenario(String escenarioId, String titulo, String contexto,
+            String instrucciones, int orden, boolean activo) {
+        EscenarioDraft draft = new EscenarioDraft(escenarioId, titulo, contexto, instrucciones, orden, activo);
         this.escenarios.add(draft);
         return new EscenarioStep(this, draft);
     }
@@ -90,7 +137,11 @@ public final class CasoBuilder {
             builtEscenarios.add(draft.toEscenario());
         }
 
-        Rubrica rubrica = null;
+        if (explicitRubrica != null && (rubricaId != null || !criterios.isEmpty())) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE,
+                    "Supply either a rubric or legacy rubric fields, without silently merging them");
+        }
+        Rubrica rubrica = explicitRubrica;
         if (rubricaId != null && !rubricaId.isBlank()) {
             rubrica = new Rubrica(rubricaId, List.copyOf(criterios));
         }
@@ -103,7 +154,13 @@ public final class CasoBuilder {
                 CasoEstado.BORRADOR,
                 List.copyOf(builtEscenarios),
                 rubrica,
-                false);
+                false,
+                historia,
+                desarrolloSituacional,
+                activo,
+                fechaCreacion,
+                fechaActualizacion,
+                null);
     }
 
     /**
@@ -123,7 +180,11 @@ public final class CasoBuilder {
                 String preguntaId,
                 String enunciado,
                 List<OpcionRespuesta> opciones) {
-            Pregunta pregunta = new Pregunta(preguntaId, enunciado, opciones);
+            return addPreguntaSeleccionUnica(new Pregunta(preguntaId, enunciado, opciones));
+        }
+
+        /** Accepts all explicitly supplied question metadata without changing its editing state. */
+        public EscenarioStep addPreguntaSeleccionUnica(Pregunta pregunta) {
             CasoValidation.assertValidSingleChoiceQuestion(pregunta);
             draft.preguntas.add(pregunta);
             return this;
@@ -138,16 +199,41 @@ public final class CasoBuilder {
 
         private final String id;
         private final String descripcion;
+        private final String titulo;
+        private final String contexto;
+        private final String instrucciones;
+        private final Integer orden;
+        private final boolean activo;
         private final List<Pregunta> preguntas;
 
         private EscenarioDraft(String id, String descripcion) {
             this.id = id;
             this.descripcion = descripcion;
+            this.titulo = null;
+            this.contexto = null;
+            this.instrucciones = null;
+            this.orden = null;
+            this.activo = true;
+            this.preguntas = new ArrayList<>();
+        }
+
+        private EscenarioDraft(String id, String titulo, String contexto, String instrucciones,
+                int orden, boolean activo) {
+            this.id = id;
+            this.descripcion = null;
+            this.titulo = titulo;
+            this.contexto = contexto;
+            this.instrucciones = instrucciones;
+            this.orden = orden;
+            this.activo = activo;
             this.preguntas = new ArrayList<>();
         }
 
         private Escenario toEscenario() {
-            return new Escenario(id, descripcion, List.copyOf(preguntas));
+            if (orden == null) {
+                return new Escenario(id, descripcion, List.copyOf(preguntas));
+            }
+            return new Escenario(id, titulo, contexto, instrucciones, orden, activo, List.copyOf(preguntas));
         }
     }
 }
