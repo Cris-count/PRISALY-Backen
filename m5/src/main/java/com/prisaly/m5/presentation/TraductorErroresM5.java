@@ -6,6 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
+import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
 import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacionRequeridoException;
 import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
@@ -36,6 +38,14 @@ public final class TraductorErroresM5 {
 
     /** Traducción de una excepción conocida de M5; vacío si no corresponde a M5. */
     public static Optional<ErrorHttp> traducir(Throwable error) {
+        // Mismos códigos que la cadena de seguridad compartida (401/403).
+        if (error instanceof EstudianteNoIdentificadoException e) {
+            return error(401, "UNAUTHENTICATED", e.getMessage());
+        }
+        // PROVISIONAL: 403 o 404 para un intento ajeno sigue pendiente de decisión.
+        if (error instanceof AccesoIntentoDenegadoException e) {
+            return error(403, "FORBIDDEN", e.getMessage());
+        }
         if (error instanceof IntentoNoEncontradoException e) {
             return error(404, "INTENTO_NO_ENCONTRADO", e.getMessage());
         }
