@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
 import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -29,6 +31,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest
 @Testcontainers
+@Import(StudentAccessProbeTestController.class)
 class PersonalAuthSecurityIT {
 
     @Container
@@ -131,6 +134,43 @@ class PersonalAuthSecurityIT {
         mockMvc.perform(get("/v1/personal/me"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+    }
+
+    @Test
+    void studentAccessProbe_withoutCredentials_returns401() throws Exception {
+        mockMvc.perform(get("/v1/test/student-access"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.code").value("UNAUTHENTICATED"));
+    }
+
+    @Test
+    void studentAccessProbe_withPersonnelToken_returns403() throws Exception {
+        identityCatalogService.createRole("DocenteStudentProbe", "Docente");
+        identityCatalogService.registerUser(
+                "Probe", "probe.student@prisaly.test", "Secret#1", "DocenteStudentProbe");
+
+        MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"correo":"probe.student@prisaly.test","password":"Secret#1"}
+                                """))
+                .andExpect(status().isOk())
+                .andReturn();
+        String token = readToken(login);
+
+        mockMvc.perform(get("/v1/test/student-access").header("Authorization", "Bearer " + token))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code")
+                        .value(DenyingStudentAccessService.CODE_STUDENT_IDENTITY_UNAVAILABLE));
+    }
+
+    @Test
+    void estudianteValidar_remains501WhileDd02Pending() throws Exception {
+        mockMvc.perform(post("/v1/acceso-estudiante/validar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.code").value("ESTUDIANTE_ACCESS_PENDING_CONTRACT"));
     }
 
     @Test
