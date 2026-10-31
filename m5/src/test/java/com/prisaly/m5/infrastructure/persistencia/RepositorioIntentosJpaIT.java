@@ -7,10 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -49,6 +51,8 @@ import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.Intento;
 import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
+import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
+import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.Respuesta;
 import com.prisaly.m5.infrastructure.ConfiguracionParticipacion;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
@@ -268,6 +272,91 @@ class RepositorioIntentosJpaIT {
 
         assertTrue(error.getCause() instanceof IntentoFinalizadoException, String.valueOf(error.getCause()));
         assertEquals(0, contarRespuestas());
+    }
+
+    @Test
+    @DisplayName("una finalización repetida y rechazada no altera estado, motivo ni la marca fin")
+    void finalizacionRepetidaSinEfectos() {
+        fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        Map<String, Object> antes = filaIntento();
+
+        assertThrows(TransicionIntentoInvalidaException.class,
+                () -> fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
+        assertThrows(TransicionIntentoInvalidaException.class,
+                () -> fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+
+        assertEquals(antes, filaIntento());
+    }
+
+    @Test
+    @DisplayName("concurrencia: dos finalizaciones simultáneas; solo una tiene efecto")
+    void finalizacionesSimultaneas() throws Exception {
+        List<Object> resultados = carrera(
+                () -> fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO),
+                () -> fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+
+        assertEquals(1, resultados.stream().filter(ResumenIntento.class::isInstance).count(), resultados.toString());
+        assertEquals(1, resultados.stream().filter(TransicionIntentoInvalidaException.class::isInstance).count(),
+                resultados.toString());
+        ResumenIntento ganador = (ResumenIntento) resultados.stream()
+                .filter(ResumenIntento.class::isInstance).findFirst().orElseThrow();
+        assertEquals(ganador.motivoFinalizacion().orElseThrow().name(), filaIntento().get("motivoFinalizacion"));
+    }
+
+    @Test
+    @DisplayName("concurrencia: respuestas simultáneas a preguntas distintas se conservan ambas")
+    void respuestasSimultaneasDistintas() throws Exception {
+        List<Object> resultados = carrera(
+                () -> fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a()),
+                () -> fachada.registrarRespuesta(cadena.intento(), cadena.pregunta2(), cadena.opcion2a()));
+
+        assertTrue(resultados.stream().allMatch(ResumenIntento.class::isInstance), resultados.toString());
+        assertEquals(2, contarRespuestas());
+        assertEquals(2, fachada.consultarIntento(cadena.intento()).respuestas().size());
+    }
+
+    @Test
+    @DisplayName("concurrencia: dos registros simultáneos de la misma pregunta dejan una sola respuesta")
+    void respuestasSimultaneasMismaPregunta() throws Exception {
+        List<Object> resultados = carrera(
+                () -> fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a()),
+                () -> fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1b()));
+
+        assertEquals(1, resultados.stream().filter(ResumenIntento.class::isInstance).count(), resultados.toString());
+        assertEquals(1, resultados.stream().filter(RespuestaDuplicadaException.class::isInstance).count(),
+                resultados.toString());
+        assertEquals(1, contarRespuestas());
+        assertEquals(1, filaRespuesta(cadena.pregunta1().valor()).get("revision"));
+    }
+
+    /**
+     * Lanza dos operaciones a la vez y devuelve, para cada una, su resultado
+     * o la excepción que produjo.
+     */
+    private List<Object> carrera(Callable<ResumenIntento> primera, Callable<ResumenIntento> segunda) throws Exception {
+        CountDownLatch salida = new CountDownLatch(1);
+        List<Future<Object>> futuros = List.of(primera, segunda).stream()
+                .map(operacion -> hilos.submit(() -> {
+                    salida.await();
+                    try {
+                        return (Object) operacion.call();
+                    } catch (RuntimeException e) {
+                        return e;
+                    }
+                }))
+                .toList();
+        salida.countDown();
+        List<Object> resultados = new ArrayList<>();
+        for (Future<Object> futuro : futuros) {
+            resultados.add(futuro.get(20, TimeUnit.SECONDS));
+        }
+        return resultados;
+    }
+
+    private Map<String, Object> filaIntento() {
+        return jdbc.queryForMap(
+                "SELECT \"estado\", \"motivoFinalizacion\", \"fin\" FROM \"Intento\" WHERE \"idIntento\" = ?",
+                cadena.idIntento());
     }
 
     private int contarRespuestas() {
