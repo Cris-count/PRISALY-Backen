@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.prisaly.m4.application.port.IdentidadPort;
 
@@ -15,7 +14,6 @@ import com.prisaly.m4.application.port.IdentidadPort;
  * Este stub concede todos los permisos para permitir el desarrollo de M4.
  * Debe ser reemplazado cuando M1 exponga su contrato real.</p>
  */
-@Component
 public class IdentidadStubAdapter implements IdentidadPort {
 
     private static final Logger log = LoggerFactory.getLogger(IdentidadStubAdapter.class);

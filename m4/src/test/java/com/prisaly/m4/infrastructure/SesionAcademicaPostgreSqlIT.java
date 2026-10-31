@@ -44,6 +44,7 @@ import com.prisaly.m4.domain.model.SesionAcademica;
 import com.prisaly.m4.domain.rule.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoStubAdapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadStubAdapter;
+import com.prisaly.m4.infrastructure.adapter.ParticipacionesStubAdapter;
 import com.prisaly.m4.infrastructure.persistence.JpaConvocatoriaRepository;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;
 import com.prisaly.m4.infrastructure.persistence.SesionAcademicaEntity;
@@ -120,6 +121,9 @@ public class SesionAcademicaPostgreSqlIT {
     private IdentidadStubAdapter identidadStub;
 
     @Autowired
+    private ParticipacionesStubAdapter participacionesStub;
+
+    @Autowired
     private PlatformTransactionManager transactionManager;
 
     @BeforeEach
@@ -128,6 +132,7 @@ public class SesionAcademicaPostgreSqlIT {
         jpaSesionRepository.deleteAll();
         casoAcademicoStub.limpiar();
         identidadStub.limpiar();
+        participacionesStub.limpiar();
     }
 
     private Connection getRawConnection() throws SQLException {
@@ -516,6 +521,31 @@ public class SesionAcademicaPostgreSqlIT {
     class Fase6Concurrencia {
 
         @Test
+        @DisplayName("HTTP: actualizar a un rango duplicado responde 409 por la restricción PostgreSQL real")
+        void actualizacionDuplicadaResponde409() throws Exception {
+            UUID docente = UUID.randomUUID();
+            UUID caso = UUID.randomUUID();
+            LocalDateTime inicio = LocalDateTime.now().plusDays(3);
+            LocalDateTime fin = inicio.plusHours(1);
+            service.crearSesion(docente, caso, "Primera", null, inicio, fin);
+            var segunda = service.crearSesion(docente, caso, "Segunda", null,
+                    inicio.plusDays(1), fin.plusDays(1));
+            var mvc = org.springframework.test.web.servlet.setup.MockMvcBuilders
+                    .standaloneSetup(new com.prisaly.m4.presentation.controller.SesionController(service))
+                    .setControllerAdvice(new com.prisaly.m4.presentation.controller.M4ExceptionHandler()).build();
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                    .put("/m4/sesiones/" + segunda.getId()).header("X-Docente-Id", docente)
+                    .contentType("application/json")
+                    .content("{\"titulo\":\"Duplicada\",\"fechaInicio\":\"" + inicio
+                            + "\",\"fechaFin\":\"" + fin + "\"}"))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers
+                            .jsonPath("$.codigo").value("M4-SESION-DUPLICADA"));
+            assertEquals("Segunda", service.consultarSesion(segunda.getId()).getTitulo());
+            System.out.println("M4 HTTP: duplicado PostgreSQL real -> 409; actualización fallida revertida");
+        }
+
+        @Test
         @DisplayName("6.1 — Creación concurrente idéntica: solo una tiene éxito, PostgreSQL sin duplicados")
         void creacionConcurrenteSinDuplicados() throws Exception {
             int hilos = 10;
@@ -617,6 +647,52 @@ public class SesionAcademicaPostgreSqlIT {
     @Nested
     @DisplayName("Fase 7: Verificación de Integración M1–M3–M4–M5")
     class Fase7IntegracionContratos {
+
+        @Test
+        @DisplayName("M5 simulado: historial impide actualizar programación sin modificar PostgreSQL")
+        void historialImpideActualizarProgramacion() throws Exception {
+            UUID docente = UUID.randomUUID();
+            UUID caso = UUID.randomUUID();
+            LocalDateTime inicio = LocalDateTime.now().plusDays(2);
+            var sesion = service.crearSesion(docente, caso, "Historial protegido", null,
+                    inicio, inicio.plusHours(1));
+            participacionesStub.registrarHistorial(sesion.getId());
+
+            var error = assertThrows(ReglaNegocioException.class, () -> service.actualizarSesion(
+                    docente, sesion.getId(), "Alterada", null, inicio.plusDays(1), inicio.plusDays(1).plusHours(1)));
+            assertEquals("M4-SESION-CON-PARTICIPACIONES", error.getCodigo());
+            verificarHistorialSinAlteraciones(sesion.getId(), caso);
+        }
+
+        @Test
+        @DisplayName("M5 simulado: historial impide reasignar caso sin modificar PostgreSQL")
+        void historialImpideReasignarCaso() throws Exception {
+            UUID docente = UUID.randomUUID();
+            UUID caso = UUID.randomUUID();
+            LocalDateTime inicio = LocalDateTime.now().plusDays(2);
+            var sesion = service.crearSesion(docente, caso, "Historial protegido", null,
+                    inicio, inicio.plusHours(1));
+            participacionesStub.registrarHistorial(sesion.getId());
+
+            var error = assertThrows(ReglaNegocioException.class, () -> service.cambiarCaso(
+                    docente, sesion.getId(), UUID.randomUUID()));
+            assertEquals("M4-SESION-CON-PARTICIPACIONES", error.getCodigo());
+            verificarHistorialSinAlteraciones(sesion.getId(), caso);
+        }
+
+        private void verificarHistorialSinAlteraciones(UUID sesionId, UUID caso) throws Exception {
+            try (var conexion = getRawConnection();
+                 var consulta = conexion.prepareStatement(
+                         "SELECT caso_id, titulo FROM sesiones_academicas WHERE id = ?")) {
+                consulta.setObject(1, sesionId);
+                try (var resultado = consulta.executeQuery()) {
+                    assertTrue(resultado.next());
+                    assertEquals(caso, resultado.getObject("caso_id", UUID.class));
+                    assertEquals("Historial protegido", resultado.getString("titulo"));
+                }
+            }
+            System.out.println("M4 historial: señal M5 simulada; caso/título preservados en PostgreSQL");
+        }
 
         @Test
         @DisplayName("7.1 — Contrato M1: Rechazo de docente sin permiso GESTIONAR_SESION sin persistencia")

@@ -7,7 +7,7 @@ import java.util.UUID;
  *
  * <p>M4 emite eventos de convocatoria confirmada para que M7
  * notifique a los estudiantes. Si M7 no está implementado,
- * se usa un stub que registra la solicitud sin efecto.</p>
+ * se rechaza la operación; no se simula una entrega exitosa.</p>
  */
 public interface NotificacionPort {
 

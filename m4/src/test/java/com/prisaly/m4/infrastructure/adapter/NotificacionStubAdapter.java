@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import com.prisaly.m4.application.port.NotificacionPort;
 
@@ -15,7 +14,6 @@ import com.prisaly.m4.application.port.NotificacionPort;
  * Este stub registra las solicitudes de notificación sin enviarlas.
  * Debe ser reemplazado cuando M7 exponga su mecanismo aprobado.</p>
  */
-@Component
 public class NotificacionStubAdapter implements NotificacionPort {
 
     private static final Logger log = LoggerFactory.getLogger(NotificacionStubAdapter.class);

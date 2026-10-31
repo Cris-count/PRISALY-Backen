@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT" time="12.452" tests="19" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="bloqueoOptimistaEnModificacionConcurrente" classname="Fase 6: Pruebas de Concurrencia" time="0.773">
+    <system-out><![CDATA[21:17:18.948 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+21:17:19.059 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: e737408b6f9386e874997e69909617284561a268c84fbe764814bcb41931a488
+21:17:21.752 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT2.8041915S
+21:17:21.752 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF)
+21:17:21.798 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF (PostgreSQL 16.14)
+21:17:21.830 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+21:17:21.832 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 1 migration (execution time 00:00.007s)
+21:17:21.852 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+21:17:21.905 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+21:17:21.913 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "010 - m4 sesiones convocatorias"
+21:17:21.968 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema "public", now at version v010 (execution time 00:00.039s)
+21:17:21.992 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF (PostgreSQL 16.14)
+21:17:22.027 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 1 migration (execution time 00:00.011s)
+M4 conexión sin secretos: jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF; usuario=prisaly
+21:17:22.074 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF (PostgreSQL 16.14)
+M4 Flyway: 010 SUCCESS
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-10-30T21:17:22.532-05:00  INFO 21200 --- [           main] nAcademicaPostgreSqlIT$Fase6Concurrencia : Starting SesionAcademicaPostgreSqlIT.Fase6Concurrencia using Java 21.0.10 with PID 21200 (started by NICOLAS in C:\Users\NICOLAS\OneDrive\Desktop\Prisaly\PRISALY-Backen\m4)
+2026-10-30T21:17:22.534-05:00  INFO 21200 --- [           main] nAcademicaPostgreSqlIT$Fase6Concurrencia : No active profile set, falling back to 1 default profile: "default"
+2026-10-30T21:17:23.452-05:00  INFO 21200 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-10-30T21:17:23.553-05:00  INFO 21200 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 90 ms. Found 2 JPA repository interfaces.
+2026-10-30T21:17:24.279-05:00  INFO 21200 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-10-30T21:17:24.392-05:00  INFO 21200 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-10-30T21:17:25.111-05:00  INFO 21200 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-10-30T21:17:25.155-05:00  INFO 21200 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-30T21:17:25.186-05:00  INFO 21200 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7e4a6afd
+2026-10-30T21:17:25.188-05:00  INFO 21200 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-10-30T21:17:25.286-05:00  INFO 21200 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:60764/prisaly_test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.14
+	Default catalog/schema: prisaly_test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-10-30T21:17:26.502-05:00  INFO 21200 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-10-30T21:17:26.513-05:00  INFO 21200 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-10-30T21:17:26.614-05:00  INFO 21200 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-10-30T21:17:27.976-05:00  WARN 21200 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-10-30T21:17:28.577-05:00  INFO 21200 --- [           main] nAcademicaPostgreSqlIT$Fase6Concurrencia : Started SesionAcademicaPostgreSqlIT.Fase6Concurrencia in 6.373 seconds (process running for 21.348)
+2026-10-30T21:17:29.186-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 26eafc2f-bcac-44ac-ba88-ddec57b20c3c: true
+2026-10-30T21:17:29.186-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 10f129ac-fd2d-4709-9163-6558160b6dde: true
+2026-10-30T21:17:29.296-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 10f129ac-fd2d-4709-9163-6558160b6dde registrada
+]]></system-out>
+    <system-err><![CDATA[Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\NICOLAS\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+  </testcase>
+  <testcase name="creacionConcurrenteSinDuplicados" classname="Fase 6: Pruebas de Concurrencia" time="0.105">
+    <system-out><![CDATA[2026-10-30T21:17:29.416-05:00  INFO 21200 --- [pool-3-thread-4] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.416-05:00  INFO 21200 --- [pool-3-thread-4] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-2] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [ool-3-thread-10] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-7] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-6] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [ool-3-thread-10] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-9] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-6] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-8] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-9] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-8] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-7] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-5] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-5] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-1] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-2] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-3] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74: true
+2026-10-30T21:17:29.419-05:00  INFO 21200 --- [pool-3-thread-1] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.421-05:00  INFO 21200 --- [pool-3-thread-3] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f0117536-0208-4261-9e0a-7b01ddff0af1: true
+2026-10-30T21:17:29.439-05:00  INFO 21200 --- [pool-3-thread-4] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.440-05:00  INFO 21200 --- [pool-3-thread-2] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.440-05:00  INFO 21200 --- [pool-3-thread-3] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.442-05:00  INFO 21200 --- [pool-3-thread-5] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.444-05:00  INFO 21200 --- [pool-3-thread-1] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.446-05:00  INFO 21200 --- [pool-3-thread-7] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.446-05:00  INFO 21200 --- [pool-3-thread-9] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.446-05:00  INFO 21200 --- [pool-3-thread-6] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.446-05:00  INFO 21200 --- [ool-3-thread-10] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.447-05:00  INFO 21200 --- [pool-3-thread-8] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso f0117536-0208-4261-9e0a-7b01ddff0af1 registrada
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-2] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-3] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [ool-3-thread-10] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-3] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-8] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-8] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [ool-3-thread-10] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-7] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-6] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-1] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-2] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.453-05:00  WARN 21200 --- [pool-3-thread-7] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-9] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.453-05:00  WARN 21200 --- [pool-3-thread-1] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.452-05:00  WARN 21200 --- [pool-3-thread-5] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23505
+2026-10-30T21:17:29.453-05:00  WARN 21200 --- [pool-3-thread-6] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.453-05:00  WARN 21200 --- [pool-3-thread-5] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+2026-10-30T21:17:29.453-05:00  WARN 21200 --- [pool-3-thread-9] org.hibernate.orm.jdbc.error             : ERROR: duplicate key value violates unique constraint "uq_sesion_caso_docente_fechas"
+  Detail: Key (caso_id, docente_id, fecha_inicio, fecha_fin)=(f0117536-0208-4261-9e0a-7b01ddff0af1, 9ed407f8-8ae7-4451-9b2b-6ed4ebf1ef74, 2026-11-04 21:17:29.414137, 2026-11-04 23:17:29.414137) already exists.
+M4 concurrencia: éxitos=1, duplicados esperados=9, inesperados=0
+]]></system-out>
+  </testcase>
+  <testcase name="baseDatosRechazaFechasInvalidas" classname="Fase 2: Creación, Consulta y Modificación de Sesiones" time="0.039" />
+  <testcase name="crearYConsultarSesion" classname="Fase 2: Creación, Consulta y Modificación de Sesiones" time="0.053">
+    <system-out><![CDATA[2026-10-30T21:17:29.567-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 2cd8aa8b-9a67-4c9e-9819-deca844aad4f: true
+2026-10-30T21:17:29.567-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso bb546b22-7b2d-411e-ad68-b30b4f3ab25b: true
+2026-10-30T21:17:29.575-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso bb546b22-7b2d-411e-ad68-b30b4f3ab25b registrada
+]]></system-out>
+  </testcase>
+  <testcase name="actualizarSesionPersistida" classname="Fase 2: Creación, Consulta y Modificación de Sesiones" time="0.061">
+    <system-out><![CDATA[2026-10-30T21:17:29.625-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente cc4659e8-afcb-45ae-a88b-7568c40234bd: true
+2026-10-30T21:17:29.625-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 5bdb99ec-b134-4a38-a825-cb561be89a2c: true
+2026-10-30T21:17:29.633-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 5bdb99ec-b134-4a38-a825-cb561be89a2c registrada
+2026-10-30T21:17:29.637-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente cc4659e8-afcb-45ae-a88b-7568c40234bd: true
+]]></system-out>
+  </testcase>
+  <testcase name="historialImpideActualizarProgramacion" classname="Fase 7: Verificación de Integración M1–M3–M4–M5" time="0.056">
+    <system-out><![CDATA[2026-10-30T21:17:29.699-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 95a3d73f-f83b-4587-ae36-6499f54d7101: true
+2026-10-30T21:17:29.700-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso bb5ca81f-df8b-4c8f-9ba9-2ab1ff1dddc4: true
+2026-10-30T21:17:29.707-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso bb5ca81f-df8b-4c8f-9ba9-2ab1ff1dddc4 registrada
+2026-10-30T21:17:29.712-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 95a3d73f-f83b-4587-ae36-6499f54d7101: true
+M4 historial: señal M5 simulada; caso/título preservados en PostgreSQL
+]]></system-out>
+  </testcase>
+  <testcase name="historialImpideReasignarCaso" classname="Fase 7: Verificación de Integración M1–M3–M4–M5" time="0.059">
+    <system-out><![CDATA[2026-10-30T21:17:29.755-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0548bb97-75f1-4b65-8202-ac29308fb099: true
+2026-10-30T21:17:29.755-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 83506a33-4225-4c55-9cd2-13cf88ba8c25: true
+2026-10-30T21:17:29.765-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 83506a33-4225-4c55-9cd2-13cf88ba8c25 registrada
+2026-10-30T21:17:29.771-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0548bb97-75f1-4b65-8202-ac29308fb099: true
+M4 historial: señal M5 simulada; caso/título preservados en PostgreSQL
+]]></system-out>
+  </testcase>
+  <testcase name="sesionCerradaNoPermiteAccesoM5" classname="Fase 7: Verificación de Integración M1–M3–M4–M5" time="0.083">
+    <system-out><![CDATA[2026-10-30T21:17:29.815-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0bd75d05-96fc-419d-a855-8e16f6e6234b: true
+2026-10-30T21:17:29.815-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 9029a088-5e83-4081-822c-443963361353: true
+2026-10-30T21:17:29.822-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 9029a088-5e83-4081-822c-443963361353 registrada
+2026-10-30T21:17:29.826-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0bd75d05-96fc-419d-a855-8e16f6e6234b: true
+2026-10-30T21:17:29.836-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0bd75d05-96fc-419d-a855-8e16f6e6234b: true
+2026-10-30T21:17:29.850-05:00  WARN 21200 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificación de convocatoria para sesión dcbc369c-ba6a-4b98-9379-e3b00d660e58 / estudiante fdaba889-ed4c-4152-86a8-d24f8b1c862d — registrada por stub (sin envío real)
+2026-10-30T21:17:29.862-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0bd75d05-96fc-419d-a855-8e16f6e6234b: true
+2026-10-30T21:17:29.870-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 0bd75d05-96fc-419d-a855-8e16f6e6234b: true
+]]></system-out>
+  </testcase>
+  <testcase name="rechazoDocenteSinPermiso" classname="Fase 7: Verificación de Integración M1–M3–M4–M5" time="0.04">
+    <system-out><![CDATA[2026-10-30T21:17:29.903-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 94fa274a-30bd-4583-bbb6-41d292e6a39e: false
+]]></system-out>
+  </testcase>
+  <testcase name="rechazoCasoEnBorrador" classname="Fase 3: Validación Exhaustiva de RF-09" time="0.037">
+    <system-out><![CDATA[2026-10-30T21:17:29.951-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente a5c42656-8e40-4c57-a77e-2cc6bab42460: true
+2026-10-30T21:17:29.951-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso f7de0986-07bb-481e-8d3e-f51445677865: false
+M4 RF-09 SQL: caso Borrador (stub M3), sesiones=0
+]]></system-out>
+  </testcase>
+  <testcase name="aceptacionCasoPublicadoYBloqueo" classname="Fase 3: Validación Exhaustiva de RF-09" time="0.048">
+    <system-out><![CDATA[2026-10-30T21:17:29.989-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 95fea158-86fc-414d-a92f-c54d4dd75d5f: true
+2026-10-30T21:17:29.989-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 2d428e77-58a6-4aa2-bf9c-7e846f076be7: true
+2026-10-30T21:17:29.997-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 2d428e77-58a6-4aa2-bf9c-7e846f076be7 registrada
+M4 RF-09 SQL: caso Publicado (stub M3), sesiones=1; bloqueo F3-03 simulado
+]]></system-out>
+  </testcase>
+  <testcase name="transaccionFallidaHaceRollbackEnPostgreSql" classname="Fase 5: Pruebas de Rollback e Integridad Transaccional" time="0.049">
+    <system-out><![CDATA[M4 rollback SQL: escritura enviada con saveAndFlush, sesiones residuales=0
+]]></system-out>
+  </testcase>
+  <testcase name="violacionClaveForaneaConvocatoria" classname="Fase 4: Convocatorias y Participaciones" time="0.038" />
+  <testcase name="rechazoConvocatoriaSesionProgramada" classname="Fase 4: Convocatorias y Participaciones" time="0.034">
+    <system-out><![CDATA[2026-10-30T21:17:30.152-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente fad2e440-0a19-4d5d-aaac-c353e6a7a341: true
+2026-10-30T21:17:30.152-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso fe098467-1d34-44f3-9fa2-19f3b403b0e4: true
+2026-10-30T21:17:30.161-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso fe098467-1d34-44f3-9fa2-19f3b403b0e4 registrada
+2026-10-30T21:17:30.166-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente fad2e440-0a19-4d5d-aaac-c353e6a7a341: true
+]]></system-out>
+  </testcase>
+  <testcase name="convocarEstudianteYVerificarBD" classname="Fase 4: Convocatorias y Participaciones" time="0.066">
+    <system-out><![CDATA[2026-10-30T21:17:30.187-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 75b5b176-1ff4-4dcd-b34b-da43cbc5de64: true
+2026-10-30T21:17:30.187-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 4150ff62-d0f4-4311-955e-8611d7276f99: true
+2026-10-30T21:17:30.194-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 4150ff62-d0f4-4311-955e-8611d7276f99 registrada
+2026-10-30T21:17:30.198-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 75b5b176-1ff4-4dcd-b34b-da43cbc5de64: true
+2026-10-30T21:17:30.206-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 75b5b176-1ff4-4dcd-b34b-da43cbc5de64: true
+2026-10-30T21:17:30.214-05:00  WARN 21200 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificación de convocatoria para sesión c596aa87-47eb-4f66-9ea3-d601e2e60084 / estudiante ac2ffb2a-5f42-4719-a9ff-29baf4e1d8ca — registrada por stub (sin envío real)
+]]></system-out>
+  </testcase>
+  <testcase name="verificarAccesoEstudiante" classname="Fase 4: Convocatorias y Participaciones" time="0.093">
+    <system-out><![CDATA[2026-10-30T21:17:30.256-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 35896779-edd8-4d53-abba-a2301b1b837c: true
+2026-10-30T21:17:30.257-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Verificación de publicación para caso 6f8d24b6-9529-4cd0-8042-5cb2f0a499d0: true
+2026-10-30T21:17:30.264-05:00  INFO 21200 --- [           main] c.p.m.i.a.CasoAcademicoStubAdapter       : [M3-STUB] Solicitud de bloqueo F3-03 para caso 6f8d24b6-9529-4cd0-8042-5cb2f0a499d0 registrada
+2026-10-30T21:17:30.272-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 35896779-edd8-4d53-abba-a2301b1b837c: true
+2026-10-30T21:17:30.279-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 35896779-edd8-4d53-abba-a2301b1b837c: true
+2026-10-30T21:17:30.286-05:00  WARN 21200 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificación de convocatoria para sesión 7f3a383f-1d97-4ca0-91b7-650036b6e0dc / estudiante 44d6b340-1a2b-4ff6-b97e-caec24d744b4 — registrada por stub (sin envío real)
+2026-10-30T21:17:30.304-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 35896779-edd8-4d53-abba-a2301b1b837c: true
+2026-10-30T21:17:30.319-05:00  INFO 21200 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificación de permiso 'GESTIONAR_SESION' para docente 35896779-edd8-4d53-abba-a2301b1b837c: true
+]]></system-out>
+  </testcase>
+  <testcase name="verificarConexionYVersion" classname="Fase 1: Verificación de PostgreSQL y Migraciones Flyway" time="0.048" />
+  <testcase name="verificarTablasExistentes" classname="Fase 1: Verificación de PostgreSQL y Migraciones Flyway" time="0.042">
+    <system-out><![CDATA[M4 V010 classpath: [file:/C:/Users/NICOLAS/OneDrive/Desktop/Prisaly/PRISALY-Backen/m4/target/classes/db/migration/V010__m4_sesiones_convocatorias.sql]
+]]></system-out>
+  </testcase>
+  <testcase name="verificarRestriccionesCatalogo" classname="Fase 1: Verificación de PostgreSQL y Migraciones Flyway" time="0.03" />
+</testsuite>

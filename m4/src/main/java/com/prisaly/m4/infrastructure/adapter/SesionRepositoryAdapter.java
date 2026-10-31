@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Repository;
 
 import com.prisaly.m4.application.port.SesionRepository;
+import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.domain.model.SesionAcademica;
 import com.prisaly.m4.infrastructure.persistence.EntityMapper;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;
@@ -20,9 +21,11 @@ import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;
 public class SesionRepositoryAdapter implements SesionRepository {
 
     private final JpaSesionRepository jpa;
+    private final ParticipacionesPort participaciones;
 
-    public SesionRepositoryAdapter(JpaSesionRepository jpa) {
+    public SesionRepositoryAdapter(JpaSesionRepository jpa, ParticipacionesPort participaciones) {
         this.jpa = jpa;
+        this.participaciones = participaciones;
     }
 
     @Override
@@ -64,8 +67,6 @@ public class SesionRepositoryAdapter implements SesionRepository {
 
     @Override
     public boolean tieneParticipacionesVinculadas(UUID sesionId) {
-        // TODO: Implementar cuando M5 provea el contrato de participaciones.
-        // Por ahora, se retorna false para no bloquear el flujo de desarrollo.
-        return false;
+        return participaciones.tieneParticipacionesOIntentos(sesionId);
     }
 }

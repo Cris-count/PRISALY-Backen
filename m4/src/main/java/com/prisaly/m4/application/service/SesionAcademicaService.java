@@ -147,6 +147,11 @@ public class SesionAcademicaService {
         SesionAcademica sesion = consultarSesion(sesionId);
         verificarPropiedad(sesion, docenteId);
 
+        if (sesionRepository.tieneParticipacionesVinculadas(sesionId)) {
+            throw new ReglaNegocioException("M4-SESION-CON-PARTICIPACIONES",
+                    "No se puede reasignar el caso de una sesión con historial académico");
+        }
+
         // Verificar que el nuevo caso está Publicado
         if (!casoAcademicoPort.estaPublicado(nuevoCasoId)) {
             throw new ReglaNegocioException("M4-CASO-NO-PUBLICADO",
@@ -225,7 +230,12 @@ public class SesionAcademicaService {
      * Verifica si un estudiante puede acceder a una sesión.
      * Condiciones: sesión existe, está ABIERTA o EN_CURSO, y el estudiante
      * está convocado. M4 no autoriza repeticiones de intentos (eso es de M5).
+     * Esta comprobación heredada NO valida ventana temporal ni autorización
+     * de convocatoria BD-005.2; no debe habilitar iniciar/reanudar en M5.
+     * @deprecated Usar com.prisaly.m4.api.ProgramacionParticipacionPort para
+     * consultar hechos; la política académica de elegibilidad sigue pendiente.
      */
+    @Deprecated
     @Transactional(readOnly = true)
     public boolean verificarAccesoSesion(UUID sesionId, UUID estudianteId) {
         var sesionOpt = sesionRepository.buscarPorId(sesionId);
