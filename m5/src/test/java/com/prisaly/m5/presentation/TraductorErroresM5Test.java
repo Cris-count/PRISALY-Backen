@@ -18,6 +18,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
+import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacionRequeridoException;
@@ -35,6 +37,8 @@ class TraductorErroresM5Test {
 
     static Stream<Arguments> excepcionesDeM5() {
         return Stream.of(
+                Arguments.of(new EstudianteNoIdentificadoException(), 401, "UNAUTHENTICATED"),
+                Arguments.of(new AccesoIntentoDenegadoException(), 403, "FORBIDDEN"),
                 Arguments.of(new IntentoNoEncontradoException(new ReferenciaIntento("I-1")), 404, "INTENTO_NO_ENCONTRADO"),
                 Arguments.of(new DatoAplicacionInvalidoException("x"), 400, "DATOS_INVALIDOS"),
                 Arguments.of(new DatoRespuestaInvalidoException("x"), 400, "DATOS_INVALIDOS"),
