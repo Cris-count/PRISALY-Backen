@@ -9,9 +9,13 @@ import com.prisaly.m5.application.ReferenciaIntento;
  * intento.
  *
  * <p>No tiene implementación de producción. En BD-005.2 el titular se llega
- * por Intento → Participacion → Convocatoria."idEstudiante", y Convocatoria
- * pertenece a M4; la implementación deberá usar el contrato Java que M4
- * publique, no leer sus tablas desde M5.
+ * por Intento."idParticipacion" → Participacion."idConvocatoria" (ambas
+ * tablas de M5) → Convocatoria."idEstudiante" (tabla de M4). M5 puede
+ * resolver su propio tramo; el último paso requiere un contrato Java publicado
+ * por M4 (convocatoria → estudiante), sin leer tablas ni repositorios de M4.
+ * El titular se compara con el {@code studentId} que entrega M1, nunca con un
+ * identificador enviado por el cliente. Mientras falte el contrato de M4, el
+ * control de acceso no puede conectarse y la denegación se mantiene.
  */
 public interface TitularidadIntentos {
 
