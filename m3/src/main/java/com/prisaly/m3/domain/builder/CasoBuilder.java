@@ -101,6 +101,14 @@ public final class CasoBuilder {
         return new EscenarioStep(this, draft);
     }
 
+    /** Explicit physical content; keeps supplied orders, including gaps. */
+    public EscenarioStep addEscenario(String escenarioId, String titulo, String contexto,
+            String instrucciones, int orden, boolean activo) {
+        EscenarioDraft draft = new EscenarioDraft(escenarioId, titulo, contexto, instrucciones, orden, activo);
+        this.escenarios.add(draft);
+        return new EscenarioStep(this, draft);
+    }
+
     public Caso buildDraft() {
         if (id == null || id.isBlank()) {
             throw new CasoDomainException(CODE_BUILDER_INCOMPLETE, "Case id is required");
@@ -161,7 +169,11 @@ public final class CasoBuilder {
                 String preguntaId,
                 String enunciado,
                 List<OpcionRespuesta> opciones) {
-            Pregunta pregunta = new Pregunta(preguntaId, enunciado, opciones);
+            return addPreguntaSeleccionUnica(new Pregunta(preguntaId, enunciado, opciones));
+        }
+
+        /** Accepts all explicitly supplied question metadata without changing its editing state. */
+        public EscenarioStep addPreguntaSeleccionUnica(Pregunta pregunta) {
             CasoValidation.assertValidSingleChoiceQuestion(pregunta);
             draft.preguntas.add(pregunta);
             return this;
@@ -176,16 +188,41 @@ public final class CasoBuilder {
 
         private final String id;
         private final String descripcion;
+        private final String titulo;
+        private final String contexto;
+        private final String instrucciones;
+        private final Integer orden;
+        private final boolean activo;
         private final List<Pregunta> preguntas;
 
         private EscenarioDraft(String id, String descripcion) {
             this.id = id;
             this.descripcion = descripcion;
+            this.titulo = null;
+            this.contexto = null;
+            this.instrucciones = null;
+            this.orden = null;
+            this.activo = true;
+            this.preguntas = new ArrayList<>();
+        }
+
+        private EscenarioDraft(String id, String titulo, String contexto, String instrucciones,
+                int orden, boolean activo) {
+            this.id = id;
+            this.descripcion = null;
+            this.titulo = titulo;
+            this.contexto = contexto;
+            this.instrucciones = instrucciones;
+            this.orden = orden;
+            this.activo = activo;
             this.preguntas = new ArrayList<>();
         }
 
         private Escenario toEscenario() {
-            return new Escenario(id, descripcion, List.copyOf(preguntas));
+            if (orden == null) {
+                return new Escenario(id, descripcion, List.copyOf(preguntas));
+            }
+            return new Escenario(id, titulo, contexto, instrucciones, orden, activo, List.copyOf(preguntas));
         }
     }
 }

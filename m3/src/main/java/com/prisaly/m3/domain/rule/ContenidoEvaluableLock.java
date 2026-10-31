@@ -82,7 +82,20 @@ public final class ContenidoEvaluableLock {
                                 pregunta.opciones().stream().map(opcion -> new OpcionRespuesta(
                                         UUID.randomUUID().toString(),
                                         opcion.texto(),
-                                        opcion.esCorrecta())).toList())).toList())).toList(),
+                                        opcion.esCorrecta(),
+                                        opcion.explicacion(),
+                                        opcion.orden())).toList(),
+                                pregunta.textoAyuda(),
+                                pregunta.estadoEdicion(),
+                                pregunta.visible(),
+                                pregunta.orden(),
+                                pregunta.fechaCreacion(),
+                                pregunta.fechaActualizacion())).toList(),
+                        escenario.titulo(),
+                        escenario.contexto(),
+                        escenario.instrucciones(),
+                        escenario.orden(),
+                        escenario.activo())).toList(),
                 source.rubrica() == null ? null : new Rubrica(
                         UUID.randomUUID().toString(),
                         source.rubrica().criterios().stream().map(criterio -> new CriterioRubrica(
