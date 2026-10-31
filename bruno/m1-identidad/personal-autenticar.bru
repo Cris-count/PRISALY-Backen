@@ -1,0 +1,28 @@
+meta {
+  name: personal-autenticar
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "docente@prisaly.test",
+    "password": "ChangeMe123!"
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.accessToken) {
+    bru.setEnvVar("accessToken", res.body.accessToken);
+  }
+}
