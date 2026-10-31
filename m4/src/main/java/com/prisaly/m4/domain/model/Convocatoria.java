@@ -1,58 +1,80 @@
 package com.prisaly.m4.domain.model;
 
-import java.time.LocalDateTime;
+import com.prisaly.m4.domain.rule.ReglaNegocioException;
+
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-/**
- * Representa la convocatoria de un estudiante a una sesión académica.
- * Es un value-object del agregado SesionAcademica.
- */
+/** Asignación oficial. Autorizado procede de V001, no autoriza iniciar un intento. */
 public class Convocatoria {
+    private UUID id, sesionId, estudianteId;
+    private Instant convocadoEn, fechaRetiro;
+    private String estadoAutorizacion;
 
-    private UUID id;
-    private UUID sesionId;
-    private UUID estudianteId;
-    private LocalDateTime convocadoEn;
-    private boolean confirmada;
+    public Convocatoria() {}
 
-    public Convocatoria() {
-    }
-
-    /**
-     * Fábrica para crear una nueva convocatoria.
-     */
-    public static Convocatoria crear(UUID sesionId, UUID estudianteId) {
-        Objects.requireNonNull(sesionId, "sesionId no puede ser nulo");
-        Objects.requireNonNull(estudianteId, "estudianteId no puede ser nulo");
-
+    public static Convocatoria crear(UUID sesion, UUID estudiante) {
         var c = new Convocatoria();
         c.id = UUID.randomUUID();
-        c.sesionId = sesionId;
-        c.estudianteId = estudianteId;
-        c.convocadoEn = LocalDateTime.now();
-        c.confirmada = false;
+        c.sesionId = Objects.requireNonNull(sesion);
+        c.estudianteId = Objects.requireNonNull(estudiante);
+        c.convocadoEn = Instant.now();
+        c.estadoAutorizacion = "Autorizado";
         return c;
     }
 
     public void confirmar() {
-        this.confirmada = true;
+        throw new ReglaNegocioException(
+                "M4-OPERACION-NO-DEFINIDA",
+                "Confirmación no equivale al estado de autorización oficial");
     }
 
-    // ─── Accessors ────────────────────────────────────────────
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public void setId(UUID v) {
+        id = v;
+    }
 
-    public UUID getSesionId() { return sesionId; }
-    public void setSesionId(UUID sesionId) { this.sesionId = sesionId; }
+    public UUID getSesionId() {
+        return sesionId;
+    }
 
-    public UUID getEstudianteId() { return estudianteId; }
-    public void setEstudianteId(UUID estudianteId) { this.estudianteId = estudianteId; }
+    public void setSesionId(UUID v) {
+        sesionId = v;
+    }
 
-    public LocalDateTime getConvocadoEn() { return convocadoEn; }
-    public void setConvocadoEn(LocalDateTime convocadoEn) { this.convocadoEn = convocadoEn; }
+    public UUID getEstudianteId() {
+        return estudianteId;
+    }
 
-    public boolean isConfirmada() { return confirmada; }
-    public void setConfirmada(boolean confirmada) { this.confirmada = confirmada; }
+    public void setEstudianteId(UUID v) {
+        estudianteId = v;
+    }
+
+    public Instant getConvocadoEn() {
+        return convocadoEn;
+    }
+
+    public void setConvocadoEn(Instant v) {
+        convocadoEn = v;
+    }
+
+    public Instant getFechaRetiro() {
+        return fechaRetiro;
+    }
+
+    public void setFechaRetiro(Instant v) {
+        fechaRetiro = v;
+    }
+
+    public String getEstadoAutorizacion() {
+        return estadoAutorizacion;
+    }
+
+    public void setEstadoAutorizacion(String v) {
+        estadoAutorizacion = v;
+    }
 }

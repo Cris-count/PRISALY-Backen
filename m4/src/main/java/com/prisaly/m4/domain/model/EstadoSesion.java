@@ -1,26 +1,27 @@
 package com.prisaly.m4.domain.model;
 
-/**
- * Estados posibles de una sesión académica.
- *
- * <p>PROPUESTO — los estados no han sido aprobados formalmente por el equipo.
- * Los nombres se basan en el flujo académico natural:
- * PROGRAMADA → ABIERTA → EN_CURSO → CERRADA, con CANCELADA como terminal alternativo.</p>
- */
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+
+/** Catálogo exacto de V002. No convierte estados propuestos. */
 public enum EstadoSesion {
+    SIN_INICIAR("SinIniciar"),
+    EN_CURSO("EnCurso"),
+    FINALIZADO("Finalizado");
+    private final String valor;
 
-    /** Sesión creada pero aún no abierta para convocatorias. */
-    PROGRAMADA,
+    EstadoSesion(String valor) {
+        this.valor = valor;
+    }
 
-    /** Sesión abierta: se aceptan convocatorias e inscripciones. */
-    ABIERTA,
+    @JsonValue
+    public String valorBd() {
+        return valor;
+    }
 
-    /** Sesión en curso: los estudiantes están participando activamente. */
-    EN_CURSO,
-
-    /** Sesión cerrada: no se aceptan más participaciones. */
-    CERRADA,
-
-    /** Sesión cancelada: estado terminal, no se puede revertir. */
-    CANCELADA
+    @JsonCreator
+    public static EstadoSesion desdeBd(String valor) {
+        for (var estado : values()) if (estado.valor.equals(valor)) return estado;
+        throw new IllegalArgumentException("Estado de sesión no reconocido");
+    }
 }

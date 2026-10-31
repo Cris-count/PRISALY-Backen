@@ -1,97 +1,168 @@
 package com.prisaly.m4.infrastructure.persistence;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 import com.prisaly.m4.domain.model.EstadoSesion;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 
-/**
- * Entidad JPA para la tabla de sesiones académicas.
- *
- * <p>PROPUESTO — el nombre de tabla {@code sesiones_academicas} se propone
- * ante la ausencia de BD-005.2. Si la especificación aprobada difiere,
- * debe ajustarse la migración y esta entidad.</p>
- */
+import java.time.Instant;
+import java.util.UUID;
+
 @Entity
-@Table(name = "sesiones_academicas")
+@Table(name = "\"Sesion\"", schema = "public")
 public class SesionAcademicaEntity {
-
     @Id
-    @Column(name = "id", updatable = false)
+    @Column(name = "\"idSesion\"")
     private UUID id;
 
-    @Column(name = "caso_id", nullable = false)
+    @Column(name = "\"idCaso\"", nullable = false)
     private UUID casoId;
 
-    @Column(name = "docente_id", nullable = false)
+    @Column(name = "\"idDocenteProgramador\"", nullable = false)
     private UUID docenteId;
 
-    @Column(name = "titulo", nullable = false, length = 200)
+    @Column(name = "\"nombreEspacioAcademico\"", nullable = false, length = 150)
     private String titulo;
 
-    @Column(name = "descripcion", length = 1000)
+    @Column(name = "\"mensajePersonalizado\"", columnDefinition = "text")
     private String descripcion;
 
-    @Column(name = "fecha_inicio", nullable = false)
-    private LocalDateTime fechaInicio;
+    @Column(name = "\"inicioPrevisto\"", nullable = false)
+    private Instant fechaInicio;
 
-    @Column(name = "fecha_fin", nullable = false)
-    private LocalDateTime fechaFin;
+    @Column(name = "\"finPrevisto\"", nullable = false)
+    private Instant fechaFin;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estado", nullable = false, length = 20)
+    @Column(name = "\"fechaInicioReal\"")
+    private Instant fechaInicioReal;
+
+    @Column(name = "\"fechaFinReal\"")
+    private Instant fechaFinReal;
+
+    @Column(name = "\"tiempoMaximoParticipacionSegundos\"", nullable = false)
+    private int tiempoMaximoParticipacionSegundos;
+
+    @Column(name = "\"lugarFisico\"", length = 200)
+    private String lugarFisico;
+
+    @Column(name = "\"codigoAutorizacionHash\"", length = 255)
+    private String codigoAutorizacionHash;
+
+    @Column(name = "\"fechaCreacion\"", nullable = false, updatable = false)
+    private Instant creadoEn;
+
+    @Convert(converter = EstadoSesionConverter.class)
+    @Column(name = "\"estado\"", nullable = false, length = 20)
     private EstadoSesion estado;
 
-    @Column(name = "creado_en", nullable = false, updatable = false)
-    private LocalDateTime creadoEn;
+    public UUID getId() {
+        return id;
+    }
 
-    @Column(name = "actualizado_en", nullable = false)
-    private LocalDateTime actualizadoEn;
+    public void setId(UUID v) {
+        id = v;
+    }
 
-    @Version
-    @Column(name = "version")
-    private int version;
+    public UUID getCasoId() {
+        return casoId;
+    }
 
-    // ─── Accessors ────────────────────────────────────────────
+    public void setCasoId(UUID v) {
+        casoId = v;
+    }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getDocenteId() {
+        return docenteId;
+    }
 
-    public UUID getCasoId() { return casoId; }
-    public void setCasoId(UUID casoId) { this.casoId = casoId; }
+    public void setDocenteId(UUID v) {
+        docenteId = v;
+    }
 
-    public UUID getDocenteId() { return docenteId; }
-    public void setDocenteId(UUID docenteId) { this.docenteId = docenteId; }
+    public String getTitulo() {
+        return titulo;
+    }
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public void setTitulo(String v) {
+        titulo = v;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public LocalDateTime getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(LocalDateTime fechaInicio) { this.fechaInicio = fechaInicio; }
+    public void setDescripcion(String v) {
+        descripcion = v;
+    }
 
-    public LocalDateTime getFechaFin() { return fechaFin; }
-    public void setFechaFin(LocalDateTime fechaFin) { this.fechaFin = fechaFin; }
+    public Instant getFechaInicio() {
+        return fechaInicio;
+    }
 
-    public EstadoSesion getEstado() { return estado; }
-    public void setEstado(EstadoSesion estado) { this.estado = estado; }
+    public void setFechaInicio(Instant v) {
+        fechaInicio = v;
+    }
 
-    public LocalDateTime getCreadoEn() { return creadoEn; }
-    public void setCreadoEn(LocalDateTime creadoEn) { this.creadoEn = creadoEn; }
+    public Instant getFechaFin() {
+        return fechaFin;
+    }
 
-    public LocalDateTime getActualizadoEn() { return actualizadoEn; }
-    public void setActualizadoEn(LocalDateTime actualizadoEn) { this.actualizadoEn = actualizadoEn; }
+    public void setFechaFin(Instant v) {
+        fechaFin = v;
+    }
 
-    public int getVersion() { return version; }
-    public void setVersion(int version) { this.version = version; }
+    public Instant getFechaInicioReal() {
+        return fechaInicioReal;
+    }
+
+    public void setFechaInicioReal(Instant v) {
+        fechaInicioReal = v;
+    }
+
+    public Instant getFechaFinReal() {
+        return fechaFinReal;
+    }
+
+    public void setFechaFinReal(Instant v) {
+        fechaFinReal = v;
+    }
+
+    public int getTiempoMaximoParticipacionSegundos() {
+        return tiempoMaximoParticipacionSegundos;
+    }
+
+    public void setTiempoMaximoParticipacionSegundos(int v) {
+        tiempoMaximoParticipacionSegundos = v;
+    }
+
+    public String getLugarFisico() {
+        return lugarFisico;
+    }
+
+    public void setLugarFisico(String v) {
+        lugarFisico = v;
+    }
+
+    public String getCodigoAutorizacionHash() {
+        return codigoAutorizacionHash;
+    }
+
+    public void setCodigoAutorizacionHash(String v) {
+        codigoAutorizacionHash = v;
+    }
+
+    public Instant getCreadoEn() {
+        return creadoEn;
+    }
+
+    public void setCreadoEn(Instant v) {
+        creadoEn = v;
+    }
+
+    public EstadoSesion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoSesion v) {
+        estado = v;
+    }
 }

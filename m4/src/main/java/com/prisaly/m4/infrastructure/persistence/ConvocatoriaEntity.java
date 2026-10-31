@@ -1,50 +1,77 @@
 package com.prisaly.m4.infrastructure.persistence;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+
+import java.time.Instant;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-
-/**
- * Entidad JPA para la tabla de convocatorias estudiantiles.
- */
 @Entity
-@Table(name = "convocatorias")
+@Table(name = "\"Convocatoria\"", schema = "public")
 public class ConvocatoriaEntity {
-
     @Id
-    @Column(name = "id", updatable = false)
+    @Column(name = "\"idConvocatoria\"")
     private UUID id;
 
-    @Column(name = "sesion_id", nullable = false)
+    @Column(name = "\"idSesion\"", nullable = false)
     private UUID sesionId;
 
-    @Column(name = "estudiante_id", nullable = false)
+    @Column(name = "\"idEstudiante\"", nullable = false)
     private UUID estudianteId;
 
-    @Column(name = "convocado_en", nullable = false, updatable = false)
-    private LocalDateTime convocadoEn;
+    @Column(name = "\"fechaConvocatoria\"", nullable = false, updatable = false)
+    private Instant convocadoEn;
 
-    @Column(name = "confirmada", nullable = false)
-    private boolean confirmada;
+    @Column(name = "\"estadoAutorizacion\"", nullable = false, length = 25)
+    private String estadoAutorizacion;
 
-    // ─── Accessors ────────────────────────────────────────────
+    @Column(name = "\"fechaRetiro\"")
+    private Instant fechaRetiro;
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getSesionId() { return sesionId; }
-    public void setSesionId(UUID sesionId) { this.sesionId = sesionId; }
+    public void setId(UUID v) {
+        id = v;
+    }
 
-    public UUID getEstudianteId() { return estudianteId; }
-    public void setEstudianteId(UUID estudianteId) { this.estudianteId = estudianteId; }
+    public UUID getSesionId() {
+        return sesionId;
+    }
 
-    public LocalDateTime getConvocadoEn() { return convocadoEn; }
-    public void setConvocadoEn(LocalDateTime convocadoEn) { this.convocadoEn = convocadoEn; }
+    public void setSesionId(UUID v) {
+        sesionId = v;
+    }
 
-    public boolean isConfirmada() { return confirmada; }
-    public void setConfirmada(boolean confirmada) { this.confirmada = confirmada; }
+    public UUID getEstudianteId() {
+        return estudianteId;
+    }
+
+    public void setEstudianteId(UUID v) {
+        estudianteId = v;
+    }
+
+    public Instant getConvocadoEn() {
+        return convocadoEn;
+    }
+
+    public void setConvocadoEn(Instant v) {
+        convocadoEn = v;
+    }
+
+    public String getEstadoAutorizacion() {
+        return estadoAutorizacion;
+    }
+
+    public void setEstadoAutorizacion(String v) {
+        estadoAutorizacion = v;
+    }
+
+    public Instant getFechaRetiro() {
+        return fechaRetiro;
+    }
+
+    public void setFechaRetiro(Instant v) {
+        fechaRetiro = v;
+    }
 }

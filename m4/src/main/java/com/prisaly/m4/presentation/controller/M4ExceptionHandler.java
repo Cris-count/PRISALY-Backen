@@ -1,32 +1,32 @@
 package com.prisaly.m4.presentation.controller;
 
+import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
+import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.domain.rule.SesionOperacionNoPermitidaException;
+import com.prisaly.m4.presentation.dto.ErrorResponse;
+
+import jakarta.persistence.LockTimeoutException;
+import jakarta.persistence.OptimisticLockException;
+import jakarta.persistence.PessimisticLockException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatusCode;
-import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.dao.PessimisticLockingFailureException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import jakarta.persistence.OptimisticLockException;
-import jakarta.persistence.PessimisticLockException;
-import jakarta.persistence.LockTimeoutException;
-
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
-import com.prisaly.m4.domain.rule.SesionOperacionNoPermitidaException;
-import com.prisaly.m4.presentation.dto.ErrorResponse;
-import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
-
 /**
- * Manejo centralizado de excepciones para M4.
- * Mapea excepciones de dominio a códigos HTTP apropiados.
+ * Manejo centralizado de excepciones para M4. Mapea excepciones de dominio a códigos HTTP
+ * apropiados.
  */
 @RestControllerAdvice(basePackages = "com.prisaly.m4.presentation")
 public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
@@ -34,9 +34,12 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(M4ExceptionHandler.class);
 
     @ExceptionHandler(ConsultaProgramacionNoDisponibleException.class)
-    public ResponseEntity<ErrorResponse> handleConsultaNoDisponible(ConsultaProgramacionNoDisponibleException ex) {
+    public ResponseEntity<ErrorResponse> handleConsultaNoDisponible(
+            ConsultaProgramacionNoDisponibleException ex) {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
-                .body(ErrorResponse.of(ConsultaProgramacionNoDisponibleException.CODIGO, ex.getMessage()));
+                .body(
+                        ErrorResponse.of(
+                                ConsultaProgramacionNoDisponibleException.CODIGO, ex.getMessage()));
     }
 
     @ExceptionHandler(ReglaNegocioException.class)
@@ -54,19 +57,27 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
-            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-        String mensaje = ex.getBindingResult().getFieldErrors().stream()
-                .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
-                .reduce((a, b) -> a + "; " + b)
-                .orElse("Solicitud inválida");
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException ex,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        String mensaje =
+                ex.getBindingResult().getFieldErrors().stream()
+                        .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+                        .reduce((a, b) -> a + "; " + b)
+                        .orElse("Solicitud inválida");
         return new ResponseEntity<>(ErrorResponse.of("M4-VALIDACION", mensaje), headers, status);
     }
 
     /** Conserva el estado y las cabeceras estándar de Spring (Allow, Accept, etc.). */
     @Override
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body,
-            HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception ex,
+            Object body,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
         String codigo;
         String mensaje;
         switch (status.value()) {
@@ -92,7 +103,10 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
             }
             default -> {
                 codigo = status.is5xxServerError() ? "M4-ERROR-INTERNO" : "M4-ERROR-HTTP";
-                mensaje = status.is5xxServerError() ? "Error interno del servidor" : "Solicitud rechazada";
+                mensaje =
+                        status.is5xxServerError()
+                                ? "Error interno del servidor"
+                                : "Solicitud rechazada";
             }
         }
         if (status.is5xxServerError()) {
@@ -104,17 +118,53 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleIntegridad(DataIntegrityViolationException ex) {
         for (Throwable causa = ex; causa != null; causa = causa.getCause()) {
-            if (causa instanceof org.hibernate.exception.ConstraintViolationException restriccion
-                    && "23505".equals(restriccion.getSQLState())) {
+            if (causa instanceof org.hibernate.exception.ConstraintViolationException restriccion) {
                 String nombre = restriccion.getConstraintName();
+                if ("23514".equals(restriccion.getSQLState())) {
+                    if ("tr_sesion_rf09_caso_programable".equals(nombre))
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(
+                                        ErrorResponse.of(
+                                                "M4-CASO-NO-PUBLICADO",
+                                                "Solo se permite programar un caso Publicado y"
+                                                    + " activo"));
+                    if ("tr_sesion_caso_inmutable".equals(nombre))
+                        return ResponseEntity.status(HttpStatus.CONFLICT)
+                                .body(
+                                        ErrorResponse.of(
+                                                "M4-SESION-CON-CONVOCATORIAS",
+                                                "El caso de una sesión convocada no puede"
+                                                    + " reasignarse"));
+                    if ("ck_sesion_fechas".equals(nombre) || "ck_sesion_tiempo".equals(nombre))
+                        return ResponseEntity.badRequest()
+                                .body(
+                                        ErrorResponse.of(
+                                                "M4-VALIDACION", "Fechas o duración no válidas"));
+                    return handleGeneral(ex);
+                }
+                if ("23503".equals(restriccion.getSQLState()))
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(
+                                    ErrorResponse.of(
+                                            "M4-REFERENCIA-NO-VALIDA",
+                                            "La operación referencia un recurso inexistente o no"
+                                                + " disponible"));
+                if (!"23505".equals(restriccion.getSQLState())) continue;
                 if ("uq_sesion_caso_docente_fechas".equals(nombre)) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(
-                            "M4-SESION-DUPLICADA", "Ya existe una sesión con el mismo caso, docente y fechas"));
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(
+                                    ErrorResponse.of(
+                                            "M4-SESION-DUPLICADA",
+                                            "Ya existe una sesión con el mismo caso, docente y"
+                                                + " fechas"));
                 }
                 if ("uq_convocatoria_sesion_estudiante".equals(nombre)
                         || "uq_convocatoria_idx1".equals(nombre)) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(
-                            "M4-CONVOCATORIA-DUPLICADA", "El estudiante ya está convocado a esta sesión"));
+                    return ResponseEntity.status(HttpStatus.CONFLICT)
+                            .body(
+                                    ErrorResponse.of(
+                                            "M4-CONVOCATORIA-DUPLICADA",
+                                            "El estudiante ya está convocado a esta sesión"));
                 }
             }
         }
@@ -122,19 +172,27 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
         return handleGeneral(ex);
     }
 
-    @ExceptionHandler({OptimisticLockingFailureException.class, OptimisticLockException.class,
-            PessimisticLockingFailureException.class, PessimisticLockException.class, LockTimeoutException.class})
+    @ExceptionHandler({
+        OptimisticLockingFailureException.class,
+        OptimisticLockException.class,
+        PessimisticLockingFailureException.class,
+        PessimisticLockException.class,
+        LockTimeoutException.class
+    })
     public ResponseEntity<ErrorResponse> handleConcurrencia(Exception ex) {
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(ErrorResponse.of(
-                "M4-CONFLICTO-CONCURRENCIA", "La operación entró en conflicto con otra modificación; consulte el estado actual"));
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(
+                        ErrorResponse.of(
+                                "M4-CONFLICTO-CONCURRENCIA",
+                                "La operación entró en conflicto con otra modificación; consulte el"
+                                    + " estado actual"));
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(Exception ex) {
         log.error("Error interno no controlado en M4", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(ErrorResponse.of("M4-ERROR-INTERNO",
-                        "Error interno del servidor"));
+                .body(ErrorResponse.of("M4-ERROR-INTERNO", "Error interno del servidor"));
     }
 
     private HttpStatus mapearCodigo(String codigo) {
@@ -144,17 +202,19 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
             case "M4-BLOQUEO-ACADEMICO-NO-CONFIRMADO" -> HttpStatus.SERVICE_UNAVAILABLE;
             case "M4-PROVEEDOR-NO-DISPONIBLE" -> HttpStatus.SERVICE_UNAVAILABLE;
             case "M4-CASO-NO-PUBLICADO",
-                 "M4-SESION-DUPLICADA",
-                 "M4-CONVOCATORIA-DUPLICADA",
-                 "M4-SESION-CON-PARTICIPACIONES",
-                 "M4-SESION-CON-CONVOCATORIAS",
-                 "M4-CONVOCATORIA-NO-PERMITIDA",
-                 "M4-ESTADO-INVALIDO"          -> HttpStatus.CONFLICT;          // 409
-            case "M4-SESION-NO-ENCONTRADA"     -> HttpStatus.NOT_FOUND;         // 404
-            case "M4-SIN-PERMISO",
-                 "M4-SESION-AJENA"             -> HttpStatus.FORBIDDEN;         // 403
-            case "M4-FECHA-INVALIDA"           -> HttpStatus.BAD_REQUEST;       // 400
-            default                            -> HttpStatus.INTERNAL_SERVER_ERROR;
+                            "M4-SESION-DUPLICADA",
+                            "M4-CONVOCATORIA-DUPLICADA",
+                            "M4-SESION-CON-PARTICIPACIONES",
+                            "M4-SESION-CON-CONVOCATORIAS",
+                            "M4-CONVOCATORIA-NO-PERMITIDA",
+                            "M4-ESTADO-INVALIDO" ->
+                    HttpStatus.CONFLICT; // 409
+            case "M4-SESION-NO-ENCONTRADA" -> HttpStatus.NOT_FOUND; // 404
+            case "M4-SIN-PERMISO", "M4-SESION-AJENA" -> HttpStatus.FORBIDDEN; // 403
+            case "M4-FECHA-INVALIDA" -> HttpStatus.BAD_REQUEST; // 400
+            case "M4-DURACION-INVALIDA", "M4-VALIDACION" -> HttpStatus.BAD_REQUEST;
+            case "M4-OPERACION-NO-DEFINIDA" -> HttpStatus.CONFLICT;
+            default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }
 }

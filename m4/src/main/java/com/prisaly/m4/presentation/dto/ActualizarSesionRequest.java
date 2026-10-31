@@ -1,26 +1,11 @@
 package com.prisaly.m4.presentation.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import jakarta.validation.constraints.*;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import java.time.Instant;
 
-/**
- * DTO para actualizar una sesión académica.
- */
 public record ActualizarSesionRequest(
-        @NotBlank(message = "titulo es obligatorio")
-        @Size(max = 200)
-        String titulo,
-
-        @Size(max = 1000)
-        String descripcion,
-
-        @NotNull(message = "fechaInicio es obligatoria")
-        LocalDateTime fechaInicio,
-
-        @NotNull(message = "fechaFin es obligatoria")
-        LocalDateTime fechaFin
-) {}
+        @NotBlank @Size(max = 150) String titulo,
+        @com.fasterxml.jackson.annotation.JsonAlias("descripcion") String mensajePersonalizado,
+        @NotNull Instant fechaInicio,
+        @NotNull Instant fechaFin) {}

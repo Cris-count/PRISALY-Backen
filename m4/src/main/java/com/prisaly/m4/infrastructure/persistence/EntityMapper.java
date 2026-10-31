@@ -1,70 +1,67 @@
 package com.prisaly.m4.infrastructure.persistence;
 
-import com.prisaly.m4.domain.model.Convocatoria;
-import com.prisaly.m4.domain.model.SesionAcademica;
+import com.prisaly.m4.domain.model.*;
 
-/**
- * Mapper entre modelos de dominio y entidades JPA.
- * Evita que la capa de dominio conozca las anotaciones de persistencia.
- */
 public final class EntityMapper {
+    private EntityMapper() {}
 
-    private EntityMapper() {
+    public static SesionAcademicaEntity toEntity(SesionAcademica source) {
+        var target = new SesionAcademicaEntity();
+        target.setId(source.getId());
+        target.setCasoId(source.getCasoId());
+        target.setDocenteId(source.getDocenteId());
+        target.setTitulo(source.getTitulo());
+        target.setDescripcion(source.getDescripcion());
+        target.setFechaInicio(source.getFechaInicio());
+        target.setFechaFin(source.getFechaFin());
+        target.setFechaInicioReal(source.getFechaInicioReal());
+        target.setFechaFinReal(source.getFechaFinReal());
+        target.setTiempoMaximoParticipacionSegundos(source.getTiempoMaximoParticipacionSegundos());
+        target.setLugarFisico(source.getLugarFisico());
+        target.setCodigoAutorizacionHash(source.getCodigoAutorizacionHash());
+        target.setCreadoEn(source.getCreadoEn());
+        target.setEstado(source.getEstado());
+        return target;
     }
 
-    // ─── SesionAcademica ↔ Entity ─────────────────────────────
-
-    public static SesionAcademicaEntity toEntity(SesionAcademica model) {
-        var entity = new SesionAcademicaEntity();
-        entity.setId(model.getId());
-        entity.setCasoId(model.getCasoId());
-        entity.setDocenteId(model.getDocenteId());
-        entity.setTitulo(model.getTitulo());
-        entity.setDescripcion(model.getDescripcion());
-        entity.setFechaInicio(model.getFechaInicio());
-        entity.setFechaFin(model.getFechaFin());
-        entity.setEstado(model.getEstado());
-        entity.setCreadoEn(model.getCreadoEn());
-        entity.setActualizadoEn(model.getActualizadoEn());
-        entity.setVersion(model.getVersion());
-        return entity;
+    public static SesionAcademica toDomain(SesionAcademicaEntity source) {
+        var target = new SesionAcademica();
+        target.setId(source.getId());
+        target.setCasoId(source.getCasoId());
+        target.setDocenteId(source.getDocenteId());
+        target.setTitulo(source.getTitulo());
+        target.setDescripcion(source.getDescripcion());
+        target.setFechaInicio(source.getFechaInicio());
+        target.setFechaFin(source.getFechaFin());
+        target.setFechaInicioReal(source.getFechaInicioReal());
+        target.setFechaFinReal(source.getFechaFinReal());
+        target.setTiempoMaximoParticipacionSegundos(source.getTiempoMaximoParticipacionSegundos());
+        target.setLugarFisico(source.getLugarFisico());
+        target.setCodigoAutorizacionHash(source.getCodigoAutorizacionHash());
+        target.setCreadoEn(source.getCreadoEn());
+        target.setEstado(source.getEstado());
+        return target;
     }
 
-    public static SesionAcademica toDomain(SesionAcademicaEntity entity) {
-        var model = new SesionAcademica();
-        model.setId(entity.getId());
-        model.setCasoId(entity.getCasoId());
-        model.setDocenteId(entity.getDocenteId());
-        model.setTitulo(entity.getTitulo());
-        model.setDescripcion(entity.getDescripcion());
-        model.setFechaInicio(entity.getFechaInicio());
-        model.setFechaFin(entity.getFechaFin());
-        model.setEstado(entity.getEstado());
-        model.setCreadoEn(entity.getCreadoEn());
-        model.setActualizadoEn(entity.getActualizadoEn());
-        model.setVersion(entity.getVersion());
-        return model;
+    public static ConvocatoriaEntity toEntity(Convocatoria source) {
+        var target = new ConvocatoriaEntity();
+        target.setId(source.getId());
+        target.setSesionId(source.getSesionId());
+        target.setEstudianteId(source.getEstudianteId());
+        target.setConvocadoEn(source.getConvocadoEn());
+        target.setEstadoAutorizacion(source.getEstadoAutorizacion());
+        target.setFechaRetiro(source.getFechaRetiro());
+        return target;
     }
 
-    // ─── Convocatoria ↔ Entity ────────────────────────────────
-
-    public static ConvocatoriaEntity toEntity(Convocatoria model) {
-        var entity = new ConvocatoriaEntity();
-        entity.setId(model.getId());
-        entity.setSesionId(model.getSesionId());
-        entity.setEstudianteId(model.getEstudianteId());
-        entity.setConvocadoEn(model.getConvocadoEn());
-        entity.setConfirmada(model.isConfirmada());
-        return entity;
-    }
-
-    public static Convocatoria toDomain(ConvocatoriaEntity entity) {
-        var model = new Convocatoria();
-        model.setId(entity.getId());
-        model.setSesionId(entity.getSesionId());
-        model.setEstudianteId(entity.getEstudianteId());
-        model.setConvocadoEn(entity.getConvocadoEn());
-        model.setConfirmada(entity.isConfirmada());
-        return model;
+    public static Convocatoria toDomain(ConvocatoriaEntity source) {
+        var target = new Convocatoria();
+        target.setId(source.getId());
+        target.setSesionId(source.getSesionId());
+        target.setEstudianteId(source.getEstudianteId());
+        target.setConvocadoEn(source.getConvocadoEn());
+        target.setEstadoAutorizacion(source.getEstadoAutorizacion());
+        target.setFechaRetiro(source.getFechaRetiro());
+        return target;
     }
 }

@@ -1,78 +1,58 @@
 package com.prisaly.m4.domain.model;
 
-import java.time.LocalDateTime;
+import com.prisaly.m4.domain.rule.*;
+import com.prisaly.m4.domain.state.*;
+
+import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
-import com.prisaly.m4.domain.rule.SesionOperacionNoPermitidaException;
-import com.prisaly.m4.domain.state.ProgramadaState;
-import com.prisaly.m4.domain.state.SesionState;
-import com.prisaly.m4.domain.state.SesionStateFactory;
-
-/**
- * Agregado raíz del dominio M4: una sesión académica que vincula
- * un caso publicado (M3) con un grupo de estudiantes convocados.
- *
- * <p>El comportamiento varía según el estado gracias al patrón GoF State.</p>
- */
+/** Agregado M4 conciliado con BD-005.2; State sin versión persistente inventada. */
 public class SesionAcademica {
-
-    private UUID id;
-    private UUID casoId;
-    private UUID docenteId;
-    private String titulo;
-    private String descripcion;
-    private LocalDateTime fechaInicio;
-    private LocalDateTime fechaFin;
+    private UUID id, casoId, docenteId;
+    private String titulo, descripcion, lugarFisico, codigoAutorizacionHash;
+    private Instant fechaInicio, fechaFin, fechaInicioReal, fechaFinReal, creadoEn;
+    private int tiempoMaximoParticipacionSegundos;
     private EstadoSesion estado;
-    private LocalDateTime creadoEn;
-    private LocalDateTime actualizadoEn;
-    private int version;
-
-    /** Estado transiente: no se persiste, se reconstruye vía {@link SesionStateFactory}. */
     private transient SesionState stateHandler;
 
-    // ─── Constructores ────────────────────────────────────────
+    public SesionAcademica() {}
 
-    /** Constructor para rehidratación desde persistencia. */
-    public SesionAcademica() {
+    public static SesionAcademica crear(
+            UUID caso,
+            UUID docente,
+            String titulo,
+            String mensaje,
+            Instant inicio,
+            Instant fin,
+            int duracion) {
+        validarFechas(inicio, fin);
+        validarTitulo(titulo);
+        if (duracion <= 0)
+            throw new ReglaNegocioException(
+                    "M4-DURACION-INVALIDA", "La duración máxima debe ser positiva");
+        var s = new SesionAcademica();
+        s.id = UUID.randomUUID();
+        s.casoId = Objects.requireNonNull(caso);
+        s.docenteId = Objects.requireNonNull(docente);
+        s.titulo = titulo.strip();
+        s.descripcion = mensaje;
+        s.fechaInicio = inicio;
+        s.fechaFin = fin;
+        s.tiempoMaximoParticipacionSegundos = duracion;
+        s.estado = EstadoSesion.SIN_INICIAR;
+        s.creadoEn = Instant.now();
+        return s;
     }
-
-    /**
-     * Constructor de fábrica para la creación de una nueva sesión.
-     * Aplica todas las validaciones de creación.
-     */
-    public static SesionAcademica crear(UUID casoId,
-                                         UUID docenteId,
-                                         String titulo,
-                                         String descripcion,
-                                         LocalDateTime fechaInicio,
-                                         LocalDateTime fechaFin) {
-        validarFechas(fechaInicio, fechaFin);
-        Objects.requireNonNull(casoId, "casoId no puede ser nulo");
-        Objects.requireNonNull(docenteId, "docenteId no puede ser nulo");
-        Objects.requireNonNull(titulo, "titulo no puede ser nulo");
-
-        var sesion = new SesionAcademica();
-        sesion.id = UUID.randomUUID();
-        sesion.casoId = casoId;
-        sesion.docenteId = docenteId;
-        sesion.titulo = titulo.strip();
-        sesion.descripcion = descripcion;
-        sesion.fechaInicio = fechaInicio;
-        sesion.fechaFin = fechaFin;
-        sesion.estado = EstadoSesion.PROGRAMADA;
-        sesion.stateHandler = ProgramadaState.INSTANCE;
-        sesion.creadoEn = LocalDateTime.now();
-        sesion.actualizadoEn = sesion.creadoEn;
-        return sesion;
-    }
-
-    // ─── Operaciones de estado (patrón State) ─────────────────
 
     public void abrir() {
-        resolverState().abrir(this);
+        throw new SesionOperacionNoPermitidaException(
+                estado.name(), "abrir: sin equivalencia oficial");
+    }
+
+    public void cancelar() {
+        throw new SesionOperacionNoPermitidaException(
+                estado.name(), "cancelar: sin equivalencia oficial");
     }
 
     public void iniciar() {
@@ -83,112 +63,163 @@ public class SesionAcademica {
         resolverState().cerrar(this);
     }
 
-    public void cancelar() {
-        resolverState().cancelar(this);
+    public void cambiarEstado(SesionState nuevo) {
+        estado = nuevo.getEstado();
+        stateHandler = nuevo;
+        if (estado == EstadoSesion.EN_CURSO && fechaInicioReal == null)
+            fechaInicioReal = Instant.now();
+        if (estado == EstadoSesion.FINALIZADO && fechaFinReal == null) fechaFinReal = Instant.now();
     }
 
-    /**
-     * Invocado internamente por las clases State para efectuar el cambio.
-     */
-    public void cambiarEstado(SesionState nuevoState) {
-        this.stateHandler = nuevoState;
-        this.estado = nuevoState.getEstado();
-        this.actualizadoEn = LocalDateTime.now();
-    }
-
-    // ─── Reglas de modificación ───────────────────────────────
-
-    /**
-     * Actualiza datos de programación si el estado lo permite.
-     *
-     * @throws SesionOperacionNoPermitidaException si el estado prohíbe la modificación.
-     */
-    public void actualizarProgramacion(String nuevoTitulo,
-                                        String nuevaDescripcion,
-                                        LocalDateTime nuevaFechaInicio,
-                                        LocalDateTime nuevaFechaFin) {
-        if (!resolverState().permiteModificacion()) {
+    public void actualizarProgramacion(String titulo, String mensaje, Instant inicio, Instant fin) {
+        if (!resolverState().permiteModificacion())
             throw new SesionOperacionNoPermitidaException(estado.name(), "actualizarProgramacion");
-        }
-        validarFechas(nuevaFechaInicio, nuevaFechaFin);
-
-        this.titulo = nuevoTitulo.strip();
-        this.descripcion = nuevaDescripcion;
-        this.fechaInicio = nuevaFechaInicio;
-        this.fechaFin = nuevaFechaFin;
-        this.actualizadoEn = LocalDateTime.now();
+        validarFechas(inicio, fin);
+        validarTitulo(titulo);
+        this.titulo = titulo.strip();
+        descripcion = mensaje;
+        fechaInicio = inicio;
+        fechaFin = fin;
     }
 
-    /**
-     * Cambia el caso asociado si el estado lo permite.
-     * El nuevo caso debe estar Publicado — pero esa validación la hace el servicio
-     * consultando M3. Aquí solo protegemos que el estado actual permita cambios.
-     */
-    public void cambiarCaso(UUID nuevoCasoId) {
-        Objects.requireNonNull(nuevoCasoId, "nuevoCasoId no puede ser nulo");
-        if (!resolverState().permiteModificacion()) {
+    public void cambiarCaso(UUID caso) {
+        if (!resolverState().permiteModificacion())
             throw new SesionOperacionNoPermitidaException(estado.name(), "cambiarCaso");
-        }
-        this.casoId = nuevoCasoId;
-        this.actualizadoEn = LocalDateTime.now();
+        casoId = Objects.requireNonNull(caso);
     }
 
     public boolean permiteConvocatoria() {
         return resolverState().permiteConvocatoria();
     }
 
-    // ─── Validaciones de dominio ──────────────────────────────
-
-    private static void validarFechas(LocalDateTime inicio, LocalDateTime fin) {
-        Objects.requireNonNull(inicio, "fechaInicio no puede ser nula");
-        Objects.requireNonNull(fin, "fechaFin no puede ser nula");
-        if (!fin.isAfter(inicio)) {
-            throw new ReglaNegocioException("M4-FECHA-INVALIDA",
-                    "La fecha de fin debe ser posterior a la fecha de inicio");
-        }
-    }
-
-    // ─── Resolución de estado ─────────────────────────────────
-
     private SesionState resolverState() {
-        if (stateHandler == null) {
-            stateHandler = SesionStateFactory.of(estado);
-        }
+        if (stateHandler == null) stateHandler = SesionStateFactory.of(estado);
         return stateHandler;
     }
 
-    // ─── Accessors ────────────────────────────────────────────
+    private static void validarTitulo(String v) {
+        if (v == null || v.isBlank() || v.strip().length() > 150)
+            throw new ReglaNegocioException(
+                    "M4-VALIDACION", "Nombre obligatorio, máximo 150 caracteres");
+    }
 
-    public UUID getId() { return id; }
-    public void setId(UUID id) { this.id = id; }
+    private static void validarFechas(Instant a, Instant b) {
+        if (a == null || b == null || !b.isAfter(a))
+            throw new ReglaNegocioException(
+                    "M4-FECHA-INVALIDA", "Fin previsto debe ser posterior a inicio previsto");
+    }
 
-    public UUID getCasoId() { return casoId; }
-    public void setCasoId(UUID casoId) { this.casoId = casoId; }
+    public UUID getId() {
+        return id;
+    }
 
-    public UUID getDocenteId() { return docenteId; }
-    public void setDocenteId(UUID docenteId) { this.docenteId = docenteId; }
+    public void setId(UUID v) {
+        id = v;
+    }
 
-    public String getTitulo() { return titulo; }
-    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public UUID getCasoId() {
+        return casoId;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public void setCasoId(UUID v) {
+        casoId = v;
+    }
 
-    public LocalDateTime getFechaInicio() { return fechaInicio; }
-    public void setFechaInicio(LocalDateTime fechaInicio) { this.fechaInicio = fechaInicio; }
+    public UUID getDocenteId() {
+        return docenteId;
+    }
 
-    public LocalDateTime getFechaFin() { return fechaFin; }
-    public void setFechaFin(LocalDateTime fechaFin) { this.fechaFin = fechaFin; }
+    public void setDocenteId(UUID v) {
+        docenteId = v;
+    }
 
-    public EstadoSesion getEstado() { return estado; }
-    public void setEstado(EstadoSesion estado) { this.estado = estado; }
+    public String getTitulo() {
+        return titulo;
+    }
 
-    public LocalDateTime getCreadoEn() { return creadoEn; }
-    public void setCreadoEn(LocalDateTime creadoEn) { this.creadoEn = creadoEn; }
+    public void setTitulo(String v) {
+        titulo = v;
+    }
 
-    public LocalDateTime getActualizadoEn() { return actualizadoEn; }
-    public void setActualizadoEn(LocalDateTime actualizadoEn) { this.actualizadoEn = actualizadoEn; }
+    /** Mensaje personalizado; accessor Java legado. No migra datos antiguos automáticamente. */
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public int getVersion() { return version; }
-    public void setVersion(int version) { this.version = version; }
+    public void setDescripcion(String v) {
+        descripcion = v;
+    }
+
+    public Instant getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public void setFechaInicio(Instant v) {
+        fechaInicio = v;
+    }
+
+    public Instant getFechaFin() {
+        return fechaFin;
+    }
+
+    public void setFechaFin(Instant v) {
+        fechaFin = v;
+    }
+
+    public Instant getFechaInicioReal() {
+        return fechaInicioReal;
+    }
+
+    public void setFechaInicioReal(Instant v) {
+        fechaInicioReal = v;
+    }
+
+    public Instant getFechaFinReal() {
+        return fechaFinReal;
+    }
+
+    public void setFechaFinReal(Instant v) {
+        fechaFinReal = v;
+    }
+
+    public Instant getCreadoEn() {
+        return creadoEn;
+    }
+
+    public void setCreadoEn(Instant v) {
+        creadoEn = v;
+    }
+
+    public EstadoSesion getEstado() {
+        return estado;
+    }
+
+    public void setEstado(EstadoSesion v) {
+        estado = v;
+        stateHandler = null;
+    }
+
+    public int getTiempoMaximoParticipacionSegundos() {
+        return tiempoMaximoParticipacionSegundos;
+    }
+
+    public void setTiempoMaximoParticipacionSegundos(int v) {
+        tiempoMaximoParticipacionSegundos = v;
+    }
+
+    public String getLugarFisico() {
+        return lugarFisico;
+    }
+
+    public void setLugarFisico(String v) {
+        lugarFisico = v;
+    }
+
+    public String getCodigoAutorizacionHash() {
+        return codigoAutorizacionHash;
+    }
+
+    public void setCodigoAutorizacionHash(String v) {
+        codigoAutorizacionHash = v;
+    }
 }

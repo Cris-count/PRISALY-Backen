@@ -1,2 +1,3 @@
 com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration
 com.prisaly.m4.infrastructure.config.M4ProgramacionConsultaAutoConfiguration
+com.prisaly.m4.infrastructure.config.M4SchemaAutoConfiguration
