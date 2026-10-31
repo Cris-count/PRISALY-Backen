@@ -1,0 +1,6 @@
+SHA256 M4 local/anidado: 3D5C4B8A873A0921967351F6A14CE930A92507D0CAA5B47DF49552CC7AF76BAB (idénticos)
+StubAdapter/TestM4Application: app=0, módulo M4=0
+V010 automática: app=0, módulo M4=0; archivo histórico=1, SHA256 idéntico al fuente
+Estados propuestos obsoletos: 0 clases; tres autoconfiguraciones verificadas
+M4ProviderAutoConfiguration y AutoConfiguration.imports: presentes y verificados
+Verificación del paquete local; no certifica compatibilidad del esquema ni integración funcional entre módulos.

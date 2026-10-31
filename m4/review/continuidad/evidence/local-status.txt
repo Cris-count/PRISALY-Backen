@@ -1,0 +1,32 @@
+ M app/pom.xml
+ M m4/src/main/java/com/prisaly/m4/application/port/NotificacionPort.java
+ M m4/src/main/java/com/prisaly/m4/application/service/SesionAcademicaService.java
+ D m4/src/main/java/com/prisaly/m4/infrastructure/adapter/CasoAcademicoStubAdapter.java
+ D m4/src/main/java/com/prisaly/m4/infrastructure/adapter/IdentidadStubAdapter.java
+ D m4/src/main/java/com/prisaly/m4/infrastructure/adapter/NotificacionStubAdapter.java
+ M m4/src/main/java/com/prisaly/m4/infrastructure/adapter/SesionRepositoryAdapter.java
+ M m4/src/main/java/com/prisaly/m4/presentation/controller/M4ExceptionHandler.java
+ M m4/src/test/java/com/prisaly/m4/TestM4Application.java
+ M m4/src/test/java/com/prisaly/m4/infrastructure/SesionAcademicaPostgreSqlIT.java
+?? m4/review/continuidad/INFORME.md
+?? m4/review/continuidad/SOLICITUDES_PENDIENTES.md
+?? m4/review/continuidad/baseline-manifest.txt
+?? m4/review/continuidad/check-package.ps1
+?? m4/review/continuidad/evidence/failsafe-reports/TEST-com.prisaly.m4.infrastructure.Bd0052BaselineIT.xml
+?? m4/review/continuidad/evidence/failsafe-reports/TEST-com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT.xml
+?? m4/review/continuidad/evidence/package-check.txt
+?? m4/review/continuidad/evidence/regression-summary.txt
+?? m4/review/continuidad/evidence/surefire-reports/TEST-com.prisaly.m4.application.SesionAcademicaServiceTest.xml
+?? m4/review/continuidad/evidence/surefire-reports/TEST-com.prisaly.m4.domain.SesionAcademicaDomainTest.xml
+?? m4/review/continuidad/evidence/surefire-reports/TEST-com.prisaly.m4.infrastructure.M4ProviderSecurityTest.xml
+?? m4/review/continuidad/evidence/surefire-reports/TEST-com.prisaly.m4.infrastructure.PostgreSqlDockerSmokeTest.xml
+?? m4/review/continuidad/prepare-baseline.ps1
+?? m4/src/main/java/com/prisaly/m4/application/port/ParticipacionesPort.java
+?? m4/src/main/java/com/prisaly/m4/infrastructure/config/M4ProviderAutoConfiguration.java
+?? m4/src/main/resources/META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports
+?? m4/src/test/java/com/prisaly/m4/infrastructure/Bd0052BaselineIT.java
+?? m4/src/test/java/com/prisaly/m4/infrastructure/M4ProviderSecurityTest.java
+?? m4/src/test/java/com/prisaly/m4/infrastructure/adapter/CasoAcademicoStubAdapter.java
+?? m4/src/test/java/com/prisaly/m4/infrastructure/adapter/IdentidadStubAdapter.java
+?? m4/src/test/java/com/prisaly/m4/infrastructure/adapter/NotificacionStubAdapter.java
+?? m4/src/test/java/com/prisaly/m4/infrastructure/adapter/ParticipacionesStubAdapter.java
