@@ -1,6 +1,6 @@
 # M5 — Capa REST: dependencias y decisiones pendientes
 
-Estado al 2026-10-31. Rama `feature/m5-participacion-intentos`. Responsable: Integrante 4.
+Estado al 2026-10-31 (actualizado en el Prompt 11). Rama `feature/m5-participacion-intentos`. Responsable: Integrante 4.
 
 ## Resumen
 
@@ -30,6 +30,37 @@ errores a HTTP (`m5/presentation`).
 | Finalizar intento | No | Identidad y titularidad; límite temporal (sesión, M4) para `TIEMPO_VENCIDO` | Listo internamente. **REST bloqueado** |
 | Iniciar intento | No | Identidad (M1), convocatoria y ventana de sesión (M4), número de intento y autorización de repetición (DD-14) | **No implementado** |
 | Reanudar intento | No | M1, M4 y límite temporal | **No implementado** |
+
+## Matriz de operaciones entre módulos (recorrido estudiantil)
+
+Leyenda: **Listo** = implementado y probado. **Provisional** = preparado sin
+contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
+
+| Paso del recorrido | Angular (simulador) | M1 Identidad | M3 Casos | M4 Sesiones | M5 Participación | M6 Evaluación |
+|---|---|---|---|---|---|---|
+| Identificar al estudiante | Pendiente: sin pantalla de acceso | Pendiente: DD-02; la ruta de estudiante responde 501 | — | Pendiente: acceso por convocatoria | Provisional: puerto `IdentidadEstudianteActual`, sin implementación | — |
+| Ver sesiones disponibles | Bloqueado: `consultarSesionesAutorizadas` falla con contrato pendiente | Pendiente | — | Pendiente: elegibilidad (rama sin integrar) | — | — |
+| Iniciar intento | Bloqueado | Pendiente | Listo en develop: caso publicado y bloqueado (V007–V009) | Pendiente: ventana y límite temporal | Pendiente (DD-14) | — |
+| Ver escenario y preguntas | Listo con datos simulados; contenido real pendiente | — | Pendiente: contrato de contenido para M5 (sin respuestas correctas) | — | — | — |
+| Responder y cambiar respuesta | Listo en presentación; persistencia pendiente | Pendiente | Garantizado por la base (FK compuesta y trigger) | — | Listo internamente: registrar; Provisional: actualizar | — |
+| Consultar o reanudar intento | Bloqueado | Pendiente | — | Pendiente: titularidad | Listo internamente: consultar. Provisional: control de titularidad (puerto `TitularidadIntentos`, sin implementación) | — |
+| Tiempo restante | Listo, solo informativo | — | — | Pendiente: límite temporal | `TIEMPO_VENCIDO` listo como motivo | — |
+| Finalizar | Listo en presentación (confirmación) | Pendiente | — | — | Listo internamente: se rechaza una segunda finalización sin efectos | Pendiente: aviso de intento finalizado |
+| Errores HTTP | Listo: clasificación en el cliente | 401/403 de la cadena compartida | — | Formato distinto (`codigo, mensaje`) | Listo: traducción (propuesta) | — |
+
+## Piezas provisionales preparadas (sin exponer)
+
+- `application.acceso.ControlAccesoIntentos`: verifica identidad y
+  titularidad antes de cargar el intento y falla de forma cerrada. Sus
+  puertos `IdentidadEstudianteActual` y `TitularidadIntentos` son de M5 (lado
+  consumidor) y **no tienen implementación de producción**. Las pruebas usan
+  dobles solo dentro de las pruebas.
+- `presentation.provisional`: `SolicitudRespuestaProvisional` (con Bean
+  Validation: dos uuid) e `IntentoVistaProvisional` (estado, motivo y
+  respuestas propias; sin calificación, rúbrica ni respuestas correctas).
+  No hay DTO para finalizar: el motivo lo decide el servidor.
+- No se crearon controladores: cualquier ruta sería una invención mientras
+  falte ARQ-008.3, y sin DD-02 no hay identidad que verificar.
 
 ## Endpoints
 
@@ -64,7 +95,7 @@ Notas:
 | 1 | ¿Se permite cambiar una respuesta antes de finalizar? | Implementado como provisional y aislado (`ActualizarRespuestaServicio`) |
 | 2 | Catálogo definitivo de `motivoFinalizacion` (V007 no lo define) | Se guarda el nombre de la constante; `ENTREGA_ESTUDIANTE` es provisional |
 | 3 | ¿Una segunda finalización debe responder como idempotente o como error? | El dominio la rechaza (409 propuesto) |
-| 4 | Intento ajeno: ¿responder 404 (no revela su existencia) o 403? | Pendiente; recomendado 404 |
+| 4 | Intento ajeno: ¿responder 404 (no revela su existencia) o 403? | Pendiente; la traducción usa 403 `FORBIDDEN` de forma provisional |
 | 5 | DD-14: autorización de repetición | Fuera de M5 hasta tener el contrato |
 | 6 | Formato común de errores: M1 y la seguridad usan `{code, message}`; M4 usa `{codigo, mensaje, timestamp}` | M5 sigue el de develop (`{code, message}`) |
 
@@ -76,6 +107,8 @@ compartida.
 
 | Excepción | HTTP | `code` |
 |---|---|---|
+| `EstudianteNoIdentificadoException` | 401 | `UNAUTHENTICATED` (igual que la cadena de seguridad) |
+| `AccesoIntentoDenegadoException` | 403 | `FORBIDDEN` (provisional; ver decisión 4) |
 | `IntentoNoEncontradoException` | 404 | `INTENTO_NO_ENCONTRADO` |
 | `DatoAplicacionInvalidoException`, `DatoRespuestaInvalidoException`, `MotivoFinalizacionRequeridoException` | 400 | `DATOS_INVALIDOS` |
 | Validación de entrada (`MethodArgumentNotValidException`) | 400 | `VALIDATION_ERROR` (igual que M1) |
