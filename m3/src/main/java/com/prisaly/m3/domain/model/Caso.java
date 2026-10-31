@@ -1,6 +1,7 @@
 package com.prisaly.m3.domain.model;
 
 import com.prisaly.m3.domain.rule.CasoValidation;
+import java.time.Instant;
 import java.util.List;
 
 /**
@@ -15,7 +16,13 @@ public record Caso(
         CasoEstado estado,
         List<Escenario> escenarios,
         Rubrica rubrica,
-        boolean contenidoEvaluableBloqueado
+        boolean contenidoEvaluableBloqueado,
+        String historia,
+        String desarrolloSituacional,
+        boolean activo,
+        Instant fechaCreacion,
+        Instant fechaActualizacion,
+        Instant fechaBloqueoAcademico
 ) {
 
     public Caso {
@@ -36,6 +43,20 @@ public record Caso(
             throw new IllegalArgumentException("Caso.escenarios is required");
         }
         escenarios = List.copyOf(escenarios);
+        // A known lock date implies locking; a boolean never manufactures a date.
+        contenidoEvaluableBloqueado = contenidoEvaluableBloqueado || fechaBloqueoAcademico != null;
+    }
+
+    /**
+     * Legacy/transient construction: no persistence dates have been assigned.
+     * activo follows V001's true default. This does not represent a complete SQL row:
+     * persisted fechaCreacion is mandatory and must be supplied when rehydrating.
+     */
+    public Caso(String id, String titulo, String docenteId, int tiempoEstimadoSegundos,
+            CasoEstado estado, List<Escenario> escenarios, Rubrica rubrica,
+            boolean contenidoEvaluableBloqueado) {
+        this(id, titulo, docenteId, tiempoEstimadoSegundos, estado, escenarios, rubrica,
+                contenidoEvaluableBloqueado, null, null, true, null, null, null);
     }
 
     public boolean isPublished() {

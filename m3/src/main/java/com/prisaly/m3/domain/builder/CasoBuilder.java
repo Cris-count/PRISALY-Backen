@@ -11,6 +11,7 @@ import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.domain.rule.CasoValidation;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.Instant;
 
 /**
  * Builds a complete academic case structure. Incomplete drafts are allowed;
@@ -24,6 +25,11 @@ public final class CasoBuilder {
     private String titulo;
     private String docenteId;
     private Integer tiempoEstimadoSegundos;
+    private String historia;
+    private String desarrolloSituacional;
+    private boolean activo = true; // V001 default; no activation operation is introduced.
+    private Instant fechaCreacion;
+    private Instant fechaActualizacion;
     private final List<EscenarioDraft> escenarios;
     private String rubricaId;
     private final List<CriterioRubrica> criterios;
@@ -50,6 +56,32 @@ public final class CasoBuilder {
 
     public CasoBuilder withTiempoEstimadoSegundos(int tiempoEstimadoSegundos) {
         this.tiempoEstimadoSegundos = tiempoEstimadoSegundos;
+        return this;
+    }
+
+    public CasoBuilder withHistoria(String historia) {
+        this.historia = historia;
+        return this;
+    }
+
+    public CasoBuilder withDesarrolloSituacional(String desarrolloSituacional) {
+        this.desarrolloSituacional = desarrolloSituacional;
+        return this;
+    }
+
+    public CasoBuilder withActivo(boolean activo) {
+        this.activo = activo;
+        return this;
+    }
+
+    /** Carries a supplied instant; never generates a creation date. */
+    public CasoBuilder withFechaCreacion(Instant fechaCreacion) {
+        this.fechaCreacion = fechaCreacion;
+        return this;
+    }
+
+    public CasoBuilder withFechaActualizacion(Instant fechaActualizacion) {
+        this.fechaActualizacion = fechaActualizacion;
         return this;
     }
 
@@ -103,7 +135,13 @@ public final class CasoBuilder {
                 CasoEstado.BORRADOR,
                 List.copyOf(builtEscenarios),
                 rubrica,
-                false);
+                false,
+                historia,
+                desarrolloSituacional,
+                activo,
+                fechaCreacion,
+                fechaActualizacion,
+                null);
     }
 
     /**

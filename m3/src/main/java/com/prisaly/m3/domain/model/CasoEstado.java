@@ -5,5 +5,6 @@ package com.prisaly.m3.domain.model;
  */
 public enum CasoEstado {
     BORRADOR,
-    PUBLICADO
+    PUBLICADO,
+    ARCHIVADO
 }

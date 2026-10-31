@@ -17,11 +17,13 @@ public final class ContenidoEvaluableLock {
 
     public static final String CODE_EVALUABLE_CONTENT_LOCKED = "EVALUABLE_CONTENT_LOCKED";
     public static final String CODE_COPY_CASE_ID_EQUALS_SOURCE = "COPY_CASE_ID_EQUALS_SOURCE";
+    public static final String CODE_COPY_METADATA_POLICY_PENDING = "COPY_METADATA_POLICY_PENDING";
 
     private ContenidoEvaluableLock() {
     }
 
     public static Caso lockAfterFirstSessionScheduled(Caso caso) {
+        CasoValidation.assertNotArchived(caso);
         if (caso.contenidoEvaluableBloqueado()) {
             return caso;
         }
@@ -33,7 +35,13 @@ public final class ContenidoEvaluableLock {
                 caso.estado(),
                 caso.escenarios(),
                 caso.rubrica(),
-                true);
+                true,
+                caso.historia(),
+                caso.desarrolloSituacional(),
+                caso.activo(),
+                caso.fechaCreacion(),
+                caso.fechaActualizacion(),
+                caso.fechaBloqueoAcademico());
     }
 
     public static void assertEditable(Caso caso) {
@@ -43,6 +51,7 @@ public final class ContenidoEvaluableLock {
                     "Evaluable content of case " + caso.id()
                             + " is locked after the first scheduled session");
         }
+        CasoValidation.assertNotArchived(caso);
     }
 
     public static Caso createIndependentCopy(Caso source, String newId) {
@@ -50,6 +59,13 @@ public final class ContenidoEvaluableLock {
             throw new CasoDomainException(
                     CODE_COPY_CASE_ID_EQUALS_SOURCE,
                     "Independent copy must have a different case id");
+        }
+        CasoValidation.assertNotArchived(source);
+        // M3-INC-09B: copying dates or assigning new ones is not an approved policy.
+        // Preserve the existing transient-copy behavior; fail explicitly for dated sources.
+        if (source.fechaCreacion() != null || source.fechaActualizacion() != null) {
+            throw new CasoDomainException(CODE_COPY_METADATA_POLICY_PENDING,
+                    "Copy creation/update metadata requires an approved policy");
         }
         return new Caso(
                 newId,
@@ -73,6 +89,12 @@ public final class ContenidoEvaluableLock {
                                 UUID.randomUUID().toString(),
                                 criterio.descripcion(),
                                 criterio.puntaje())).toList()),
-                false);
+                false,
+                source.historia(),
+                source.desarrolloSituacional(),
+                source.activo(),
+                null,
+                null,
+                null);
     }
 }

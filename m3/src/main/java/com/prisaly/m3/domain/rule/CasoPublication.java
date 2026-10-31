@@ -28,6 +28,12 @@ public final class CasoPublication {
                 CasoEstado.PUBLICADO,
                 caso.escenarios(),
                 caso.rubrica(),
-                caso.contenidoEvaluableBloqueado());
+                caso.contenidoEvaluableBloqueado(),
+                caso.historia(),
+                caso.desarrolloSituacional(),
+                caso.activo(),
+                caso.fechaCreacion(),
+                caso.fechaActualizacion(),
+                caso.fechaBloqueoAcademico());
     }
 }
