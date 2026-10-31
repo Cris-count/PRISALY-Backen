@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -89,6 +91,17 @@ class ControlAccesoIntentosTest {
                 }, intento -> Optional.of(ANA));
 
         assertThrows(IllegalStateException.class, () -> conIdentidadQueFalla.verificar(INTENTO));
+    }
+
+    @Test
+    @DisplayName("la verificación solo recibe el intento: ningún dato del cliente sustituye la identidad")
+    void identidadNoLlegaDelCliente() throws NoSuchMethodException {
+        Method verificar =
+                ControlAccesoIntentos.class.getMethod("verificar", ReferenciaIntento.class);
+
+        assertEquals(1, verificar.getParameterCount());
+        assertEquals(1, Arrays.stream(ControlAccesoIntentos.class.getMethods())
+                .filter(m -> m.getName().equals("verificar")).count());
     }
 
     @Test
