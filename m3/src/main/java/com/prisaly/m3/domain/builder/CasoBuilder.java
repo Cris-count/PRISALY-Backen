@@ -32,6 +32,7 @@ public final class CasoBuilder {
     private Instant fechaActualizacion;
     private final List<EscenarioDraft> escenarios;
     private String rubricaId;
+    private Rubrica explicitRubrica;
     private final List<CriterioRubrica> criterios;
 
     public CasoBuilder() {
@@ -90,6 +91,12 @@ public final class CasoBuilder {
         return this;
     }
 
+    /** Carries supplied structural metadata and explicit associations unchanged. */
+    public CasoBuilder withRubrica(Rubrica rubrica) {
+        this.explicitRubrica = java.util.Objects.requireNonNull(rubrica, "rubrica");
+        return this;
+    }
+
     public CasoBuilder addCriterio(String criterioId, String descripcion, int puntaje) {
         this.criterios.add(new CriterioRubrica(criterioId, descripcion, puntaje));
         return this;
@@ -130,7 +137,11 @@ public final class CasoBuilder {
             builtEscenarios.add(draft.toEscenario());
         }
 
-        Rubrica rubrica = null;
+        if (explicitRubrica != null && (rubricaId != null || !criterios.isEmpty())) {
+            throw new CasoDomainException(CODE_BUILDER_INCOMPLETE,
+                    "Supply either a rubric or legacy rubric fields, without silently merging them");
+        }
+        Rubrica rubrica = explicitRubrica;
         if (rubricaId != null && !rubricaId.isBlank()) {
             rubrica = new Rubrica(rubricaId, List.copyOf(criterios));
         }

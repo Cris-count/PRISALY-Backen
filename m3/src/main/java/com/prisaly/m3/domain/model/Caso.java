@@ -1,6 +1,7 @@
 package com.prisaly.m3.domain.model;
 
 import com.prisaly.m3.domain.rule.CasoValidation;
+import com.prisaly.m3.domain.rule.RubricaStructureValidation;
 import java.time.Instant;
 import java.util.List;
 
@@ -43,6 +44,7 @@ public record Caso(
             throw new IllegalArgumentException("Caso.escenarios is required");
         }
         escenarios = List.copyOf(escenarios);
+        RubricaStructureValidation.assertBelongsToCase(id, escenarios, rubrica);
         // A known lock date implies locking; a boolean never manufactures a date.
         contenidoEvaluableBloqueado = contenidoEvaluableBloqueado || fechaBloqueoAcademico != null;
     }
