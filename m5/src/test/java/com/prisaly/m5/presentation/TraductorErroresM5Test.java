@@ -37,7 +37,7 @@ class TraductorErroresM5Test {
 
     static Stream<Arguments> excepcionesDeM5() {
         return Stream.of(
-                Arguments.of(new EstudianteNoIdentificadoException(), 401, "UNAUTHENTICATED"),
+                Arguments.of(new EstudianteNoIdentificadoException(), 403, "STUDENT_IDENTITY_UNAVAILABLE"),
                 Arguments.of(new AccesoIntentoDenegadoException(), 403, "FORBIDDEN"),
                 Arguments.of(new IntentoNoEncontradoException(new ReferenciaIntento("I-1")), 404, "INTENTO_NO_ENCONTRADO"),
                 Arguments.of(new DatoAplicacionInvalidoException("x"), 400, "DATOS_INVALIDOS"),

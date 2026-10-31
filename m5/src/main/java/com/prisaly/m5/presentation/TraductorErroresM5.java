@@ -38,9 +38,11 @@ public final class TraductorErroresM5 {
 
     /** Traducción de una excepción conocida de M5; vacío si no corresponde a M5. */
     public static Optional<ErrorHttp> traducir(Throwable error) {
-        // Mismos códigos que la cadena de seguridad compartida (401/403).
+        // Contrato M1-M5 (docs/M1-M5-STUDENT-IDENTITY-CONTRACT.md): una petición
+        // autenticada sin contexto de estudiante es 403; el 401 de una petición sin
+        // credenciales lo responde antes la cadena de seguridad compartida.
         if (error instanceof EstudianteNoIdentificadoException e) {
-            return error(401, "UNAUTHENTICATED", e.getMessage());
+            return error(403, "STUDENT_IDENTITY_UNAVAILABLE", e.getMessage());
         }
         // PROVISIONAL: 403 o 404 para un intento ajeno sigue pendiente de decisión.
         if (error instanceof AccesoIntentoDenegadoException e) {
