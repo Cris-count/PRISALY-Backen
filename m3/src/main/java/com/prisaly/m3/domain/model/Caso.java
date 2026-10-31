@@ -34,6 +34,10 @@ public record Caso(
         if (titulo == null || titulo.isBlank()) {
             throw new IllegalArgumentException("Caso.titulo is required");
         }
+        // Public titulo is stored verbatim in V001 Caso.nombre varchar(150).
+        if (titulo.codePointCount(0, titulo.length()) > 150) {
+            throw new IllegalArgumentException("Caso.titulo must not exceed 150 characters");
+        }
         if (docenteId == null || docenteId.isBlank()) {
             throw new IllegalArgumentException("Caso.docenteId is required");
         }

@@ -15,7 +15,8 @@ public record Escenario(
         if (id == null || id.isBlank()) {
             throw new IllegalArgumentException("Escenario.id is required");
         }
-        if (titulo != null && titulo.length() > 200) {
+        // V001 varchar(200) counts Unicode characters, not UTF-16 code units.
+        if (titulo != null && titulo.codePointCount(0, titulo.length()) > 200) {
             throw new IllegalArgumentException("Escenario.titulo must not exceed 200 characters");
         }
         if (orden != null && orden <= 0) {
