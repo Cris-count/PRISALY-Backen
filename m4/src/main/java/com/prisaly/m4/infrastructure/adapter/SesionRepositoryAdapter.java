@@ -31,7 +31,7 @@ public class SesionRepositoryAdapter implements SesionRepository {
     @Override
     public SesionAcademica guardar(SesionAcademica sesion) {
         var entity = EntityMapper.toEntity(sesion);
-        entity = jpa.save(entity);
+        entity = jpa.saveAndFlush(entity);
         return EntityMapper.toDomain(entity);
     }
 

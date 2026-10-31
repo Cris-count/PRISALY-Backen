@@ -21,6 +21,11 @@ public class CasoAcademicoStubAdapter implements CasoAcademicoPort {
 
     private final java.util.Map<UUID, Boolean> estados = new java.util.concurrent.ConcurrentHashMap<>();
     private final java.util.Set<UUID> bloqueosSolicitados = java.util.concurrent.ConcurrentHashMap.newKeySet();
+    private final java.util.Set<UUID> bloqueosFallidos = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public void fallarBloqueo(UUID casoId) {
+        bloqueosFallidos.add(casoId);
+    }
 
     public void registrarEstado(UUID casoId, boolean publicado) {
         estados.put(casoId, publicado);
@@ -33,6 +38,7 @@ public class CasoAcademicoStubAdapter implements CasoAcademicoPort {
     public void limpiar() {
         estados.clear();
         bloqueosSolicitados.clear();
+        bloqueosFallidos.clear();
     }
 
     @Override
@@ -45,6 +51,10 @@ public class CasoAcademicoStubAdapter implements CasoAcademicoPort {
     @Override
     public void solicitarBloqueoAcademico(UUID casoId) {
         bloqueosSolicitados.add(casoId);
+        if (bloqueosFallidos.contains(casoId)) {
+            throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+                    "M4-BLOQUEO-ACADEMICO-NO-CONFIRMADO", "Fallo de bloqueo simulado para probar rollback");
+        }
         log.info("[M3-STUB] Solicitud de bloqueo F3-03 para caso {} registrada", casoId);
     }
 }

@@ -53,7 +53,7 @@ try {
             $findings += "StubAdapter/TestM4Application: app=$($directStubs.Count), módulo M4=$($stubs.Count)"
             $findings += "V010: app=$($directV010.Count), módulo M4=$($v010.Count)"
             $findings += 'M4ProviderAutoConfiguration y AutoConfiguration.imports: presentes y verificados'
-            $findings += 'Paquete del checkout M4 actual; no incorpora el nuevo develop.'
+            $findings += 'Verificación del paquete local; no certifica compatibilidad del esquema ni integración funcional entre módulos.'
         } finally { $moduleArchive.Dispose() }
     } finally { $moduleBytes.Dispose() }
 } finally { $appArchive.Dispose() }

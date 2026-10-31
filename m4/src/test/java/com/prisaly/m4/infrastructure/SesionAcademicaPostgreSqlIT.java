@@ -260,6 +260,7 @@ public class SesionAcademicaPostgreSqlIT {
                     docenteId, creada.getId(), "Título Actualizado", "Nueva Desc", nuevoInicio, nuevoFin);
 
             assertEquals("Título Actualizado", actualizada.getTitulo());
+            assertEquals(1, actualizada.getVersion(), "El resultado debe incluir la versión posterior al flush");
 
             // Comprobación directa en PostgreSQL
             try (Connection conn = getRawConnection();
@@ -469,6 +470,24 @@ public class SesionAcademicaPostgreSqlIT {
     class Fase5Rollback {
 
         @Test
+        @DisplayName("Reasignación: fallo F3-03 del destino revierte la escritura enviada a PostgreSQL")
+        void falloBloqueoDestinoRevierteReasignacion() {
+            UUID docente = UUID.randomUUID();
+            UUID origen = UUID.randomUUID();
+            UUID destino = UUID.randomUUID();
+            var inicio = LocalDateTime.now().plusDays(3);
+            var sesion = service.crearSesion(docente, origen, "Origen", null, inicio, inicio.plusHours(1));
+            casoAcademicoStub.fallarBloqueo(destino);
+            var error = assertThrows(ReglaNegocioException.class,
+                    () -> service.cambiarCaso(docente, sesion.getId(), destino));
+            assertEquals("M4-BLOQUEO-ACADEMICO-NO-CONFIRMADO", error.getCodigo());
+            var persistida = service.consultarSesion(sesion.getId());
+            assertEquals(origen, persistida.getCasoId());
+            assertEquals(0, persistida.getVersion());
+            assertTrue(casoAcademicoStub.fueBloqueoSolicitado(destino));
+        }
+
+        @Test
         @DisplayName("5.1 — Transacción fallida revierte inserción: ningún registro parcial en PostgreSQL")
         void transaccionFallidaHaceRollbackEnPostgreSql() throws Exception {
             UUID sesionId = UUID.randomUUID();
@@ -524,6 +543,7 @@ public class SesionAcademicaPostgreSqlIT {
         @DisplayName("HTTP: actualizar a un rango duplicado responde 409 por la restricción PostgreSQL real")
         void actualizacionDuplicadaResponde409() throws Exception {
             UUID docente = UUID.randomUUID();
+            identidadStub.autenticar(docente);
             UUID caso = UUID.randomUUID();
             LocalDateTime inicio = LocalDateTime.now().plusDays(3);
             LocalDateTime fin = inicio.plusHours(1);

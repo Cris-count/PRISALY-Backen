@@ -7,9 +7,16 @@ import java.util.UUID;
  *
  * <p>M4 usa este contrato para verificar que un docente tiene permisos
  * suficientes para gestionar sesiones académicas. La implementación
- * real la proveerá M1; mientras tanto se usa un stub.</p>
+ * se adapta en M4 al contrato público IdentityAccessPort de M1.
+ * Sin proveedor real se deniega el acceso.</p>
  */
 public interface IdentidadPort {
+
+    /** Identidad confiable de la petición; nunca se deduce de una cabecera del cliente. */
+    default UUID docenteActual() {
+        throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+                "M4-NO-AUTENTICADO", "No existe una identidad autenticada disponible");
+    }
 
     /**
      * Verifica si el usuario identificado por {@code docenteId}

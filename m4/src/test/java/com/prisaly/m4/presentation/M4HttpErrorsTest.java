@@ -51,11 +51,14 @@ class M4HttpErrorsTest {
     }
 
     @Test
-    void cabeceraObligatoriaAusenteResponde400() throws Exception {
+    void sinIdentidadAutenticadaResponde401AunqueSeOmitaCabeceraOpcional() throws Exception {
+        when(service.resolverDocenteAutenticado(null)).thenThrow(
+                new ReglaNegocioException("M4-NO-AUTENTICADO", "Se requiere autenticación"));
         mvc.perform(post(ROOT).contentType(MediaType.APPLICATION_JSON).content(VALID_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.codigo").value("M4-SOLICITUD-INVALIDA"));
-        verifyNoInteractions(service);
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.codigo").value("M4-NO-AUTENTICADO"));
+        verify(service).resolverDocenteAutenticado(null);
+        verifyNoMoreInteractions(service);
     }
 
     @Test
@@ -123,7 +126,7 @@ class M4HttpErrorsTest {
             "uq_convocatoria_sesion_estudiante,M4-CONVOCATORIA-DUPLICADA",
             "uq_convocatoria_idx1,M4-CONVOCATORIA-DUPLICADA"})
     void duplicadosConocidosResponden409(String constraint, String codigo) throws Exception {
-        when(service.consultarSesion(any())).thenThrow(integridad("23505", constraint));
+        when(service.consultarSesionAutorizada(any())).thenThrow(integridad("23505", constraint));
         mvc.perform(get(ROOT + "/" + SESION)).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value(codigo))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SQL-PRIVADO"))));
@@ -132,7 +135,7 @@ class M4HttpErrorsTest {
     @ParameterizedTest
     @CsvSource({"23505,restriccion_desconocida", "23514,uq_sesion_caso_docente_fechas"})
     void integridadDesconocidaNoSeDisfrazaDeDuplicado(String state, String constraint) throws Exception {
-        when(service.consultarSesion(any())).thenThrow(integridad(state, constraint));
+        when(service.consultarSesionAutorizada(any())).thenThrow(integridad(state, constraint));
         mvc.perform(get(ROOT + "/" + SESION)).andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.codigo").value("M4-ERROR-INTERNO"))
                 .andExpect(jsonPath("$.mensaje").value("Error interno del servidor"));
@@ -148,7 +151,7 @@ class M4HttpErrorsTest {
             case "pesimistaJpa" -> new jakarta.persistence.PessimisticLockException("SQL-PRIVADO");
             default -> new jakarta.persistence.LockTimeoutException("SQL-PRIVADO");
         };
-        when(service.consultarSesion(any())).thenThrow(error);
+        when(service.consultarSesionAutorizada(any())).thenThrow(error);
         mvc.perform(get(ROOT + "/" + SESION)).andExpect(status().isConflict())
                 .andExpect(jsonPath("$.codigo").value("M4-CONFLICTO-CONCURRENCIA"))
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("SQL-PRIVADO"))));
@@ -158,14 +161,14 @@ class M4HttpErrorsTest {
     @CsvSource({"M4-SIN-PERMISO,403", "M4-SESION-NO-ENCONTRADA,404", "M4-SESION-DUPLICADA,409",
             "M4-PROVEEDOR-NO-DISPONIBLE,503", "M4-FECHA-INVALIDA,400"})
     void erroresDeDominioConservanSuEstado(String codigo, int http) throws Exception {
-        when(service.consultarSesion(any())).thenThrow(new ReglaNegocioException(codigo, "Regla rechazada"));
+        when(service.consultarSesionAutorizada(any())).thenThrow(new ReglaNegocioException(codigo, "Regla rechazada"));
         mvc.perform(get(ROOT + "/" + SESION)).andExpect(status().is(http))
                 .andExpect(jsonPath("$.codigo").value(codigo));
     }
 
     @Test
     void falloInesperadoNoRevelaDetalleInterno() throws Exception {
-        when(service.consultarSesion(any())).thenThrow(new IllegalStateException("SQL-PRIVADO"));
+        when(service.consultarSesionAutorizada(any())).thenThrow(new IllegalStateException("SQL-PRIVADO"));
         mvc.perform(get(ROOT + "/" + SESION)).andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.mensaje").value("Error interno del servidor"))
                 .andExpect(jsonPath("$.timestamp").exists());

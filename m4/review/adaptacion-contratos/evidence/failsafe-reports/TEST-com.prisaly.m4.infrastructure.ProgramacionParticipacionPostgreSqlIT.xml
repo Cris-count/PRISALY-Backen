@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="12.872" tests="7" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="informaRetiroCierreYCasoArchivadoSinConvertirDatosEnPermiso" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.948">
+    <system-out><![CDATA[2026-10-31T14:40:45.385-05:00  INFO 36664 --- [           main] tc.postgres:16.15                        : Creating container for image: postgres:16.15
+2026-10-31T14:40:45.515-05:00  INFO 36664 --- [           main] tc.postgres:16.15                        : Container postgres:16.15 is starting: 01e42062bced06c0944b0b757eaaea6d06669fd1e0fd2adb03564ddf0a94f0f8
+2026-10-31T14:40:47.391-05:00  INFO 36664 --- [           main] tc.postgres:16.15                        : Container postgres:16.15 started in PT2.0054272S
+2026-10-31T14:40:47.391-05:00  INFO 36664 --- [           main] tc.postgres:16.15                        : Container is started (JDBC URL: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF)
+2026-10-31T14:40:47.447-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:47.485-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:47.485-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:47.515-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.028s)
+2026-10-31T14:40:47.535-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.019s)
+2026-10-31T14:40:47.536-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:47.582-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:47.620-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:47.622-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.012s)
+2026-10-31T14:40:47.636-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:47.682-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:47.700-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:47.703-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:47.874-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:47.878-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:47.932-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:47.934-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:47.971-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:47.974-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:47.998-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:48.001-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.030-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:48.033-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.054-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:48.057-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.095-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:48.098-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.117-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:48.120-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.138-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.297s)
+]]></system-out>
+  </testcase>
+  <testcase name="consumidorResuelveParticipacionIntentoYUsaSoloPuertoM4" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.888">
+    <system-out><![CDATA[2026-10-31T14:40:48.372-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:48.404-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:48.511-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.105s)
+2026-10-31T14:40:48.531-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.018s)
+2026-10-31T14:40:48.531-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:48.566-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:48.596-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:48.597-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.009s)
+2026-10-31T14:40:48.610-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:48.642-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:48.651-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:48.653-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.765-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:48.768-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.815-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:48.817-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.852-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:48.855-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.879-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:48.882-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.909-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:48.912-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.936-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:48.938-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.971-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:48.973-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:48.989-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:48.990-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.005-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.237s)
+Contrato M4-M5 SQL: Intento→Participacion→Convocatoria resueltos; titular correcto visible, ajeno vacío. Servicios M5 no ejecutados.
+]]></system-out>
+  </testcase>
+  <testcase name="esquemaNoDisponibleFallaSinAutorizarNiUsarTablasPropuestas" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.788">
+    <system-out><![CDATA[2026-10-31T14:40:49.254-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:49.279-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:49.366-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.085s)
+2026-10-31T14:40:49.384-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.016s)
+2026-10-31T14:40:49.384-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:49.415-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:49.439-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:49.440-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.006s)
+2026-10-31T14:40:49.452-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:49.480-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:49.486-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:49.488-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.620-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:49.623-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.665-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:49.668-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.702-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:49.704-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.726-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:49.730-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.757-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:49.759-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.782-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:49.784-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.819-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:49.821-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.839-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:49.842-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:49.857-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.244s)
+]]></system-out>
+  </testcase>
+  <testcase name="consultaSesionDevuelveContextoOficialSinEntidadesMutables" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.699">
+    <system-out><![CDATA[2026-10-31T14:40:50.040-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:50.062-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:50.156-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.092s)
+2026-10-31T14:40:50.172-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.015s)
+2026-10-31T14:40:50.172-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:50.204-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:50.226-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:50.227-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-10-31T14:40:50.238-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:50.269-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:50.275-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:50.277-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.375-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:50.377-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.413-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:50.415-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.441-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:50.443-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.462-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:50.464-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.488-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:50.490-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.509-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:50.511-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.541-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:50.543-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.557-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:50.559-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:50.572-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.202s)
+]]></system-out>
+  </testcase>
+  <testcase name="titularidadRechazaOtroEstudianteYNoConfundeIdUsuario" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.837">
+    <system-out><![CDATA[2026-10-31T14:40:50.743-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:50.766-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:50.846-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.078s)
+2026-10-31T14:40:50.861-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.015s)
+2026-10-31T14:40:50.862-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:50.894-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:50.920-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:50.922-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.007s)
+2026-10-31T14:40:50.934-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:50.963-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:50.969-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:50.971-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.068-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:51.070-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.108-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:51.110-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.138-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:51.140-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.165-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:51.168-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.216-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:51.218-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.239-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:51.241-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.279-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:51.281-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.300-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:51.303-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.320-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.237s)
+]]></system-out>
+  </testcase>
+  <testcase name="referenciaInexistenteYAjenaNoRevelanContexto" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="0.665">
+    <system-out><![CDATA[2026-10-31T14:40:51.584-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:51.606-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:51.685-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.077s)
+2026-10-31T14:40:51.704-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.018s)
+2026-10-31T14:40:51.704-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:51.735-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:51.755-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:51.756-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-10-31T14:40:51.766-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:51.791-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:51.797-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:51.799-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.892-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:51.894-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.925-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:51.928-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.956-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:51.958-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:51.977-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:51.979-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.002-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:52.003-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.021-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:52.023-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.053-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:52.055-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.071-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:52.073-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.086-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.192s)
+]]></system-out>
+  </testcase>
+  <testcase name="observadoEnProvieneDelRelojPostgresql" classname="com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT" time="1.748">
+    <system-out><![CDATA[2026-10-31T14:40:52.245-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:52.267-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:52.342-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.073s)
+2026-10-31T14:40:52.358-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.015s)
+2026-10-31T14:40:52.358-05:00  INFO 36664 --- [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-10-31T14:40:52.388-05:00  INFO 36664 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:60431/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-10-31T14:40:52.408-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-10-31T14:40:52.409-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-10-31T14:40:52.419-05:00  INFO 36664 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-10-31T14:40:52.446-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-10-31T14:40:52.452-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-10-31T14:40:52.454-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.556-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-10-31T14:40:52.558-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.587-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-10-31T14:40:52.589-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.612-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-10-31T14:40:52.614-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.629-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-10-31T14:40:52.632-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.653-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-10-31T14:40:52.655-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.673-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-10-31T14:40:52.675-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.702-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-10-31T14:40:52.704-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.720-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-10-31T14:40:52.722-05:00  WARN 36664 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-10-31T14:40:52.734-05:00  INFO 36664 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.193s)
+]]></system-out>
+  </testcase>
+</testsuite>

@@ -49,6 +49,37 @@ public class SesionAcademicaService {
 
     // ─── CrearSesion ──────────────────────────────────────────
 
+    @Transactional(readOnly = true)
+    public UUID resolverDocenteAutenticado(UUID identidadDeclarada) {
+        UUID actual = identidadPort.docenteActual();
+        if (identidadDeclarada != null && !actual.equals(identidadDeclarada)) {
+            throw new ReglaNegocioException("M4-SIN-PERMISO", "La identidad declarada no coincide con la autenticada");
+        }
+        return actual;
+    }
+
+    @Transactional(readOnly = true)
+    public SesionAcademica consultarSesionAutorizada(UUID sesionId) {
+        UUID actual = resolverDocenteAutenticado(null);
+        verificarPermiso(actual);
+        var sesion = consultarSesion(sesionId);
+        verificarPropiedad(sesion, actual);
+        return sesion;
+    }
+
+    @Transactional(readOnly = true)
+    public List<SesionAcademica> listarSesionesAutorizadas(UUID docenteDeclarado) {
+        UUID actual = resolverDocenteAutenticado(docenteDeclarado);
+        verificarPermiso(actual);
+        return sesionRepository.listarPorDocente(actual);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Convocatoria> consultarConvocatoriasAutorizadas(UUID sesionId) {
+        consultarSesionAutorizada(sesionId);
+        return convocatoriaRepository.listarPorSesion(sesionId);
+    }
+
     /**
      * Crea una sesión académica verificando permisos, publicación del caso,
      * duplicación y solicitando bloqueo F3-03 si es la primera sesión del caso.
@@ -151,6 +182,12 @@ public class SesionAcademicaService {
             throw new ReglaNegocioException("M4-SESION-CON-PARTICIPACIONES",
                     "No se puede reasignar el caso de una sesión con historial académico");
         }
+        // BD-005.2 V005/V006 protege el origen desde la primera convocatoria,
+        // incluso si todavía no existe participación ni intento.
+        if (!convocatoriaRepository.listarPorSesion(sesionId).isEmpty()) {
+            throw new ReglaNegocioException("M4-SESION-CON-CONVOCATORIAS",
+                    "No se puede reasignar el caso de una sesión que ya tiene convocatorias");
+        }
 
         // Verificar que el nuevo caso está Publicado
         if (!casoAcademicoPort.estaPublicado(nuevoCasoId)) {
@@ -158,8 +195,13 @@ public class SesionAcademicaService {
                     "El nuevo caso no existe o no está en estado Publicado");
         }
 
+        boolean primeraSesionDelDestino = !sesionRepository.existeSesionParaCaso(nuevoCasoId);
         sesion.cambiarCaso(nuevoCasoId);
-        return sesionRepository.guardar(sesion);
+        sesion = sesionRepository.guardar(sesion);
+        if (primeraSesionDelDestino) {
+            casoAcademicoPort.solicitarBloqueoAcademico(nuevoCasoId);
+        }
+        return sesion;
     }
 
     // ─── CambiarEstadoSesion ──────────────────────────────────

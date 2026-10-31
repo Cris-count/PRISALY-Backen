@@ -139,11 +139,15 @@ public class M4ExceptionHandler extends ResponseEntityExceptionHandler {
 
     private HttpStatus mapearCodigo(String codigo) {
         return switch (codigo) {
+            case "M4-NO-AUTENTICADO" -> HttpStatus.UNAUTHORIZED;
+            case "M4-ACCESO-LEGADO-RETIRADO" -> HttpStatus.GONE;
+            case "M4-BLOQUEO-ACADEMICO-NO-CONFIRMADO" -> HttpStatus.SERVICE_UNAVAILABLE;
             case "M4-PROVEEDOR-NO-DISPONIBLE" -> HttpStatus.SERVICE_UNAVAILABLE;
             case "M4-CASO-NO-PUBLICADO",
                  "M4-SESION-DUPLICADA",
                  "M4-CONVOCATORIA-DUPLICADA",
                  "M4-SESION-CON-PARTICIPACIONES",
+                 "M4-SESION-CON-CONVOCATORIAS",
                  "M4-CONVOCATORIA-NO-PERMITIDA",
                  "M4-ESTADO-INVALIDO"          -> HttpStatus.CONFLICT;          // 409
             case "M4-SESION-NO-ENCONTRADA"     -> HttpStatus.NOT_FOUND;         // 404

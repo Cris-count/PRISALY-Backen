@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="1.323" tests="11" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="autoconfiguracionSeleccionaContratosPublicosSiExisten" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="1.115" />
+  <testcase name="f303SinTransaccionNoSeDeclaraConfirmado" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.005" />
+  <testcase name="permisoM1DenegadoNoSeSustituyePorRol" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.003" />
+  <testcase name="booleanoDeAgregadoNoSustituyeContratoAtomicoF303" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.008" />
+  <testcase name="m3RechazaBorradorInexistenteYReferenciaEquivocada" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.004" />
+  <testcase name="erroresM1NoSeTraducenEnPermiso(String, String)[1]" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.026" />
+  <testcase name="erroresM1NoSeTraducenEnPermiso(String, String)[2]" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.003" />
+  <testcase name="erroresM1NoSeTraducenEnPermiso(String, String)[3]" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.002" />
+  <testcase name="erroresM1NoSeTraducenEnPermiso(String, String)[4]" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.003" />
+  <testcase name="m1UsaIdentidadActualYPermisoExacto" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.001" />
+  <testcase name="m3ResuelveUuidSinUsarRepositoriosInternos" classname="com.prisaly.m4.infrastructure.ContratosM4AdaptersTest" time="0.002" />
+</testsuite>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m4.application.SesionAcademicaServiceTest" time="0.242" tests="17" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="segundaSesionNoBloquea" classname="CrearSesion" time="0.054" />
+  <testcase name="crearSesionExito" classname="CrearSesion" time="0.01" />
+  <testcase name="rechazarDuplicacion" classname="CrearSesion" time="0.008" />
+  <testcase name="rechazarDocenteSinPermiso" classname="CrearSesion" time="0.01" />
+  <testcase name="primeraSesionInvocaBloqueo" classname="CrearSesion" time="0.008" />
+  <testcase name="rechazarCasoBorrador" classname="CrearSesion" time="0.007" />
+  <testcase name="rechazarCasoInexistente" classname="CrearSesion" time="0.008" />
+  <testcase name="convocarEstudianteExito" classname="Convocatorias" time="0.01" />
+  <testcase name="rechazarConvocatoriaDuplicada" classname="Convocatorias" time="0.01" />
+  <testcase name="notificacionM7SeInvoca" classname="Convocatorias" time="0.008" />
+  <testcase name="rechazarConvocatoriaEnProgramada" classname="Convocatorias" time="0.007" />
+  <testcase name="rechazarAccesoSesionCerrada" classname="VerificarAcceso (para M5)" time="0.015" />
+  <testcase name="rechazarEstudianteNoConvocado" classname="VerificarAcceso (para M5)" time="0.007" />
+  <testcase name="sesionInexistenteRetornaFalse" classname="VerificarAcceso (para M5)" time="0.005" />
+  <testcase name="permitirAccesoConvocado" classname="VerificarAcceso (para M5)" time="0.005" />
+  <testcase name="cambiarAbierta" classname="CambiarEstado" time="0.014" />
+  <testcase name="rechazarCambioCasoBorrador" classname="CambiarEstado" time="0.01" />
+</testsuite>

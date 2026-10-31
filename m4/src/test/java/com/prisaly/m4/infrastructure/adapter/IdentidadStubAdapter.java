@@ -16,6 +16,17 @@ import com.prisaly.m4.application.port.IdentidadPort;
  */
 public class IdentidadStubAdapter implements IdentidadPort {
 
+    private final ThreadLocal<UUID> autenticado = new ThreadLocal<>();
+
+    public void autenticar(UUID docenteId) {
+        autenticado.set(docenteId);
+    }
+
+    @Override
+    public UUID docenteActual() {
+        return autenticado.get() == null ? IdentidadPort.super.docenteActual() : autenticado.get();
+    }
+
     private static final Logger log = LoggerFactory.getLogger(IdentidadStubAdapter.class);
 
     private final java.util.Map<String, Boolean> permisos = new java.util.concurrent.ConcurrentHashMap<>();
@@ -26,6 +37,7 @@ public class IdentidadStubAdapter implements IdentidadPort {
 
     public void limpiar() {
         permisos.clear();
+        autenticado.remove();
     }
 
     @Override

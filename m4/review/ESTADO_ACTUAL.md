@@ -1,5 +1,7 @@
 # M4 — Estado al preparar el commit «M4 listo para integracion»
 
+Actualización posterior al merge de develop: consultar [adaptación de contratos](adaptacion-contratos/INFORME.md). Este documento conserva la instantánea del commit 5e05888 y no incorpora por sí mismo la fase posterior.
+
 Fecha: 31 de octubre de 2026. El título del commit fue solicitado por el usuario; no constituye aprobación de merge, compatibilidad BD-005.2 ni certificación de integración completa.
 
 El commit reúne el trabajo local M4 pendiente de las fases anteriores y la corrección HTTP: aislamiento de dobles de prueba, proveedores ausentes que fallan de forma segura, consulta pública interna para M5, protección provisional de historial, empaquetado seguro y evidencias. No modifica M1 ni M5 ni cambia V001–V010. El cambio app/pom.xml evita que el empaquetado conserve un JAR M4 antiguo.

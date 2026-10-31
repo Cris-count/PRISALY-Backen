@@ -25,6 +25,7 @@ import com.prisaly.m4.presentation.dto.CrearSesionRequest;
 import com.prisaly.m4.presentation.dto.SesionResponse;
 
 import jakarta.validation.Valid;
+import com.prisaly.m4.domain.rule.ReglaNegocioException;
 
 /**
  * Controlador REST de M4 – Programación Académica y Convocatorias.
@@ -50,11 +51,11 @@ public class SesionController {
 
     @PostMapping
     public ResponseEntity<SesionResponse> crearSesion(
-            @RequestHeader("X-Docente-Id") UUID docenteId,
+            @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
             @RequestBody @Valid CrearSesionRequest request) {
 
         var sesion = service.crearSesion(
-                docenteId,
+                service.resolverDocenteAutenticado(docenteId),
                 request.casoId(),
                 request.titulo(),
                 request.descripcion(),
@@ -71,7 +72,7 @@ public class SesionController {
     public ResponseEntity<SesionResponse> consultarSesion(
             @PathVariable UUID sesionId) {
 
-        var sesion = service.consultarSesion(sesionId);
+        var sesion = service.consultarSesionAutorizada(sesionId);
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
@@ -81,7 +82,7 @@ public class SesionController {
     public ResponseEntity<List<SesionResponse>> listarSesiones(
             @RequestParam(required = false) UUID docenteId) {
 
-        var sesiones = service.listarSesiones(docenteId).stream()
+        var sesiones = service.listarSesionesAutorizadas(docenteId).stream()
                 .map(SesionResponse::from)
                 .toList();
         return ResponseEntity.ok(sesiones);
@@ -91,12 +92,12 @@ public class SesionController {
 
     @PutMapping("/{sesionId}")
     public ResponseEntity<SesionResponse> actualizarSesion(
-            @RequestHeader("X-Docente-Id") UUID docenteId,
+            @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
             @PathVariable UUID sesionId,
             @RequestBody @Valid ActualizarSesionRequest request) {
 
         var sesion = service.actualizarSesion(
-                docenteId, sesionId,
+                service.resolverDocenteAutenticado(docenteId), sesionId,
                 request.titulo(), request.descripcion(),
                 request.fechaInicio(), request.fechaFin());
 
@@ -107,11 +108,11 @@ public class SesionController {
 
     @PatchMapping("/{sesionId}/estado")
     public ResponseEntity<SesionResponse> cambiarEstado(
-            @RequestHeader("X-Docente-Id") UUID docenteId,
+            @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
             @PathVariable UUID sesionId,
             @RequestBody @Valid CambiarEstadoRequest request) {
 
-        var sesion = service.cambiarEstado(docenteId, sesionId, request.nuevoEstado());
+        var sesion = service.cambiarEstado(service.resolverDocenteAutenticado(docenteId), sesionId, request.nuevoEstado());
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
@@ -119,12 +120,12 @@ public class SesionController {
 
     @PostMapping("/{sesionId}/convocatorias")
     public ResponseEntity<ConvocatoriaResponse> convocarEstudiante(
-            @RequestHeader("X-Docente-Id") UUID docenteId,
+            @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
             @PathVariable UUID sesionId,
             @RequestBody @Valid ConvocarEstudianteRequest request) {
 
         var convocatoria = service.convocarEstudiante(
-                docenteId, sesionId, request.estudianteId());
+                service.resolverDocenteAutenticado(docenteId), sesionId, request.estudianteId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ConvocatoriaResponse.from(convocatoria));
@@ -136,7 +137,7 @@ public class SesionController {
     public ResponseEntity<List<ConvocatoriaResponse>> consultarConvocatorias(
             @PathVariable UUID sesionId) {
 
-        var convocatorias = service.consultarConvocatorias(sesionId).stream()
+        var convocatorias = service.consultarConvocatoriasAutorizadas(sesionId).stream()
                 .map(ConvocatoriaResponse::from)
                 .toList();
         return ResponseEntity.ok(convocatorias);
@@ -149,7 +150,7 @@ public class SesionController {
             @PathVariable UUID sesionId,
             @PathVariable UUID estudianteId) {
 
-        boolean tieneAcceso = service.verificarAccesoSesion(sesionId, estudianteId);
-        return ResponseEntity.ok(tieneAcceso);
+        throw new ReglaNegocioException("M4-ACCESO-LEGADO-RETIRADO",
+                "Esta ruta no autoriza acceso estudiantil; use el contrato interno y la política aprobada");
     }
 }
