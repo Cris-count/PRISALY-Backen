@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.PostgreSqlDockerSmokeTest" time="19.376" tests="1" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="testPostgreSqlConnection" classname="Verificación de conexión a PostgreSQL 16 en Docker (Fase 1)" time="19.374">
+    <system-out><![CDATA[13:30:07.558 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:30:07.568 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:30:07.582 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+13:30:08.188 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:30:19.642 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:30:19.647 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:30:19.703 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
+  Server Version: 29.8.2
+  API Version: 1.56
+  Operating System: Docker Desktop
+  Total Memory: 7606 MB
+  Labels:
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+13:30:20.003 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+13:30:20.342 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:30:20.677 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: d3748ef07ca1263888f3dd68934edb1062bd4eafab1b2b83d3afcc67f22071b5
+13:30:21.730 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT1.7265579S
+13:30:21.752 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:30:21.753 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:30:21.754 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+13:30:21.755 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+13:30:21.942 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: c06d8638be2cdfc0342fe10b5fbf0ee4a8bef239f200f8e96bf4a23dc22c3f1f
+13:30:25.809 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT4.0533502S
+13:30:25.810 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:58584/test?loggerLevel=OFF)
+]]></system-out>
+  </testcase>
+</testsuite>

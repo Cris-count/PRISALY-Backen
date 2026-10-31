@@ -1,0 +1,10 @@
+Baseline commit: a42c738027f86915a1284905df24e6e4c28422b4
+0db4b5658e94448c19d69ff9dcbd67f1e1355e69  app/src/main/resources/db/migration/V001__bd0052_estructura.sql
+83af46f509f5ad043d0c78aef51570be6444fbe0  app/src/main/resources/db/migration/V002__bd0052_restricciones.sql
+1257fbcfcbd0a0247a508b87074ed59e0070c8a2  app/src/main/resources/db/migration/V003__bd0052_integridad.sql
+91fa0010b29d21ee822a3913a4076dd37019be85  app/src/main/resources/db/migration/V004__bd0052_integridad_intentos.sql
+c54313109d332b12b0356585fab515175a05d866  app/src/main/resources/db/migration/V005__bd0052_cierre_integridad.sql
+ac0c6cb466bb0dffd888ca846add58d8e8693b41  app/src/main/resources/db/migration/V006__bd0052_proteccion_relaciones.sql
+1b99f09a1a947cf76b636ac1bdbb165d1d6c24b3  app/src/main/resources/db/migration/V007__fase3_politicas_aprobadas.sql
+d68d4136911b578ebbc25edc8fc5100bc1409e1b  app/src/main/resources/db/migration/V008__bloqueo_caso_al_reasignar_sesion.sql
+87d8de3043d5eab7c26fb47e6ac790d73757eda0  app/src/main/resources/db/migration/V009__rf09_solo_casos_publicados.sql
