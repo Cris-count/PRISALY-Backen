@@ -9,9 +9,9 @@ import java.util.Optional;
  * <p>Su implementación prevista adapta el contrato publicado por M1,
  * {@code com.prisaly.m1.application.port.StudentAccessPort}
  * ({@code requireCurrentStudent()} → {@code AuthenticatedStudent(userId,
- * studentId)}). Ese contrato aún no está en esta rama: el adaptador está
- * preparado como parche en {@code m5/docs/parches} y se aplica después de
- * integrar develop. Reglas: la identidad sale solo del servidor, se usa
+ * studentId)}). El contrato ya llega por develop (M5 depende de M4, que
+ * depende de M1), pero el adaptador sigue como parche en {@code m5/docs/parches}
+ * hasta que se autorice aplicarlo. Reglas: la identidad sale solo del servidor, se usa
  * {@code studentId}, y cualquier denegación de M1 devuelve vacío. Mientras
  * DD-02 siga abierta, M1 deniega siempre ({@code DenyingStudentAccessService}).
  */

@@ -18,8 +18,10 @@ Fuente: `ab926ec` (`feature/m1-identidad-acceso`) y `docs/M1-M5-STUDENT-IDENTITY
 **Disponibilidad:**
 
 - `ab926ec` está en `develop` (`03b0899`, PR #5).
-- **No está en esta rama**: el último merge de develop fue `a42c738`.
-- Integrar `develop` sería limpio (`git merge-tree` sin conflictos; develop no toca `m5/`), pero **no está autorizado**.
+- La rama local de resolución `integracion/m5-develop` integra develop
+  `2c96c91`, así que el contrato ya compila en M5 (de forma transitiva, por
+  la dependencia de M5 en M4). La rama `feature/m5-participacion-intentos`
+  todavía no lo integra: falta autorización.
 
 ## 2. Diferencias con el puerto provisional de M5
 
@@ -58,11 +60,15 @@ una rama local de borrador (M5 + develop `03b0899`, no publicada):
 - La suite unitaria pasa 121/121 con JUnit 5.10.2, fuera de Maven.
 - `git apply --check` del parche sobre (esta rama + develop `03b0899`) es OK.
 
-**Para aplicarlo, una vez autorizada la integración de develop:**
+**Para aplicarlo, una vez autorizado:** después de integrar develop, el
+fragmento de `m5/pom.xml` del parche ya no aplica literalmente, porque develop
+añadió la dependencia de M4 en el mismo punto. Las dos clases Java sí aplican.
+Hay que añadir a mano la dependencia directa de `m1` junto a la de `m4` (M5 usa
+clases de M1 directamente; no conviene depender solo de la transitiva):
 
 ```powershell
-git merge --no-ff origin/develop
-git am m5/docs/parches/0001-feat-m5-adaptar-la-identidad-estudiantil-de-M1.patch
+git apply --exclude=m5/pom.xml m5/docs/parches/0001-feat-m5-adaptar-la-identidad-estudiantil-de-M1.patch
+# añadir <dependency> com.prisaly:m1 en m5/pom.xml y revisar el diff
 .\mvnw.cmd -pl m5 -am test
 ```
 
@@ -101,7 +107,7 @@ DD-02, integrar y conciliar el contrato de M4, y controladores con rutas de ARQ-
 
 ## 6. Bloqueos
 
-1. Autorización para integrar `develop` (`03b0899`) en la rama M5.
+1. Autorización para incorporar a la rama M5 la resolución con develop (`2c96c91`).
 2. DD-02: autenticación real del estudiante (M1).
-3. Integración y conciliación del contrato de M4 (publicado en `315746e`; aún no está en develop).
+3. Conciliación del contrato de M4 (ya en develop desde `413c8bf`).
 4. ARQ-008.3: rutas de estudiante (sin ellas no hay controladores).

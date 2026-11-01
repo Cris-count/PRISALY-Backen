@@ -1,6 +1,6 @@
 # M5 — Capa REST: dependencias y decisiones pendientes
 
-Estado al 2026-10-31 (actualizado en el Prompt 11). Rama `feature/m5-participacion-intentos`. Responsable: Integrante 4.
+Estado al 2026-10-31. Rama `feature/m5-participacion-intentos` (`f4c981c`) conciliada con develop (`2c96c91`), que ya incluía una copia de M5 `3fc823e` con la traducción 503 de M4. Responsable: Integrante 4. Evidencia de M4: [estado actual](../../m4/review/ESTADO_ACTUAL.md).
 
 ## Resumen
 
@@ -39,14 +39,14 @@ contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
 | Paso del recorrido | Angular (simulador) | M1 Identidad | M3 Casos | M4 Sesiones | M5 Participación | M6 Evaluación |
 |---|---|---|---|---|---|---|
 | Identificar al estudiante | Pendiente: sin pantalla de acceso | Pendiente: DD-02; la ruta de estudiante responde 501 | — | Pendiente: acceso por convocatoria | Provisional: puerto `IdentidadEstudianteActual`, sin implementación | — |
-| Ver sesiones disponibles | Bloqueado: `consultarSesionesAutorizadas` falla con contrato pendiente | Pendiente | — | Pendiente: elegibilidad (rama sin integrar) | — | — |
+| Ver sesiones disponibles | Bloqueado: `consultarSesionesAutorizadas` falla con contrato pendiente | Pendiente | — | Consulta informativa disponible; elegibilidad pendiente | — | — |
 | Iniciar intento | Bloqueado | Pendiente | Listo en develop: caso publicado y bloqueado (V007–V009) | Pendiente: ventana y límite temporal | Pendiente (DD-14) | — |
 | Ver escenario y preguntas | Listo con datos simulados; contenido real pendiente | — | Pendiente: contrato de contenido para M5 (sin respuestas correctas) | — | — | — |
 | Responder y cambiar respuesta | Listo en presentación; persistencia pendiente | Pendiente | Garantizado por la base (FK compuesta y trigger) | — | Listo internamente: registrar; Provisional: actualizar | — |
 | Consultar o reanudar intento | Bloqueado | Pendiente | — | Pendiente: titularidad | Listo internamente: consultar. Provisional: control de titularidad (puerto `TitularidadIntentos`, sin implementación) | — |
 | Tiempo restante | Listo, solo informativo | — | — | Pendiente: límite temporal | `TIEMPO_VENCIDO` listo como motivo | — |
 | Finalizar | Listo en presentación (confirmación) | Pendiente | — | — | Listo internamente: se rechaza una segunda finalización sin efectos | Pendiente: aviso de intento finalizado |
-| Errores HTTP | Listo: clasificación en el cliente | 401/403 de la cadena compartida | — | Formato distinto (`codigo, mensaje`) | Listo: traducción (propuesta) | — |
+| Errores HTTP | Listo: clasificación en el cliente | 401/403 de la cadena compartida | — | Formato común `{code, message}` | Listo: traducción (propuesta) | — |
 
 ## Piezas provisionales preparadas (sin exponer)
 
@@ -75,20 +75,18 @@ contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
 |---|---|---|
 | Arquitectura | ARQ-008.3 con las rutas, verbos, DTO y códigos de error de M5 | Implementar los controladores sin inventar la API |
 | M1 / Arquitectura | Decisión DD-02 y su implementación: identidad del estudiante en la petición, a través de un contrato de M1 (no de Spring Security) | Saber quién es el estudiante |
-| M4 | Titularidad de la convocatoria. **Publicado, pendiente de conciliación e integración**: `com.prisaly.m4.api.ProgramacionParticipacionPort` (`315746e`, PR #2). Ver `M5-M4-CONCILIACION-PROGRAMACION.md` | Verificar la titularidad sin leer tablas de M4 desde M5 |
+| M4 | Titularidad de la convocatoria: `com.prisaly.m4.api.ProgramacionParticipacionPort` y `ProgramacionAutenticadaPort`, **integrados en develop y pendientes de conciliación** con M5. M5 debe conectar su resolución persistida Intento → Participacion → Convocatoria. Ver `M5-M4-CONCILIACION-PROGRAMACION.md` | Verificar la titularidad sin leer tablas ni repositorios internos de M4; el contexto no autoriza iniciar ni reanudar |
 | M4 | Elegibilidad, ventana de sesión y límite temporal. `ContextoProgramacion` entrega los datos persistidos, pero M4 declara que **no** autoriza iniciar, reanudar ni repetir | Iniciar, reanudar y finalizar por tiempo |
 | M1 | Permisos de personal sobre intentos, si la consulta docente está en alcance | Consultas del docente (no definidas hoy) |
 | M6 | Contrato para recibir un intento finalizado | Aviso después de persistir la finalización |
-| Equipo | V010 de M4: en `1d513f8` queda fuera del descubrimiento de Flyway (`db/m4-propuesta`), pendiente de Dirección Técnica | Evitar choques en Flyway |
+| Equipo | V010 histórica de M4: fuera del descubrimiento automático de Flyway (`db/m4-propuesta`); historial compartido pendiente de Dirección Técnica | Conciliar el despliegue sin alterar migraciones aplicadas |
 
 Notas:
 
-- M4 publica `GET /m4/sesiones/{id}/acceso/{estudianteId}` ("expuesto para
-  M5"). Dentro del monolito modular, M5 debería consumir un puerto Java de M4,
-  no una llamada HTTP.
-- M4 publicó sus contratos Java en `feature/m4-programacion-convocatorias`
-  (`315746e`, PR #2; la rama está en `9941085`). Todavía no están en develop
-  (`03b0899`) ni en esta rama.
+- La ruta heredada `GET /m4/sesiones/{id}/acceso/{estudianteId}` está retirada y
+  devuelve 410. M5 consume puertos Java de M4, sin llamadas HTTP internas.
+- M4 y sus contratos están en develop (`413c8bf`). Esta rama integra develop
+  (`2c96c91`) en una rama local de resolución, sin publicar.
 
 ## Decisiones que requieren aprobación
 
@@ -100,7 +98,7 @@ Notas:
 | 4 | Intento ajeno: ¿responder 404 (no revela su existencia) o 403? | Pendiente. Con el contrato de M4 la consulta devuelve vacío para "inexistente" y para "ajeno", así que el resultado sería 404. La traducción a 403 `FORBIDDEN` sigue siendo provisional |
 | 7 | Identidad estudiantil no disponible (DD-02) frente a sin autenticación y sin permiso | Pendiente de Arquitectura. M1, M4 y M5 la traducen distinto (ver abajo) |
 | 5 | DD-14: autorización de repetición | Fuera de M5 hasta tener el contrato |
-| 6 | Formato común de errores: M1 y la seguridad usan `{code, message}`; M4 pasó a `{code, message}` con códigos `M4-…` en `9941085` | M5 sigue el de develop (`{code, message}`); pendiente de ratificación central |
+| 6 | Formato común de errores HTTP | M1, M4 y M5 usan `{code, message}`; el catálogo de códigos (`UPPER_SNAKE` frente a `M4-…`) está pendiente de ratificación |
 
 ## Traducción de errores propuesta (pendiente de ARQ-008.3)
 
@@ -121,12 +119,13 @@ compartida.
 | `RespuestaNoRegistradaException` | 409 | `RESPUESTA_NO_REGISTRADA` |
 | Violación de restricciones de la base | 409 | `CONFLICTO_DATOS` (mensaje genérico) |
 | `PersistenciaIntentoException` | 500 | `ERROR_INTERNO` (mensaje genérico) |
+| `ConsultaProgramacionNoDisponibleException` (API M4) | 503 | `M4-CONSULTA-PROGRAMACION-NO-DISPONIBLE` (mensaje genérico) |
 
 ## Validación desde Windows
 
 ```powershell
-cd C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen
-.\mvnw.cmd -pl m5 -am test                 # unitarias de M5
+# Desde la raíz del backend; Docker disponible para las pruebas M4 transitivas
+.\mvnw.cmd -pl m5 -am test                 # pruebas de M5 y dependencias M1/M3/M4
 .\mvnw.cmd -pl m5 -am -Pdocker-it verify   # unitarias + integración PostgreSQL (Docker)
 .\mvnw.cmd -pl app -am test                # arranque del ensamblado
 ```
@@ -142,9 +141,9 @@ cd C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen
 `EstudianteNoIdentificadoException` no distingue la causa: el adaptador
 convierte cualquier `IdentityDomainException` en "sin identidad". Por eso la
 traducción actual a 403 es correcta para el segundo caso, pero discutible para
-el tercero, donde M4 responde 503. El sondeo de M4
-(`m4/review/conciliacion-bd0052/M4M5ConsoleProbe.java`) se escribió contra la
-versión publicada de M5 y espera 401 para "sin identidad".
+el tercero, donde M4 responde 503. La copia de M5 incorporada en develop
+(`413c8bf`) conserva el 401 `UNAUTHENTICATED` de `3fc823e`; esta resolución
+mantiene el 403 del commit `5c7bd7b`. Ninguno de los dos está ratificado.
 
 No se cambia el código hasta que Arquitectura ratifique la política.
 Alternativa preparada para discutir (no implementada):

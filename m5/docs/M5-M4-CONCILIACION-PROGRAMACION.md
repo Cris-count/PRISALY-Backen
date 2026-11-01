@@ -34,7 +34,7 @@ Semántica que declara M4:
 |---|---|---|
 | `TitularidadIntentos.titularDe(intento)` → titular | `consultarConvocatoria(convocatoria, estudiante)` → contexto o vacío | M4 no revela el titular sin el estudiante. El puerto de M5 pasaría a ser "¿es titular?" |
 | `ControlAccesoIntentos`: inexistente → 404, ajeno → 403 | Vacío para ambos casos | Con M4, un intento ajeno resulta en 404 (decisión 4) |
-| Errores de los puertos: se propagan | `ConsultaProgramacionNoDisponibleException` | M5 no la traduce: hoy acabaría en 500 genérico, no en 503 |
+| Errores de los puertos: se propagan | `ConsultaProgramacionNoDisponibleException` | Resuelto al integrar develop (`413c8bf`): M5 la traduce a 503 `M4-CONSULTA-PROGRAMACION-NO-DISPONIBLE` con mensaje genérico, sin la causa SQL |
 | Identidad: `IdentidadEstudianteActual` (parche M1) | `ProgramacionAutenticadaPort` vuelve a llamar a M1 | Usar `ProgramacionParticipacionPort` evita resolver la identidad dos veces |
 
 Propuesta de conciliación, para acordar con el Integrante de M4 (no
@@ -55,9 +55,10 @@ M4 sobre PostgreSQL. Se escribieron contra la versión publicada de M5
 (`3fc823e`):
 
 - Confirman que el estudiante ajeno produce 404.
-- Señalan una brecha: el error técnico de M4 no se traduce a 503.
+- Señalan una brecha: el error técnico de M4 no se traduce a 503. Quedó
+  corregida en develop (`413c8bf`) y se conserva en esta resolución.
 - Esperan 401 para "sin identidad". Con `5c7bd7b` (403) esa comprobación ya
-  no se cumpliría.
+  no se cumpliría. El sondeo se retiró de develop en `2c96c91`.
 
 ## 4. Riesgos al integrar develop y M4
 
