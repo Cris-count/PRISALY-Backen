@@ -2,8 +2,8 @@
 
 Estado al 2026-11-01. Responsable: Integrante 4.
 
-- Rama: `trabajo/m5-avance-nocturno`, creada desde `747a2a4`.
-- Los cambios están solo en `m5/`; el resto del árbol es idéntico a `747a2a4`.
+- Rama: `trabajo/m5-avance-nocturno`, creada desde `9c8c68b`.
+- Los cambios están solo en `m5/`; el resto del árbol es idéntico a `9c8c68b`.
 - No se publicó nada.
 
 **Integración funcional no terminada.** M5 ya verifica identidad (M1) y
@@ -17,10 +17,10 @@ titularidad (M4) en un proxy de protección, pero:
 
 | Commit | Contenido |
 |---|---|
-| `eb4a591` | Adaptador `IdentidadEstudianteDesdeM1` (parche 0001) y dependencia directa de `m1` |
-| `9dff295` | Contrato `com.prisaly.m5.api.HistorialParticipacionPort` para M4 y su implementación JDBC |
-| `fae45d5` | Titularidad sobre M4, proxy `AccesoProtegidoParticipacion` y sus pruebas |
-| `7e7efc1` | Prueba de concurrencia de actualizaciones sobre una misma respuesta |
+| `4e0b90a` | Adaptador `IdentidadEstudianteDesdeM1` (parche 0001) y dependencia directa de `m1` |
+| `535762e` | Contrato `com.prisaly.m5.api.HistorialParticipacionPort` para M4 y su implementación JDBC |
+| `5716472` | Titularidad sobre M4, proxy `AccesoProtegidoParticipacion` y sus pruebas |
+| `aee4e22` | Prueba de concurrencia de actualizaciones sobre una misma respuesta |
 | (último) | Documentación: este informe y la actualización de los documentos de M1, M4 y REST |
 
 ## 2. Funcionalidad desarrollada
@@ -81,7 +81,7 @@ conservando sus escenarios: `ControlAccesoIntentosTest` y
   - Excluidas: las IT, `ProgramacionM4ErroresHttpTest` y
     `SolicitudRespuestaProvisionalValidacionTest`, que necesitan librerías no
     disponibles en este entorno.
-  - Esperado con Maven: **154** = 127 de `747a2a4` + 27 nuevas.
+  - Esperado con Maven: **154** = 127 de `9c8c68b` + 27 nuevas.
 - **Compilación de las IT:** solo fallan por las librerías ausentes
   (Testcontainers, Spring Boot Test). No hay ningún error de símbolos de M1,
   M4 ni M5.
@@ -142,7 +142,7 @@ aplicación completa, y ahora M5 registra beans que necesitan:
 
 ## 9. Riesgos
 
-- ~~**Beans intercambiables**~~: **resuelto** en `d4a6b11` (M5-INC-02). Ahora
+- ~~**Beans intercambiables**~~: **resuelto** en `24d02b2` (M5-INC-02). Ahora
   el proxy es el único bean de `OperacionesParticipacion`, y una prueba de
   arquitectura lo vigila.
 - **Mensaje de 404:** `IntentoNoEncontradoException` repite en el mensaje la
@@ -154,8 +154,8 @@ aplicación completa, y ahora M5 registra beans que necesitan:
 
 ## 10. Revisión e integración
 
-1. Revisar `git log 747a2a4..trabajo/m5-avance-nocturno` y
-   `git diff 747a2a4 trabajo/m5-avance-nocturno -- m5`.
+1. Revisar `git log 9c8c68b..trabajo/m5-avance-nocturno` y
+   `git diff 9c8c68b trabajo/m5-avance-nocturno -- m5`.
 2. Ejecutar los cuatro comandos de la sección 5.
 3. Si pasan, y con autorización:
    `git switch integracion/m5-develop` y

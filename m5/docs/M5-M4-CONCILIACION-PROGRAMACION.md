@@ -1,7 +1,7 @@
 # M5 ← M4 | Conciliación del contrato de programación
 
-> **Actualización (rama `trabajo/m5-avance-nocturno`, commits `9dff295` y
-> `fae45d5`):** la propuesta de la sección 2 está implementada en
+> **Actualización (rama `trabajo/m5-avance-nocturno`, commits `535762e` y
+> `5716472`):** la propuesta de la sección 2 está implementada en
 > `TitularidadIntentosDesdeM4`, y M5 publica `HistorialParticipacionPort` para
 > M4. Ver `M5-CONTINUIDAD-AVANCE-NOCTURNO.md`.
 
@@ -57,12 +57,12 @@ implementada):
 `m4/review/conciliacion-bd0052/M4M5ConsoleProbe.java` y
 `evidence/contrato-m4-m5.txt` (`9941085`) ensamblan `ControlAccesoIntentos` con
 M4 sobre PostgreSQL. Se escribieron contra la versión publicada de M5
-(`3fc823e`):
+(`b03ca2e`):
 
 - Confirman que el estudiante ajeno produce 404.
 - Señalan una brecha: el error técnico de M4 no se traduce a 503. Quedó
   corregida en develop (`413c8bf`) y se conserva en esta resolución.
-- Esperan 401 para "sin identidad". Con `5c7bd7b` (403) esa comprobación ya
+- Esperan 401 para "sin identidad". Con `83a087a` (403) esa comprobación ya
   no se cumpliría. El sondeo se retiró de develop en `2c96c91`.
 
 ## 4. Riesgos al integrar develop y M4
@@ -78,7 +78,7 @@ M4 sobre PostgreSQL. Se escribieron contra la versión publicada de M5
 
 ## 5. Verificación (fuera de Maven)
 
-Borrador local, no publicado y ya eliminado: esta rama (`13779e9`) más
+Borrador local, no publicado y ya eliminado: esta rama (`71a2eb3`) más
 `feature/m4-programacion-convocatorias` (`9941085`, que contiene develop
 `03b0899`).
 

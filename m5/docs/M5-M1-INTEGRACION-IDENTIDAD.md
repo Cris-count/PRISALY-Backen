@@ -1,6 +1,6 @@
 # M5 ← M1 | Integración preparatoria de la identidad estudiantil
 
-> **Actualización (rama `trabajo/m5-avance-nocturno`, commit `eb4a591`):** el
+> **Actualización (rama `trabajo/m5-avance-nocturno`, commit `4e0b90a`):** el
 > adaptador del parche 0001 ya está aplicado, con la dependencia directa de
 > `m1`. Ver `M5-CONTINUIDAD-AVANCE-NOCTURNO.md`. El parche se conserva como
 > registro histórico.
@@ -37,7 +37,7 @@ Fuente: `ab926ec` (`feature/m1-identidad-acceso`) y `docs/M1-M5-STUDENT-IDENTITY
 | Sin dependencia de Spring Security | No lee `SecurityContext` | El adaptador no lee contexto ni parámetros del cliente |
 | Errores de proveedor no previstos | — | Se propagan: nunca conceden acceso |
 
-Ajuste aplicado en esta rama (`5c7bd7b`): `EstudianteNoIdentificadoException`
+Ajuste aplicado en esta rama (`83a087a`): `EstudianteNoIdentificadoException`
 se traduce a **403 `STUDENT_IDENTITY_UNAVAILABLE`** (antes era 401). Es
 **provisional y está en disputa**:
 

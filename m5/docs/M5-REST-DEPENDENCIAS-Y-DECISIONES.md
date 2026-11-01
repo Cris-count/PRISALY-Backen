@@ -1,6 +1,6 @@
 # M5 — Capa REST: dependencias y decisiones pendientes
 
-Estado al 2026-10-31. Rama `feature/m5-participacion-intentos` (`f4c981c`) conciliada con develop (`2c96c91`), que ya incluía una copia de M5 `3fc823e` con la traducción 503 de M4. Responsable: Integrante 4. Evidencia de M4: [estado actual](../../m4/review/ESTADO_ACTUAL.md).
+Estado al 2026-10-31. Rama `feature/m5-participacion-intentos` (`37a0366`) conciliada con develop (`2c96c91`), que ya incluía una copia de M5 `b03ca2e` con la traducción 503 de M4. Responsable: Integrante 4. Evidencia de M4: [estado actual](../../m4/review/ESTADO_ACTUAL.md).
 
 ## Resumen
 
@@ -148,8 +148,8 @@ compartida.
 convierte cualquier `IdentityDomainException` en "sin identidad". Por eso la
 traducción actual a 403 es correcta para el segundo caso, pero discutible para
 el tercero, donde M4 responde 503. La copia de M5 incorporada en develop
-(`413c8bf`) conserva el 401 `UNAUTHENTICATED` de `3fc823e`; esta resolución
-mantiene el 403 del commit `5c7bd7b`. Ninguno de los dos está ratificado.
+(`413c8bf`) conserva el 401 `UNAUTHENTICATED` de `b03ca2e`; esta resolución
+mantiene el 403 del commit `83a087a`. Ninguno de los dos está ratificado.
 
 No se cambia el código hasta que Arquitectura ratifique la política.
 Alternativa preparada para discutir (no implementada):

@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-01. Responsable: Integrante 4.
 
-**Rama:** `trabajo/m5-avance-nocturno`. Commit inicial `1da1c8a`; el commit
+**Rama:** `trabajo/m5-avance-nocturno`. Commit inicial `5b06155`; el commit
 final es el que añade este informe (ver `git log`).
 
 **Evaluación:** M5 está **listo para revisión técnica** de lo implementado
@@ -15,15 +15,15 @@ final es el que añade este informe (ver `git log`).
 
 | Commit | Tipo | Contenido |
 |---|---|---|
-| `d4a6b11` | fix | El proxy pasa a ser el único bean de operaciones (M5-INC-02); repositorios Spring Data de paquete; pruebas de contexto y de arquitectura |
-| `2bfdc09` | fix | Identidad de M1 sin `userId` denegada (M5-INC-03); pruebas de suplantación y de filtración |
-| `218114b` | fix | Cuerpo mal formado y tipo incorrecto con `{code, message}` y mensaje genérico (M5-INC-04) |
+| `24d02b2` | fix | El proxy pasa a ser el único bean de operaciones (M5-INC-02); repositorios Spring Data de paquete; pruebas de contexto y de arquitectura |
+| `aefb73b` | fix | Identidad de M1 sin `userId` denegada (M5-INC-03); pruebas de suplantación y de filtración |
+| `d203ac6` | fix | Cuerpo mal formado y tipo incorrecto con `{code, message}` y mensaje genérico (M5-INC-04) |
 | (final) | docs | Registro de incidencias, documento técnico (contratos, frontend, trazabilidad, plan de cierre), aviso de ciclo en `HistorialParticipacionPort` (M5-INC-08) y este informe |
 
 Ningún archivo fuera de `m5/` cambia:
 
 ```powershell
-git diff --stat 1da1c8a -- . ':!m5'   # vacío
+git diff --stat 5b06155 -- . ':!m5'   # vacío
 ```
 
 ## 2. Archivos
@@ -105,8 +105,8 @@ Central responde 403 y no hay Docker.
 cd C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen
 git switch trabajo/m5-avance-nocturno
 git status --short
-git log --oneline 1da1c8a..HEAD
-git diff --stat 1da1c8a -- . ':!m5'          # debe estar vacío
+git log --oneline 5b06155..HEAD
+git diff --stat 5b06155 -- . ':!m5'          # debe estar vacío
 .\mvnw.cmd -pl m5 -am test
 .\mvnw.cmd -pl m5 -am -Pdocker-it verify
 .\mvnw.cmd -pl app -am test
@@ -129,7 +129,7 @@ Puntos a vigilar:
 3. Con autorización:
    `git switch feature/m5-participacion-intentos` y
    `git merge --ff-only integracion/m5-develop`.
-   Es un avance rápido sobre `f4c981c`, sin reescribir historia.
+   Es un avance rápido sobre `37a0366`, sin reescribir historia.
 4. Antes de publicar, comprobar que develop no avanzó; si avanzó, repetir la
    conciliación en una rama nueva.
 5. `git push` de la rama M5 (sin force) y revisión del PR.

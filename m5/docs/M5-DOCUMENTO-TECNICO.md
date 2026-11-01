@@ -102,7 +102,7 @@ Cadena obligatoria para toda operación de estudiante:
 
 | Aspecto | Estado |
 |---|---|
-| Contrato `StudentAccessPort` / `AuthenticatedStudent(userId, studentId)` | Integrado (`eb4a591`, `2bfdc09`) |
+| Contrato `StudentAccessPort` / `AuthenticatedStudent(userId, studentId)` | Integrado (`4e0b90a`, `aefb73b`) |
 | Suplantación (id de otro estudiante, `userId` en lugar de `studentId`, token de personal) | Probado: deniega |
 | Fallo del proveedor | Probado: se propaga, sin acceso |
 | Autenticación real del estudiante | **Bloqueado por DD-02.** M5 no la simula |
