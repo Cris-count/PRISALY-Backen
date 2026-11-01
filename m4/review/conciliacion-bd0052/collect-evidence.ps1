@@ -6,7 +6,7 @@ $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 $evidence = if ($EvidenceDirectory) { [IO.Path]::GetFullPath($EvidenceDirectory) } else { Join-Path $PSScriptRoot 'evidence' }
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
-$results = foreach ($module in @('m1', 'm3', 'm4', 'm5', 'app')) {
+$results = foreach ($module in @('m1', 'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'app')) {
     foreach ($runner in @('surefire', 'failsafe')) {
         foreach ($file in Get-ChildItem (Join-Path $repositoryRoot "$module/target/$runner-reports/TEST-*.xml") -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -ge $RunStartedAt }) {
             $suite = ([xml](Get-Content -LiteralPath $file.FullName -Raw)).testsuite

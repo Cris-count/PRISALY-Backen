@@ -1,2 +1,3 @@
-SHA256 M5 local/anidado: 125997644202931DA0C8D780FE33C85CB8C654EBE6E1C862C8B68E11146EB3BC (idénticos)
+SHA256 M5 local/anidado: 5D14EBCB6792EB7C89048A7252D77061B332406F5168D7433CED1CF23CE44DA2 (idénticos)
 Clases de prueba y controlador HTTP fixture en JAR M5: 0
+Puente HistorialM4M5Configuration: presente en app; fixture HistorialM4M5IT: ausente

@@ -1,66 +1,39 @@
-# Revisión conjunta M1–M7 y trabajo local M4–M5
-Fecha: 31/10/2026. Base develop: feec0fb. M5 incorporado desde origin/feature/m5-participacion-intentos, commit3fc823e, solo al árbol de trabajo. Sin commit, push ni cambio de PR en esta fase.
+# Revisión conjunta y conexión de historial M4–M5
 
-## Resultado y alcance
-La primera ejecución completa con M5 incorporado pasó431 pruebas. Tras la corrección503 se aprobaron436 pruebas. La reorganización de M4 añade9 casos: la última verificación pasó **445 pruebas, cero fallos, errores u omisiones**: M1=14, M3=127, M4=149, M5=145 y app=10. Se verificó por separado la coincidencia entre XML nuevos y resúmenes Maven. Ver [resultado definitivo](evidence/RESULTADO.md). Los resultados demuestran las operaciones cubiertas, no un recorrido académico completo.
+01/11/2026. Base local develop, 8b6dc33. Nuevo puente de historial y documentación locales, sin commit ni push.
 
-| Módulo | Implementación disponible | Resultado de revisión |
-|---|---|---|
-| M1 | Identidad, permisos y autenticación de personal | Ocho pruebas Surefire y seis PostgreSQL. Acceso estudiantil DD-02 sigue denegado. |
-| M2 | Solo package-info y pom | No hay funcionalidad ni pruebas para certificar. |
-| M3 | Dominio, lectura/escritura del agregado, huella y comandos parciales | 89 pruebas Surefire y38 PostgreSQL. Se revisó sin modificarlo. No expone recorrido REST de casos completo. |
-| M4 | Sesiones, convocatorias, State y consulta de programación | 107 pruebas Surefire y42 Failsafe. Persistencia oficial y reglas RF09/F303 cubiertas. Una prueba Surefire usa Docker. |
-| M5 | Dominio, fachada y persistencia de intentos/respuestas | Línea base124 unitarias y16 PostgreSQL. Incorporada localmente; se corrige503 y se añaden pruebas conjuntas. |
-| M6 | Solo package-info y pom | Sin evaluación implementada en esta rama. |
-| M7 | Solo package-info y pom | Sin proveedor real de notificaciones en esta rama. |
-| app | Ensamblado y seguridad | Una prueba Surefire y nueve PostgreSQL. El ensamblado no demuestra integración funcional de los módulos vacíos. |
+## Resultado
 
-No se probaron Angular ni interfaces de usuario. La rama remota M3 tiene avances posteriores sin incorporar a develop; este informe evalúa feec0fb, sin fusionar ni modificar trabajo ajeno.
+Regresión completa con PostgreSQL Docker: **534 pruebas aprobadas**, cero fallos, errores u omitidas. M1=14, M3=127, M4=149, M5=202, M7=22, app=20. XML de la ejecución y resúmenes Maven coinciden. Ver [resultado y evidencia](evidence/RESULTADO.md).
 
-## Defectos encontrados y cambios locales
-1. **M5 no estaba en develop.** Se trajo únicamente m5 desde3fc823e con git restore --worktree, sin cambiar el índice ni generar un merge/commit. Sus140 pruebas originales pasaron antes de editarlo.
-2. **Error M4 sin traducir en M5.** ProgramacionM4ErroresHttpTest reprodujo una ServletException sin respuesta503. ManejadorErroresM5 ahora captura ConsultaProgramacionNoDisponibleException y TraductorErroresM5 devuelve503 con código público M4 y mensaje genérico. Se añade dependencia unidireccional M5→M4 para consumir su API pública; M4 no depende de M5 ni se crean llamadas HTTP entre módulos.
-3. **Conteo histórico contaminado.** El anterior total207/157 incluía un XML Surefire antiguo con17 casos de SesionAcademicaPostgreSqlIT del30/10, además de su ejecución Failsafe vigente. El log original de esa fase suma190 pruebas,140 de M4. Se conserva la explicación de la corrección; los XML y conteos obsoletos se retiraron con autorización para evitar reutilizarlos. El colector exige ahora RunStartedAt y excluye los archivos anteriores a esa ejecución.
-4. **Bloqueos del entorno.** Docker estaba apagado y el primer intento falló en M1. Se inició Docker Desktop. Maven no resolvió Maven Central para una nueva dependencia de M3; se descargaron desde Maven Central el JAR/POM jackson-core2.21.7 y sus POM base/BOM, comprobando SHA1 oficial antes de colocarlos en la caché local. No se cambiaron versiones ni pom de M3.
+M2 y M6 compilan su estructura, sin funcionalidad ni pruebas para certificar. M7 ya dispone de registro de avisos, Observer, adaptador M4 y22 pruebas. M5 ya incluye identidad desde M1, titularidad desde M4, protección de operaciones e historial persistido. DD-02 sigue abierta: esos adaptadores no habilitan una identidad estudiantil permisiva.
 
-Cambios adicionales de prueba M5:
-- El caso de traducción503 se añade al traductor parametrizado.
-- Un controlador exclusivamente de prueba verifica el estado503 y ausencia de detalles SQL en la respuesta HTTP; no crea endpoints de producción.
-- PostgreSQL: resolver Intento→Participacion→Convocatoria y consultar el contexto público M4 para su estudiante; UUID de otro estudiante devuelve vacío.
-- PostgreSQL: fechaRetiro persistida aparece en el contexto, sin convertirla en una decisión de acceso.
-- PostgreSQL: indisponibilidad SQL real provoca la excepción pública M4 y su traducción503; el cambio de nombre de tabla se revierte dentro de la transacción de un contenedor efímero y la consulta vuelve a funcionar.
+## Cambios de esta fase
 
-Los datos de sesión/convocatoria/intento en estas pruebas son fixtures oficiales. No se consideran autorización para iniciar/reanudar ni evidencia de identidad estudiantil productiva. El renombrado se hace solo en PostgreSQL efímero y no se ejecuta en bases compartidas.
+- App ensambla ParticipacionesPort de M4 con HistorialParticipacionPort de M5 en HistorialM4M5Configuration. M4 resuelve sus convocatorias con su puerto de repositorio; M5 consulta sus participaciones. No se añade dependencia Maven M4→M5 ni se accede a repositorios internos M5.
+- La consulta exige la transacción de escritura que mantiene el bloqueo de sesión adquirido por el servicio M4. Una participación protege también sus intentos por FK obligatoria.
+- Se incluyen convocatorias retiradas. Con historial se rechaza edición/reasignación con409 M4-SESION-CON-PARTICIPACIONES. Sin historial se aplican las demás validaciones existentes de M4.
+- Proveedor ausente o fallo de consulta:503 M4-PROVEEDOR-NO-DISPONIBLE, mensaje genérico y rollback. Los respaldos seguros M4 permanecen para ensamblados sin el puente.
+- Diez casos nuevos en app prueban el proveedor único, sesiones sin convocatoria, convocatoria sin historial, participación sin intento, intento existente, retiro con historial, historial de otra sesión, reasignación, error SQL/rollback/recuperación, proveedor ausente y uso sin transacción de escritura. Algunas pruebas agrupan más de una comprobación.
+- Se actualizan los documentos vigentes y el colector incluye M7. No se crean nuevas carpetas de informes.
 
-## Reorganización local de M4
+La primera ejecución falló en la fixture nueva: faltaba Rol.descripcion, obligatoria. Se corrigió únicamente la fixture. Los10 casos pasaron de forma focalizada y luego pasó la regresión completa. No se relajó el esquema ni ninguna protección.
 
-La presentación separa SesionController de ConvocatoriaController, manteniendo las mismas rutas, DTO y manejo de errores. La fachada SesionAcademicaService conserva sus firmas y centraliza en cargarSesionParaModificar los permisos, el bloqueo de fila y la propiedad para actualizar, reasignar, cambiar estado y convocar.
+## Integración real y simulada
 
-La creación valida el agregado antes de consultar o bloquear proveedores externos. Una identidad docente nula se rechaza como no autenticada; SesionRepositoryAdapter exige una transacción de escritura para proteger la programación. Se simplificaron imports y configuración sin cambiar la selección de proveedores ni permitir stubs productivos.
+Reales: PostgreSQL16.15, FlywayV001–V009, repositorios M4, consulta pública de historial M5, servicio transaccional M4, registro M7 y contexto de aplicación. La identidad docente de HistorialM4M5IT es un doble explícito en src/test. Las suites de seguridad M1 se ejecutan por separado. No se demuestra un recorrido estudiantil completo ni Angular.
 
-Se añadieron nueve ejecuciones de prueba: identidad nula y mutación sin docente(2), duración/rango inválidos sin acceso a proveedores(3), validación y error503 de convocatorias por HTTP(2), y persistencia/propiedad de las rutas de convocatorias más rechazo de transacción de solo lectura en PostgreSQL(2). Las nueve ejecuciones nuevas pasaron. La prueba transaccional comprueba la excepción traducida por Spring y su causa; no espera que la excepción Java atraviese el proxy de repositorio sin traducción.
+## Límites y siguientes pasos
 
-La reorganización no modifica los puertos m4/api, las migraciones ni las implementaciones de otros módulos. Los contratos y el esquema BD-005.2 permanecen compatibles. La documentación se actualiza en estos mismos archivos.
+- El futuro inicio de participaciones debe bloquear la misma fila de sesión antes de insertar. M5 aún no implementa ese inicio; no se certifica una carrera contra esa operación futura. Sigue pendiente ratificar el orden global de bloqueos M3–M4–M5.
+- DD-02, elegibilidad, inicio/reanudación, vencimiento y repetición requieren decisiones y recorrido real de estudiante. Titularidad no equivale a elegibilidad.
+- Confirmar V010 en bases compartidas; no modificarla ni reparar historiales unilateralmente. Se conserva fuera de las migraciones automáticas.
+- Ratificar contratos, respuestas de acceso y alcance final de comunicaciones M7. M2/M6 siguen pendientes.
 
-## Lo que todavía impide afirmar que todo funciona
-- M2, M6 y M7 no tienen implementación funcional en develop.
-- M1/DD-02 no ofrece acceso estudiantil ratificado. No se implementó ni se eludió.
-- M5 no expone endpoints de estudiante; iniciar/reanudar y la política de repetición siguen sin implementar/ratificar. Su control de identidad/titularidad permanece provisional, sin conectar a una entrada pública.
-- Faltan las reglas de reloj, vencimiento, cierre durante respuestas, reanudación y repetición, y el orden global de locks entre módulos. Las pruebas actuales de concurrencia no cubren todas esas carreras.
-- M4 mantiene el proveedor de historial M5 ausente con503: todavía falta publicar y ensamblar un contrato productivo de historial. Las pruebas con datos reales no sustituyen ese adaptador.
-- Convocar desde M4 requiere proveedor M7 real; al faltar, la operación falla y revierte. Las pruebas de persistencia M4 importan notificación de prueba explícita.
-- La consulta pública M4 está apagada por defecto (prisaly.m4.consulta-bd0052.enabled); activarla no autoriza académicamente.
-- V010 compartida sigue sin confirmar. El archivo fuente no se altera, no se ejecuta automáticamente ni se aplica ninguna migración correctiva destructiva. Ver conciliacion-bd0052.
+## Reproducir
 
-## Verificación reproducible
-Desde la raíz Maven, con Docker disponible y los cambios locales de M5 presentes:
-```powershell
-$inicioRevision = Get-Date
-$baselineRevision = (Resolve-Path app/src/main/resources/db/migration).Path.Replace('\','/')
-.\mvnw.cmd verify -Pdocker-it "-Dm4.baseline.migrations=$baselineRevision"
-if ($LASTEXITCODE -ne 0) { throw 'La regresión no pasó' }
-.\m4\review\conciliacion-bd0052\collect-evidence.ps1 -RunStartedAt $inicioRevision -EvidenceDirectory m4/review/revision-m4-m5/evidence
-.\m4\review\conciliacion-bd0052\check-package.ps1 -EvidenceDirectory m4/review/revision-m4-m5/evidence
-```
+Desde raíz backend, ejecutar mvnw.cmd verify -Pdocker-it con m4.baseline.migrations apuntando a app/src/main/resources/db/migration. Capturar la hora inicial y pasarla a collect-evidence.ps1 para excluir XML antiguos. check-package.ps1 verifica el empaquetado M4.
 
-Los informes nuevos contienen nombres/resultados de las suites sin propiedades del entorno, SQL de logs ni credenciales. Los logs crudos temporales y los informes de fases sustituidas se retiraron con autorización expresa. Se conserva la evidencia estructurada actual y se consolidaron contratos, decisiones y pendientes vigentes. No se realizaron cambios en implementaciones de app, M1, M2, M3, M6, M7 ni V001–V010.
+Histórico:445 pruebas tras organizar M4;524 al incorporar los avances recientes de M5/M7;534 tras este puente. La antigua cifra207/157 incluía17 pruebas de un XML obsoleto: esa ejecución fue190/140. La evidencia vigente no reutiliza esos informes antiguos.
+
+No se modificaron implementaciones de M1/M2/M3/M5/M6/M7, POM ni migraciones. App solo recibe el ensamblado entre contratos y sus pruebas. Los logs crudos permanecen en target, ignorados por Git.

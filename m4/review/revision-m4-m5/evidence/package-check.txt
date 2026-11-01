@@ -1,4 +1,4 @@
-SHA256 M4 local/anidado: 8F2D0A65C4C2C324BDA0E8C3E20D150BD9E7A39497F4FEC580255FFE5E3662E0 (idénticos)
+SHA256 M4 local/anidado: 7ADC64FB568D561675E0C942203214E783354AF39C31CBF95A8DF2EC73B926B1 (idénticos)
 StubAdapter/TestM4Application: app=0, módulo M4=0
 V010 automática: app=0, módulo M4=0; archivo histórico=1, SHA256 idéntico al fuente
 Estados propuestos obsoletos: 0 clases; tres autoconfiguraciones verificadas
