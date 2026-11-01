@@ -7,7 +7,8 @@ import java.util.Objects;
  */
 public record EnvioCorreoConvocatoria(ConvocatoriaNotificable evento, String asunto, String contenido) {
 
-    public static final String ESTADO_PENDIENTE = "Pendiente";
+    /** @deprecated use {@link EstadoEnvioCorreo#PENDIENTE} */
+    public static final String ESTADO_PENDIENTE = EstadoEnvioCorreo.PENDIENTE;
 
     public EnvioCorreoConvocatoria {
         Objects.requireNonNull(evento, "evento");

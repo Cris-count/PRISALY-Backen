@@ -5,8 +5,8 @@ import com.prisaly.m7.domain.EnvioCorreoConvocatoria;
 public interface RegistroEnvioCorreoPort {
 
     /**
-     * Encola de forma idempotente. Éxito = fila Pendiente consistente con la solicitud.
-     * No envía correo.
+     * Encola de forma idempotente. Éxito = fila existente con los mismos datos inmutables
+     * (cualquier estado). No envía correo ni reactiva Fallido/Enviado.
      */
     void encolar(EnvioCorreoConvocatoria solicitud);
 }
