@@ -17,7 +17,9 @@ import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
 import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
+import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
 import com.prisaly.m5.domain.respuesta.Respuesta;
+import com.prisaly.m5.domain.respuesta.ValorRespuesta;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
 import com.prisaly.m5.presentation.TraductorErroresM5;
 
@@ -219,6 +221,32 @@ class RepositorioIntentosJpaIT {
 
     private OffsetDateTime horaBase() {
         return jdbc.queryForObject("SELECT clock_timestamp()", OffsetDateTime.class);
+    }
+
+    @Test
+    @DisplayName("orden de respuestas: el mismo tras modificar y tras recargar, igual al de PostgreSQL")
+    void ordenDeRespuestasConsistente() {
+        // Se registran en orden inverso al de la base para que la diferencia se note.
+        List<String> ordenBase = jdbc.queryForList(
+                "SELECT p FROM unnest(ARRAY[?::uuid, ?::uuid]) AS p ORDER BY p",
+                String.class, cadena.pregunta1().valor(), cadena.pregunta2().valor());
+        String primera = ordenBase.get(1);
+        String segunda = ordenBase.get(0);
+        ValorRespuesta valorPrimera = primera.equals(cadena.pregunta1().valor()) ? cadena.opcion1a() : cadena.opcion2a();
+        ValorRespuesta valorSegunda = segunda.equals(cadena.pregunta1().valor()) ? cadena.opcion1a() : cadena.opcion2a();
+
+        fachada.registrarRespuesta(cadena.intento(), new ReferenciaPregunta(primera), valorPrimera);
+        List<Respuesta> trasRegistrar =
+                fachada.registrarRespuesta(cadena.intento(), new ReferenciaPregunta(segunda), valorSegunda).respuestas();
+        List<Respuesta> trasRecargar = fachada.consultarIntento(cadena.intento()).respuestas();
+        List<String> persistidas = jdbc.queryForList(
+                "SELECT \"idPregunta\"::text FROM \"Respuesta\" WHERE \"idIntento\" = ? ORDER BY \"idPregunta\"",
+                String.class, cadena.idIntento());
+
+        assertEquals(trasRegistrar, trasRecargar);
+        assertEquals(ordenBase, persistidas);
+        assertEquals(persistidas, trasRecargar.stream().map(r -> r.pregunta().valor()).toList());
+        assertEquals(2, contarRespuestas());
     }
 
     @Test
