@@ -63,4 +63,5 @@ Informes Surefire (si hay fallos): `m7/target/surefire-reports/`.
 ## Relacionado
 
 - Reconocimiento: [`M7-RECONOCIMIENTO.md`](M7-RECONOCIMIENTO.md)
-- Contrato M4 → M7: `NotificacionPort.notificarConvocatoria` (sin simular entrega SMTP)
+- Fase 1 (persistencia/idempotencia): [`M7-FASE1.md`](M7-FASE1.md)
+- Contrato M4 → M7: `NotificacionPort.notificarConvocatoria` (Fase 2 productiva; sin simular entrega SMTP)
