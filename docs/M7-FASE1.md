@@ -8,7 +8,7 @@ Rama: `feature/m7-notificaciones`. Punto de partida conservado: historial con `5
 | --- | --- |
 | Aviso insertado / reutilizado | Registro in-app idempotente |
 | `EnvioCorreo` con `estadoEnvio=Pendiente` | **Encolado**; no entrega SMTP |
-| Retorno normal (vía servicio / adapter de test) | Solicitud registrada |
+| Retorno normal (vía servicio / `NotificacionM4Adapter`) | Solicitud registrada |
 
 ## Contratos
 
@@ -25,12 +25,11 @@ Rama: `feature/m7-notificaciones`. Punto de partida conservado: historial con `5
 
 ## Fase 1 vs Fase 2
 
-`M7Configuration` **no** publica `NotificacionPort`. La clase `NotificacionM4Adapter` existe para Fase 2 / cableado explícito en IT.
+En Fase 2 `M7Configuration` publica `NotificacionPort` (`NotificacionM4Adapter`); ver [`M7-FASE2.md`](M7-FASE2.md).
 
 ## Dependencias pendientes
 
 - Catálogos ratificados de `tipo` / `estadoEnvio`
-- Bean productivo `NotificacionPort` (Fase 2)
 - SMTP / workers (Fase 3)
 - V27
 

@@ -22,6 +22,9 @@ import com.prisaly.m7.infrastructure.EnvioCorreoEntity;
 import com.prisaly.m7.infrastructure.M7Configuration;
 import com.prisaly.m7.infrastructure.NotificacionM4Adapter;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -31,11 +34,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -47,8 +52,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
- * Persistencia real Aviso + EnvioCorreo. El bean {@link NotificacionPort} es solo de test (Fase 2
- * productiva pendiente).
+ * Integración real M4–M7 sobre PostgreSQL. {@link NotificacionPort} lo aporta {@link M7Configuration};
+ * {@code @EnableAutoConfiguration} incluye el fallback de M4, que debe quedar desactivado.
  */
 @SpringBootTest(classes = M7ConvocatoriaPostgreSqlIT.TestApplication.class)
 class M7ConvocatoriaPostgreSqlIT {
@@ -91,6 +96,9 @@ class M7ConvocatoriaPostgreSqlIT {
 
     @Autowired
     PlatformTransactionManager txManager;
+
+    @Autowired
+    ApplicationContext contexto;
 
     UUID docente;
     UUID estudiante;
@@ -136,6 +144,83 @@ class M7ConvocatoriaPostgreSqlIT {
 
     TransactionTemplate tx() {
         return new TransactionTemplate(txManager);
+    }
+
+    /** Counts through a fresh JDBC connection, outside Spring's pool and transaction. */
+    int cantidadDesdeOtraConexion(String tabla) throws SQLException {
+        try (Connection conexion = DriverManager.getConnection(
+                        postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
+                var consulta = conexion.createStatement();
+                var resultado = consulta.executeQuery("SELECT count(*) FROM \"" + tabla + "\"")) {
+            assertTrue(resultado.next());
+            return resultado.getInt(1);
+        }
+    }
+
+    void assertSinFilasM4M7() throws SQLException {
+        assertEquals(0, cantidadDesdeOtraConexion("Convocatoria"));
+        assertEquals(0, cantidadDesdeOtraConexion("Aviso"));
+        assertEquals(0, cantidadDesdeOtraConexion("EnvioCorreo"));
+    }
+
+    void assertRechazoProveedorConCausa(Runnable accion) {
+        var rechazo = assertThrows(ReglaNegocioException.class, accion::run);
+        assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", rechazo.getCodigo());
+        assertNotNull(rechazo.getCause());
+    }
+
+    @Test
+    void unicoProveedorNotificacionPortEsAdaptadorM7() {
+        Map<String, NotificacionPort> proveedores = contexto.getBeansOfType(NotificacionPort.class);
+        assertEquals(1, proveedores.size());
+        assertTrue(proveedores.containsKey("notificacionM7"));
+        assertEquals(NotificacionM4Adapter.class, AopUtils.getTargetClass(notificaciones));
+        assertFalse(contexto.containsBean("notificacionesNoDisponibles"));
+    }
+
+    @Test
+    void convocatoriaAvisoYCorreoSeConfirmanJuntos() throws SQLException {
+        var convocatoria = service.convocarEstudiante(docente, sesion, estudiante);
+        assertEquals(1, cantidadDesdeOtraConexion("Convocatoria"));
+        assertEquals(1, cantidadDesdeOtraConexion("Aviso"));
+        assertEquals(1, cantidadDesdeOtraConexion("EnvioCorreo"));
+        assertEquals(
+                convocatoria.getId(),
+                jdbc.queryForObject("SELECT \"idConvocatoria\" FROM \"EnvioCorreo\"", UUID.class));
+    }
+
+    @Test
+    void falloAlRegistrarAvisoRevierteConvocatoria() throws SQLException {
+        jdbc.execute("ALTER TABLE \"Aviso\" ADD CONSTRAINT prueba_m4m7_fallo_aviso CHECK (false)");
+        try {
+            assertRechazoProveedorConCausa(() -> service.convocarEstudiante(docente, sesion, estudiante));
+            assertSinFilasM4M7();
+        } finally {
+            jdbc.execute("ALTER TABLE \"Aviso\" DROP CONSTRAINT IF EXISTS prueba_m4m7_fallo_aviso");
+        }
+    }
+
+    @Test
+    void falloAlEncolarCorreoRevierteConvocatoriaYAviso() throws SQLException {
+        jdbc.execute("ALTER TABLE \"EnvioCorreo\" ADD CONSTRAINT prueba_m4m7_fallo_envio CHECK (false)");
+        try {
+            assertRechazoProveedorConCausa(() -> service.convocarEstudiante(docente, sesion, estudiante));
+            assertSinFilasM4M7();
+        } finally {
+            jdbc.execute("ALTER TABLE \"EnvioCorreo\" DROP CONSTRAINT IF EXISTS prueba_m4m7_fallo_envio");
+        }
+    }
+
+    @Test
+    void falloPosteriorEnLaTransaccionExteriorRevierteTodo() throws SQLException {
+        assertThrows(
+                IllegalStateException.class,
+                () -> tx().executeWithoutResult(s -> {
+                    service.convocarEstudiante(docente, sesion, estudiante);
+                    assertEquals(1, cantidad("Aviso"));
+                    throw new IllegalStateException("forced failure after M7 registration");
+                }));
+        assertSinFilasM4M7();
     }
 
     @Test
@@ -278,10 +363,5 @@ class M7ConvocatoriaPostgreSqlIT {
             return (id, permiso) -> true;
         }
 
-        /** Solo test: cablea adaptador M4→M7. Producción Fase 1 no publica este bean. */
-        @Bean
-        NotificacionPort notificacionDePrueba(NotificarConvocatoriaService servicio) {
-            return new NotificacionM4Adapter(servicio);
-        }
     }
 }
