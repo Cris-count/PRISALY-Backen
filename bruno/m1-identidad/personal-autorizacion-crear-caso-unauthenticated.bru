@@ -1,0 +1,16 @@
+meta {
+  name: personal-autorizacion-crear-caso-unauthenticated
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/autorizacion/crear-caso
+  body: none
+  auth: none
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
+}

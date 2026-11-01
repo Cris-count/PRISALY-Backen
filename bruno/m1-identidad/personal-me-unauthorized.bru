@@ -1,7 +1,7 @@
 meta {
   name: personal-me-unauthorized
   type: http
-  seq: 5
+  seq: 6
 }
 
 get {
@@ -12,4 +12,5 @@ get {
 
 assert {
   res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
 }
