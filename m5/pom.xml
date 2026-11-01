@@ -14,6 +14,12 @@
     <name>m5</name>
 
     <dependencies>
+        <!-- Contratos públicos de programación y sus errores; sin HTTP entre módulos. -->
+        <dependency>
+            <groupId>com.prisaly</groupId>
+            <artifactId>m4</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Persistencia de M5 (solo la capa infrastructure la usa). -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
