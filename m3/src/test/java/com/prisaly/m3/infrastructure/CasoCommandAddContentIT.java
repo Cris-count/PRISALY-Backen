@@ -98,6 +98,159 @@ class CasoCommandAddContentIT {
     }
 
     @Test
+    void addsQuestionWithExplicitAttributesAndOfficialDateWithoutChangingPriorContent() {
+        var before = saved(CasoEstado.BORRADOR); var other = saved(CasoEstado.BORRADOR);
+        UUID scenario = UUID.fromString(before.caso().escenarios().getFirst().id());
+        UUID questionId = UUID.randomUUID();
+        var after = add(before, new AgregarPreguntaCommand(questionId, scenario,
+                " New question \uD83D\uDE00 ", " Help\n ", "Borrador", false, 19));
+        var question = after.caso().escenarios().getFirst().preguntas().getLast();
+        assertEquals(questionId.toString(), question.id()); assertEquals(" New question \uD83D\uDE00 ", question.enunciado());
+        assertEquals(" Help\n ", question.textoAyuda()); assertEquals("Borrador", question.estadoEdicion());
+        assertFalse(question.visible()); assertEquals(Integer.valueOf(19), question.orden());
+        assertNotNull(question.fechaCreacion()); assertEquals(0, question.fechaCreacion().getNano() % 1_000);
+        assertNull(question.fechaActualizacion()); assertTrue(question.opciones().isEmpty());
+        assertEquals(scenario, jdbc.queryForObject("SELECT \"idEscenario\" FROM public.\"Pregunta\" WHERE \"idPregunta\"=?", UUID.class, questionId));
+        assertEquals(jdbc.queryForObject("SELECT \"fechaCreacion\" FROM public.\"Pregunta\" WHERE \"idPregunta\"=?",
+                java.sql.Timestamp.class, questionId).toInstant(), question.fechaCreacion());
+        assertEquals(before.caso(), withoutQuestion(after.caso(), questionId));
+        assertTrue(after.fingerprint().startsWith("m3-v2:")); assertNotEquals(before.fingerprint(), after.fingerprint());
+        assertEquals(after, read(before)); assertEquals(other, read(other));
+        var next = add(after, new AgregarPreguntaCommand(UUID.randomUUID(), scenario, "Another", null, "Lista", true, 31));
+        var last = next.caso().escenarios().getFirst().preguntas().getLast();
+        assertEquals("Lista", last.estadoEdicion()); assertTrue(last.visible()); assertNull(last.textoAyuda());
+        assertTrue(last.opciones().isEmpty());
+        assertEquals(List.of(3, 19, 31), next.caso().escenarios().getFirst().preguntas().stream().map(Pregunta::orden).toList());
+        // A draft may be incomplete, but the existing publication rule remains unchanged.
+        assertCode(CasoValidation.CODE_INVALID_QUESTION, () -> CasoValidation.assertValidSingleChoiceQuestion(last));
+    }
+
+    @Test
+    void questionAddRejectsMissingForeignParentsStatesAndStalePreconditionWithoutWriting() {
+        var draft = saved(CasoEstado.BORRADOR); var other = saved(CasoEstado.BORRADOR);
+        assertCode(CasoCommandUpdateAdapter.CASE_NOT_FOUND, () -> updates.update(UUID.randomUUID(), draft.fingerprint(),
+                List.of(questionCommand(draft, 19))));
+        for (UUID parent : List.of(UUID.randomUUID(), UUID.fromString(other.caso().escenarios().getFirst().id()))) {
+            assertCode(CasoCommandUpdateAdapter.ELEMENT_NOT_IN_CASE,
+                    () -> add(draft, new AgregarPreguntaCommand(UUID.randomUUID(), parent, "Question", null, "Borrador", true, 19)));
+        }
+        for (CasoEstado state : List.of(CasoEstado.PUBLICADO, CasoEstado.ARCHIVADO)) {
+            var source = saved(state);
+            assertCode(state == CasoEstado.PUBLICADO ? CasoCommandUpdateAdapter.QUESTION_ADD_REQUIRES_DRAFT
+                    : CasoValidation.CODE_ARCHIVED_CASE_OPERATION_PENDING, () -> add(source, questionCommand(source, 19)));
+            assertEquals(source, read(source));
+        }
+        assertEquals(draft, read(draft)); assertEquals(other, read(other));
+        var changed = add(draft, questionCommand(draft, 19));
+        assertCode(CasoCommandUpdateAdapter.STALE_CASE, () -> add(draft, questionCommand(draft, 31)));
+        assertEquals(changed, read(draft));
+    }
+
+    @Test
+    void questionDuplicatesAndCompositeConstraintFailureRollBackEveryCommand() {
+        var source = saved(CasoEstado.BORRADOR); var other = saved(CasoEstado.BORRADOR);
+        UUID parent = UUID.fromString(source.caso().escenarios().getFirst().id());
+        for (UUID id : List.of(UUID.fromString(source.caso().escenarios().getFirst().preguntas().getFirst().id()),
+                UUID.fromString(other.caso().escenarios().getFirst().preguntas().getFirst().id()))) {
+            assertCode(CasoCommandUpdateAdapter.QUESTION_ID_IN_USE,
+                    () -> add(source, new AgregarPreguntaCommand(id, parent, "Question", null, "Borrador", true, 19)));
+        }
+        assertCode(CasoCommandUpdateAdapter.QUESTION_ORDER_IN_USE, () -> add(source, questionCommand(source, 3)));
+        RuntimeException failure = assertThrows(RuntimeException.class, () -> updates.update(UUID.fromString(source.caso().id()),
+                source.fingerprint(), List.of(new ActualizarDatosCasoCommand(CampoCaso.NOMBRE, "Must roll back"),
+                        questionCommand(source, 19), questionCommand(source, 19))));
+        assertTrue(hasSqlState(failure, "23505"));
+        assertTrue(hasConstraint(failure, "uq_pregunta_idx1"));
+        assertEquals(source, read(source)); assertEquals(other, read(other));
+        UUID duplicate = UUID.randomUUID();
+        assertCode(CasoCommandUpdateAdapter.QUESTION_ID_IN_USE, () -> updates.update(UUID.fromString(source.caso().id()),
+                source.fingerprint(), List.of(new AgregarPreguntaCommand(duplicate, parent, "First", null, "Borrador", true, 19),
+                        new AgregarPreguntaCommand(duplicate, parent, "Second", null, "Borrador", false, 31))));
+        assertEquals(source, read(source));
+    }
+
+    @Test
+    void questionAddCannotDependOnNewParentOrBeEditedWithinSameBatch() {
+        var source = saved(CasoEstado.BORRADOR); UUID parent = UUID.randomUUID(), question = UUID.randomUUID();
+        assertCode(CasoCommandUpdateAdapter.ELEMENT_NOT_IN_CASE, () -> updates.update(UUID.fromString(source.caso().id()),
+                source.fingerprint(), List.of(new AgregarEscenarioCommand(parent, null, null, null, 19),
+                        new AgregarPreguntaCommand(question, parent, "Question", null, "Borrador", true, 19))));
+        var add = questionCommand(source, 19);
+        assertCode(CasoCommandUpdateAdapter.ELEMENT_NOT_IN_CASE, () -> updates.update(UUID.fromString(source.caso().id()),
+                source.fingerprint(), List.of(add, new ActualizarPreguntaCommand(add.idPregunta(), CampoPregunta.ENUNCIADO, "Dependent"))));
+        assertEquals(source, read(source));
+    }
+
+    @Test
+    void officialProgrammingRejectsQuestionAddAndSqlInsertWithoutManualLockChanges() throws Exception {
+        var source = saved(CasoEstado.PUBLICADO);
+        try (var c = datasource.getConnection()) { schedule(c, source); }
+        var locked = read(source); assertNotNull(locked.caso().fechaBloqueoAcademico());
+        assertCode(CasoCommandUpdateAdapter.STALE_CASE, () -> add(source, questionCommand(source, 19)));
+        assertCode(ContenidoEvaluableLock.CODE_EVALUABLE_CONTENT_LOCKED, () -> add(locked, questionCommand(locked, 19)));
+        var failure = assertThrows(RuntimeException.class, () -> jdbc.update(
+                "INSERT INTO public.\"Pregunta\" (\"idPregunta\",\"idEscenario\",\"enunciado\",\"orden\") VALUES (?,?,?,?)",
+                UUID.randomUUID(), UUID.fromString(source.caso().escenarios().getFirst().id()), "Blocked", 19));
+        assertTrue(hasSqlState(failure, "23514")); assertTrue(hasConstraint(failure, "tr_contenido_bloqueo_f303"));
+        assertEquals(locked, read(source));
+    }
+
+    @Test
+    void officialQuestionFkAndOrderConstraintsRemainActive() {
+        var source = saved(CasoEstado.BORRADOR);
+        var missing = assertThrows(RuntimeException.class, () -> jdbc.update(
+                "INSERT INTO public.\"Pregunta\" (\"idPregunta\",\"idEscenario\",\"enunciado\",\"orden\") VALUES (?,?,?,?)",
+                UUID.randomUUID(), UUID.randomUUID(), "Rejected FK fixture", 19));
+        assertTrue(hasSqlState(missing, "23503")); assertTrue(hasConstraint(missing, "fk_pregunta_idescenario"));
+        var order = assertThrows(RuntimeException.class, () -> jdbc.update(
+                "INSERT INTO public.\"Pregunta\" (\"idPregunta\",\"idEscenario\",\"enunciado\",\"orden\") VALUES (?,?,?,?)",
+                UUID.randomUUID(), UUID.fromString(source.caso().escenarios().getFirst().id()), "Rejected order fixture", 0));
+        assertTrue(hasSqlState(order, "23514")); assertTrue(hasConstraint(order, "ck_pregunta_orden"));
+        assertEquals(source, read(source));
+    }
+
+    @Test
+    void concurrentQuestionAddsWithSameFingerprintHaveOneWinner() throws Exception {
+        var source = saved(CasoEstado.BORRADOR);
+        try (var workers = new Workers(); var pause = new Gate()) {
+            gate = pause;
+            Future<CasoUpdateResult> first = workers.submit(() -> add(source, questionCommand(source, 19)));
+            assertTrue(pause.reached.await(5, TimeUnit.SECONDS));
+            AtomicInteger secondPid = new AtomicInteger(); CountDownLatch ready = new CountDownLatch(1);
+            Future<CasoUpdateResult> second = workers.submit(() -> {
+                writerPid.set(new PidSignal(secondPid, ready));
+                try { return add(source, questionCommand(source, 31)); } finally { writerPid.remove(); }
+            });
+            try {
+                assertTrue(ready.await(5, TimeUnit.SECONDS)); awaitBlocked(secondPid.get(), pause.pid.get());
+            } finally { pause.close(); gate = null; }
+            var committed = first.get(15, TimeUnit.SECONDS);
+            var failure = assertThrows(ExecutionException.class, () -> second.get(15, TimeUnit.SECONDS));
+            assertEquals(CasoCommandUpdateAdapter.STALE_CASE, assertInstanceOf(CasoDomainException.class, failure.getCause()).code());
+            assertEquals(committed, read(source));
+            assertEquals(2, committed.caso().escenarios().getFirst().preguntas().size());
+        } finally { gate = null; }
+    }
+
+    private static Caso withoutQuestion(Caso c, UUID question) {
+        var scenarios = c.escenarios().stream().map(e -> new Escenario(e.id(), e.descripcion(),
+                e.preguntas().stream().filter(p -> !p.id().equals(question.toString())).toList(),
+                e.titulo(), e.contexto(), e.instrucciones(), e.orden(), e.activo())).toList();
+        return new Caso(c.id(), c.titulo(), c.docenteId(), c.tiempoEstimadoSegundos(), c.estado(), scenarios,
+                c.rubrica(), c.contenidoEvaluableBloqueado(), c.historia(), c.desarrolloSituacional(), c.activo(),
+                c.fechaCreacion(), c.fechaActualizacion(), c.fechaBloqueoAcademico());
+    }
+
+    private static AgregarPreguntaCommand questionCommand(CasoUpdateResult source, int order) {
+        return new AgregarPreguntaCommand(UUID.randomUUID(), UUID.fromString(source.caso().escenarios().getFirst().id()),
+                "Question fixture", null, "Borrador", true, order);
+    }
+
+    private static CasoUpdateResult add(CasoUpdateResult before, AgregarPreguntaCommand command) {
+        return updates.update(UUID.fromString(before.caso().id()), before.fingerprint(), List.of(command));
+    }
+
+    @Test
     void addsEmptyActiveScenarioPreservingAllPriorContentAndOtherCase() {
         var before = saved(CasoEstado.BORRADOR);
         var other = saved(CasoEstado.BORRADOR);
@@ -313,7 +466,9 @@ class CasoCommandAddContentIT {
                             if (signal != null) { signal.pid().set(pid(raw)); signal.ready().countDown(); }
                         }
                         Gate current = gate;
-                        if (current != null && sm.getName().equals("executeUpdate") && sql.stripLeading().startsWith("INSERT INTO public.\"Escenario\"")) {
+                        if (current != null && sm.getName().equals("executeUpdate")
+                                && (sql.stripLeading().startsWith("INSERT INTO public.\"Escenario\"")
+                                    || sql.stripLeading().startsWith("INSERT INTO public.\"Pregunta\""))) {
                             current.pid.set(pid(raw)); current.reached.countDown();
                             if (!current.release.await(10, TimeUnit.SECONDS)) { throw new AssertionError("Insert gate timed out"); }
                         }

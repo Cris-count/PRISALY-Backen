@@ -31,6 +31,9 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     public static final String SCENARIO_ADD_REQUIRES_DRAFT = "SCENARIO_ADD_REQUIRES_DRAFT";
     public static final String SCENARIO_ID_IN_USE = "SCENARIO_ID_IN_USE";
     public static final String SCENARIO_ORDER_IN_USE = "SCENARIO_ORDER_IN_USE";
+    public static final String QUESTION_ADD_REQUIRES_DRAFT = "QUESTION_ADD_REQUIRES_DRAFT";
+    public static final String QUESTION_ID_IN_USE = "QUESTION_ID_IN_USE";
+    public static final String QUESTION_ORDER_IN_USE = "QUESTION_ORDER_IN_USE";
     private final EntityManagerFactory emf;
     private final CasoJpaAggregateReader reader;
     private final TransactionTemplate transaction;
@@ -103,6 +106,10 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
                 && !"Borrador".equals(snapshot.caso().estado())) {
             throw error(SCENARIO_ADD_REQUIRES_DRAFT, "Adding a scenario requires a draft case");
         }
+        if (commands.stream().anyMatch(AgregarPreguntaCommand.class::isInstance)
+                && !"Borrador".equals(snapshot.caso().estado())) {
+            throw error(QUESTION_ADD_REQUIRES_DRAFT, "Adding a question requires a draft case");
+        }
     }
 
     private static void assertOfficialContentGuards(Connection connection) throws SQLException {
@@ -130,6 +137,18 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     static void validateMembership(CasoJpaAggregateSnapshot snapshot, CasoUpdateCommand command) {
         boolean belongs = switch (command) {
             case ActualizarDatosCasoCommand ignored -> true;
+            case AgregarPreguntaCommand c -> {
+                if (snapshot.escenarios().stream().noneMatch(e -> e.idEscenario().equals(c.idEscenario()))) {
+                    throw error(ELEMENT_NOT_IN_CASE, "Scenario does not exist in this case");
+                }
+                if (snapshot.preguntas().stream().anyMatch(p -> p.idPregunta().equals(c.idPregunta()))) {
+                    throw error(QUESTION_ID_IN_USE, "Question UUID is already used");
+                }
+                if (snapshot.preguntas().stream().anyMatch(p -> p.idEscenario().equals(c.idEscenario()) && p.orden() == c.orden())) {
+                    throw error(QUESTION_ORDER_IN_USE, "Question order is already used in this scenario");
+                }
+                yield true;
+            }
             case AgregarEscenarioCommand c -> {
                 if (snapshot.escenarios().stream().anyMatch(e -> e.idEscenario().equals(c.idEscenario()))) {
                     throw error(SCENARIO_ID_IN_USE, "Scenario UUID is already used");
@@ -148,6 +167,25 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
 
     private static void apply(Connection connection, UUID caseId, CasoUpdateCommand command) throws SQLException {
         switch (command) {
+            case AgregarPreguntaCommand c -> {
+                // Global identity check; the PK also handles an uncommitted cross-case collision.
+                try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"Pregunta\" WHERE \"idPregunta\" = ?")) {
+                    statement.setObject(1, c.idPregunta());
+                    try (var rows = statement.executeQuery()) {
+                        if (rows.next()) { throw error(QUESTION_ID_IN_USE, "Question UUID is already used"); }
+                    }
+                }
+                try (var statement = connection.prepareStatement("""
+                        INSERT INTO public."Pregunta" ("idPregunta", "idEscenario", "enunciado", "textoAyuda", "estadoEdicion", "visible", "orden")
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """)) {
+                    statement.setObject(1, c.idPregunta()); statement.setObject(2, c.idEscenario());
+                    statement.setString(3, c.enunciado()); statement.setString(4, c.textoAyuda());
+                    statement.setString(5, c.estadoEdicion()); statement.setBoolean(6, c.visible());
+                    statement.setInt(7, c.orden());
+                    if (statement.executeUpdate() != 1) { throw new SQLException("Expected one inserted question"); }
+                }
+            }
             case AgregarEscenarioCommand c -> {
                 // Global UUID check also rejects rows belonging to another case. PK remains authoritative.
                 try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"Escenario\" WHERE \"idEscenario\" = ?")) {

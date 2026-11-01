@@ -13,6 +13,20 @@ public sealed interface CasoUpdateCommand {
     enum CampoEscenario { TITULO, CONTEXTO, INSTRUCCIONES, ORDEN }
     enum CampoPregunta { ENUNCIADO, TEXTO_AYUDA, ORDEN }
 
+    /** Explicit initial editing state/visibility; dates use the official SQL creation default. */
+    record AgregarPreguntaCommand(UUID idPregunta, UUID idEscenario, String enunciado,
+            String textoAyuda, String estadoEdicion, boolean visible, int orden) implements CasoUpdateCommand {
+        public AgregarPreguntaCommand {
+            Objects.requireNonNull(idPregunta, "idPregunta");
+            Objects.requireNonNull(idEscenario, "idEscenario");
+            requiredText(enunciado, Integer.MAX_VALUE);
+            if (!"Borrador".equals(estadoEdicion) && !"Lista".equals(estadoEdicion)) {
+                throw new IllegalArgumentException("estadoEdicion must be Borrador or Lista");
+            }
+            positiveInteger(orden);
+        }
+    }
+
     /** Empty scenario; initial activity is the official SQL DEFAULT true. */
     record AgregarEscenarioCommand(UUID idEscenario, String titulo, String contexto,
             String instrucciones, int orden) implements CasoUpdateCommand {
