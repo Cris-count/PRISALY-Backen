@@ -14,8 +14,13 @@ import java.util.UUID;
  * Participacion (FK de BD-005.2), así que basta con las participaciones.
  *
  * <p>Recibe convocatorias y no una sesión: M4 conoce las convocatorias de sus
- * sesiones y M5 no lee la tabla {@code "Convocatoria"} de M4. El adaptador de
- * M4 que lo consuma queda a cargo del Integrante 3.
+ * sesiones y M5 no lee la tabla {@code "Convocatoria"} de M4.
+ *
+ * <p><b>Pendiente de Arquitectura:</b> M5 depende de M4. Si M4 dependiera de
+ * {@code m5} para consumir este contrato, habría un ciclo Maven. Las opciones
+ * (M5 implementa el puerto de M4 con un contrato de convocatorias por sesión,
+ * contrato compartido o cableado en {@code app}) están en
+ * {@code m5/docs/M5-DOCUMENTO-TECNICO.md}, sección 6.
  *
  * <p>Debe invocarse dentro de la transacción de M4 que modifica la sesión. Hoy
  * M5 no crea participaciones; cuando exista el inicio de intentos, deberá

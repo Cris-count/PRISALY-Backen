@@ -52,8 +52,9 @@ contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
 
 - `application.acceso.AccesoProtegidoParticipacion` (Protection Proxy):
   verifica identidad y titularidad con `ControlAccesoIntentos` antes de
-  delegar en la fachada transaccional, y falla de forma cerrada. Lo ensambla
-  `infrastructure.ConfiguracionAccesoEstudiante` con:
+  delegar en la fachada transaccional, y falla de forma cerrada. Es el único
+  bean de operaciones de M5: `infrastructure.ConfiguracionParticipacion` lo
+  ensambla y no publica la fachada sin control. Lo componen:
   - `IdentidadEstudianteDesdeM1` (M1, `StudentAccessPort`): con
     `DenyingStudentAccessService`, toda llamada se deniega;
   - `TitularidadIntentosDesdeM4` (M4, `ProgramacionParticipacionPort`): sin
