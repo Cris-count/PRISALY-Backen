@@ -1,5 +1,10 @@
 # M5 ← M1 | Integración preparatoria de la identidad estudiantil
 
+> **Actualización (rama `trabajo/m5-avance-nocturno`, commit `eb4a591`):** el
+> adaptador del parche 0001 ya está aplicado, con la dependencia directa de
+> `m1`. Ver `M5-CONTINUIDAD-AVANCE-NOCTURNO.md`. El parche se conserva como
+> registro histórico.
+
 Estado al 2026-10-31. Rama `feature/m5-participacion-intentos`. Responsable: Integrante 4.
 
 ## 1. Contrato de M1 verificado
