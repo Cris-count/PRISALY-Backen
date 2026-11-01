@@ -83,6 +83,10 @@ final class CadenaIntentoPrueba {
         return new ValorRespuesta(valores.get("opcion1b"));
     }
 
+    ValorRespuesta opcion1c() {
+        return new ValorRespuesta(valores.get("opcion1c"));
+    }
+
     ValorRespuesta opcion2a() {
         return new ValorRespuesta(valores.get("opcion2a"));
     }
