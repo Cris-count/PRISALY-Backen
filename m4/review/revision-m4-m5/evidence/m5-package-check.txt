@@ -1,0 +1,2 @@
+SHA256 M5 local/anidado: 125997644202931DA0C8D780FE33C85CB8C654EBE6E1C862C8B68E11146EB3BC (idénticos)
+Clases de prueba y controlador HTTP fixture en JAR M5: 0
