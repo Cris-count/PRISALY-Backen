@@ -1,0 +1,259 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: INGRID <imontoya_624@unihumboldt.edu.co>
+Date: Sat, 31 Oct 2026 13:46:25 -0500
+Subject: [PATCH] feat(m5): adaptar la identidad estudiantil de M1
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+IdentidadEstudianteDesdeM1 implementa IdentidadEstudianteActual sobre
+StudentAccessPort (M1, ab926ec): identidad solo del servidor, usa
+studentId, cualquier IdentityDomainException devuelve vacío y otros fallos
+se propagan. Con DenyingStudentAccessService (DD-02 abierta) nunca entrega
+identidad. m5 pasa a depender de com.prisaly:m1.
+
+IdentidadEstudianteDesdeM1Test (9) con dobles de StudentAccessPort solo en
+pruebas y con DenyingStudentAccessService real; no es una integración
+real M1-M5. Requiere haber integrado develop (03b0899) en la rama M5.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01LsSmUyUquL9NiAVfQNoJYi
+---
+ m5/pom.xml                                    |   6 +
+ .../identidad/IdentidadEstudianteDesdeM1.java |  52 +++++++
+ .../IdentidadEstudianteDesdeM1Test.java       | 147 ++++++++++++++++++
+ 3 files changed, 205 insertions(+)
+ create mode 100644 m5/src/main/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1.java
+ create mode 100644 m5/src/test/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1Test.java
+
+diff --git a/m5/pom.xml b/m5/pom.xml
+index 4a1e9fa..7875f91 100644
+--- a/m5/pom.xml
++++ b/m5/pom.xml
+@@ -14,6 +14,12 @@
+     <name>m5</name>
+ 
+     <dependencies>
++        <!-- Contrato de identidad estudiantil publicado por M1 (StudentAccessPort). -->
++        <dependency>
++            <groupId>com.prisaly</groupId>
++            <artifactId>m1</artifactId>
++            <version>${project.version}</version>
++        </dependency>
+         <!-- Persistencia de M5 (solo la capa infrastructure la usa). -->
+         <dependency>
+             <groupId>org.springframework.boot</groupId>
+diff --git a/m5/src/main/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1.java b/m5/src/main/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1.java
+new file mode 100644
+index 0000000..e46a964
+--- /dev/null
++++ b/m5/src/main/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1.java
+@@ -0,0 +1,52 @@
++package com.prisaly.m5.infrastructure.identidad;
++
++import java.util.Optional;
++
++import org.springframework.stereotype.Component;
++
++import com.prisaly.m1.application.port.AuthenticatedStudent;
++import com.prisaly.m1.application.port.StudentAccessPort;
++import com.prisaly.m1.domain.rule.IdentityDomainException;
++import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
++import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
++
++/**
++ * Adaptador de {@link IdentidadEstudianteActual} sobre el contrato publicado
++ * por M1, {@link StudentAccessPort} (docs/M1-M5-STUDENT-IDENTITY-CONTRACT.md).
++ *
++ * <ul>
++ *   <li>La identidad sale siempre del servidor: no recibe parámetros y no lee
++ *       datos del cliente ni el {@code SecurityContext}.</li>
++ *   <li>Usa {@code studentId} ({@code Estudiante.idEstudiante}) para la
++ *       titularidad, como indica M1, y nunca {@code userId}.</li>
++ *   <li>Cualquier denegación de M1 ({@link IdentityDomainException}, incluida
++ *       {@code STUDENT_IDENTITY_UNAVAILABLE} mientras DD-02 siga abierta)
++ *       significa "sin estudiante": el control de acceso deniega.</li>
++ *   <li>Otros fallos del proveedor se propagan: nunca conceden acceso.</li>
++ * </ul>
++ * Mientras M1 solo publique {@code DenyingStudentAccessService}, este
++ * adaptador nunca entrega una identidad en producción.
++ */
++@Component
++public class IdentidadEstudianteDesdeM1 implements IdentidadEstudianteActual {
++
++    private final StudentAccessPort accesoEstudiantil;
++
++    public IdentidadEstudianteDesdeM1(StudentAccessPort accesoEstudiantil) {
++        this.accesoEstudiantil = accesoEstudiantil;
++    }
++
++    @Override
++    public Optional<IdentificadorEstudiante> actual() {
++        AuthenticatedStudent estudiante;
++        try {
++            estudiante = accesoEstudiantil.requireCurrentStudent();
++        } catch (IdentityDomainException denegado) {
++            return Optional.empty();
++        }
++        if (estudiante == null || estudiante.studentId() == null) {
++            return Optional.empty();
++        }
++        return Optional.of(new IdentificadorEstudiante(estudiante.studentId().toString()));
++    }
++}
+diff --git a/m5/src/test/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1Test.java b/m5/src/test/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1Test.java
+new file mode 100644
+index 0000000..c6e24bf
+--- /dev/null
++++ b/m5/src/test/java/com/prisaly/m5/infrastructure/identidad/IdentidadEstudianteDesdeM1Test.java
+@@ -0,0 +1,147 @@
++package com.prisaly.m5.infrastructure.identidad;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertThrows;
++
++import java.lang.reflect.Method;
++import java.lang.reflect.Modifier;
++import java.util.Arrays;
++import java.util.List;
++import java.util.Optional;
++import java.util.UUID;
++
++import org.junit.jupiter.api.AfterEach;
++import org.junit.jupiter.api.DisplayName;
++import org.junit.jupiter.api.Test;
++import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
++import org.springframework.security.core.authority.SimpleGrantedAuthority;
++import org.springframework.security.core.context.SecurityContextHolder;
++
++import com.prisaly.m1.application.port.AuthenticatedStudent;
++import com.prisaly.m1.application.port.StudentAccessPort;
++import com.prisaly.m1.application.service.DenyingStudentAccessService;
++import com.prisaly.m1.domain.rule.IdentityDomainException;
++import com.prisaly.m5.application.IntentoNoEncontradoException;
++import com.prisaly.m5.application.ReferenciaIntento;
++import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
++import com.prisaly.m5.application.acceso.ControlAccesoIntentos;
++import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
++import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
++import com.prisaly.m5.application.acceso.TitularidadIntentos;
++
++/**
++ * Adaptador M1 → M5 con dobles de {@link StudentAccessPort} (solo en pruebas)
++ * y con el adaptador real de M1, {@link DenyingStudentAccessService}. No es
++ * una integración real M1–M5: DD-02 sigue abierto y la titularidad (M4) se
++ * simula aquí.
++ */
++@DisplayName("IdentidadEstudianteDesdeM1")
++class IdentidadEstudianteDesdeM1Test {
++
++    private static final UUID USUARIO = UUID.randomUUID();
++    private static final UUID ESTUDIANTE = UUID.randomUUID();
++    private static final UUID OTRO_ESTUDIANTE = UUID.randomUUID();
++    private static final ReferenciaIntento INTENTO = new ReferenciaIntento(UUID.randomUUID().toString());
++
++    /** Titularidad simulada solo para la prueba: el intento pertenece a ESTUDIANTE. */
++    private final TitularidadIntentos titularidad = intento -> INTENTO.equals(intento)
++            ? Optional.of(new IdentificadorEstudiante(ESTUDIANTE.toString()))
++            : Optional.empty();
++
++    @AfterEach
++    void limpiarContexto() {
++        SecurityContextHolder.clearContext();
++    }
++
++    private static ControlAccesoIntentos control(StudentAccessPort puerto, TitularidadIntentos titularidad) {
++        return new ControlAccesoIntentos(new IdentidadEstudianteDesdeM1(puerto), titularidad);
++    }
++
++    @Test
++    @DisplayName("1. estudiante autenticado y titular: autorizado, con studentId y no con userId")
++    void titularAutorizado() {
++        StudentAccessPort puerto = () -> new AuthenticatedStudent(USUARIO, ESTUDIANTE);
++
++        IdentificadorEstudiante verificado = control(puerto, titularidad).verificar(INTENTO);
++
++        assertEquals(ESTUDIANTE.toString(), verificado.valor());
++    }
++
++    @Test
++    @DisplayName("2. estudiante autenticado pero no titular: denegado")
++    void noTitularDenegado() {
++        StudentAccessPort puerto = () -> new AuthenticatedStudent(USUARIO, OTRO_ESTUDIANTE);
++
++        assertThrows(AccesoIntentoDenegadoException.class, () -> control(puerto, titularidad).verificar(INTENTO));
++    }
++
++    @Test
++    @DisplayName("3. sin identidad (M1 deniega con cualquier código): denegado")
++    void sinIdentidadDenegado() {
++        StudentAccessPort puerto = () -> {
++            throw new IdentityDomainException("UNAUTHENTICATED", "No authenticated user in request context");
++        };
++
++        assertEquals(Optional.empty(), new IdentidadEstudianteDesdeM1(puerto).actual());
++        assertThrows(EstudianteNoIdentificadoException.class, () -> control(puerto, titularidad).verificar(INTENTO));
++    }
++
++    @Test
++    @DisplayName("4. DD-02 abierta: el adaptador real de M1 nunca entrega identidad")
++    void dd02Denegado() {
++        StudentAccessPort produccionActual = new DenyingStudentAccessService();
++
++        assertEquals(Optional.empty(), new IdentidadEstudianteDesdeM1(produccionActual).actual());
++        assertThrows(EstudianteNoIdentificadoException.class,
++                () -> control(produccionActual, titularidad).verificar(INTENTO));
++    }
++
++    @Test
++    @DisplayName("5. un token de personal autenticado nunca produce identidad estudiantil")
++    void tokenDePersonalNoEsEstudiante() {
++        SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken(
++                USUARIO, "token-personal", List.of(new SimpleGrantedAuthority("ROLE_DOCENTE"))));
++
++        assertEquals(Optional.empty(), new IdentidadEstudianteDesdeM1(new DenyingStudentAccessService()).actual());
++    }
++
++    @Test
++    @DisplayName("6. un fallo del proveedor de identidad se propaga y nunca concede acceso")
++    void falloDelProveedor() {
++        StudentAccessPort puerto = () -> {
++            throw new IllegalStateException("proveedor de identidad no disponible");
++        };
++
++        assertThrows(IllegalStateException.class, () -> control(puerto, titularidad).verificar(INTENTO));
++    }
++
++    @Test
++    @DisplayName("6b. respuestas incompletas de M1 se tratan como ausencia de identidad")
++    void respuestaIncompleta() {
++        assertEquals(Optional.empty(), new IdentidadEstudianteDesdeM1(() -> null).actual());
++        assertEquals(Optional.empty(),
++                new IdentidadEstudianteDesdeM1(() -> new AuthenticatedStudent(USUARIO, null)).actual());
++    }
++
++    @Test
++    @DisplayName("7. ningún dato del cliente sustituye la identidad: la API no la recibe como parámetro")
++    void identidadSoloDelServidor() {
++        List<Method> publicos = Arrays.stream(IdentidadEstudianteDesdeM1.class.getDeclaredMethods())
++                .filter(m -> Modifier.isPublic(m.getModifiers())).toList();
++        assertEquals(List.of("actual"), publicos.stream().map(Method::getName).toList());
++        assertEquals(0, publicos.get(0).getParameterCount());
++
++        Method verificar = Arrays.stream(ControlAccesoIntentos.class.getDeclaredMethods())
++                .filter(m -> m.getName().equals("verificar")).findFirst().orElseThrow();
++        assertEquals(List.of(ReferenciaIntento.class), List.of(verificar.getParameterTypes()));
++    }
++
++    @Test
++    @DisplayName("un intento desconocido sigue tratándose como inexistente para el estudiante autenticado")
++    void intentoDesconocido() {
++        StudentAccessPort puerto = () -> new AuthenticatedStudent(USUARIO, ESTUDIANTE);
++
++        assertThrows(IntentoNoEncontradoException.class, () -> control(puerto, titularidad)
++                .verificar(new ReferenciaIntento(UUID.randomUUID().toString())));
++    }
++}
+-- 
+2.43.0
+

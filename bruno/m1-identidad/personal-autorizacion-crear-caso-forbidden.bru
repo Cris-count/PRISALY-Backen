@@ -1,0 +1,32 @@
+meta {
+  name: personal-autorizacion-crear-caso-forbidden
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelNoPermEmail}}",
+    "password": "{{personnelNoPermPassword}}"
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("noPermAccessToken", res.body.accessToken);
+  }
+}
+
+assert {
+  res.status: eq 200
+}

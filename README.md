@@ -2,8 +2,6 @@
 
 Modular monolith (M1–M7) on Spring Boot 4.1.2 / Java 21. Shared PostgreSQL **16.15** via Docker Compose. Schema BD-005.2 via Flyway **V001–V009**.
 
-Documentación vigente de M4–M5: [estado actual, contratos y pruebas](m4/review/ESTADO_ACTUAL.md). Los informes de fases anteriores no representan por sí solos el estado de integración actual.
-
 ## Prerequisites
 
 - JDK 21+ (project compiles with `--release 21`)

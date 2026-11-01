@@ -1,7 +1,7 @@
 meta {
   name: personal-me
   type: http
-  seq: 4
+  seq: 7
 }
 
 get {
@@ -16,4 +16,5 @@ headers {
 
 assert {
   res.status: eq 200
+  res.body.correo: eq {{personnelEmail}}
 }

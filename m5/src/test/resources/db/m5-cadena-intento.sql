@@ -20,6 +20,7 @@ INSERT INTO "Pregunta" ("idPregunta", "idEscenario", "enunciado", "estadoEdicion
 INSERT INTO "OpcionRespuesta" ("idOpcion", "idPregunta", "texto", "orden") VALUES
   ('${opcion1a}', '${pregunta1}', 'Opción 1A', 1),
   ('${opcion1b}', '${pregunta1}', 'Opción 1B', 2),
+  ('${opcion1c}', '${pregunta1}', 'Opción 1C', 3),
   ('${opcion2a}', '${pregunta2}', 'Opción 2A', 1);
 INSERT INTO "Sesion" ("idSesion", "idCaso", "idDocenteProgramador", "nombreEspacioAcademico",
     "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos") VALUES

@@ -42,9 +42,12 @@ public final class TraductorErroresM5 {
                     ConsultaProgramacionNoDisponibleException.CODIGO,
                     "La consulta de programación no está disponible; inténtelo más tarde");
         }
-        // Mismos códigos que la cadena de seguridad compartida (401/403).
+        // PROVISIONAL y en disputa (decisión 7, m5/docs): según el contrato M1-M5
+        // (docs/M1-M5-STUDENT-IDENTITY-CONTRACT.md), una petición autenticada sin
+        // contexto de estudiante es 403; el 401 sin credenciales lo responde antes la
+        // cadena de seguridad compartida. M4 responde 503 a la indisponibilidad (DD-02).
         if (error instanceof EstudianteNoIdentificadoException e) {
-            return error(401, "UNAUTHENTICATED", e.getMessage());
+            return error(403, "STUDENT_IDENTITY_UNAVAILABLE", e.getMessage());
         }
         // PROVISIONAL: 403 o 404 para un intento ajeno sigue pendiente de decisión.
         if (error instanceof AccesoIntentoDenegadoException e) {

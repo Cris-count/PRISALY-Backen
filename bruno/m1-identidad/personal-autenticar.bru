@@ -16,13 +16,19 @@ headers {
 
 body:json {
   {
-    "correo": "docente@prisaly.test",
-    "password": "ChangeMe123!"
+    "correo": "{{personnelEmail}}",
+    "password": "{{personnelPassword}}"
   }
 }
 
+assert {
+  res.status: eq 200
+  res.body.accessToken: isDefined
+  res.body.authPrototype: eq TD-M1-AUTH-PROVISIONAL
+}
+
 script:post-response {
-  if (res.status === 200 && res.body.accessToken) {
-    bru.setEnvVar("accessToken", res.body.accessToken);
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("accessToken", res.body.accessToken);
   }
 }
