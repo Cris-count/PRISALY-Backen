@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /** Acceso Spring Data a {@code "Intento"}; uso exclusivo del adaptador de M5. */
-public interface IntentoJpaRepository extends JpaRepository<IntentoEntity, UUID> {
+interface IntentoJpaRepository extends JpaRepository<IntentoEntity, UUID> {
 
     /** {@code SELECT ... FOR UPDATE}: bloquea la fila hasta el fin de la transacción. */
     @Lock(LockModeType.PESSIMISTIC_WRITE)

@@ -19,10 +19,10 @@ import com.prisaly.m5.domain.respuesta.ValorRespuesta;
  * Cualquier excepción —de dominio, de aplicación o de la base— revierte todo
  * lo escrito por esa operación.
  *
- * <p>La fachada de aplicación sigue libre de Spring. Esta clase es la
- * operación que envuelve {@code AccesoProtegidoParticipacion}: un controlador de
- * estudiante nunca debe usar este decorador directamente, sino el proxy, que
- * verifica identidad y titularidad antes de delegar.
+ * <p>La fachada de aplicación sigue libre de Spring. Este decorador NO es un
+ * bean: {@link ConfiguracionParticipacion} lo construye dentro de
+ * {@code AccesoProtegidoParticipacion}, que verifica identidad y titularidad
+ * antes de delegar. Solo las pruebas de persistencia lo usan sin el proxy.
  */
 public class FachadaParticipacionTransaccional implements OperacionesParticipacion {
 
