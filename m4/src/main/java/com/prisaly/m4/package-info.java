@@ -1,8 +1,11 @@
 /**
  * M4 – Programación Académica, Sesiones y Convocatorias.
  *
- * <p>Este módulo administra la programación de sesiones académicas
- * basadas en casos publicados por M3, la convocatoria de estudiantes
- * y la exposición de condiciones de acceso para M5.</p>
+ * <p>api publica consultas informativas para otros módulos; presentation separa sesiones y
+ * convocatorias; application coordina permisos y transacciones; domain conserva las reglas y el
+ * patrón State; infrastructure adapta contratos y persiste exclusivamente en las tablas oficiales
+ * BD-005.2.
+ *
+ * <p>El contexto de programación para M5 no constituye autorización académica.
  */
 package com.prisaly.m4;

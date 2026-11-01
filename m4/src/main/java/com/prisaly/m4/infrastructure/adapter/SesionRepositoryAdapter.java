@@ -6,7 +6,10 @@ import com.prisaly.m4.domain.model.SesionAcademica;
 import com.prisaly.m4.infrastructure.persistence.EntityMapper;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.Instant;
 import java.util.List;
@@ -20,20 +23,19 @@ import java.util.UUID;
 public class SesionRepositoryAdapter implements SesionRepository {
 
     private final JpaSesionRepository jpa;
-    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
+    private final JdbcTemplate jdbc;
     private final ParticipacionesPort participaciones;
 
-    public SesionRepositoryAdapter(JpaSesionRepository jpa, ParticipacionesPort p) {
-        this(jpa, p, null);
+    /** Constructor de compatibilidad para pruebas sin operaciones de programación. */
+    public SesionRepositoryAdapter(JpaSesionRepository jpa, ParticipacionesPort participaciones) {
+        this(jpa, participaciones, null);
     }
 
-    @org.springframework.beans.factory.annotation.Autowired
+    @Autowired
     public SesionRepositoryAdapter(
-            JpaSesionRepository jpa,
-            ParticipacionesPort p,
-            org.springframework.jdbc.core.JdbcTemplate jdbc) {
+            JpaSesionRepository jpa, ParticipacionesPort participaciones, JdbcTemplate jdbc) {
         this.jpa = jpa;
-        this.participaciones = p;
+        this.participaciones = participaciones;
         this.jdbc = jdbc;
     }
 
@@ -45,14 +47,13 @@ public class SesionRepositoryAdapter implements SesionRepository {
     @Override
     public void protegerProgramacion(UUID caso, UUID docente) {
         if (jdbc == null
-                || !org.springframework.transaction.support.TransactionSynchronizationManager
-                        .isActualTransactionActive())
-            throw new IllegalStateException("Programación requiere una transacción");
+                || !TransactionSynchronizationManager.isActualTransactionActive()
+                || TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
+            throw new IllegalStateException("Programación requiere una transacción de escritura");
+        }
         jdbc.query(
                 "SELECT pg_advisory_xact_lock(hashtextextended(?,0))",
-                rs -> {
-                    return null;
-                },
+                rs -> null,
                 caso + "/" + docente);
     }
 

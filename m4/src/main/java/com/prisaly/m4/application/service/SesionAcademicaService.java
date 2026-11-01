@@ -53,6 +53,10 @@ public class SesionAcademicaService {
     @Transactional(readOnly = true)
     public UUID resolverDocenteAutenticado(UUID identidadDeclarada) {
         UUID actual = identidadPort.docenteActual();
+        if (actual == null) {
+            throw new ReglaNegocioException(
+                    "M4-NO-AUTENTICADO", "No existe una identidad docente autenticada");
+        }
         if (identidadDeclarada != null && !actual.equals(identidadDeclarada)) {
             throw new ReglaNegocioException(
                     "M4-SIN-PERMISO", "La identidad declarada no coincide con la autenticada");
@@ -95,28 +99,10 @@ public class SesionAcademicaService {
             Instant fechaFin,
             int tiempoMaximoParticipacionSegundos) {
 
-        // 1. Verificar permiso del docente (M1)
+        // Identidad y permisos de M1 se comprueban antes de validar datos.
         verificarPermiso(docenteId);
 
-        sesionRepository.protegerProgramacion(casoId, docenteId);
-
-        // 2. Metadatos persistidos; V009 revalida y serializa al insertar Sesion
-        if (!casoAcademicoPort.estaPublicado(casoId)) {
-            throw new ReglaNegocioException(
-                    "M4-CASO-NO-PUBLICADO", "El caso no existe o no está en estado Publicado");
-        }
-
-        // 3. Evitar duplicación
-        if (sesionRepository.existeDuplicada(casoId, docenteId, fechaInicio, fechaFin)) {
-            throw new ReglaNegocioException(
-                    "M4-SESION-DUPLICADA",
-                    "Ya existe una sesión con el mismo caso, docente y rango de fechas");
-        }
-
-        // 4. Determinar si es la primera sesión del caso → bloqueo F3-03
-        boolean primeraSesionDelCaso = !sesionRepository.existeSesionParaCaso(casoId);
-
-        // 5. Crear la sesión (reglas de dominio)
+        // Validar el agregado antes de consultar o bloquear proveedores externos.
         SesionAcademica sesion =
                 SesionAcademica.crear(
                         casoId,
@@ -127,10 +113,28 @@ public class SesionAcademicaService {
                         fechaFin,
                         tiempoMaximoParticipacionSegundos);
 
-        // 6. Persistir
+        sesionRepository.protegerProgramacion(casoId, docenteId);
+
+        // V009 revalida los metadatos persistidos al insertar Sesion.
+        if (!casoAcademicoPort.estaPublicado(casoId)) {
+            throw new ReglaNegocioException(
+                    "M4-CASO-NO-PUBLICADO", "El caso no existe o no está en estado Publicado");
+        }
+
+        // Evitar duplicación bajo el bloqueo transaccional.
+        if (sesionRepository.existeDuplicada(casoId, docenteId, fechaInicio, fechaFin)) {
+            throw new ReglaNegocioException(
+                    "M4-SESION-DUPLICADA",
+                    "Ya existe una sesión con el mismo caso, docente y rango de fechas");
+        }
+
+        // Identificar la primera programación para confirmar F3-03.
+        boolean primeraSesionDelCaso = !sesionRepository.existeSesionParaCaso(casoId);
+
+        // Persistir sobre Sesion oficial; los triggers validan RF09 y F3-03.
         sesion = sesionRepository.guardar(sesion);
 
-        // 7. Si es la primera sesión, solicitar bloqueo académico a M3
+        // Confirmar la marca F3-03 dentro de la misma transacción.
         if (primeraSesionDelCaso) {
             casoAcademicoPort.solicitarBloqueoAcademico(casoId);
         }
@@ -170,16 +174,7 @@ public class SesionAcademicaService {
             String nuevaDescripcion,
             Instant nuevaFechaInicio,
             Instant nuevaFechaFin) {
-        verificarPermiso(docenteId);
-
-        SesionAcademica sesion =
-                sesionRepository
-                        .buscarParaActualizar(sesionId)
-                        .orElseThrow(
-                                () ->
-                                        new ReglaNegocioException(
-                                                "M4-SESION-NO-ENCONTRADA", "Sesión no encontrada"));
-        verificarPropiedad(sesion, docenteId);
+        SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         // Proteger sesiones con participaciones vinculadas
         if (sesionRepository.tieneParticipacionesVinculadas(sesionId)) {
@@ -204,16 +199,7 @@ public class SesionAcademicaService {
     // ─── CambiarCaso ──────────────────────────────────────────
 
     public SesionAcademica cambiarCaso(UUID docenteId, UUID sesionId, UUID nuevoCasoId) {
-        verificarPermiso(docenteId);
-
-        SesionAcademica sesion =
-                sesionRepository
-                        .buscarParaActualizar(sesionId)
-                        .orElseThrow(
-                                () ->
-                                        new ReglaNegocioException(
-                                                "M4-SESION-NO-ENCONTRADA", "Sesión no encontrada"));
-        verificarPropiedad(sesion, docenteId);
+        SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         if (sesionRepository.tieneParticipacionesVinculadas(sesionId)) {
             throw new ReglaNegocioException(
@@ -252,16 +238,7 @@ public class SesionAcademicaService {
     // ─── CambiarEstadoSesion ──────────────────────────────────
 
     public SesionAcademica cambiarEstado(UUID docenteId, UUID sesionId, EstadoSesion nuevoEstado) {
-        verificarPermiso(docenteId);
-
-        SesionAcademica sesion =
-                sesionRepository
-                        .buscarParaActualizar(sesionId)
-                        .orElseThrow(
-                                () ->
-                                        new ReglaNegocioException(
-                                                "M4-SESION-NO-ENCONTRADA", "Sesión no encontrada"));
-        verificarPropiedad(sesion, docenteId);
+        SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         switch (nuevoEstado) {
             case EN_CURSO -> sesion.iniciar();
@@ -278,16 +255,7 @@ public class SesionAcademicaService {
     // ─── ConvocarEstudiantes ──────────────────────────────────
 
     public Convocatoria convocarEstudiante(UUID docenteId, UUID sesionId, UUID estudianteId) {
-        verificarPermiso(docenteId);
-
-        SesionAcademica sesion =
-                sesionRepository
-                        .buscarParaActualizar(sesionId)
-                        .orElseThrow(
-                                () ->
-                                        new ReglaNegocioException(
-                                                "M4-SESION-NO-ENCONTRADA", "Sesión no encontrada"));
-        verificarPropiedad(sesion, docenteId);
+        SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         if (!sesion.permiteConvocatoria()) {
             throw new ReglaNegocioException(
@@ -319,7 +287,7 @@ public class SesionAcademicaService {
         return convocatoriaRepository.listarPorSesion(sesionId);
     }
 
-    // ─── VerificarAccesoSesion (expuesto para M5) ─────────────
+    // Acceso booleano heredado: permanece retirado.
 
     /**
      * Operación heredada retirada. Nunca autoriza acceso o repetición de intentos.
@@ -337,7 +305,24 @@ public class SesionAcademicaService {
 
     // ─── Métodos privados ─────────────────────────────────────
 
+    /** Las mutaciones de una sesión existente comparten permiso, bloqueo y propietario. */
+    private SesionAcademica cargarSesionParaModificar(UUID docenteId, UUID sesionId) {
+        verificarPermiso(docenteId);
+        SesionAcademica sesion =
+                sesionRepository
+                        .buscarParaActualizar(sesionId)
+                        .orElseThrow(
+                                () ->
+                                        new ReglaNegocioException(
+                                                "M4-SESION-NO-ENCONTRADA", "Sesión no encontrada"));
+        verificarPropiedad(sesion, docenteId);
+        return sesion;
+    }
+
     private void verificarPermiso(UUID docenteId) {
+        if (docenteId == null) {
+            throw new ReglaNegocioException("M4-NO-AUTENTICADO", "Se requiere identidad docente");
+        }
         if (!identidadPort.tienePermiso(docenteId, PERMISO_GESTIONAR_SESION)) {
             throw new ReglaNegocioException(
                     "M4-SIN-PERMISO",

@@ -1,3 +1,0 @@
-M4 surefire tests=113 failures=0 errors=0 skipped=0
-M4 failsafe tests=38 failures=0 errors=0 skipped=0
-Reactor total tests=201; BUILD SUCCESS

@@ -46,6 +46,31 @@ class SesionAcademicaServiceTest {
         return s;
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {0, -1})
+    void duracionInvalidaSeRechazaAntesDeBloquearProveedores(int duracion) {
+        var error =
+                assertThrows(
+                        ReglaNegocioException.class,
+                        () ->
+                                service.crearSesion(
+                                        docente, caso, "Espacio", null, inicio, fin, duracion));
+        assertEquals("M4-DURACION-INVALIDA", error.getCodigo());
+        verifyNoInteractions(repo, casos);
+    }
+
+    @Test
+    void rangoInvalidoSeRechazaAntesDeBloquearProveedores() {
+        var error =
+                assertThrows(
+                        ReglaNegocioException.class,
+                        () ->
+                                service.crearSesion(
+                                        docente, caso, "Espacio", null, fin, inicio, 1800));
+        assertEquals("M4-FECHA-INVALIDA", error.getCodigo());
+        verifyNoInteractions(repo, casos);
+    }
+
     @Test
     void programaYConfirmaPrimeraMarca() {
         var s = service.crearSesion(docente, caso, "Espacio", null, inicio, fin, 1800);

@@ -4,8 +4,6 @@ import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.rule.ReglaNegocioException;
 import com.prisaly.m4.presentation.dto.ActualizarSesionRequest;
 import com.prisaly.m4.presentation.dto.CambiarEstadoRequest;
-import com.prisaly.m4.presentation.dto.ConvocarEstudianteRequest;
-import com.prisaly.m4.presentation.dto.ConvocatoriaResponse;
 import com.prisaly.m4.presentation.dto.CrearSesionRequest;
 import com.prisaly.m4.presentation.dto.SesionResponse;
 
@@ -28,7 +26,7 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controlador REST de M4 – Programación Académica y Convocatorias.
+ * Controlador REST de sesiones de M4. Las convocatorias se atienden en ConvocatoriaController.
  *
  * <p>Los endpoints usan el prefijo {@code /m4/sesiones} que se combina con el context-path {@code
  * /api} configurado en application.yml, resultando en rutas como {@code /api/m4/sesiones}.
@@ -121,38 +119,7 @@ public class SesionController {
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
-    // ─── Convocar estudiante ──────────────────────────────────
-
-    @PostMapping("/{sesionId}/convocatorias")
-    public ResponseEntity<ConvocatoriaResponse> convocarEstudiante(
-            @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
-            @PathVariable UUID sesionId,
-            @RequestBody @Valid ConvocarEstudianteRequest request) {
-
-        var convocatoria =
-                service.convocarEstudiante(
-                        service.resolverDocenteAutenticado(docenteId),
-                        sesionId,
-                        request.estudianteId());
-
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ConvocatoriaResponse.from(convocatoria));
-    }
-
-    // ─── Consultar convocatorias ──────────────────────────────
-
-    @GetMapping("/{sesionId}/convocatorias")
-    public ResponseEntity<List<ConvocatoriaResponse>> consultarConvocatorias(
-            @PathVariable UUID sesionId) {
-
-        var convocatorias =
-                service.consultarConvocatoriasAutorizadas(sesionId).stream()
-                        .map(ConvocatoriaResponse::from)
-                        .toList();
-        return ResponseEntity.ok(convocatorias);
-    }
-
-    // ─── Verificar acceso (expuesto para M5) ──────────────────
+    // Ruta heredada retirada: no es un contrato de acceso estudiantil.
 
     @GetMapping("/{sesionId}/acceso/{estudianteId}")
     public ResponseEntity<Boolean> verificarAcceso(
@@ -161,6 +128,6 @@ public class SesionController {
         throw new ReglaNegocioException(
                 "M4-ACCESO-LEGADO-RETIRADO",
                 "Esta ruta no autoriza acceso estudiantil; use el contrato interno y la política"
-                    + " aprobada");
+                        + " aprobada");
     }
 }

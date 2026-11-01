@@ -33,6 +33,31 @@ class AutorizacionM4ServiceTest {
     }
 
     @Test
+    void proveedorSinIdentidadNoProvocaErrorInterno() {
+        when(identidad.docenteActual()).thenReturn(null);
+        var error =
+                assertThrows(
+                        ReglaNegocioException.class,
+                        () -> service.resolverDocenteAutenticado(null));
+        assertEquals("M4-NO-AUTENTICADO", error.getCodigo());
+        verifyNoInteractions(sesiones, convocatorias, casos);
+    }
+
+    @Test
+    void mutacionSinDocenteNoConsultaNiBloqueaLaSesion() {
+        var error =
+                assertThrows(
+                        ReglaNegocioException.class,
+                        () ->
+                                service.cambiarEstado(
+                                        null,
+                                        UUID.randomUUID(),
+                                        com.prisaly.m4.domain.model.EstadoSesion.EN_CURSO));
+        assertEquals("M4-NO-AUTENTICADO", error.getCodigo());
+        verifyNoInteractions(sesiones, convocatorias, casos);
+    }
+
+    @Test
     void identidadDeclaradaNoPuedeSuplantarAlPrincipal() {
         assertEquals(actual, service.resolverDocenteAutenticado(null));
         var error =

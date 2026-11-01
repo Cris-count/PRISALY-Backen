@@ -1,2 +1,0 @@
-surefire tests=92 failures=0 errors=0 skipped=0
-failsafe tests=31 failures=0 errors=0 skipped=0

@@ -1,5 +1,0 @@
-SHA256 M4 local/anidado: F31C52924AC8A1CAD8D4FEF82B69A7A47DB404C29FA5CEA7D362A5F3BE4D6C73 (idénticos)
-StubAdapter/TestM4Application: app=0, módulo M4=0
-V010: app=0, módulo M4=1
-M4ProviderAutoConfiguration y AutoConfiguration.imports: presentes y verificados
-Paquete del checkout M4 actual; no incorpora el nuevo develop.

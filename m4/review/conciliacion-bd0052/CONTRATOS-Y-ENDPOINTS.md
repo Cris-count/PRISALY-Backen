@@ -4,8 +4,22 @@ Se conservan sin cambio los records y firmas de com.prisaly.m4.api. Programacion
 
 M3: adaptador SQL con Caso FOR UPDATE, inserción Sesion y triggers oficiales dentro de la misma transacción. Requiere revisión del protocolo con el Integrante 2. M5: el contrato público de historial para ParticipacionesPort sigue pendiente; no se accede a repositorios internos ajenos.
 
+## Integración M4–M5 vigente
+
+- M5 resuelve `Intento.idParticipacion → Participacion.idConvocatoria` desde sus datos persistidos. No autoriza usando una convocatoria enviada libremente por Angular.
+- M1 debe aportar `studentId`, distinto de `userId`. `ProgramacionAutenticadaPort` no acepta un estudiante declarado por el cliente; DD-02 conserva denegación segura.
+- `Optional.empty()` representa convocatoria inexistente o ajena, sin revelar titularidad. El control provisional M5 lo convierte en404; la elección académica403/404 sigue pendiente de ratificación.
+- `ConsultaProgramacionNoDisponibleException` significa indisponibilidad, nunca ausencia o permiso. La incorporación local M5 ya la traduce a503; las traducciones de identidad deben conciliarse antes de conectar su control de acceso.
+- El contexto no contiene hash/código de autorización, respuestas, calificaciones ni una autorización de repetición. La lectura es una instantánea SELECT; no reserva ni mantiene bloqueos después de devolver el DTO.
+- `observadoEn` usa `clock_timestamp()` PostgreSQL. M5 marca el fin con su reloj UTC; falta ratificar una autoridad temporal común, bordes y tolerancia. El reloj del navegador no decide vigencia.
+- Para reanudar, M5 necesita el mismo intento persistido, su inicio, límite temporal, estado y respuestas confirmadas, además de consultar nuevamente el contexto M4. No debe crear otro intento ni reiniciar el reloj por una reanudación.
+- M5 dispone del motivo `TIEMPO_VENCIDO`, pero faltan la regla efectiva de vencimiento y su mecanismo de detección. Guardar una finalización y luego lanzar una excepción en la misma transacción puede revertirla: el caso de uso debe resolver esa frontera antes de habilitarse.
+- Repetición y número de intento corresponden a M5/DD-14. Las reglas oficiales V005/V007 de historial y consumo atómico de autorización no se sustituyen por un booleano M4. M4 no ofrece `puedeRepetir`.
+
+La resolución persistida, el retiro y el fallo real de consulta se verifican en las pruebas PostgreSQL M5; consultar [resultados actuales](../revision-m4-m5/evidence/RESULTADO.md). No demuestran inicio/reanudación productivos ni el control de acceso conectado a un endpoint.
+
 ## Diccionario HTTP
-Prefijo de controlador /m4/sesiones; app agrega /api. Identidad del docente desde M1. X-Docente-Id es opcional, solo comprueba coincidencia con identidad autenticada.
+SesionController atiende /m4/sesiones; ConvocatoriaController atiende /m4/sesiones/{sesionId}/convocatorias. app agrega /api. La separación conserva las rutas existentes. Identidad del docente desde M1. X-Docente-Id es opcional, solo comprueba coincidencia con identidad autenticada.
 
 | Método y ruta relativa | Entrada | Respuesta |
 |---|---|---|
@@ -31,6 +45,7 @@ Errores: {"code":"M4-…","message":"…"}; 400 datos/UUID/fechas, 401 sin auten
 ```mermaid
 classDiagram
   SesionController --> SesionAcademicaService
+  ConvocatoriaController --> SesionAcademicaService
   SesionAcademicaService --> SesionRepository
   SesionAcademicaService --> CasoAcademicoPort
   SesionAcademicaService --> IdentidadPort

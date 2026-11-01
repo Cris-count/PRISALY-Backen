@@ -1,39 +1,43 @@
-# M4 — Estado al preparar el commit «M4 listo para integracion»
+# M4–M5 — Estado actual y guía de documentación
 
-**Estado vigente, 31/10/2026:** consultar [conciliación BD-005.2](conciliacion-bd0052/INFORME.md). Las afirmaciones siguientes son históricas: la nueva fase corrige las escrituras, los estados y la reasignación sobre las tablas oficiales. La aplicación compartida de V010 y la integración académica completa siguen pendientes; PR #2 continúa en borrador.
+Actualizado el31/10/2026. Base local: develop, feec0fb. M4 ya está incorporado en develop; M5 procede de3fc823e y tiene cambios locales de integración; M4 tiene la reorganización local de controladores y validaciones. Sin commit ni push de esos cambios.
 
-Actualización posterior al merge de develop: consultar [adaptación de contratos](adaptacion-contratos/INFORME.md). Este documento conserva la instantánea del commit 5e05888 y no incorpora por sí mismo la fase posterior.
+Última verificación: **445 pruebas aprobadas**, cero fallos, errores u omitidas. M4:149; M5:145. El conteo coincide entre los XML de esa ejecución y el log Maven. La cifra anterior207/157 estaba contaminada por17 casos de un XML antiguo; aquella ejecución correspondía a190/140.
 
-Fecha: 31 de octubre de 2026. El título del commit fue solicitado por el usuario; no constituye aprobación de merge, compatibilidad BD-005.2 ni certificación de integración completa.
+## Qué consultar
 
-El commit reúne el trabajo local M4 pendiente de las fases anteriores y la corrección HTTP: aislamiento de dobles de prueba, proveedores ausentes que fallan de forma segura, consulta pública interna para M5, protección provisional de historial, empaquetado seguro y evidencias. No modifica M1 ni M5 ni cambia V001–V010. El cambio app/pom.xml evita que el empaquetado conserve un JAR M4 antiguo.
+| Documento | Contenido |
+|---|---|
+| [Revisión actual](revision-m4-m5/INFORME.md) | Estado de M1–M7, incorporación local M5, corrección503, límites y pendientes |
+| [Resultados verificados](revision-m4-m5/evidence/RESULTADO.md) | Pruebas ejecutadas, alcance y enlaces a evidencia actual |
+| [Conciliación BD-005.2](conciliacion-bd0052/INFORME.md) | Matriz de columnas, tres estados oficiales, RF09/F303, transacciones y tratamiento de V010 |
+| [Contratos y endpoints](conciliacion-bd0052/CONTRATOS-Y-ENDPOINTS.md) | Puertos M4–M5, errores, tiempo, reanudación, repetición y diagramas |
+| [Decisiones REST de M5](../../m5/docs/M5-REST-DEPENDENCIAS-Y-DECISIONES.md) | Operaciones internas, acceso estudiantil y decisiones académicas pendientes |
 
-## Errores HTTP corregidos
+Herramientas conservadas: [consulta de historial V010, solo lectura](conciliacion-bd0052/CONSULTAS-V010.sql), [verificación del paquete](conciliacion-bd0052/check-package.ps1) y [recolección de resultados por hora de inicio](conciliacion-bd0052/collect-evidence.ps1).
 
-- UUID de ruta/query/cabecera inválido, cabecera requerida ausente, JSON ilegible/vacío, fecha o enum no convertible: HTTP 400, M4-SOLICITUD-INVALIDA.
-- Validación de campos: HTTP 400, M4-VALIDACION, conservando mensajes de validación.
-- Tipo de contenido no soportado: HTTP 415. Los estados/cabeceras estándar del framework se conservan, incluyendo Allow para HTTP 405. Si no se seleccionó controlador, Spring gestiona el rechazo antes del advice específico de M4; no se instala un advice global que altere otros módulos.
-- Duplicados conocidos de sesión/convocatoria: HTTP 409, únicamente cuando Hibernate informa SQLSTATE 23505 y una restricción reconocida. Se soporta también el nombre de unicidad de convocatoria BD-005.2.
-- Conflictos optimistas, pesimistas y timeout de bloqueo JPA: HTTP 409, M4-CONFLICTO-CONCURRENCIA.
-- Integridad desconocida y fallos inesperados: HTTP 500 genérico sin SQL, stacktrace o nombres de tablas en el cuerpo. No se presentan falsamente como duplicación.
-- Se mantienen 403/404/409/503 de reglas de negocio y proveedores no disponibles.
+## Organización de M4
 
-## Validación
+| Paquete | Responsabilidad |
+|---|---|
+| api | Puertos públicos y contexto informativo para otros módulos |
+| presentation | SesionController para sesiones; ConvocatoriaController para convocatorias; DTO y errores compartidos |
+| application | Orquestación transaccional, permisos, propiedad y carga bloqueada de sesiones |
+| domain | Agregados, validaciones y State con tres estados oficiales |
+| infrastructure | Adaptadores, proveedores seguros y persistencia sobre BD-005.2 |
 
-Se añadieron 29 ejecuciones MockMvc de errores y una prueba HTTP con duplicación PostgreSQL real, comprobando además que el intento fallido de actualización no cambió el título persistido. Los tests HTTP aislados no certifican el filtro de autenticación/seguridad de app.
+La creación valida el agregado antes de consultar o bloquear proveedores externos. Las mutaciones de una sesión existente comparten una carga con permiso, bloqueo de fila y comprobación de propietario. Se rechaza la identidad docente nula y la programación exige una transacción de escritura.
 
-Ver http-2026-10-31/evidence/regression-summary.txt para el resultado final. Los XML adjuntos excluyen propiedades del entorno. Los informes continuidad, contrato-m4-m5 y escaneo-2026-10-31 conservan la evidencia histórica de esas fases; sus referencias a cambios sin publicar describen el estado de entonces.
+## Pendientes que siguen vigentes
 
-Resultado final: BUILD SUCCESS, 123 pruebas aprobadas (92 Surefire + 31 Failsafe), cero fallos, errores u omitidas. El incremento respecto a las 93 anteriores es de 29 pruebas HTTP aisladas y una prueba HTTP/PostgreSQL real. No se reejecutaron ni se incluyen las pruebas del módulo M5.
+- Acceso estudiantil DD-02 y conexión del control de titularidad.
+- Inicio/reanudación, reloj, vencimiento, repetición y orden global de bloqueos.
+- Proveedor productivo de historial M5 y notificaciones M7.
+- Confirmar aplicación de V010 y datos en bases compartidas.
+- M2/M6/M7 solo tienen estructura básica en esta base de develop.
 
-## Bloqueos aún abiertos
+## Organización de la carpeta
 
-1. Escrituras M4 sobre tablas propuestas frente a consultas M5 sobre "Sesion"/"Convocatoria" oficiales. Resolver BD-005.2 y el historial de aplicación de V010 con el Integrante 1.
-2. Reasignación de caso sin solicitud F3-03 al destino; acordar y probar el mecanismo atómico aprobado.
-3. Vincular principal autenticado con docente/estudiante y autorizar recursos; X-Docente-Id no es prueba de identidad. Resolver además su incompatibilidad CORS.
-4. Evitar uso autorizante de verificarAccesoSesion legado, que aún permite sesión abierta antes de su fecha prevista.
-5. Acordar concurrencia y versión del resultado; el objeto devuelto por el repositorio puede contener versión anterior al flush, y el esquema oficial no tiene esa columna.
-6. Proveedores reales M1/M3/M5/M7 y transacciones compartidas. El puerto nuevo de consulta M5 está apagado por defecto y no autoriza inicio/reanudación.
-7. Reglas académicas de ventana, reloj, vencimiento, reanudación y repetición; pruebas de carreras entre módulos y validación en infraestructura oficial.
+Se guardaba un informe por fase con XML, logs, borradores de PR y diagnósticos repetidos. Con aprobación expresa del usuario se eliminaron86 archivos reemplazados y se conservaron12 referencias vigentes, además de retirar seis carpetas y siete archivos temporales de diagnóstico. Las decisiones útiles están consolidadas en los documentos enlazados. El historial versionado también puede consultarse en Git.
 
-No se realiza push, merge ni modificación del PR en esta fase. El mensaje de commit no elimina estos bloqueos.
+Los directorios target contienen artefactos de Maven y no son documentación oficial. La limpieza no modifica implementaciones, pruebas, migraciones ni configuración del sistema.

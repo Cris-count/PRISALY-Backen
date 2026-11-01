@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.presentation.controller.ConvocatoriaController;
 import com.prisaly.m4.presentation.controller.M4ExceptionHandler;
 import com.prisaly.m4.presentation.controller.SesionController;
 
@@ -40,7 +41,8 @@ class M4HttpErrorsTest {
     void configurar() {
         service = mock(SesionAcademicaService.class);
         mvc =
-                MockMvcBuilders.standaloneSetup(new SesionController(service))
+                MockMvcBuilders.standaloneSetup(
+                                new SesionController(service), new ConvocatoriaController(service))
                         .setControllerAdvice(new M4ExceptionHandler())
                         .build();
     }
@@ -242,5 +244,32 @@ class M4HttpErrorsTest {
                 "SQL-PRIVADO",
                 new org.hibernate.exception.ConstraintViolationException(
                         "SQL-PRIVADO", new SQLException("SQL-PRIVADO", state), constraint));
+    }
+
+    @Test
+    void convocatoriaSinEstudianteConservaValidacion400() throws Exception {
+        mvc.perform(
+                        post(ROOT + "/" + SESION + "/convocatorias")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("M4-VALIDACION"));
+        verifyNoInteractions(service);
+    }
+
+    @Test
+    void convocatoriaConProveedorAusenteConserva503() throws Exception {
+        var docente = java.util.UUID.fromString(DOCENTE);
+        when(service.resolverDocenteAutenticado(null)).thenReturn(docente);
+        when(service.convocarEstudiante(any(), any(), any()))
+                .thenThrow(
+                        new ReglaNegocioException(
+                                "M4-PROVEEDOR-NO-DISPONIBLE", "Proveedor no disponible"));
+        mvc.perform(
+                        post(ROOT + "/" + SESION + "/convocatorias")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"estudianteId\":\"" + DOCENTE + "\"}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("M4-PROVEEDOR-NO-DISPONIBLE"));
     }
 }

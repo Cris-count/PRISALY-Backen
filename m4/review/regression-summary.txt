@@ -1,9 +1,0 @@
-[INFO] Tests run: 49, Failures: 0, Errors: 0, Skipped: 0
-M4 Flyway: 010 SUCCESS
-M4 concurrencia: �xitos=1, duplicados esperados=9, inesperados=0
-M4 RF-09 SQL: caso Borrador (stub M3), sesiones=0
-M4 RF-09 SQL: caso Publicado (stub M3), sesiones=1; bloqueo F3-03 simulado
-M4 rollback SQL: escritura enviada con saveAndFlush, sesiones residuales=0
-M4 V010 classpath: [file:/C:/Users/NICOLAS/OneDrive/Desktop/Prisaly/PRISALY-Backen/m4/target/classes/db/migration/V010__m4_sesiones_convocatorias.sql]
-[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0
-[INFO] BUILD SUCCESS

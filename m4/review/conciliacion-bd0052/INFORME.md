@@ -1,10 +1,12 @@
 # M4 — Conciliación con BD-005.2
-Fecha: 31/10/2026. Rama: feature/m4-programacion-convocatorias. Base revisada: 315746e. PR #2 en borrador; no merge autorizado.
+
+Actualización posterior: ver [revisión conjunta de módulos y M4–M5](../revision-m4-m5/INFORME.md). Allí se corrige el conteo histórico contaminado por un XML antiguo y se registra la incorporación local de M5, sin commit ni push.
+Fecha: 31/10/2026. Esta conciliación describe la adaptación iniciada sobre315746e. El estado vigente de ramas e integración está en [ESTADO_ACTUAL](../ESTADO_ACTUAL.md); las referencias de aquella fase no representan el estado actual del PR.
 
 ## Alcance e inventario
 Se corrige M4 existente: dominio, State, JPA, repositorios, servicio transaccional, DTO HTTP, autoconfiguración, empaquetado y pruebas. No se modifica código de M1–M3/M5–M7 ni app, V001–V009 o el contenido de V010. Los informes anteriores describen sus respectivas instantáneas; no certifican esta corrección.
 
-Dependencias: IdentityAccessPort de M1, CasoAcademicoPort de M4 y metadatos/triggers oficiales de Caso, ParticipacionesPort y NotificacionPort. ProgramacionParticipacionPort, ProgramacionAutenticadaPort y ContextoProgramacion conservan su firma. Los dos informes locales previos no versionados se preservan sin incorporarlos automáticamente.
+Dependencias: IdentityAccessPort de M1, CasoAcademicoPort de M4 y metadatos/triggers oficiales de Caso, ParticipacionesPort y NotificacionPort. ProgramacionParticipacionPort, ProgramacionAutenticadaPort y ContextoProgramacion conservan su firma. Los diagnósticos de fases sustituidas se retiraron con autorización del usuario; los contratos y pendientes vigentes están consolidados en este directorio.
 
 ## Defectos y correcciones
 | Antes | Corrección | Evidencia |
@@ -54,7 +56,7 @@ Unicidad oficial uq_convocatoria_idx1: sesión/estudiante. Se elimina confirmada
 Relaciones: Caso → Sesion → Convocatoria → Participacion → Intento. M4 no escribe Participacion/Intento. M5 resuelve convocatoria desde participación persistida; no debe autorizar con un ID libre del cliente. V005/V006 impiden cambiar caso desde la primera convocatoria y protegen orígenes de participaciones.
 
 ## State y operaciones conservadas
-SinIniciar permite editar programación y asignar convocatorias antes de iniciar. Esta asignación no autoriza a participar. iniciar produce EnCurso y fechaInicioReal; cerrar desde EnCurso produce Finalizado y fechaFinReal. Finalizado es terminal. abrir/cancelar y confirmación de convocatoria se rechazan expresamente; no se asigna equivalencia silenciosa a ABIERTA/CANCELADA. Las clases anteriores se conservan como texto histórico en historico-state y en Git 315746e.
+SinIniciar permite editar programación y asignar convocatorias antes de iniciar. Esta asignación no autoriza a participar. iniciar produce EnCurso y fechaInicioReal; cerrar desde EnCurso produce Finalizado y fechaFinReal. Finalizado es terminal. abrir/cancelar y confirmación de convocatoria se rechazan expresamente; no se asigna equivalencia silenciosa a ABIERTA/CANCELADA. Las clases anteriores se pueden consultar en Git315746e; sus copias de texto duplicadas se retiraron de la documentación activa.
 
 Las fechas reales de transición usan Instant.now del servidor. observadoEn del contexto usa clock_timestamp PostgreSQL. La autoridad temporal académica y la relación entre ventana prevista y real no están ratificadas: no se implementa vencimiento ni repetición en M4.
 
@@ -66,7 +68,7 @@ Crear toma advisory lock transaccional caso/docente, bloquea Caso, comprueba dup
 La integración SQL real con las reglas de M3 queda demostrada por triggers; no equivale a integración completa con su servicio Java. El fallback del puerto Java M3 permanece sin autorización por defecto si falta proveedor.
 
 ## V010: escenario C, decisión reversible
-El archivo V010 permanece en su ruta fuente con contenido intacto. Blob Git: 18c4f98131d0caf5a0399b5139c7a3cbf37a3f09. La referencia origin/develop inspeccionada contenía V001–V009, sin V010. En el repositorio, V010 productiva estaba en M4. Se publicó en la rama M4; eso no prueba su aplicación compartida.
+El archivo V010 permanece en su ruta fuente con contenido intacto. Blob Git: 18c4f98131d0caf5a0399b5139c7a3cbf37a3f09. Al iniciar aquella fase, la referencia origin/develop inspeccionada contenía V001–V009, sin V010; actualmente develop ya contiene el fuente histórico de M4, excluido de la ejecución automática. En el repositorio, V010 productiva estaba en M4. Se publicó en la rama M4; eso no prueba su aplicación compartida.
 
 Al inicio no había contenedores prisaly accesibles, .env local ni configuración de una base compartida autorizada. No se pudo consultar su flyway_schema_history ni inventariar datos de las tablas propuestas. Los contenedores de pruebas son efímeros y no demuestran ausencia de V010 en entornos de compañeros.
 
@@ -81,14 +83,14 @@ M5: puertos públicos preservados; Optional.empty() significa ausencia/titularid
 
 La suite principal de persistencia usa identidad y notificación de prueba expresamente importadas. Para historial utiliza un proveedor SOLO DE TEST que consulta Participacion/Convocatoria/Intento reales. Esto prueba la protección del servicio sobre datos reales, pero no publica un contrato M5 de historial ni su adaptador productivo. Sin ParticipacionesPort real las modificaciones sensibles devuelven503. Sin NotificacionPort real, convocar falla y revierte. No se restaura el antiguo false permisivo.
 
-Pendientes externos: contratos productivos de historial M5 y comunicación M7; decisiones de ventana, reloj, vencimiento, reanudación y repetición; orden global de locks; traducción a503 de la excepción M4 en el borde HTTP de M5; revisión de Arquitectura y V010 compartida. M5 no se modifica en esta fase.
+Pendientes externos: contratos productivos de historial M5 y comunicación M7; decisiones de ventana, reloj, vencimiento, reanudación y repetición; orden global de locks; revisión de Arquitectura y V010 compartida. La traducción503 de la excepción M4 ya fue corregida en la incorporación local M5, descrita en la revisión conjunta.
 
 ## Verificación y reproducción
 Ejecutar desde la raíz Maven:
 ```powershell
 .\mvnw.cmd verify -Pdocker-it "-Dm4.baseline.migrations=C:/Users/NICOLAS/OneDrive/Desktop/Prisaly/PRISALY-Backen/app/src/main/resources/db/migration"
-.\m4\review\continuidad\check-package.ps1 -EvidenceDirectory m4/review/conciliacion-bd0052/evidence
+.\m4\review\conciliacion-bd0052\check-package.ps1 -EvidenceDirectory m4/review/revision-m4-m5/evidence
 ```
-El perfil docker-it existe en el pom. PostgreSQL es 16.15; Hibernate usa validate. Ver evidence/RESULTADOS.md para cifras finales y alcance. La cobertura antigua de estados propuestos se sustituye por reglas oficiales; no se conserva artificialmente el número151. Su evidencia y fuentes siguen en Git315746e. Las pruebas de otros módulos se ejecutan como regresión, sin editarlos.
+El perfil docker-it existe en el pom. PostgreSQL es 16.15; Hibernate usa validate. Ver [resultados actuales](../revision-m4-m5/evidence/RESULTADO.md) para cifras finales y alcance. La cobertura antigua de estados propuestos se sustituye por reglas oficiales; no se conserva artificialmente el número151. Su evidencia y fuentes siguen en Git315746e. Las pruebas de otros módulos se ejecutan como regresión, sin editarlos.
 
-El resultado habilita revisión técnica de esta adaptación, no declaración de M4 terminado ni merge del PR.
+El resultado no certifica despliegue compartido ni integración académica completa. El estado técnico vigente se resume en ESTADO_ACTUAL.

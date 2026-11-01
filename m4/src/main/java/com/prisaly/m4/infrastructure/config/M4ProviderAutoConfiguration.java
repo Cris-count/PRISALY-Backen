@@ -7,6 +7,7 @@ import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoM3Adapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadM1Adapter;
 
@@ -14,6 +15,9 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.UUID;
 
 /**
  * Se evalúa después de las configuraciones de proveedores. Sin implementación real, ningún perfil
@@ -34,23 +38,23 @@ public class M4ProviderAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(CasoAcademicoPort.class)
     CasoAcademicoPort casosNoDisponibles(
-            ObjectProvider<CasoRepositoryPort> proveedores,
-            ObjectProvider<org.springframework.jdbc.core.JdbcTemplate> bases) {
+            ObjectProvider<CasoRepositoryPort> proveedores, ObjectProvider<JdbcTemplate> bases) {
         var jdbc = bases.getIfAvailable();
-        if (jdbc != null)
-            return new com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter(jdbc);
+        if (jdbc != null) {
+            return new CasoAcademicoBd0052Adapter(jdbc);
+        }
         var proveedor = proveedores.getIfAvailable();
         if (proveedor != null) {
             return new CasoAcademicoM3Adapter(proveedor);
         }
         return new CasoAcademicoPort() {
             @Override
-            public boolean estaPublicado(java.util.UUID casoId) {
+            public boolean estaPublicado(UUID casoId) {
                 throw noDisponible("M3");
             }
 
             @Override
-            public void solicitarBloqueoAcademico(java.util.UUID casoId) {
+            public void solicitarBloqueoAcademico(UUID casoId) {
                 throw noDisponible("M3");
             }
         };

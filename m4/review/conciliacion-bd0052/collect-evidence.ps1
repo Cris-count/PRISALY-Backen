@@ -1,10 +1,14 @@
+param(
+    [Parameter(Mandatory = $true)][datetime]$RunStartedAt,
+    [string]$EvidenceDirectory = ''
+)
 $ErrorActionPreference = 'Stop'
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
-$evidence = Join-Path $PSScriptRoot 'evidence'
+$evidence = if ($EvidenceDirectory) { [IO.Path]::GetFullPath($EvidenceDirectory) } else { Join-Path $PSScriptRoot 'evidence' }
 New-Item -ItemType Directory -Force -Path $evidence | Out-Null
-$results = foreach ($module in @('m1', 'm3', 'm4', 'app')) {
+$results = foreach ($module in @('m1', 'm3', 'm4', 'm5', 'app')) {
     foreach ($runner in @('surefire', 'failsafe')) {
-        foreach ($file in Get-ChildItem (Join-Path $repositoryRoot "$module/target/$runner-reports/TEST-*.xml")) {
+        foreach ($file in Get-ChildItem (Join-Path $repositoryRoot "$module/target/$runner-reports/TEST-*.xml") -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -ge $RunStartedAt }) {
             $suite = ([xml](Get-Content -LiteralPath $file.FullName -Raw)).testsuite
             # Solo nombres y resultados: no propiedades, credenciales ni salida de Spring.
             [pscustomobject]@{

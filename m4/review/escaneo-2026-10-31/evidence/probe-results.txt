@@ -1,5 +1,0 @@
-SCAN version devuelta=0 version persistida=1
-SCAN F3-03 bloqueo origen=true bloqueo destino=false
-SCAN acceso legado antes de fechaInicio=true
-SCAN HTTP UUID invalido=500 cabecera ausente=500
-SCAN duplicado update excepcion=DataIntegrityViolationException HTTP=500

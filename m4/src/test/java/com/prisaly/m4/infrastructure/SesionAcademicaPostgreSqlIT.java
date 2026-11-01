@@ -1,6 +1,10 @@
 package com.prisaly.m4.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.prisaly.m4.TestM4Application;
 import com.prisaly.m4.api.*;
@@ -12,6 +16,8 @@ import com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadStubAdapter;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;
 import com.prisaly.m4.infrastructure.config.M4SchemaAutoConfiguration;
+import com.prisaly.m4.presentation.controller.ConvocatoriaController;
+import com.prisaly.m4.presentation.controller.M4ExceptionHandler;
 
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.*;
@@ -20,6 +26,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -87,7 +94,7 @@ class SesionAcademicaPostgreSqlIT {
         estudiante = UUID.randomUUID();
         jdbc.update(
                 "INSERT INTO \"Rol\" (\"idRol\",\"nombre\",\"descripcion\") VALUES"
-                    + " (1,'Fixture','Prueba')");
+                        + " (1,'Fixture','Prueba')");
         usuario(docente, "docente@example.invalid");
         UUID alumno = UUID.randomUUID();
         usuario(alumno, "alumno@example.invalid");
@@ -101,7 +108,7 @@ class SesionAcademicaPostgreSqlIT {
     void usuario(UUID id, String correo) {
         jdbc.update(
                 "INSERT INTO \"Usuario\" (\"idUsuario\",\"idRol\",\"nombre\",\"correo\") VALUES"
-                    + " (?,1,'Fixture',?)",
+                        + " (?,1,'Fixture',?)",
                 id,
                 correo);
     }
@@ -144,8 +151,8 @@ class SesionAcademicaPostgreSqlIT {
                 21,
                 jdbc.queryForObject(
                         "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"
-                            + " AND table_type='BASE TABLE' AND"
-                            + " table_name<>'flyway_schema_history'",
+                                + " AND table_type='BASE TABLE' AND"
+                                + " table_name<>'flyway_schema_history'",
                         Integer.class));
     }
 
@@ -171,7 +178,7 @@ class SesionAcademicaPostgreSqlIT {
         assertEquals(java.time.Duration.ofMinutes(30), contexto.tiempoMaximoParticipacion());
         System.out.println(
                 "M4 OFICIAL: escritura JPA Sesion/Convocatoria y lectura puerto M5 coherentes; 21"
-                    + " tablas");
+                        + " tablas");
     }
 
     @Test
@@ -200,12 +207,12 @@ class SesionAcademicaPostgreSqlIT {
                         () ->
                                 jdbc.update(
                                         "UPDATE \"Caso\" SET \"nombre\"='Alterado' WHERE"
-                                            + " \"idCaso\"=?",
+                                                + " \"idCaso\"=?",
                                         caso));
         assertEquals("23514", ((SQLException) ex.getMostSpecificCause()).getSQLState());
         System.out.println(
                 "M4 OFICIAL RF09/F303: caso Publicado programado, marca real y contenido"
-                    + " protegido");
+                        + " protegido");
     }
 
     @Test
@@ -258,7 +265,7 @@ class SesionAcademicaPostgreSqlIT {
         UUID part = UUID.randomUUID();
         jdbc.update(
                 "INSERT INTO \"Participacion\" (\"idParticipacion\",\"idConvocatoria\") VALUES"
-                    + " (?,?)",
+                        + " (?,?)",
                 part,
                 c.getId());
         jdbc.update(
@@ -326,8 +333,8 @@ class SesionAcademicaPostgreSqlIT {
                 0,
                 jdbc.queryForObject(
                         "SELECT count(*) FROM information_schema.columns WHERE"
-                            + " table_schema='public' AND table_name='Sesion' AND"
-                            + " column_name='version'",
+                                + " table_schema='public' AND table_name='Sesion' AND"
+                                + " column_name='version'",
                         Integer.class));
     }
 
@@ -383,6 +390,48 @@ class SesionAcademicaPostgreSqlIT {
                 "Texto conservado",
                 jdbc.queryForObject(
                         "SELECT \"mensajePersonalizado\" FROM \"Sesion\"", String.class));
+    }
+
+    @Test
+    void controladorConvocatoriasConservaRutasPersistenciaYPropietario() throws Exception {
+        var sesion = crear();
+        identidad.autenticar(docente);
+        var mvc =
+                MockMvcBuilders.standaloneSetup(new ConvocatoriaController(service))
+                        .setControllerAdvice(new M4ExceptionHandler())
+                        .build();
+        String ruta = "/m4/sesiones/" + sesion.getId() + "/convocatorias";
+
+        mvc.perform(
+                        post(ruta)
+                                .contentType("application/json")
+                                .content("{\"estudianteId\":\"" + estudiante + "\"}"))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.sesionId").value(sesion.getId().toString()))
+                .andExpect(jsonPath("$.estadoAutorizacion").value("Autorizado"));
+        mvc.perform(get(ruta))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].estudianteId").value(estudiante.toString()));
+        assertEquals(1, cantidad("Convocatoria"));
+
+        identidad.autenticar(UUID.randomUUID());
+        mvc.perform(get(ruta))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.code").value("M4-SESION-AJENA"));
+    }
+
+    @Test
+    void programacionExigeTransaccionDeEscritura() {
+        var lectura = new TransactionTemplate(txManager);
+        lectura.setReadOnly(true);
+        var error =
+                assertThrows(
+                        org.springframework.dao.InvalidDataAccessApiUsageException.class,
+                        () -> lectura.execute(status -> crear()));
+        assertInstanceOf(IllegalStateException.class, error.getCause());
+        assertEquals("Programación requiere una transacción de escritura", error.getMessage());
+        assertEquals(0, cantidad("Sesion"));
+        assertNull(marca(caso));
     }
 
     @Test
