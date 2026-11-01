@@ -16,16 +16,11 @@ import java.util.UUID;
  * <p>Recibe convocatorias y no una sesión: M4 conoce las convocatorias de sus
  * sesiones y M5 no lee la tabla {@code "Convocatoria"} de M4.
  *
- * <p><b>Pendiente de Arquitectura:</b> M5 depende de M4. Si M4 dependiera de
- * {@code m5} para consumir este contrato, habría un ciclo Maven. Las opciones
- * (M5 implementa el puerto de M4 con un contrato de convocatorias por sesión,
- * contrato compartido o cableado en {@code app}) están en
- * {@code m5/docs/M5-DOCUMENTO-TECNICO.md}, sección 6.
- *
- * <p>Debe invocarse dentro de la transacción de M4 que modifica la sesión. Hoy
- * M5 no crea participaciones; cuando exista el inicio de intentos, deberá
- * serializarse con esa modificación (por ejemplo, bloqueando la fila de la
- * sesión), según el protocolo que acuerden M4 y M5.
+ * <p><b>Consumo por M4:</b> M4 no puede depender de {@code m5} (M5 ya depende
+ * de M4; M5-INC-08). Por eso M5 implementa el puerto de M4
+ * {@code ParticipacionesPort} en
+ * {@code com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5}
+ * sobre este contrato, con el mismo patrón que M7 usa para {@code NotificacionPort}.
  */
 public interface HistorialParticipacionPort {
 
