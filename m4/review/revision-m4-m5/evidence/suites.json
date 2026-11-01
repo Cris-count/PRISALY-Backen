@@ -655,18 +655,40 @@
   {
     "module": "m5",
     "runner": "surefire",
-    "suite": "com.prisaly.m5.application.acceso.ControlAccesoIntentosTest",
+    "suite": "com.prisaly.m5.application.acceso.AccesoProtegidoParticipacionTest",
     "tests": 7,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "cases": [
+      "intentoInexistente",
+      "identidadNoLlegaDelCliente",
+      "devuelveElResumenDelegado",
+      "sinIdentidadSeDeniega",
+      "rechazaNulos",
+      "intentoAjenoSeDeniega",
+      "titularDelega"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.acceso.ControlAccesoIntentosTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "respuestaNulaDeniega",
       "rechazaDatosNulos",
       "propagaErroresDeLosPuertos",
+      "identidadNoLlegaDelCliente",
       "permiteAlTitular",
       "exigeIdentidad",
       "identidadAntesQueTitularidad",
       "intentoSinTitular",
+      "propagaIndisponibilidadDeTitularidad",
+      "consultaConElEstudianteAutenticado",
       "deniegaIntentoAjeno"
     ]
   },
@@ -761,6 +783,22 @@
       "rechazaDuplicadaSinGuardar",
       "rechazaIntentoFinalizadoSinGuardar",
       "rechazaDatosInvalidosSinGuardar"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.ArquitecturaAccesoProtegidoTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "proxyFinal",
+      "repositoriosSpringDataNoPublicos",
+      "presentacionSoloUsaElProxy",
+      "controladoresSoloEnPresentacion",
+      "construccionReservada"
     ]
   },
   {
@@ -864,6 +902,48 @@
   {
     "module": "m5",
     "runner": "surefire",
+    "suite": "com.prisaly.m5.infrastructure.ConfiguracionParticipacionTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "sinIdentidadNoArranca",
+      "intentoAjeno",
+      "proveedorRealDeM1Deniega",
+      "m1FallaInesperadamente",
+      "m4Caido",
+      "titularOperaEnTransaccion",
+      "sinTitularidadNoArranca",
+      "unicoBeanEsElProxy"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.infrastructure.identidad.IdentidadEstudianteDesdeM1Test",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "mensajeDeM1NoSeFiltra",
+      "respuestaIncompleta",
+      "sinIdentidadDenegado",
+      "userIdNoEsIdentidad",
+      "noTitularDenegado",
+      "intentoDesconocido",
+      "estudianteSinUsuario",
+      "dd02Denegado",
+      "tokenDePersonalNoEsEstudiante",
+      "falloDelProveedor",
+      "titularAutorizado",
+      "identidadSoloDelServidor"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
     "suite": "com.prisaly.m5.infrastructure.persistencia.MapeoIntentoTest",
     "tests": 8,
     "failures": 0,
@@ -883,8 +963,27 @@
   {
     "module": "m5",
     "runner": "surefire",
+    "suite": "com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4Test",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "estudianteNoUuid",
+      "titular",
+      "inexistente",
+      "m4NoDisponible",
+      "ajeno",
+      "falloDeLaBase",
+      "respuestaNula",
+      "contextoIncoherente"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
     "suite": "com.prisaly.m5.presentation.ManejadorErroresM5Test",
-    "tests": 5,
+    "tests": 7,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
@@ -893,7 +992,9 @@
       "respondeConflicto",
       "respondeNoEncontrado",
       "limitadoAlPaqueteDeM5",
-      "relanzaExcepcionesNoTraducibles"
+      "relanzaExcepcionesNoTraducibles",
+      "cuerpoMalFormado",
+      "tipoIncorrecto"
     ]
   },
   {
@@ -979,8 +1080,28 @@
   {
     "module": "m5",
     "runner": "failsafe",
+    "suite": "com.prisaly.m5.infrastructure.persistencia.AccesoEstudianteM4M5IT",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "intentoInexistente",
+      "m4Indisponible",
+      "titularOperaSuIntento",
+      "proveedorRealDeM1Deniega",
+      "sinIdentidad",
+      "otroEstudianteNoAccede",
+      "historialDeParticipacion",
+      "historialExigeTransaccion",
+      "estudianteInexistente"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "failsafe",
     "suite": "com.prisaly.m5.infrastructure.persistencia.RepositorioIntentosJpaIT",
-    "tests": 19,
+    "tests": 21,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
@@ -994,16 +1115,62 @@
       "rechazaRespuestaEnIntentoFinalizado",
       "persisteYRecuperaRespuesta",
       "opcionDeOtraPreguntaSeRevierte",
+      "actualizacionesSimultaneasMismaRespuesta",
       "falloRealDeProgramacionSeTraduceA503",
       "respuestasSimultaneasDistintas",
       "contextoReflejaRetiroPersistido",
       "finalizacionEsperaAlRegistro",
       "finalizacionesSimultaneas",
       "registroEsperaAFinalizacionYEsRechazado",
+      "marcasTemporalesUsanElRelojDeLaBase",
       "persisteFinalizacion",
       "actualizacionIncrementaRevision",
       "respuestasSimultaneasMismaPregunta",
       "informaIntentoInexistente"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.M7ObserverTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "faltaDeObservadorNoEsExito",
+      "registroEsSincronoYPrevioAExtensiones",
+      "identidadEstableYDestinatarioDistinto",
+      "camposObligatorios",
+      "falloDeRegistroSePropagaSinEjecutarExtensiones",
+      "contextoAjenoNoProduceAviso",
+      "adapterResuelveContextoYRegistraSinAutenticarPorUuid",
+      "adapterDeniegaSinTransaccionYNoConsulta",
+      "falloPosteriorNoSeOculta",
+      "adapterNoFiltraErroresDelProveedor"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m7.M7ConvocatoriaPostgreSqlIT",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "rechazoDeM4NoGeneraAviso",
+      "integridadReferencialDeAviso",
+      "falloDespuesDelServicioAntesDeCommitRevierteAmbos",
+      "destinatarioInexistenteRevierteConvocatoria",
+      "convocatoriaYAvisoAtomicosConDestinatarioCorrecto",
+      "observadorPosteriorFallaYRevierteAmbasEscrituras",
+      "dosDestinatariosMismaSesionSonEventosDistintos",
+      "dosRegistrosConcurrentesDelMismoEventoNoDuplican",
+      "sinConvocatoriaNoSeRegistra",
+      "falloSqlDeAvisoRevierteConvocatoria",
+      "repeticionNoDuplicaNiReescribeLectura",
+      "dosConvocatoriasConcurrentesSoloUnaEsExitosa"
     ]
   },
   {
@@ -1016,6 +1183,27 @@
     "skipped": 0,
     "cases": [
       "junitAndMockitoAreAvailable"
+    ]
+  },
+  {
+    "module": "app",
+    "runner": "failsafe",
+    "suite": "com.prisaly.config.HistorialM4M5IT",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "sesionSinConvocatoriasPermiteEditar",
+      "errorSqlDeniegaSinFiltrarDatosYRollbackRecupera",
+      "retiradaConHistorialSigueProtegida",
+      "historialImpideReasignarCaso",
+      "proveedorUnicoYConvocatoriaSinHistorialPermiteEditar",
+      "consultaFueraDeTransaccionOEnSoloLecturaSeRechaza",
+      "participacionSinIntentosProtegeHistorial",
+      "ausenciaDeProveedorNuncaEquivaleAHistorialVacio",
+      "historialDeOtraSesionNoBloqueaEsta",
+      "intentoExistenteProtegeHistorial"
     ]
   },
   {

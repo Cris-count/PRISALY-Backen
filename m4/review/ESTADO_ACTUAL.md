@@ -1,14 +1,14 @@
 # M4–M5 — Estado actual y guía de documentación
 
-Actualizado el31/10/2026. Base local: develop, feec0fb. M4 ya está incorporado en develop; M5 procede de3fc823e y tiene cambios locales de integración; M4 tiene la reorganización local de controladores y validaciones. Sin commit ni push de esos cambios.
+Actualizado el 01/11/2026. Base develop: 8b6dc33. M4, M5 y el adaptador de avisos M7 ya están incorporados en develop. El nuevo ensamblado de historial M4–M5 en app permanece local, sin commit ni push.
 
-Última verificación: **445 pruebas aprobadas**, cero fallos, errores u omitidas. M4:149; M5:145. El conteo coincide entre los XML de esa ejecución y el log Maven. La cifra anterior207/157 estaba contaminada por17 casos de un XML antiguo; aquella ejecución correspondía a190/140.
+Última verificación: **534 pruebas aprobadas**, cero fallos, errores u omitidas. M1:14; M3:127; M4:149; M5:202; M7:22; app:20. Diez casos nuevos validan el puente de historial en PostgreSQL. El conteo coincide entre XML nuevos y resumen Maven. La antigua cifra207/157 incluía17 casos de un XML obsoleto; aquella ejecución correspondía a190/140.
 
 ## Qué consultar
 
 | Documento | Contenido |
 |---|---|
-| [Revisión actual](revision-m4-m5/INFORME.md) | Estado de M1–M7, incorporación local M5, corrección503, límites y pendientes |
+| [Revisión actual](revision-m4-m5/INFORME.md) | Estado de M1–M7, conexión de historial M4–M5, límites y pendientes |
 | [Resultados verificados](revision-m4-m5/evidence/RESULTADO.md) | Pruebas ejecutadas, alcance y enlaces a evidencia actual |
 | [Conciliación BD-005.2](conciliacion-bd0052/INFORME.md) | Matriz de columnas, tres estados oficiales, RF09/F303, transacciones y tratamiento de V010 |
 | [Contratos y endpoints](conciliacion-bd0052/CONTRATOS-Y-ENDPOINTS.md) | Puertos M4–M5, errores, tiempo, reanudación, repetición y diagramas |
@@ -28,13 +28,19 @@ Herramientas conservadas: [consulta de historial V010, solo lectura](conciliacio
 
 La creación valida el agregado antes de consultar o bloquear proveedores externos. Las mutaciones de una sesión existente comparten una carga con permiso, bloqueo de fila y comprobación de propietario. Se rechaza la identidad docente nula y la programación exige una transacción de escritura.
 
+## Historial M4–M5 conectado localmente
+
+HistorialM4M5Configuration en app implementa ParticipacionesPort usando ConvocatoriaRepository de M4 y el contrato público HistorialParticipacionPort de M5. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
+
+El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; esta carrera no se declara resuelta mientras ese inicio no exista.
+
 ## Pendientes que siguen vigentes
 
-- Acceso estudiantil DD-02 y conexión del control de titularidad.
+- Identidad estudiantil real DD-02; el adaptador de titularidad M5→M4 ya existe y está probado.
 - Inicio/reanudación, reloj, vencimiento, repetición y orden global de bloqueos.
-- Proveedor productivo de historial M5 y notificaciones M7.
+- Ratificar el ensamblado local de historial M5 y el alcance final de comunicaciones M7. El registro de avisos M7 ya tiene adaptador y pruebas.
 - Confirmar aplicación de V010 y datos en bases compartidas.
-- M2/M6/M7 solo tienen estructura básica en esta base de develop.
+- M2/M6 solo tienen estructura básica en esta base de develop.
 
 ## Organización de la carpeta
 

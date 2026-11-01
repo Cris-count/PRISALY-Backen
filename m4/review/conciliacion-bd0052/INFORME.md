@@ -1,10 +1,10 @@
 # M4 — Conciliación con BD-005.2
 
-Actualización posterior: ver [revisión conjunta de módulos y M4–M5](../revision-m4-m5/INFORME.md). Allí se corrige el conteo histórico contaminado por un XML antiguo y se registra la incorporación local de M5, sin commit ni push.
+Actualización posterior: ver [revisión conjunta de módulos y M4–M5](../revision-m4-m5/INFORME.md). Allí se corrige el conteo histórico contaminado por un XML antiguo y se registra el avance de develop y el ensamblado local del historial M4–M5.
 Fecha: 31/10/2026. Esta conciliación describe la adaptación iniciada sobre315746e. El estado vigente de ramas e integración está en [ESTADO_ACTUAL](../ESTADO_ACTUAL.md); las referencias de aquella fase no representan el estado actual del PR.
 
 ## Alcance e inventario
-Se corrige M4 existente: dominio, State, JPA, repositorios, servicio transaccional, DTO HTTP, autoconfiguración, empaquetado y pruebas. No se modifica código de M1–M3/M5–M7 ni app, V001–V009 o el contenido de V010. Los informes anteriores describen sus respectivas instantáneas; no certifican esta corrección.
+Alcance de la conciliación original: se corrigió M4 existente: dominio, State, JPA, repositorios, servicio transaccional, DTO HTTP, autoconfiguración, empaquetado y pruebas. En esa conciliación no se modificó código de M1–M3/M5–M7 ni app, V001–V009 o el contenido de V010. Los informes anteriores describen sus respectivas instantáneas; no certifican esta corrección.
 
 Dependencias: IdentityAccessPort de M1, CasoAcademicoPort de M4 y metadatos/triggers oficiales de Caso, ParticipacionesPort y NotificacionPort. ProgramacionParticipacionPort, ProgramacionAutenticadaPort y ContextoProgramacion conservan su firma. Los diagnósticos de fases sustituidas se retiraron con autorización del usuario; los contratos y pendientes vigentes están consolidados en este directorio.
 
@@ -81,9 +81,9 @@ M1: se mantiene IdentityAccessPort, identidad docente autenticada, rechazo de su
 
 M5: puertos públicos preservados; Optional.empty() significa ausencia/titularidad no coincidente en el puerto sin identidad, no aprobación. ConsultaProgramacionNoDisponibleException es indisponibilidad, nunca ausencia ni false. ProgramacionAutenticadaPort aplica identidad y política M1. Los contextos son hechos informativos. La ruta booleana antigua devuelve410 y el método interno también rechaza.
 
-La suite principal de persistencia usa identidad y notificación de prueba expresamente importadas. Para historial utiliza un proveedor SOLO DE TEST que consulta Participacion/Convocatoria/Intento reales. Esto prueba la protección del servicio sobre datos reales, pero no publica un contrato M5 de historial ni su adaptador productivo. Sin ParticipacionesPort real las modificaciones sensibles devuelven503. Sin NotificacionPort real, convocar falla y revierte. No se restaura el antiguo false permisivo.
+La suite aislada de persistencia M4 conserva identidad, notificación e historial de prueba expresamente importados. La aplicación completa incorpora además el puente HistorialM4M5Configuration: resuelve convocatorias mediante el puerto M4 y consulta el contrato público HistorialParticipacionPort de M5 en la misma transacción de escritura. Sus pruebas se encuentran en app/HistorialM4M5IT. M7 ya dispone de adaptador productivo de registro de avisos y pruebas PostgreSQL. Los respaldos M4 siguen rechazando operaciones si faltan proveedores; no se restaura ningún false permisivo.
 
-Pendientes externos: contratos productivos de historial M5 y comunicación M7; decisiones de ventana, reloj, vencimiento, reanudación y repetición; orden global de locks; revisión de Arquitectura y V010 compartida. La traducción503 de la excepción M4 ya fue corregida en la incorporación local M5, descrita en la revisión conjunta.
+Pendientes externos: ratificación del ensamblado de historial M5 y alcance final de comunicación M7; decisiones de ventana, reloj, vencimiento, reanudación y repetición; orden global de locks; revisión de Arquitectura y V010 compartida. La traducción503 de la excepción M4 y los adaptadores de titularidad M5 ya están incorporados en develop. El puente de historial permanece local en esta fase.
 
 ## Verificación y reproducción
 Ejecutar desde la raíz Maven:
