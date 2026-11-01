@@ -1,0 +1,20 @@
+meta {
+  name: personal-autorizacion-crear-caso-forbidden-get
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/autorizacion/crear-caso
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{noPermAccessToken}}
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq FORBIDDEN
+}

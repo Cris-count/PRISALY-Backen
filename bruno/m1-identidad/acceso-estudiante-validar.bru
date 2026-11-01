@@ -1,7 +1,7 @@
 meta {
   name: acceso-estudiante-validar
   type: http
-  seq: 6
+  seq: 11
 }
 
 post {
@@ -17,10 +17,11 @@ headers {
 body:json {
   {
     "correo": "estudiante@prisaly.test",
-    "codigo": "PENDIENTE-M4-M5"
+    "codigo": "PENDIENTE-DD02"
   }
 }
 
 assert {
   res.status: eq 501
+  res.body.code: eq ESTUDIANTE_ACCESS_PENDING_CONTRACT
 }

@@ -1,0 +1,506 @@
+[
+  {
+    "module": "m1",
+    "runner": "surefire",
+    "suite": "com.prisaly.m1.application.DenyingStudentAccessServiceTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m1",
+    "runner": "surefire",
+    "suite": "com.prisaly.m1.application.IdentityAccessServiceTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m1",
+    "runner": "surefire",
+    "suite": "com.prisaly.m1.application.PersonnelAuthenticationServiceTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m1",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m1.infrastructure.IdentityPersistenceIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.CasoApplicationServiceTest",
+    "tests": 24,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.CasoMetadataTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.ContenidoAcademicoMetadataTest",
+    "tests": 14,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "surefire",
+    "suite": "com.prisaly.m3.RubricaStructureTest",
+    "tests": 15,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoCommandUpdateIT",
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoJpaReadIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.EvaluableContentJpaReadIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.PostgreSqlDockerIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.RubricaJpaReadIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.application.AutorizacionM4ServiceTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.application.SesionAcademicaServiceTest",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.domain.SesionAcademicaDomainTest",
+    "tests": 20,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.ContratosM4AdaptersTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.M4MigrationResourcesTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.M4ProviderSecurityTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.PostgreSqlDockerSmokeTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.ProgramacionAutenticadaTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionConfigurationTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "surefire",
+    "suite": "com.prisaly.m4.presentation.M4HttpErrorsTest",
+    "tests": 31,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m4.infrastructure.Bd0052BaselineIT",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m4.infrastructure.M4M1ContratosPostgreSqlIT",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m4",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT",
+    "tests": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.acceso.ControlAccesoIntentosTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.ParticipacionFacadeTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.ResumenIntentoTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.servicio.ActualizarRespuestaServicioTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.servicio.ConsultarIntentoServicioTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.servicio.FinalizarIntentoServicioTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.application.servicio.RegistrarRespuestaServicioTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.domain.intento.EstadoIntentoTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.domain.intento.IntentoActualizacionRespuestasTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.domain.intento.IntentoRespuestasTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.domain.intento.IntentoTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.domain.respuesta.RespuestaTest",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.infrastructure.persistencia.MapeoIntentoTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.presentation.ManejadorErroresM5Test",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.presentation.ProgramacionM4ErroresHttpTest",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.presentation.provisional.IntentoVistaProvisionalTest",
+    "tests": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.presentation.provisional.SolicitudRespuestaProvisionalValidacionTest",
+    "tests": 13,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
+    "suite": "com.prisaly.m5.presentation.TraductorErroresM5Test",
+    "tests": 17,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m5",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m5.infrastructure.persistencia.RepositorioIntentosJpaIT",
+    "tests": 19,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.M7ObserverTest",
+    "tests": 10,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "m7",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m7.M7ConvocatoriaPostgreSqlIT",
+    "tests": 12,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "app",
+    "runner": "surefire",
+    "suite": "com.prisaly.PrisalyApplicationTests",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  {
+    "module": "app",
+    "runner": "failsafe",
+    "suite": "com.prisaly.security.PersonalAuthSecurityIT",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+]

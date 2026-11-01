@@ -11,6 +11,9 @@ target/
 .env.*.local
 !.env.example
 
+# Bruno local secrets (passwords). Keep example committed.
+bruno/environments/local.secrets.bru
+
 node_modules/
 dist/
 build/
