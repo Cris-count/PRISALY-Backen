@@ -116,7 +116,7 @@ aplicación completa, y ahora M5 registra beans que necesitan:
 | Con | Pendiente |
 |---|---|
 | M1 / Dirección Central | DD-02: autenticación real del estudiante. Hasta entonces el proxy siempre deniega |
-| M4 | Adaptador de `ParticipacionesPort` sobre `HistorialParticipacionPort`, que debe obtener las convocatorias de la sesión. Activar `prisaly.m4.consulta-bd0052.enabled` en el ensamblado (sin ello, la titularidad responde 503). Contrato de elegibilidad, ventana y límite temporal |
+| M4 | Adaptador de `ParticipacionesPort` sobre `HistorialParticipacionPort` (bloqueado por el ciclo de dependencias: M5-INC-08), que debe obtener las convocatorias de la sesión. Activar `prisaly.m4.consulta-bd0052.enabled` en el ensamblado (sin ello, la titularidad responde 503). Contrato de elegibilidad, ventana y límite temporal |
 | M4 / M5 | Protocolo de bloqueo entre editar una sesión y el futuro inicio de intentos |
 | M3 | Contrato de contenido para M5 (preguntas y opciones sin respuestas correctas) |
 | M6 | Contrato para recibir un intento finalizado |
@@ -142,9 +142,9 @@ aplicación completa, y ahora M5 registra beans que necesitan:
 
 ## 9. Riesgos
 
-- **Beans intercambiables:** tres beans implementan `OperacionesParticipacion`
-  (la fachada, el decorador y el proxy). Un controlador de estudiante debe
-  inyectar `AccesoProtegidoParticipacion` por su clase, nunca la interfaz.
+- ~~**Beans intercambiables**~~: **resuelto** en `d4a6b11` (M5-INC-02). Ahora
+  el proxy es el único bean de `OperacionesParticipacion`, y una prueba de
+  arquitectura lo vigila.
 - **Mensaje de 404:** `IntentoNoEncontradoException` repite en el mensaje la
   referencia que envió el cliente. No es información técnica, pero conviene
   revisarlo cuando haya API.
