@@ -464,6 +464,40 @@ class RepositorioIntentosJpaIT {
         assertEquals(1, filaRespuesta(cadena.pregunta1().valor()).get("revision"));
     }
 
+    @Test
+    @DisplayName(
+            "concurrencia: dos actualizaciones simultáneas de la misma respuesta no pierden revisiones")
+    void actualizacionesSimultaneasMismaRespuesta() throws Exception {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+
+        List<Object> resultados =
+                carrera(
+                        () ->
+                                fachada.actualizarRespuesta(
+                                        cadena.intento(), cadena.pregunta1(), cadena.opcion1b()),
+                        () ->
+                                fachada.actualizarRespuesta(
+                                        cadena.intento(), cadena.pregunta1(), cadena.opcion1c()));
+
+        // Con el bloqueo FOR UPDATE se serializan: 1 (registro) + 2 cambios reales.
+        // Sin él, ambas partirían de la revisión 1 y una actualización se perdería.
+        assertEquals(
+                2,
+                resultados.stream().filter(ResumenIntento.class::isInstance).count(),
+                resultados.toString());
+        assertEquals(1, contarRespuestas());
+        Map<String, Object> fila = filaRespuesta(cadena.pregunta1().valor());
+        assertEquals(3, fila.get("revision"));
+        assertTrue(
+                List.of(
+                                UUID.fromString(cadena.opcion1b().valor()),
+                                UUID.fromString(cadena.opcion1c().valor()))
+                        .contains(fila.get("idOpcionSeleccionada")));
+        assertEquals(
+                fila.get("idOpcionSeleccionada").toString(),
+                fachada.consultarIntento(cadena.intento()).respuestas().get(0).valor().valor());
+    }
+
     /**
      * Lanza dos operaciones a la vez y devuelve, para cada una, su resultado o la excepción que
      * produjo.
