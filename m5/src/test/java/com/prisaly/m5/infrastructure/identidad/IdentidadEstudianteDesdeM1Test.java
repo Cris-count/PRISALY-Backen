@@ -27,6 +27,7 @@ import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
 import com.prisaly.m5.application.acceso.ControlAccesoIntentos;
 import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
+import com.prisaly.m5.application.acceso.Titularidad;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
 
 /**
@@ -44,9 +45,11 @@ class IdentidadEstudianteDesdeM1Test {
     private static final ReferenciaIntento INTENTO = new ReferenciaIntento(UUID.randomUUID().toString());
 
     /** Titularidad simulada solo para la prueba: el intento pertenece a ESTUDIANTE. */
-    private final TitularidadIntentos titularidad = intento -> INTENTO.equals(intento)
-            ? Optional.of(new IdentificadorEstudiante(ESTUDIANTE.toString()))
-            : Optional.empty();
+    private final TitularidadIntentos titularidad = (intento, estudiante) -> !INTENTO.equals(intento)
+            ? Titularidad.INEXISTENTE
+            : new IdentificadorEstudiante(ESTUDIANTE.toString()).equals(estudiante)
+                    ? Titularidad.PROPIO
+                    : Titularidad.AJENO;
 
     @AfterEach
     void limpiarContexto() {
