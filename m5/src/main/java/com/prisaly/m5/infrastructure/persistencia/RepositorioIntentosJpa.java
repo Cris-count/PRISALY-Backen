@@ -1,6 +1,5 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
-import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -36,6 +36,13 @@ import com.prisaly.m5.infrastructure.persistencia.MapeoIntento.FilaRespuesta;
  * pesimista porque {@code "Intento"} no tiene columna de versión para un
  * control optimista. En transacciones de solo lectura no se bloquea.
  *
+ * <p>Reloj: las marcas {@code "Intento"."fin"} y
+ * {@code "Respuesta"."fechaActualizacion"} se toman de PostgreSQL
+ * ({@code clock_timestamp()}), igual que los valores por defecto ({@code now()})
+ * y los triggers de BD-005.2. Así comparten reloj con {@code "inicio"} y
+ * {@code ck_intento_tiempos} ({@code "fin" >= "inicio"}) no depende de la
+ * diferencia entre el reloj de la JVM y el del servidor de base de datos.
+ *
  * <p>No crea intentos: insertar en {@code "Intento"} corresponde al caso de
  * uso de inicio, bloqueado por M1, M4 y DD-14.
  */
@@ -44,11 +51,13 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
 
     private final IntentoJpaRepository intentos;
     private final RespuestaJpaRepository respuestas;
-    private final Clock reloj = Clock.systemUTC();
+    private final JdbcTemplate jdbc;
 
-    public RepositorioIntentosJpa(IntentoJpaRepository intentos, RespuestaJpaRepository respuestas) {
+    public RepositorioIntentosJpa(
+            IntentoJpaRepository intentos, RespuestaJpaRepository respuestas, JdbcTemplate jdbc) {
         this.intentos = intentos;
         this.respuestas = respuestas;
+        this.jdbc = jdbc;
     }
 
     @Override
@@ -73,7 +82,9 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
                 () -> new PersistenciaIntentoException("La referencia no es un idIntento uuid: " + referencia.valor()));
         IntentoEntity entidad = intentos.bloquearPorId(id).orElseThrow(() -> new PersistenciaIntentoException(
                 "El intento " + id + " no existe: crear intentos corresponde al caso de uso de inicio"));
-        OffsetDateTime ahora = OffsetDateTime.now(reloj);
+        // Después del bloqueo de la fila: la marca es posterior a cualquier
+        // escritura confirmada sobre el intento.
+        OffsetDateTime ahora = ahoraEnBaseDeDatos();
 
         Map<UUID, RespuestaEntity> existentes = new HashMap<>();
         for (RespuestaEntity respuesta : respuestas.findByIdIntentoOrderByIdPreguntaAsc(id)) {
@@ -95,6 +106,15 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
                 ahora);
         // Hace visibles en esta transacción las violaciones de restricciones y triggers.
         respuestas.flush();
+    }
+
+    /** Hora del servidor PostgreSQL, en la conexión de la transacción en curso. */
+    private OffsetDateTime ahoraEnBaseDeDatos() {
+        OffsetDateTime ahora = jdbc.queryForObject("SELECT clock_timestamp()", OffsetDateTime.class);
+        if (ahora == null) {
+            throw new PersistenciaIntentoException("PostgreSQL no devolvió la hora del servidor");
+        }
+        return ahora;
     }
 
     private List<FilaRespuesta> filasRespuesta(UUID idIntento) {

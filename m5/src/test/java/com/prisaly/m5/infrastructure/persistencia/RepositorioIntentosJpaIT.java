@@ -47,6 +47,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -186,6 +187,38 @@ class RepositorioIntentosJpaIT {
                         fachada.registrarRespuesta(
                                 cadena.intento(), cadena.pregunta1(), cadena.opcion1a()));
         assertEquals(0, contarRespuestas());
+    }
+
+    @Test
+    @DisplayName(
+            "regresión ck_intento_tiempos: fin y fechaActualizacion usan el reloj de PostgreSQL")
+    void marcasTemporalesUsanElRelojDeLaBase() {
+        OffsetDateTime antes = horaBase();
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        OffsetDateTime despues = horaBase();
+
+        // inicio lo fija la base (now()); fin debe venir del mismo reloj y caer entre
+        // dos lecturas de clock_timestamp() hechas antes y después del caso de uso.
+        assertEquals(
+                Boolean.TRUE,
+                jdbc.queryForObject(
+                        "SELECT i.\"fin\" >= i.\"inicio\" AND i.\"fin\" BETWEEN ? AND ?"
+                                + " AND r.\"fechaActualizacion\" BETWEEN ? AND ?"
+                                + " AND r.\"fechaActualizacion\" <= i.\"fin\""
+                                + " FROM \"Intento\" i JOIN \"Respuesta\" r"
+                                + " ON r.\"idIntento\" = i.\"idIntento\""
+                                + " WHERE i.\"idIntento\" = ?",
+                        Boolean.class,
+                        antes,
+                        despues,
+                        antes,
+                        despues,
+                        cadena.idIntento()));
+    }
+
+    private OffsetDateTime horaBase() {
+        return jdbc.queryForObject("SELECT clock_timestamp()", OffsetDateTime.class);
     }
 
     @Test
