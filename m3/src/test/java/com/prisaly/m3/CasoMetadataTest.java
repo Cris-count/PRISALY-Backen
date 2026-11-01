@@ -44,6 +44,42 @@ class CasoMetadataTest {
     }
 
     @Test
+    void schedulingAvailabilityMatchesStateAndActivityMatrixWithoutChangingCase() {
+        for (CasoEstado state : List.of(CasoEstado.PUBLICADO, CasoEstado.BORRADOR, CasoEstado.ARCHIVADO)) {
+            for (boolean active : List.of(true, false)) {
+                Caso source = metadataCase(state, active, CREATED, UPDATED, LOCKED);
+                Caso expected = metadataCase(state, active, CREATED, UPDATED, LOCKED);
+                var scenarios = source.escenarios();
+                var rubric = source.rubrica();
+
+                boolean available = service.isAvailableForScheduling(source);
+
+                assertEquals(state == CasoEstado.PUBLICADO && active, available,
+                        "state=" + state + ", activo=" + active);
+                assertEquals(state == CasoEstado.PUBLICADO, source.isPublished(),
+                        "Publication status remains independent of activity");
+                assertEquals(expected, source, "Availability must preserve all content and metadata");
+                assertSame(scenarios, source.escenarios());
+                assertSame(rubric, source.rubrica());
+            }
+        }
+    }
+
+    @Test
+    void schedulingAvailabilityDoesNotRequireRubricQuestionsOrLockMetadata() {
+        Caso source = new Caso("case", "Caso", "docente", 300, CasoEstado.PUBLICADO,
+                List.of(), null, false, null, null, true, null, null, null);
+
+        assertTrue(service.isAvailableForScheduling(source));
+        assertTrue(source.escenarios().isEmpty());
+        assertNull(source.rubrica());
+        assertNull(source.fechaCreacion());
+        assertNull(source.fechaActualizacion());
+        assertNull(source.fechaBloqueoAcademico());
+        assertFalse(source.contenidoEvaluableBloqueado());
+    }
+
+    @Test
     void builderCarriesExplicitNarrativesActivityAndDates() {
         Caso draft = service.createDraft("docente", completeBuilder()
                 .withHistoria("Historia")

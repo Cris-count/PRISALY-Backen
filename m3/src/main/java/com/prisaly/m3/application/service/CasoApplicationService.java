@@ -78,7 +78,7 @@ public final class CasoApplicationService {
     }
 
     public boolean isAvailableForScheduling(Caso caso) {
-        return caso.isPublished();
+        return caso.isPublished() && caso.activo();
     }
 
     private void assertCanModify(String userId, String caseId) {

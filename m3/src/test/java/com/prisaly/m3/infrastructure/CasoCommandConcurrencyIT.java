@@ -18,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.SQLTransientConnectionException;
@@ -25,6 +26,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
@@ -132,7 +134,7 @@ class CasoCommandConcurrencyIT {
     @Test
     void directChildWriterObtainingRootViaTriggerFirstMakesPendingM3PreconditionStale() throws Exception {
         for (boolean rubric : List.of(false, true)) {
-            try (var h = new Harness(4); var workers = new Workers(); var direct = h.datasource.getConnection()) {
+            try (var h = new Harness(2); var workers = new Workers(); var direct = h.datasource.getConnection()) {
                 var before = h.saved();
                 direct.setAutoCommit(false);
                 Probe first = probe(direct);
@@ -484,11 +486,36 @@ class CasoCommandConcurrencyIT {
 
         Gate pauseBeforeFirstMutation() { gate = new Gate(); return gate; }
 
-        void awaitBlocked(int waiter, int blocker) {
-            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
-            while (System.nanoTime() < deadline) {
-                if (Boolean.TRUE.equals(jdbc.queryForObject("SELECT ? = ANY(pg_blocking_pids(?))", Boolean.class, blocker, waiter))) { return; }
-                Thread.onSpinWait();
+        void awaitBlocked(int waiter, int blocker) throws SQLException {
+            // Observation must not borrow a third slot from the writers' deliberately limited pool.
+            // This short-lived connection only inspects backend locks; it never reads/writes the aggregate.
+            var properties = new Properties();
+            properties.setProperty("user", postgres.getUsername());
+            properties.setProperty("password", postgres.getPassword());
+            properties.setProperty("connectTimeout", "5");
+            properties.setProperty("socketTimeout", "12");
+            try (var observer = DriverManager.getConnection(postgres.getJdbcUrl(), properties)) {
+                observer.setReadOnly(true);
+                observer.setAutoCommit(true);
+                try (var statement = observer.prepareStatement(
+                        "SELECT pg_backend_pid(), ? = ANY(pg_blocking_pids(?))")) {
+                    statement.setInt(1, blocker);
+                    statement.setInt(2, waiter);
+                    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+                    while (System.nanoTime() < deadline) {
+                        long remaining = deadline - System.nanoTime();
+                        if (remaining <= 0) { break; }
+                        statement.setQueryTimeout((int) Math.max(1,
+                                (remaining + TimeUnit.SECONDS.toNanos(1) - 1) / TimeUnit.SECONDS.toNanos(1)));
+                        try (var rows = statement.executeQuery()) {
+                            assertTrue(rows.next());
+                            assertNotEquals(waiter, rows.getInt(1), "Observer must be independent of the waiting writer");
+                            assertNotEquals(blocker, rows.getInt(1), "Observer must be independent of the blocking writer");
+                            if (rows.getBoolean(2)) { return; }
+                        }
+                        Thread.onSpinWait();
+                    }
+                }
             }
             fail("Expected backend " + waiter + " to wait for backend " + blocker);
         }
