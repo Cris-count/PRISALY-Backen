@@ -7,9 +7,11 @@ import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 /**
  * Manejo centralizado de errores HTTP de M5, limitado a los controladores del paquete {@code
@@ -38,6 +40,20 @@ public class ManejadorErroresM5 {
     /** Mismo código que M1 para datos de entrada inválidos. */
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> validacion(MethodArgumentNotValidException error) {
+        return entradaInvalida();
+    }
+
+    /**
+     * Cuerpo mal formado o un parámetro de ruta con tipo incorrecto: el mismo 400
+     * {@code VALIDATION_ERROR}, sin el mensaje del conversor, que puede contener
+     * nombres de clases internas o fragmentos del cuerpo recibido.
+     */
+    @ExceptionHandler({HttpMessageNotReadableException.class, MethodArgumentTypeMismatchException.class})
+    public ResponseEntity<ErrorResponse> entradaMalFormada(Exception error) {
+        return entradaInvalida();
+    }
+
+    private static ResponseEntity<ErrorResponse> entradaInvalida() {
         return ResponseEntity.badRequest()
                 .body(new ErrorResponse("VALIDATION_ERROR", "Request validation failed"));
     }

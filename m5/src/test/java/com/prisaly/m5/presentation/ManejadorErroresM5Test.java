@@ -1,16 +1,22 @@
 package com.prisaly.m5.presentation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.mock.http.MockHttpInputMessage;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaIntento;
@@ -70,6 +76,35 @@ class ManejadorErroresM5Test {
 
         assertEquals(400, respuesta.getStatusCode().value());
         assertEquals("VALIDATION_ERROR", respuesta.getBody().code());
+    }
+
+    @Test
+    @DisplayName("un cuerpo mal formado responde 400 sin el mensaje del conversor")
+    void cuerpoMalFormado() {
+        HttpMessageNotReadableException error = new HttpMessageNotReadableException(
+                "JSON parse error: Cannot deserialize com.prisaly.m5.Interna from {\"secreto\":1}",
+                new MockHttpInputMessage(new byte[0]));
+
+        ResponseEntity<ErrorResponse> respuesta = manejador.entradaMalFormada(error);
+
+        assertEquals(400, respuesta.getStatusCode().value());
+        assertEquals("VALIDATION_ERROR", respuesta.getBody().code());
+        assertFalse(respuesta.getBody().message().contains("secreto"));
+        assertFalse(respuesta.getBody().message().contains("com.prisaly"));
+    }
+
+    @Test
+    @DisplayName("un parámetro con tipo incorrecto responde 400 sin revelar el valor ni el tipo interno")
+    void tipoIncorrecto() throws NoSuchMethodException {
+        MethodParameter parametro = new MethodParameter(
+                ManejadorErroresM5Test.class.getDeclaredMethod("metodoDePrueba", Object.class), 0);
+        MethodArgumentTypeMismatchException error = new MethodArgumentTypeMismatchException(
+                "<script>", UUID.class, "intento", parametro, new IllegalArgumentException("uuid"));
+
+        ResponseEntity<ErrorResponse> respuesta = manejador.entradaMalFormada(error);
+
+        assertEquals(400, respuesta.getStatusCode().value());
+        assertFalse(respuesta.getBody().message().contains("<script>"));
     }
 
     @SuppressWarnings("unused")
