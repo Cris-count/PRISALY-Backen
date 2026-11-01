@@ -18,7 +18,6 @@ import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
 import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.Respuesta;
-import com.prisaly.m5.infrastructure.ConfiguracionParticipacion;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
 import com.prisaly.m5.presentation.TraductorErroresM5;
 
@@ -31,6 +30,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -666,6 +666,14 @@ class RepositorioIntentosJpaIT {
     @EnableAutoConfiguration
     @EnableJpaRepositories(basePackageClasses = RepositorioIntentosJpa.class)
     @EntityScan(basePackageClasses = RepositorioIntentosJpa.class)
-    @Import({RepositorioIntentosJpa.class, ConfiguracionParticipacion.class})
-    static class AppPrueba {}
+    @Import(RepositorioIntentosJpa.class)
+    static class AppPrueba {
+
+        /** Fachada sin control de acceso: solo para probar la persistencia. */
+        @Bean
+        FachadaParticipacionTransaccional fachadaSinControl(
+                RepositorioIntentos repositorio, PlatformTransactionManager transacciones) {
+            return FachadaSinControlDePrueba.ensamblar(repositorio, transacciones);
+        }
+    }
 }

@@ -46,9 +46,9 @@ import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
 import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
+import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
-import com.prisaly.m5.infrastructure.ConfiguracionAccesoEstudiante;
 import com.prisaly.m5.infrastructure.ConfiguracionParticipacion;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
 import com.prisaly.m5.infrastructure.identidad.IdentidadEstudianteDesdeM1;
@@ -246,10 +246,16 @@ class AccesoEstudianteM4M5IT {
         RepositorioIntentosJpa.class,
         HistorialParticipacionJdbc.class,
         TitularidadIntentosDesdeM4.class,
-        ConfiguracionParticipacion.class,
-        ConfiguracionAccesoEstudiante.class
+        ConfiguracionParticipacion.class
     })
     static class AppPrueba {
+
+        /** Fachada sin control de acceso, solo para componer el caso con M1 real. */
+        @Bean
+        FachadaParticipacionTransaccional fachadaSinControl(
+                RepositorioIntentos repositorio, PlatformTransactionManager transacciones) {
+            return FachadaSinControlDePrueba.ensamblar(repositorio, transacciones);
+        }
 
         @Bean
         IdentidadDePrueba identidadDePrueba() {
