@@ -20,6 +20,13 @@
             <artifactId>m4</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!-- Contrato de identidad estudiantil publicado por M1 (StudentAccessPort).
+             Dependencia directa: M5 usa clases de M1 y no debe depender solo de la transitiva de M4. -->
+        <dependency>
+            <groupId>com.prisaly</groupId>
+            <artifactId>m1</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Persistencia de M5 (solo la capa infrastructure la usa). -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
