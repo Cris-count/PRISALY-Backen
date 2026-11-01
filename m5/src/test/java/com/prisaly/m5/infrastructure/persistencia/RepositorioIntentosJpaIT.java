@@ -18,7 +18,6 @@ import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
 import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.Respuesta;
-import com.prisaly.m5.infrastructure.ConfiguracionParticipacion;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
 import com.prisaly.m5.presentation.TraductorErroresM5;
 
@@ -31,6 +30,7 @@ import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -47,6 +47,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -186,6 +187,38 @@ class RepositorioIntentosJpaIT {
                         fachada.registrarRespuesta(
                                 cadena.intento(), cadena.pregunta1(), cadena.opcion1a()));
         assertEquals(0, contarRespuestas());
+    }
+
+    @Test
+    @DisplayName(
+            "regresión ck_intento_tiempos: fin y fechaActualizacion usan el reloj de PostgreSQL")
+    void marcasTemporalesUsanElRelojDeLaBase() {
+        OffsetDateTime antes = horaBase();
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        OffsetDateTime despues = horaBase();
+
+        // inicio lo fija la base (now()); fin debe venir del mismo reloj y caer entre
+        // dos lecturas de clock_timestamp() hechas antes y después del caso de uso.
+        assertEquals(
+                Boolean.TRUE,
+                jdbc.queryForObject(
+                        "SELECT i.\"fin\" >= i.\"inicio\" AND i.\"fin\" BETWEEN ? AND ?"
+                                + " AND r.\"fechaActualizacion\" BETWEEN ? AND ?"
+                                + " AND r.\"fechaActualizacion\" <= i.\"fin\""
+                                + " FROM \"Intento\" i JOIN \"Respuesta\" r"
+                                + " ON r.\"idIntento\" = i.\"idIntento\""
+                                + " WHERE i.\"idIntento\" = ?",
+                        Boolean.class,
+                        antes,
+                        despues,
+                        antes,
+                        despues,
+                        cadena.idIntento()));
+    }
+
+    private OffsetDateTime horaBase() {
+        return jdbc.queryForObject("SELECT clock_timestamp()", OffsetDateTime.class);
     }
 
     @Test
@@ -431,6 +464,40 @@ class RepositorioIntentosJpaIT {
         assertEquals(1, filaRespuesta(cadena.pregunta1().valor()).get("revision"));
     }
 
+    @Test
+    @DisplayName(
+            "concurrencia: dos actualizaciones simultáneas de la misma respuesta no pierden revisiones")
+    void actualizacionesSimultaneasMismaRespuesta() throws Exception {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+
+        List<Object> resultados =
+                carrera(
+                        () ->
+                                fachada.actualizarRespuesta(
+                                        cadena.intento(), cadena.pregunta1(), cadena.opcion1b()),
+                        () ->
+                                fachada.actualizarRespuesta(
+                                        cadena.intento(), cadena.pregunta1(), cadena.opcion1c()));
+
+        // Con el bloqueo FOR UPDATE se serializan: 1 (registro) + 2 cambios reales.
+        // Sin él, ambas partirían de la revisión 1 y una actualización se perdería.
+        assertEquals(
+                2,
+                resultados.stream().filter(ResumenIntento.class::isInstance).count(),
+                resultados.toString());
+        assertEquals(1, contarRespuestas());
+        Map<String, Object> fila = filaRespuesta(cadena.pregunta1().valor());
+        assertEquals(3, fila.get("revision"));
+        assertTrue(
+                List.of(
+                                UUID.fromString(cadena.opcion1b().valor()),
+                                UUID.fromString(cadena.opcion1c().valor()))
+                        .contains(fila.get("idOpcionSeleccionada")));
+        assertEquals(
+                fila.get("idOpcionSeleccionada").toString(),
+                fachada.consultarIntento(cadena.intento()).respuestas().get(0).valor().valor());
+    }
+
     /**
      * Lanza dos operaciones a la vez y devuelve, para cada una, su resultado o la excepción que
      * produjo.
@@ -599,6 +666,14 @@ class RepositorioIntentosJpaIT {
     @EnableAutoConfiguration
     @EnableJpaRepositories(basePackageClasses = RepositorioIntentosJpa.class)
     @EntityScan(basePackageClasses = RepositorioIntentosJpa.class)
-    @Import({RepositorioIntentosJpa.class, ConfiguracionParticipacion.class})
-    static class AppPrueba {}
+    @Import(RepositorioIntentosJpa.class)
+    static class AppPrueba {
+
+        /** Fachada sin control de acceso: solo para probar la persistencia. */
+        @Bean
+        FachadaParticipacionTransaccional fachadaSinControl(
+                RepositorioIntentos repositorio, PlatformTransactionManager transacciones) {
+            return FachadaSinControlDePrueba.ensamblar(repositorio, transacciones);
+        }
+    }
 }

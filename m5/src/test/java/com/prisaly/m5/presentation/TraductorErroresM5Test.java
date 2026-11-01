@@ -42,7 +42,8 @@ class TraductorErroresM5Test {
                         new ConsultaProgramacionNoDisponibleException(),
                         503,
                         ConsultaProgramacionNoDisponibleException.CODIGO),
-                Arguments.of(new EstudianteNoIdentificadoException(), 401, "UNAUTHENTICATED"),
+                Arguments.of(
+                        new EstudianteNoIdentificadoException(), 403, "STUDENT_IDENTITY_UNAVAILABLE"),
                 Arguments.of(new AccesoIntentoDenegadoException(), 403, "FORBIDDEN"),
                 Arguments.of(
                         new IntentoNoEncontradoException(new ReferenciaIntento("I-1")),
