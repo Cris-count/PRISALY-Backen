@@ -13,6 +13,16 @@ public sealed interface CasoUpdateCommand {
     enum CampoEscenario { TITULO, CONTEXTO, INSTRUCCIONES, ORDEN }
     enum CampoPregunta { ENUNCIADO, TEXTO_AYUDA, ORDEN }
 
+    /** Empty scenario; initial activity is the official SQL DEFAULT true. */
+    record AgregarEscenarioCommand(UUID idEscenario, String titulo, String contexto,
+            String instrucciones, int orden) implements CasoUpdateCommand {
+        public AgregarEscenarioCommand {
+            Objects.requireNonNull(idEscenario, "idEscenario");
+            optionalText(titulo, 200);
+            positiveInteger(orden);
+        }
+    }
+
     record ActualizarDatosCasoCommand(CampoCaso campo, Object valor) implements CasoUpdateCommand {
         public ActualizarDatosCasoCommand {
             Objects.requireNonNull(campo, "campo");

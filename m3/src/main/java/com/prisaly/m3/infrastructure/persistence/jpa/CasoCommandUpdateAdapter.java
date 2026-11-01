@@ -28,6 +28,9 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     public static final String STALE_CASE = "STALE_CASE";
     public static final String CASE_NOT_FOUND = "CASE_NOT_FOUND";
     public static final String ELEMENT_NOT_IN_CASE = "ELEMENT_NOT_IN_CASE";
+    public static final String SCENARIO_ADD_REQUIRES_DRAFT = "SCENARIO_ADD_REQUIRES_DRAFT";
+    public static final String SCENARIO_ID_IN_USE = "SCENARIO_ID_IN_USE";
+    public static final String SCENARIO_ORDER_IN_USE = "SCENARIO_ORDER_IN_USE";
     private final EntityManagerFactory emf;
     private final CasoJpaAggregateReader reader;
     private final TransactionTemplate transaction;
@@ -96,6 +99,10 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
         if (!commands.isEmpty() && snapshot.caso().fechaBloqueoAcademico() != null) {
             throw error(ContenidoEvaluableLock.CODE_EVALUABLE_CONTENT_LOCKED, "Scheduled case content is locked");
         }
+        if (commands.stream().anyMatch(AgregarEscenarioCommand.class::isInstance)
+                && !"Borrador".equals(snapshot.caso().estado())) {
+            throw error(SCENARIO_ADD_REQUIRES_DRAFT, "Adding a scenario requires a draft case");
+        }
     }
 
     private static void assertOfficialContentGuards(Connection connection) throws SQLException {
@@ -123,6 +130,15 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     static void validateMembership(CasoJpaAggregateSnapshot snapshot, CasoUpdateCommand command) {
         boolean belongs = switch (command) {
             case ActualizarDatosCasoCommand ignored -> true;
+            case AgregarEscenarioCommand c -> {
+                if (snapshot.escenarios().stream().anyMatch(e -> e.idEscenario().equals(c.idEscenario()))) {
+                    throw error(SCENARIO_ID_IN_USE, "Scenario UUID is already used");
+                }
+                if (snapshot.escenarios().stream().anyMatch(e -> e.orden() == c.orden())) {
+                    throw error(SCENARIO_ORDER_IN_USE, "Scenario order is already used in this case");
+                }
+                yield true; // Parent is the existing, locked case. No caller-supplied case FK.
+            }
             case ActualizarEscenarioCommand c -> snapshot.escenarios().stream().anyMatch(e -> e.idEscenario().equals(c.idEscenario()));
             case ActualizarPreguntaCommand c -> snapshot.preguntas().stream().anyMatch(p -> p.idPregunta().equals(c.idPregunta()));
             case EliminarOpcionCommand c -> snapshot.opciones().stream().anyMatch(o -> o.idOpcion().equals(c.idOpcion()));
@@ -132,6 +148,24 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
 
     private static void apply(Connection connection, UUID caseId, CasoUpdateCommand command) throws SQLException {
         switch (command) {
+            case AgregarEscenarioCommand c -> {
+                // Global UUID check also rejects rows belonging to another case. PK remains authoritative.
+                try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"Escenario\" WHERE \"idEscenario\" = ?")) {
+                    statement.setObject(1, c.idEscenario());
+                    try (var rows = statement.executeQuery()) {
+                        if (rows.next()) { throw error(SCENARIO_ID_IN_USE, "Scenario UUID is already used"); }
+                    }
+                }
+                try (var statement = connection.prepareStatement("""
+                        INSERT INTO public."Escenario" ("idEscenario", "idCaso", "titulo", "contexto", "instrucciones", "orden")
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """)) {
+                    statement.setObject(1, c.idEscenario()); statement.setObject(2, caseId);
+                    statement.setString(3, c.titulo()); statement.setString(4, c.contexto());
+                    statement.setString(5, c.instrucciones()); statement.setInt(6, c.orden());
+                    if (statement.executeUpdate() != 1) { throw new SQLException("Expected one inserted scenario"); }
+                }
+            }
             case ActualizarDatosCasoCommand c -> change(connection, "Caso", "idCaso", caseId,
                     switch (c.campo()) {
                         case NOMBRE -> "nombre";

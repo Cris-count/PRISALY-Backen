@@ -1,5 +1,21 @@
 # M3: PostgreSQL con Testcontainers
 
+## M3-INC-10D — alta de escenario (pendiente de ejecución)
+
+AgregarEscenarioCommand permite exclusivamente escenarios vacíos en Borrador sin
+bloqueo académico, con UUID/orden explícitos y activo mediante DEFAULT true.
+CasoCommandAddContentIT incorpora siete pruebas PostgreSQL de alta, conservación,
+conflictos/rollback, huella, dos escritores y programación con triggers activos.
+CasoUpdateContractTest añade tres pruebas de contrato/precondiciones.
+Detalle, matriz de cobertura y fuentes faltantes: [M3-INC-10D](docs/M3-INC-10D.md).
+Los resultados reportados de 91 unitarias y 31 PostgreSQL son anteriores a 10D.
+No se ejecutaron Maven, Docker ni pruebas en esta intervención.
+
+```powershell
+.\mvnw.cmd -B -pl m3 -am test
+.\mvnw.cmd -B -pl m3 -am -Pdocker-it "-Dit.test=CasoCommandAddContentIT,CasoCommandUpdateIT,CasoCommandConcurrencyIT,CasoPersistenceAdapterIT" "-Dfailsafe.failIfNoSpecifiedTests=false" verify
+```
+
 No se crea ni modifica compose.yaml. No se cambia M1, M4 ni M5.
 
 ## Ejecucion

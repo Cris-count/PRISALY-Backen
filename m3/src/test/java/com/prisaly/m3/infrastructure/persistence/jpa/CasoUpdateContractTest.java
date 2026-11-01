@@ -23,6 +23,68 @@ class CasoUpdateContractTest {
     private static final Instant CREATED = Instant.parse("2026-01-01T00:00:00Z");
 
     @Test
+    void addScenarioRequiresExplicitIdentityOrderAndUnicodeTitleWithinSqlLimit() {
+        String title = "\uD83D\uDE00".repeat(200);
+        var command = new AgregarEscenarioCommand(SCENARIO, title, "Context", "Instructions", 19);
+        assertEquals(SCENARIO, command.idEscenario());
+        assertEquals(title, command.titulo());
+        assertEquals("Context", command.contexto());
+        assertEquals("Instructions", command.instrucciones());
+        assertEquals(19, command.orden());
+        assertThrows(NullPointerException.class, () -> new AgregarEscenarioCommand(null, null, null, null, 1));
+        for (int order : List.of(0, -1)) {
+            assertThrows(IllegalArgumentException.class, () -> new AgregarEscenarioCommand(SCENARIO, null, null, null, order));
+        }
+        assertThrows(IllegalArgumentException.class,
+                () -> new AgregarEscenarioCommand(SCENARIO, title + "a", null, null, 1));
+        var nullable = new AgregarEscenarioCommand(SCENARIO, null, null, null, 1);
+        assertNull(nullable.titulo()); assertNull(nullable.contexto()); assertNull(nullable.instrucciones());
+    }
+
+    @Test
+    void addScenarioChecksExistingIdentityAndOrderWithoutMutatingSnapshotOrAllowingDependentEdits() {
+        var before = snapshot();
+        String fingerprint = CasoAggregateFingerprint.of(before);
+        UUID added = UUID.randomUUID();
+        assertDoesNotThrow(() -> CasoCommandUpdateAdapter.validateMembership(before,
+                new AgregarEscenarioCommand(added, null, null, null, 19)));
+        assertEquals(CasoCommandUpdateAdapter.SCENARIO_ID_IN_USE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateMembership(before,
+                        new AgregarEscenarioCommand(SCENARIO, null, null, null, 19))).code());
+        assertEquals(CasoCommandUpdateAdapter.SCENARIO_ORDER_IN_USE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateMembership(before,
+                        new AgregarEscenarioCommand(added, null, null, null, 2))).code());
+        assertEquals(CasoCommandUpdateAdapter.ELEMENT_NOT_IN_CASE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateMembership(before,
+                        new ActualizarEscenarioCommand(added, CampoEscenario.TITULO, "Dependent"))).code());
+        assertEquals(fingerprint, CasoAggregateFingerprint.of(before));
+        assertEquals(1, before.escenarios().size());
+    }
+
+    @Test
+    void addScenarioRequiresDraftAndPreservesExistingStaleArchivedAndLockPriorities() {
+        var s = snapshot(); var c = s.caso();
+        var command = new AgregarEscenarioCommand(UUID.randomUUID(), null, null, null, 19);
+        assertDoesNotThrow(() -> CasoCommandUpdateAdapter.validateExpected(s, CasoAggregateFingerprint.of(s), List.of(command)));
+        for (String state : List.of("Publicado", "Archivado")) {
+            var changed = new CasoJpaAggregateSnapshot(new CasoRow(c.idCaso(), c.idDocente(), c.nombre(), c.historia(),
+                    c.desarrolloSituacional(), c.tiempoEstimadoSegundos(), state, c.activo(), null,
+                    c.fechaCreacion(), c.fechaActualizacion()), s.escenarios(), s.preguntas(), s.opciones(), s.rubrica(), s.rubricaPreguntas());
+            String expected = state.equals("Publicado") ? CasoCommandUpdateAdapter.SCENARIO_ADD_REQUIRES_DRAFT
+                    : com.prisaly.m3.domain.rule.CasoValidation.CODE_ARCHIVED_CASE_OPERATION_PENDING;
+            assertEquals(expected, assertThrows(CasoDomainException.class, () -> CasoCommandUpdateAdapter.validateExpected(
+                    changed, CasoAggregateFingerprint.of(changed), List.of(command))).code());
+        }
+        var locked = new CasoJpaAggregateSnapshot(new CasoRow(c.idCaso(), c.idDocente(), c.nombre(), c.historia(),
+                c.desarrolloSituacional(), c.tiempoEstimadoSegundos(), "Publicado", c.activo(), CREATED,
+                c.fechaCreacion(), c.fechaActualizacion()), s.escenarios(), s.preguntas(), s.opciones(), s.rubrica(), s.rubricaPreguntas());
+        assertEquals(CasoCommandUpdateAdapter.STALE_CASE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateExpected(locked, CasoAggregateFingerprint.of(s), List.of(command))).code());
+        assertEquals(ContenidoEvaluableLock.CODE_EVALUABLE_CONTENT_LOCKED, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateExpected(locked, CasoAggregateFingerprint.of(locked), List.of(command))).code());
+    }
+
+    @Test
     void commandsRepresentSingleExplicitAssignmentsIncludingNullWithoutAnOptionalAggregateDto() {
         var command = new ActualizarDatosCasoCommand(CampoCaso.HISTORIA, null);
         assertEquals(CampoCaso.HISTORIA, command.campo());

@@ -1,5 +1,15 @@
 # M3-INC-10B — Comandos parciales y precondición del agregado
 
+## Extensión autorizada M3-INC-10D
+
+Se añade únicamente AgregarEscenarioCommand para un escenario vacío, padre
+Borrador existente sin bloqueo, UUID y orden explícitos y DEFAULT activo=true.
+No cambian firmas de puertos, formato m3-v2 ni comandos anteriores. Se conserva
+el protocolo transaccional y la prioridad de errores. La matriz de cobertura,
+SQL, pruebas nuevas y decisiones pendientes están en [M3-INC-10D](M3-INC-10D.md).
+Las notas históricas siguientes conservan el alcance/estado de sus incrementos
+originales. Pruebas 10D pendientes de ejecución; no se declara completo M3.
+
 ## Registro posterior M3-INC-10C — consistencia RF-09
 
 Autorización del Integrante 2: alinear isAvailableForScheduling() con V009 sin
