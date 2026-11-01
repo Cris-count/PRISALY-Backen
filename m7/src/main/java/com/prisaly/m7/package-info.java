@@ -1,5 +1,7 @@
 /**
- * M7-INC-01: avisos internos de convocatoria, Observer síncrono y Adapter M4/PostgreSQL.
- * Registrar no significa enviar correo, entregar ni leer. Sin REST aprobado.
+ * Notices and email queue (M7).
+ *
+ * <p>Fase 1: persistencia e idempotencia de {@code Aviso} y {@code EnvioCorreo}.
+ * Encolar no implica entrega SMTP. Adaptador productivo {@code NotificacionPort} = Fase 2.
  */
 package com.prisaly.m7;
