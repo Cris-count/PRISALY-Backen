@@ -38,23 +38,28 @@ contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
 
 | Paso del recorrido | Angular (simulador) | M1 Identidad | M3 Casos | M4 Sesiones | M5 Participación | M6 Evaluación |
 |---|---|---|---|---|---|---|
-| Identificar al estudiante | Pendiente: sin pantalla de acceso | Pendiente: DD-02; la ruta de estudiante responde 501 | — | Pendiente: acceso por convocatoria | Provisional: puerto `IdentidadEstudianteActual`, sin implementación | — |
+| Identificar al estudiante | Pendiente: sin pantalla de acceso | Pendiente: DD-02; la ruta de estudiante responde 501 | — | Pendiente: acceso por convocatoria | Listo: `IdentidadEstudianteDesdeM1` sobre `StudentAccessPort`; deniega mientras DD-02 siga abierta | — |
 | Ver sesiones disponibles | Bloqueado: `consultarSesionesAutorizadas` falla con contrato pendiente | Pendiente | — | Consulta informativa disponible; elegibilidad pendiente | — | — |
 | Iniciar intento | Bloqueado | Pendiente | Listo en develop: caso publicado y bloqueado (V007–V009) | Pendiente: ventana y límite temporal | Pendiente (DD-14) | — |
 | Ver escenario y preguntas | Listo con datos simulados; contenido real pendiente | — | Pendiente: contrato de contenido para M5 (sin respuestas correctas) | — | — | — |
 | Responder y cambiar respuesta | Listo en presentación; persistencia pendiente | Pendiente | Garantizado por la base (FK compuesta y trigger) | — | Listo internamente: registrar; Provisional: actualizar | — |
-| Consultar o reanudar intento | Bloqueado | Pendiente | — | Pendiente: titularidad | Listo internamente: consultar. Provisional: control de titularidad (puerto `TitularidadIntentos`, sin implementación) | — |
+| Consultar o reanudar intento | Bloqueado | Pendiente | — | Pendiente: titularidad | Listo internamente: consultar. Listo: titularidad sobre `ProgramacionParticipacionPort` de M4 (`TitularidadIntentosDesdeM4`) y proxy `AccesoProtegidoParticipacion` | — |
 | Tiempo restante | Listo, solo informativo | — | — | Pendiente: límite temporal | `TIEMPO_VENCIDO` listo como motivo | — |
 | Finalizar | Listo en presentación (confirmación) | Pendiente | — | — | Listo internamente: se rechaza una segunda finalización sin efectos | Pendiente: aviso de intento finalizado |
 | Errores HTTP | Listo: clasificación en el cliente | 401/403 de la cadena compartida | — | Formato común `{code, message}` | Listo: traducción (propuesta) | — |
 
 ## Piezas provisionales preparadas (sin exponer)
 
-- `application.acceso.ControlAccesoIntentos`: verifica identidad y
-  titularidad antes de cargar el intento y falla de forma cerrada. Sus
-  puertos `IdentidadEstudianteActual` y `TitularidadIntentos` son de M5 (lado
-  consumidor) y **no tienen implementación de producción**. Las pruebas usan
-  dobles solo dentro de las pruebas.
+- `application.acceso.AccesoProtegidoParticipacion` (Protection Proxy):
+  verifica identidad y titularidad con `ControlAccesoIntentos` antes de
+  delegar en la fachada transaccional, y falla de forma cerrada. Lo ensambla
+  `infrastructure.ConfiguracionAccesoEstudiante` con:
+  - `IdentidadEstudianteDesdeM1` (M1, `StudentAccessPort`): con
+    `DenyingStudentAccessService`, toda llamada se deniega;
+  - `TitularidadIntentosDesdeM4` (M4, `ProgramacionParticipacionPort`): sin
+    `prisaly.m4.consulta-bd0052.enabled=true`, M4 responde indisponible (503).
+- `api.HistorialParticipacionPort`: contrato de M5 para M4 (¿hay
+  participaciones en estas convocatorias?). Falta el adaptador de M4.
 - `presentation.provisional`: `SolicitudRespuestaProvisional` (con Bean
   Validation: dos uuid) e `IntentoVistaProvisional` (estado, motivo y
   respuestas propias; sin calificación, rúbrica ni respuestas correctas).
@@ -75,7 +80,7 @@ contrato aprobado. **Pendiente** = depende de otro módulo o de una decisión.
 |---|---|---|
 | Arquitectura | ARQ-008.3 con las rutas, verbos, DTO y códigos de error de M5 | Implementar los controladores sin inventar la API |
 | M1 / Arquitectura | Decisión DD-02 y su implementación: identidad del estudiante en la petición, a través de un contrato de M1 (no de Spring Security) | Saber quién es el estudiante |
-| M4 | Titularidad de la convocatoria: `com.prisaly.m4.api.ProgramacionParticipacionPort` y `ProgramacionAutenticadaPort`, **integrados en develop y pendientes de conciliación** con M5. M5 debe conectar su resolución persistida Intento → Participacion → Convocatoria. Ver `M5-M4-CONCILIACION-PROGRAMACION.md` | Verificar la titularidad sin leer tablas ni repositorios internos de M4; el contexto no autoriza iniciar ni reanudar |
+| M4 | Titularidad de la convocatoria: `com.prisaly.m4.api.ProgramacionParticipacionPort` y `ProgramacionAutenticadaPort`, integrados en develop. M5 los consume en `TitularidadIntentosDesdeM4`: resuelve Intento → Participacion en sus tablas y pregunta a M4 por la convocatoria. Ver `M5-M4-CONCILIACION-PROGRAMACION.md` | Verificar la titularidad sin leer tablas ni repositorios internos de M4; el contexto no autoriza iniciar ni reanudar |
 | M4 | Elegibilidad, ventana de sesión y límite temporal. `ContextoProgramacion` entrega los datos persistidos, pero M4 declara que **no** autoriza iniciar, reanudar ni repetir | Iniciar, reanudar y finalizar por tiempo |
 | M1 | Permisos de personal sobre intentos, si la consulta docente está en alcance | Consultas del docente (no definidas hoy) |
 | M6 | Contrato para recibir un intento finalizado | Aviso después de persistir la finalización |

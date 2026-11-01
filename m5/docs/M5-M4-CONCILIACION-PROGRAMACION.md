@@ -1,5 +1,10 @@
 # M5 ← M4 | Conciliación del contrato de programación
 
+> **Actualización (rama `trabajo/m5-avance-nocturno`, commits `9dff295` y
+> `fae45d5`):** la propuesta de la sección 2 está implementada en
+> `TitularidadIntentosDesdeM4`, y M5 publica `HistorialParticipacionPort` para
+> M4. Ver `M5-CONTINUIDAD-AVANCE-NOCTURNO.md`.
+
 Estado al 2026-10-31. Rama `feature/m5-participacion-intentos`. Responsable: Integrante 4.
 
 **Estado del contrato: publicado, pendiente de conciliación e integración.**
