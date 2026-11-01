@@ -35,3 +35,6 @@ database/evidence/positive-tests/*
 database/evidence/negative-tests/*
 database/evidence/findings/*
 !database/evidence/**/.gitkeep
+
+# Local Maven/Bruno evidence logs
+docs/evidence/
