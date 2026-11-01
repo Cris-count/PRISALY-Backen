@@ -44,7 +44,8 @@ public class IdentidadEstudianteDesdeM1 implements IdentidadEstudianteActual {
         } catch (IdentityDomainException denegado) {
             return Optional.empty();
         }
-        if (estudiante == null || estudiante.studentId() == null) {
+        // Respuesta incompleta o inconsistente: un Estudiante siempre tiene Usuario (FK de BD-005.2).
+        if (estudiante == null || estudiante.studentId() == null || estudiante.userId() == null) {
             return Optional.empty();
         }
         return Optional.of(new IdentificadorEstudiante(estudiante.studentId().toString()));

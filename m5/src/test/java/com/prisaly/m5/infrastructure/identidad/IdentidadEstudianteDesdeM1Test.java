@@ -1,6 +1,7 @@
 package com.prisaly.m5.infrastructure.identidad;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.lang.reflect.Method;
@@ -124,6 +125,35 @@ class IdentidadEstudianteDesdeM1Test {
         assertEquals(Optional.empty(), new IdentidadEstudianteDesdeM1(() -> null).actual());
         assertEquals(Optional.empty(),
                 new IdentidadEstudianteDesdeM1(() -> new AuthenticatedStudent(USUARIO, null)).actual());
+    }
+
+    @Test
+    @DisplayName("6c. un estudiante sin usuario es inconsistente y se trata como ausencia de identidad")
+    void estudianteSinUsuario() {
+        assertEquals(Optional.empty(),
+                new IdentidadEstudianteDesdeM1(() -> new AuthenticatedStudent(null, ESTUDIANTE)).actual());
+    }
+
+    @Test
+    @DisplayName("6d. userId nunca se usa como identidad académica, aunque coincida con un titular")
+    void userIdNoEsIdentidad() {
+        IdentificadorEstudiante obtenido =
+                new IdentidadEstudianteDesdeM1(() -> new AuthenticatedStudent(ESTUDIANTE, OTRO_ESTUDIANTE))
+                        .actual().orElseThrow();
+        assertEquals(new IdentificadorEstudiante(OTRO_ESTUDIANTE.toString()), obtenido);
+        assertThrows(AccesoIntentoDenegadoException.class,
+                () -> control(() -> new AuthenticatedStudent(ESTUDIANTE, OTRO_ESTUDIANTE), titularidad)
+                        .verificar(INTENTO));
+    }
+
+    @Test
+    @DisplayName("6e. el mensaje del proveedor de M1 no llega al cliente")
+    void mensajeDeM1NoSeFiltra() {
+        EstudianteNoIdentificadoException error = assertThrows(EstudianteNoIdentificadoException.class,
+                () -> control(() -> {
+                    throw new IdentityDomainException("STUDENT_IDENTITY_UNAVAILABLE", "detalle interno de M1");
+                }, titularidad).verificar(INTENTO));
+        assertFalse(error.getMessage().contains("detalle interno"));
     }
 
     @Test
