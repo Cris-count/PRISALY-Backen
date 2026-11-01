@@ -1,6 +1,6 @@
 # M5 — Participación e Intentos | Documento técnico y plan de cierre
 
-Estado al 2026-11-01, rama `trabajo/m5-avance-nocturno`. Responsable: Integrante 4.
+Estado al 2026-11-01, rama `feature/m5-cierre-tecnico` (sobre develop `8b6dc33`). Responsable: Integrante 4.
 
 **Estado: M5 no está terminado.**
 
@@ -59,6 +59,7 @@ depende de M5.
 | Finalizar exige motivo; una segunda finalización se rechaza (409) | Dominio | Implementado, probado |
 | `fin >= inicio` | `ck_intento_tiempos` (V002) + reloj de PostgreSQL (M5-INC-01) | Implementado, probado |
 | Sin actualizaciones perdidas | Bloqueo `FOR UPDATE` de la fila del intento | Implementado, probado (IT de concurrencia) |
+| Orden de las respuestas: por pregunta (uuid canónico, igual que `ORDER BY "idPregunta"`), idéntico en memoria y tras recargar | `ResumenIntento.ORDEN_RESPUESTAS` (M5-INC-09) | Implementado, probado. El orden pedagógico del caso requiere M3 |
 | Cambiar una respuesta antes de finalizar | `ActualizarRespuestaServicio` | Implementado como **provisional**; bloqueado por decisión |
 | Catálogo de `motivoFinalizacion` | `ENTREGA_ESTUDIANTE` provisional, `TIEMPO_VENCIDO` | Bloqueado por decisión |
 
@@ -153,36 +154,36 @@ la transacción del llamador (`Propagation.MANDATORY`).
 **Semántica:** un Intento exige una Participacion (FK), así que "participaciones
 o intentos" equivale a "participaciones".
 
-**Adaptador sugerido en M4** (lo escribe M4; M5 no modifica M4):
+**Conexión con M4 (implementada, rama `feature/m5-cierre-tecnico`):**
+`com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5` implementa
+el puerto de M4 `ParticipacionesPort`. Es la opción a) de M5-INC-08 y el mismo
+patrón que M7 usa en develop con `NotificacionPort` (`m7 → m4`).
 
-```java
-@Component
-class ParticipacionesDesdeM5 implements ParticipacionesPort {
-    // HistorialParticipacionPort historial; ConvocatoriaRepository convocatorias (de M4)
-    public boolean tieneParticipacionesOIntentos(UUID sesionId) {
-        return historial.existeParticipacion(idsDeConvocatoriasDe(sesionId)); // dentro de la transacción de M4
-    }
-}
-```
+1. Convocatorias de la sesión: `ConvocatoriaRepository.listarPorSesion` de M4.
+   M4 documenta ese puerto como usado por M5, y M5 no lee `"Convocatoria"`.
+2. Historial: `HistorialParticipacionPort` sobre `"Participacion"` (tabla de M5).
+3. Transacción: la de M4, que ya bloqueó la sesión en `buscarParaActualizar`
+   (`FOR UPDATE`); el historial exige `Propagation.MANDATORY`.
+4. Errores: una excepción técnica se propaga y nunca se convierte en `false`.
 
-**Concurrencia:** hoy M5 no crea participaciones. Cuando exista el inicio de
-intentos, ambos módulos deben acordar un orden de bloqueo. Por ejemplo:
+Con este bean presente, M4 deja de registrar su respaldo que respondía 503
+(`@ConditionalOnMissingBean`).
 
-- M4 bloquea la fila de `"Sesion"` (`FOR UPDATE`) antes de consultar el historial;
-- el inicio de M5 toma `FOR SHARE` sobre la misma fila antes de insertar la participación.
+Dependencias: `m5 → m4 → m1, m3`, `m5 → m1` y `m7 → m4`. Sin ciclos.
 
-**Dirección de dependencias:** M4 tendría que depender de `m5` para usar el
-contrato, mientras que M5 ya depende de `m4`. **Eso crearía un ciclo Maven.**
-Opciones, a decidir por Arquitectura:
-
-| Opción | Cómo funciona |
+| Prueba | Tipo |
 |---|---|
-| a) Inversión en M4 | M5 implementa directamente `ParticipacionesPort` de M4 (M5 → M4, sin ciclo). M5 usa `HistorialParticipacionJdbc` y necesita las convocatorias de la sesión mediante un contrato de M4 |
-| b) Contrato compartido | Mover el puerto a un módulo de contratos comunes. Implica un cambio estructural |
-| c) Ensamblado | `app` (que depende de ambos) cablea un adaptador |
+| `ParticipacionesM4DesdeM5Test` (6) | Unitaria |
+| `ParticipacionesM4DesdeM5IT` (7): bean registrado en lugar del respaldo; con y sin historial; otra sesión; ruta real `SesionRepositoryAdapter` con bloqueo; fallo técnico distinto de `false`; transacción obligatoria | PostgreSQL 16.15 |
 
-M5 no ejecuta ninguna de las tres: la a) pide a M4 un contrato de
-convocatorias por sesión, y b) y c) tocan fuera de M5.
+**Pendiente de revisión del Integrante 3:**
+
+- M5 usa dos tipos de M4 que no están en `m4.api`: `ConvocatoriaRepository` y
+  `Convocatoria`. Conviene que M4 los publique en `m4.api`.
+- **Concurrencia futura:** hoy M5 no crea participaciones. Cuando exista el
+  inicio de intentos, M5 deberá bloquear la misma fila de `"Sesion"` (por
+  ejemplo, `FOR SHARE`) antes de insertar la participación, para serializarse
+  con las ediciones de M4.
 
 ## 7. Contrato propuesto para el frontend (simulador)
 
@@ -251,19 +252,35 @@ Cifras en `M5-INFORME-ENTREGA.md`.
 | Cambio de respuesta antes de finalizar | Dirección Central | Endpoint de actualización | Mantener provisional | Prohibirlo | Retirar o confirmar las pruebas provisionales |
 | Efecto del retiro de una convocatoria o del estado de la sesión | Dirección Central, M4 | Elegibilidad durante el intento | Contrato de elegibilidad de M4 evaluado en el proxy | Solo al iniciar | Retiro a mitad del intento |
 | Reloj académico (límite temporal, `TIEMPO_VENCIDO`) | Dirección Central | Finalización por tiempo | `clock_timestamp()` de PostgreSQL, como ya usa la persistencia | Reloj de la aplicación | Vencimiento, carrera con una respuesta |
-| Dependencia para `HistorialParticipacionPort` | Arquitectura | Uso por M4 | Opción a) de la sección 6 | b), c) | IT de M4 con el proveedor real |
+| Uso de `ConvocatoriaRepository` y `Convocatoria` de M4 fuera de `m4.api` | Integrante 3, Arquitectura | Nada: implementado con la opción a) | Publicarlos en `m4.api` | Mantener el puerto actual | Ninguna nueva |
 
 ## 10. Riesgos
 
 - **Elegibilidad:** la titularidad no la evalúa. Con DD-02 abierta no es
   explotable, pero debe resolverse antes de exponer endpoints.
-- **`HistorialParticipacionPort`** no tiene consumidor y su cableado exige una
-  decisión de dependencias.
+- **Proveedor de historial para M4:** está conectado (`ParticipacionesM4DesdeM5`),
+  pero usa `ConvocatoriaRepository` de M4, que no está en `m4.api`. Si M4 cambia
+  ese puerto, se rompe la compilación de M5 (la detectaría Maven, no se produce
+  en ejecución).
+- **Historial de develop:** el PR #9 se fusionó con `50fe1f1`, la historia
+  anterior a la normalización (M5-INC-10).
 - **404 con la referencia del cliente:** `IntentoNoEncontradoException` incluye
   la referencia enviada (`M5-INCIDENCIAS.md`, sección 4).
-- **Validación en Windows:** los cambios de esta rama solo se validaron fuera
-  de Maven. Los repositorios de paquete y el contexto de `app` deben
-  confirmarse con `-Pdocker-it`.
+- **Validación en Windows:** los cambios de la rama `feature/m5-cierre-tecnico` solo se
+  validaron fuera de Maven. Hay que confirmarlos con los cuatro comandos de
+  `M5-INFORME-CIERRE.md`.
+
+## 10b. Matriz de integración M1–M7 (develop `8b6dc33` + rama `feature/m5-cierre-tecnico`)
+
+| Relación | Contrato | Estado |
+|---|---|---|
+| M1 → M5 | `StudentAccessPort` → `IdentidadEstudianteDesdeM1` | Integrado. Deniega siempre mientras siga DD-02 |
+| M4 → M5 | `ProgramacionParticipacionPort` → `TitularidadIntentosDesdeM4` | Integrado. Necesita `prisaly.m4.consulta-bd0052.enabled=true`; sin ella, responde 503 |
+| M5 → M4 | `ParticipacionesPort` ← `ParticipacionesM4DesdeM5` | **Implementado en esta rama.** Revisión del Integrante 3 |
+| M3 → M5 | Contenido del caso (preguntas y opciones, sin respuestas correctas) | **Sin contrato.** Bloqueado |
+| M5 → M6 | Intento finalizado → evaluación | **Sin contrato.** M6 está en su rama (`e7bb443`), no en develop, y no expone un puerto para M5 |
+| M4 → M7 | `NotificacionPort` ← M7 (`NotificacionM4Adapter`) | Integrado en develop (PR #11). M5 no participa |
+| M2 | — | Sin código |
 
 ## 11. Trazabilidad
 
@@ -281,7 +298,7 @@ migraciones.
 | Iniciar o reanudar intento | `tr_intento_autorizacion` (V003–V005), F3-02 (V007) | No | — | M4 | DD-14, elegibilidad | — |
 | Identidad del estudiante | DD-02 | Adaptador | Sí | — | DD-02 | — |
 | Titularidad | — | Sí | Sí | Propiedad de M4 | — | — |
-| Historial para M4 | `ParticipacionesPort` (M4) | Sí | Sí (IT) | M4 | Dependencias | — |
+| Historial para M4 | `ParticipacionesPort` (M4) | Sí (`ParticipacionesM4DesdeM5`) | Sí (unitarias e IT) | Revisión del Integrante 3 | — | — |
 | Calificación | — | — | — | — | — | M6 |
 | PC-001 | — | — | — | — | — | Fuera de alcance |
 
@@ -310,7 +327,7 @@ solo necesita una IT de extremo a extremo.
 
 - elegibilidad, ventana y límite temporal;
 - activar `consulta-bd0052`;
-- consumir `HistorialParticipacionPort`;
+- revisar `ParticipacionesM4DesdeM5` y publicar `ConvocatoriaRepository` en `m4.api`;
 - protocolo de bloqueo con el futuro inicio;
 - resolver las 17 IT omitidas (EXT-M4-01).
 
