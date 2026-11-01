@@ -55,6 +55,18 @@ final class CadenaIntentoPrueba {
         return UUID.fromString(valores.get("intento"));
     }
 
+    UUID estudiante() {
+        return UUID.fromString(valores.get("estudiante"));
+    }
+
+    UUID convocatoria() {
+        return UUID.fromString(valores.get("convocatoria"));
+    }
+
+    UUID sesion() {
+        return UUID.fromString(valores.get("sesion"));
+    }
+
     ReferenciaPregunta pregunta1() {
         return new ReferenciaPregunta(valores.get("pregunta1"));
     }

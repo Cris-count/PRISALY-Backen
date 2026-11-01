@@ -20,7 +20,7 @@ import com.prisaly.m5.domain.respuesta.ValorRespuesta;
  * están disponibles: requieren identidad (M1), convocatoria y ventana de
  * sesión (M4) y la política de repetición (DD-14).
  */
-public final class ParticipacionFacade {
+public final class ParticipacionFacade implements OperacionesParticipacion {
 
     private final ConsultarIntentoServicio consulta;
     private final RegistrarRespuestaServicio registro;
@@ -41,19 +41,23 @@ public final class ParticipacionFacade {
         this.finalizacion = finalizacion;
     }
 
+    @Override
     public ResumenIntento consultarIntento(ReferenciaIntento intento) {
         return consulta.consultar(intento);
     }
 
+    @Override
     public ResumenIntento registrarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor) {
         return registro.registrar(intento, pregunta, valor);
     }
 
     /** Operación provisional, pendiente de ratificación académica. */
+    @Override
     public ResumenIntento actualizarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor) {
         return actualizacion.actualizar(intento, pregunta, valor);
     }
 
+    @Override
     public ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo) {
         return finalizacion.finalizar(intento, motivo);
     }
