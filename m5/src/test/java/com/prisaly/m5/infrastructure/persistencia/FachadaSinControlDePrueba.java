@@ -1,10 +1,5 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
-import java.time.Instant;
-import java.util.Optional;
-
-import org.springframework.transaction.PlatformTransactionManager;
-
 import com.prisaly.m5.application.ParticipacionFacade;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
@@ -21,26 +16,34 @@ import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
 
+import org.springframework.transaction.PlatformTransactionManager;
+
+import java.time.Instant;
+import java.util.Optional;
+
 /**
- * Solo pruebas de persistencia: la fachada transaccional SIN control de acceso,
- * para probar casos de uso, transacciones y concurrencia contra PostgreSQL.
- * En producción no existe como bean (ver {@code ConfiguracionParticipacion}).
+ * Solo pruebas de persistencia: la fachada transaccional SIN control de acceso, para probar casos
+ * de uso, transacciones y concurrencia contra PostgreSQL. En producción no existe como bean (ver
+ * {@code ConfiguracionParticipacion}).
  */
 final class FachadaSinControlDePrueba {
 
-    private FachadaSinControlDePrueba() {
-    }
+    private FachadaSinControlDePrueba() {}
 
     /** Sin inicio operativo: las pruebas de responder y finalizar no lo usan. */
     static FachadaParticipacionTransaccional ensamblar(
             RepositorioIntentos repositorio, PlatformTransactionManager transacciones) {
-        return ensamblar(repositorio, new SinParticipaciones(), transacciones,
-                new ElegibilidadNoRatificada(), new LimiteTemporalNoRatificado());
+        return ensamblar(
+                repositorio,
+                new SinParticipaciones(),
+                transacciones,
+                new ElegibilidadNoRatificada(),
+                new LimiteTemporalNoRatificado());
     }
 
     /**
-     * Con el inicio completo. Las políticas las elige la prueba: las de
-     * {@link PoliticasInicioDePrueba} son dobles, no reglas académicas.
+     * Con el inicio completo. Las políticas las elige la prueba: las de {@link
+     * PoliticasInicioDePrueba} son dobles, no reglas académicas.
      */
     static FachadaParticipacionTransaccional ensamblar(
             RepositorioIntentos repositorio,
@@ -54,8 +57,12 @@ final class FachadaSinControlDePrueba {
                         new RegistrarRespuestaServicio(repositorio),
                         new ActualizarRespuestaServicio(repositorio),
                         new FinalizarIntentoServicio(repositorio),
-                        new IniciarIntentoServicio(participaciones, repositorio, elegibilidad, limiteTemporal)),
-                transacciones);
+                        new IniciarIntentoServicio(
+                                participaciones, repositorio, elegibilidad, limiteTemporal)),
+                transacciones,
+                convocatoria -> {
+                    /* Doble explícito: esta suite aísla persistencia M5. */
+                });
     }
 
     /** Repositorio de participaciones ausente: iniciar falla si alguna prueba lo usa por error. */

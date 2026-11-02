@@ -1,34 +1,27 @@
-# Estabilización M4 — ejecución verificada
+# Regresión de cierre M4 / D-06 — 02/11/2026
 
-01/11/2026, 22:51:33 America/Bogota. **BUILD SUCCESS**, duración4:50. Rama feature/m4-estabilizacion; base19cf52b más este incremento.
+Base develop: b3d77d89e324c1f61ea0364417a37bd2c7c354cc más incremento de feature/m4-cierre-d06. El SHA final se publica con el commit y PR; el código Java no cambia entre la regresión final y el commit.
 
-Comando: mvnw.cmd -B verify -Pdocker-it con m4.baseline.migrations apuntando a app/src/main/resources/db/migration.
+**BUILD SUCCESS: 839 pruebas, 0 fallos, 0 errores, 0 omitidas.** Finalizó 13:05:14 de Colombia, duración 5:13.
 
-| Módulo | Surefire | Failsafe | Total |
+| Módulo | Surefire | PostgreSQL Failsafe | Total |
 |---|---:|---:|---:|
-| M1 | 8 | 6 | 14 |
-| M3 | 100 | 60 | 160 |
-| M4 | 114 | 64 | 178 |
-| M5 | 181 | 38 | 219 |
-| M6 | 25 | 19 | 44 |
-| M7 | 23 | 25 | 48 |
-| app | 1 | 20 | 21 |
-| **Total** | **452** | **232** | **684** |
+| M1 | 18 | 6 | 24 |
+| M2 | 0 | 0 | 0 |
+| M3 | 125 | 77 | 202 |
+| M4 | 118 | 64 | 182 |
+| M5 | 230 | 53 | 283 |
+| M6 | 40 | 19 | 59 |
+| M7 | 24 | 25 | 49 |
+| app | 1 | 39 | 40 |
+| Total | 556 | 283 | 839 |
 
-**Cero fallos, errores y omitidas.** M2 no aporta suites. Surefire incluye una comprobación Docker M4: no todas sus ejecuciones son unitarias puras.
+Comando: mvnw.cmd -B verify -Pdocker-it con m4.baseline.migrations apuntando a app/src/main/resources/db/migration. Java 21, Docker Desktop 29.8.2, PostgreSQL 16.15; smoke M4 con postgres:16-alpine. Solo contenedores efímeros. Surefire no es sinónimo de pruebas unitarias puras.
 
-[Conteo](conteo.md), [suites sanitizadas](suites.json), [paquete M4](package-check.txt), [paquete M5](m5-package-check.txt). Solo XML posteriores a estabilizacion-inicio.txt. Total XML684 y suma de resúmenes Maven684, comprobados independientemente.
+Las tres suites condicionadas de M4 se ejecutaron (4 + 6 + 22), junto con 32 IT adicionales. D-06 añade 4 pruebas M4, 5 M5 y 13 app, todas incluidas en el total. Las 23 IT de HistorialM4M5IT incluyen los 10 casos anteriores.
 
-## Evidencia del incremento
+Los XML posteriores al marcador de inicio coinciden con los resúmenes Maven: 839. Los resultados antiguos y repeticiones focalizadas no se suman. La primera prueba de app del candidato falló por ambigüedad StudentAccessDeliveryPort; se corrigió con Qualifier explícito en app y se repitió la regresión completa, que pasó. Ese intento fallido se conserva en target/cierre-d06-carreras.log y no se oculta ni se mezcla con el resultado final.
 
-- M4EstabilizacionAdaptersTest:6 casos nuevos, incluido Publicado inactivo, fallos de proveedores, guardia de escritura y F3-03.
-- M4HttpErrorsTest:32 casos en total; nuevo503 de edición sin exponer causa SQL por HTTP.
-- SesionAcademicaPostgreSqlIT:duraciones30/60/120 frente a caso estimado60; validación FK antes de notificar; fallos SQL reales de Caso/Participacion con rollback y recuperación; concurrencia de seis convocatorias (1 éxito/5 duplicados/1 fila/0 participaciones).
-- ProgramacionParticipacionPostgreSqlIT:15 casos temporales nuevos (3 estados×5 fronteras) con Clock.fixed para fixtures, lectura de contexto sin escribir ni autorizar. No son pruebas de un scheduler ni de vencimiento aprobado.
-- App:contexto completo, proveedor real único M5, aviso/cola M7 y seguridad HTTP. El fallo real del historial atraviesa la frontera M4 como503 y conserva la causa M5.
+Detalle de transacciones, carreras, integración y limitaciones en la sección 10 de ../INFORME.md. suites.json solo conserva nombres y resultados, sin propiedades/credenciales. Logs/XML originales permanecen en target (no versionados).
 
-29 ejecuciones M4 nuevas sobre la línea base149; M4 total178. No sumar aparte las38 pruebas focalizadas que también forman parte del verify final.
-
-El verify inicial falló por Docker apagado en M1; no se cuenta como ejecución aprobada. Docker se inició y se repitió la regresión completa. Logs locales ignorados: m4/target/estabilizacion-focalizado.log, estabilizacion-verificacion.log (fallo de entorno), estabilizacion-verificacion-final.log. Marcador: estabilizacion-inicio.txt.
-
-Las fixtures de identidad no sustituyen M1 estudiantil. No se crea Participacion desde M4 ni se prueban inicio/repetición productivos sin contrato ratificado. SQL de fallos y Flyway clean de fixtures existentes se usan exclusivamente en PostgreSQL efímero, nunca en una base compartida. V001–V010 intactas.
+No se habilita identidad estudiantil productiva, elegibilidad, vencimiento, repetición ni SMTP. Las pruebas de inicio usan políticas e identidad solo de prueba. El primer inicio productivo sigue denegado. No se modifican migraciones históricas ni se ejecutan operaciones contra bases compartidas.

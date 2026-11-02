@@ -1,4 +1,6 @@
 # Contratos, endpoints y diagramas M4
+
+> Corte vigente 02/11/2026: véase «Actualización D-06» al final. Se añade ProgramacionInicioCoordinadoPort sin cambiar las firmas de consulta existentes. Las propuestas del 01/11 se conservan como antecedentes; el lector de contexto ya está habilitado en app, el primer inicio productivo continúa denegado.
 ## Puertos internos
 Se conservan sin cambio los records y firmas de com.prisaly.m4.api. ProgramacionParticipacionPort consulta contexto por convocatoria y estudiante persistidos; ProgramacionAutenticadaPort obtiene identidad mediante StudentAccessPort. ContextoProgramacion ofrece estado exacto de sesión/caso, casoActivo, ventana prevista, fechas reales opcionales, duración, autorización/retiro de convocatoria y observadoEn. No ofrece una decisión de inicio/reanudación/repetición.
 
@@ -116,7 +118,7 @@ M4 no inserta Participacion. La propuesta recibida asigna a M5 su creación dura
 
 Firmas existentes conservadas: ProgramacionParticipacionPort.consultarSesion(UUID sesionId, UUID estudianteAutenticadoId) y consultarConvocatoria(UUID convocatoriaId, UUID estudianteAutenticadoId), ambas Optional<ContextoProgramacion>. ProgramacionAutenticadaPort ofrece consultarSesion(UUID) y consultarConvocatoria(UUID), usando StudentAccessPort. Optional.empty significa ausencia/titularidad no coincidente; indisponibilidad es excepción503, no false.
 
-### Protocolo transaccional propuesto, no habilitado para inicio
+### Protocolo transaccional propuesto el 01/11 (antecedente; sustituido por D-06 abajo)
 
 1. M5 obtiene identidad estudiantil confiable de M1; no usa un studentId libre del frontend.
 2. En la transacción de inicio, solicitar a M4 el bloqueo de Sesion y después de Convocatoria, volver a leer titularidad/estado/retiro y evaluar la política ratificada.
@@ -131,3 +133,24 @@ Firma orientativa para revisión: Optional<ContextoProgramacion> bloquearConvoca
 Las pruebas usan un reloj fijo para las fronteras de las fixtures y comprueban la lectura inmutable de SinIniciar/EnCurso/Finalizado antes, en y después de inicio/fin. No sustituyen clock_timestamp() PostgreSQL ni prueban un scheduler de vencimiento. DD-01/DD-05 y las reglas de cierre/reanudación/repetición permanecen pendientes.
 
 F3-04 permite máximo positivo inferior, igual o superior al estimado. Se prueban30/60/120 segundos frente a un caso estimado en60, sin agregar una relación máximo≤estimado. V007 documenta que no requiere migración. El texto original RF-18/H16 debe conciliarse antes de modificar esta decisión.
+
+## Actualización D-06 — 02/11/2026
+
+La Dirección Técnica autorizó implementar la reserva con orden Sesion → Convocatoria → Participacion → Intento. El candidato feature/m4-cierre-d06, basado en develop b3d77d8, ofrece el siguiente puerto público interno de M4:
+
+```java
+public interface ProgramacionInicioCoordinadoPort {
+    Optional<ContextoProgramacion> bloquearYConsultarConvocatoria(
+        UUID convocatoriaId, UUID estudianteAutenticadoId);
+}
+```
+
+Requiere la transacción de escritura del consumidor (MANDATORY, READ COMMITTED). M4 localiza la sesión, bloquea primero Sesion y después Convocatoria mediante FOR UPDATE, revalida la asociación y devuelve contexto fresco. Retiene los bloqueos hasta commit/rollback de M5. Vacío para convocatoria inexistente/ajena; fallo técnico, solo lectura, aislamiento incompatible o incoherencia producen ConsultaProgramacionNoDisponibleException (503). Sin transacción se rechaza por la guardia transaccional. El puerto no calcula elegibilidad ni crea participación.
+
+M5 lo consume mediante CoordinacionInicioDesdeM4 dentro de FachadaParticipacionTransaccional, antes de acceder a Participacion/Intento, obteniendo identidad del servidor. El constructor sin coordinador deniega el inicio; dobles permisivos solo en src/test. Se mantienen los bloqueos de Estudiante de los triggers históricos, sin modificar migraciones.
+
+La consulta informativa ProgramacionParticipacionPort se conserva; no sustituye la reserva D-06. El lector está habilitado en app, pero el acceso estudiantil productivo sigue desactivado y las políticas no ratificadas continúan impidiendo el primer inicio. La propuesta anterior de listado estudiantil no se implementa en este incremento.
+
+Si M5 confirma primero, la edición M4 espera y rechaza por historial. Si M4 confirma primero, M5 observa el contexto modificado y aplica las políticas vigentes; no se autoriza por ganar la carrera. Un rollback libera la reserva sin dejar datos parciales. Reasignar caso con convocatorias continúa prohibido.
+
+Regresión: 839 pruebas aprobadas (M4 182, M5 283, app 40), incluidos 13 casos conjuntos D-06; cero fallos/errores/omitidas. Ver sección 10 de ../revision-m4-m5/INFORME.md para evidencia, límites y versión del candidato. Pendiente revisión del PR; sin merge unilateral ni activación académica nueva.
