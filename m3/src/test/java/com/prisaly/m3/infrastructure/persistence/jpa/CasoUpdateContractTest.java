@@ -23,6 +23,65 @@ class CasoUpdateContractTest {
     private static final Instant CREATED = Instant.parse("2026-01-01T00:00:00Z");
 
     @Test
+    void optionAddValidatesExplicitParametersWithoutNormalizingTextOrChoosingCorrectness() {
+        UUID id = UUID.randomUUID();
+        for (boolean correct : List.of(true, false)) {
+            var command = new AgregarOpcionRespuestaCommand(id, QUESTION, " Text \uD83D\uDE00 ", correct, " Explanation\n ", 19);
+            assertEquals(id, command.idOpcion()); assertEquals(QUESTION, command.idPregunta());
+            assertEquals(" Text \uD83D\uDE00 ", command.texto()); assertEquals(correct, command.esCorrecta());
+            assertEquals(" Explanation\n ", command.explicacion()); assertEquals(19, command.orden());
+        }
+        assertNull(new AgregarOpcionRespuestaCommand(id, QUESTION, "Text", false, null, 1).explicacion());
+        assertThrows(NullPointerException.class, () -> new AgregarOpcionRespuestaCommand(null, QUESTION, "Text", false, null, 1));
+        assertThrows(NullPointerException.class, () -> new AgregarOpcionRespuestaCommand(id, null, "Text", false, null, 1));
+        assertThrows(IllegalArgumentException.class, () -> new AgregarOpcionRespuestaCommand(id, QUESTION, null, false, null, 1));
+        assertThrows(IllegalArgumentException.class, () -> new AgregarOpcionRespuestaCommand(id, QUESTION, " \t", false, null, 1));
+        for (int order : List.of(0, -1)) {
+            assertThrows(IllegalArgumentException.class, () -> new AgregarOpcionRespuestaCommand(id, QUESTION, "Text", false, null, order));
+        }
+    }
+
+    @Test
+    void optionAddChecksInitialMembershipAndIdentityButDoesNotPreemptEarlierExplicitDeletion() {
+        var s = snapshot(); String fingerprint = CasoAggregateFingerprint.of(s);
+        var original = s.opciones().getFirst();
+        // Existing correct flag and order may be freed by a preceding EliminarOpcionCommand.
+        assertDoesNotThrow(() -> CasoCommandUpdateAdapter.validateMembership(s,
+                new AgregarOpcionRespuestaCommand(UUID.randomUUID(), QUESTION, "New", true, null, original.orden())));
+        assertEquals(CasoCommandUpdateAdapter.OPTION_ID_IN_USE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateMembership(s,
+                        new AgregarOpcionRespuestaCommand(original.idOpcion(), QUESTION, "New", false, null, 19))).code());
+        assertEquals(CasoCommandUpdateAdapter.ELEMENT_NOT_IN_CASE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateMembership(s,
+                        new AgregarOpcionRespuestaCommand(UUID.randomUUID(), UUID.randomUUID(), "New", false, null, 19))).code());
+        assertDoesNotThrow(() -> CasoCommandUpdateAdapter.validateMembership(s, new EliminarOpcionCommand(original.idOpcion())));
+        assertEquals(fingerprint, CasoAggregateFingerprint.of(s));
+    }
+
+    @Test
+    void optionAddRequiresDraftAndPreservesArchivedStaleAndF303Rejections() {
+        var s = snapshot(); var c = s.caso();
+        var command = new AgregarOpcionRespuestaCommand(UUID.randomUUID(), QUESTION, "New", false, null, 19);
+        assertDoesNotThrow(() -> CasoCommandUpdateAdapter.validateExpected(s, CasoAggregateFingerprint.of(s), List.of(command)));
+        for (String state : List.of("Publicado", "Archivado")) {
+            var changed = new CasoJpaAggregateSnapshot(new CasoRow(c.idCaso(), c.idDocente(), c.nombre(), c.historia(),
+                    c.desarrolloSituacional(), c.tiempoEstimadoSegundos(), state, c.activo(), null,
+                    c.fechaCreacion(), c.fechaActualizacion()), s.escenarios(), s.preguntas(), s.opciones(), s.rubrica(), s.rubricaPreguntas());
+            String expected = state.equals("Publicado") ? CasoCommandUpdateAdapter.OPTION_ADD_REQUIRES_DRAFT
+                    : com.prisaly.m3.domain.rule.CasoValidation.CODE_ARCHIVED_CASE_OPERATION_PENDING;
+            assertEquals(expected, assertThrows(CasoDomainException.class, () -> CasoCommandUpdateAdapter.validateExpected(
+                    changed, CasoAggregateFingerprint.of(changed), List.of(command))).code());
+        }
+        var locked = new CasoJpaAggregateSnapshot(new CasoRow(c.idCaso(), c.idDocente(), c.nombre(), c.historia(),
+                c.desarrolloSituacional(), c.tiempoEstimadoSegundos(), "Publicado", c.activo(), CREATED,
+                c.fechaCreacion(), c.fechaActualizacion()), s.escenarios(), s.preguntas(), s.opciones(), s.rubrica(), s.rubricaPreguntas());
+        assertEquals(CasoCommandUpdateAdapter.STALE_CASE, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateExpected(locked, CasoAggregateFingerprint.of(s), List.of(command))).code());
+        assertEquals(ContenidoEvaluableLock.CODE_EVALUABLE_CONTENT_LOCKED, assertThrows(CasoDomainException.class,
+                () -> CasoCommandUpdateAdapter.validateExpected(locked, CasoAggregateFingerprint.of(locked), List.of(command))).code());
+    }
+
+    @Test
     void questionAddRequiresExplicitIdentityContentStateVisibilityAndPositiveOrder() {
         UUID id = UUID.randomUUID();
         var command = new AgregarPreguntaCommand(id, SCENARIO, " Question \uD83D\uDE00 ", null, "Borrador", false, 19);

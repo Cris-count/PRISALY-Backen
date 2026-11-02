@@ -34,6 +34,8 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     public static final String QUESTION_ADD_REQUIRES_DRAFT = "QUESTION_ADD_REQUIRES_DRAFT";
     public static final String QUESTION_ID_IN_USE = "QUESTION_ID_IN_USE";
     public static final String QUESTION_ORDER_IN_USE = "QUESTION_ORDER_IN_USE";
+    public static final String OPTION_ADD_REQUIRES_DRAFT = "OPTION_ADD_REQUIRES_DRAFT";
+    public static final String OPTION_ID_IN_USE = "OPTION_ID_IN_USE";
     private final EntityManagerFactory emf;
     private final CasoJpaAggregateReader reader;
     private final TransactionTemplate transaction;
@@ -110,6 +112,10 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
                 && !"Borrador".equals(snapshot.caso().estado())) {
             throw error(QUESTION_ADD_REQUIRES_DRAFT, "Adding a question requires a draft case");
         }
+        if (commands.stream().anyMatch(AgregarOpcionRespuestaCommand.class::isInstance)
+                && !"Borrador".equals(snapshot.caso().estado())) {
+            throw error(OPTION_ADD_REQUIRES_DRAFT, "Adding an option requires a draft case");
+        }
     }
 
     private static void assertOfficialContentGuards(Connection connection) throws SQLException {
@@ -137,6 +143,17 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     static void validateMembership(CasoJpaAggregateSnapshot snapshot, CasoUpdateCommand command) {
         boolean belongs = switch (command) {
             case ActualizarDatosCasoCommand ignored -> true;
+            case AgregarOpcionRespuestaCommand c -> {
+                if (snapshot.preguntas().stream().noneMatch(p -> p.idPregunta().equals(c.idPregunta()))) {
+                    throw error(ELEMENT_NOT_IN_CASE, "Question does not exist in this case");
+                }
+                if (snapshot.opciones().stream().anyMatch(o -> o.idOpcion().equals(c.idOpcion()))) {
+                    throw error(OPTION_ID_IN_USE, "Option UUID was already used in the initial aggregate");
+                }
+                // Order/correctness conflicts are checked by SQL at execution time:
+                // an earlier explicit deletion in this batch may have freed them.
+                yield true;
+            }
             case AgregarPreguntaCommand c -> {
                 if (snapshot.escenarios().stream().noneMatch(e -> e.idEscenario().equals(c.idEscenario()))) {
                     throw error(ELEMENT_NOT_IN_CASE, "Scenario does not exist in this case");
@@ -167,6 +184,23 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
 
     private static void apply(Connection connection, UUID caseId, CasoUpdateCommand command) throws SQLException {
         switch (command) {
+            case AgregarOpcionRespuestaCommand c -> {
+                try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"OpcionRespuesta\" WHERE \"idOpcion\" = ?")) {
+                    statement.setObject(1, c.idOpcion());
+                    try (var rows = statement.executeQuery()) {
+                        if (rows.next()) { throw error(OPTION_ID_IN_USE, "Option UUID is already used"); }
+                    }
+                }
+                try (var statement = connection.prepareStatement("""
+                        INSERT INTO public."OpcionRespuesta" ("idOpcion", "idPregunta", "texto", "esCorrecta", "explicacion", "orden")
+                        VALUES (?, ?, ?, ?, ?, ?)
+                        """)) {
+                    statement.setObject(1, c.idOpcion()); statement.setObject(2, c.idPregunta());
+                    statement.setString(3, c.texto()); statement.setBoolean(4, c.esCorrecta());
+                    statement.setString(5, c.explicacion()); statement.setInt(6, c.orden());
+                    if (statement.executeUpdate() != 1) { throw new SQLException("Expected one inserted option"); }
+                }
+            }
             case AgregarPreguntaCommand c -> {
                 // Global identity check; the PK also handles an uncommitted cross-case collision.
                 try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"Pregunta\" WHERE \"idPregunta\" = ?")) {

@@ -13,6 +13,17 @@ public sealed interface CasoUpdateCommand {
     enum CampoEscenario { TITULO, CONTEXTO, INSTRUCCIONES, ORDEN }
     enum CampoPregunta { ENUNCIADO, TEXTO_AYUDA, ORDEN }
 
+    /** Explicit correctness; no defaults, implicit deletion or renumbering. */
+    record AgregarOpcionRespuestaCommand(UUID idOpcion, UUID idPregunta, String texto,
+            boolean esCorrecta, String explicacion, int orden) implements CasoUpdateCommand {
+        public AgregarOpcionRespuestaCommand {
+            Objects.requireNonNull(idOpcion, "idOpcion");
+            Objects.requireNonNull(idPregunta, "idPregunta");
+            requiredText(texto, Integer.MAX_VALUE);
+            positiveInteger(orden);
+        }
+    }
+
     /** Explicit initial editing state/visibility; dates use the official SQL creation default. */
     record AgregarPreguntaCommand(UUID idPregunta, UUID idEscenario, String enunciado,
             String textoAyuda, String estadoEdicion, boolean visible, int orden) implements CasoUpdateCommand {
