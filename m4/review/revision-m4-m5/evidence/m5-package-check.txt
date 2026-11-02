@@ -1,3 +1,4 @@
-SHA256 M5 local/anidado: 5D14EBCB6792EB7C89048A7252D77061B332406F5168D7433CED1CF23CE44DA2 (idénticos)
-Clases de prueba y controlador HTTP fixture en JAR M5: 0
-Puente HistorialM4M5Configuration: presente en app; fixture HistorialM4M5IT: ausente
+SHA256 M5 local/anidado: E99D4065AD3083B96BBDBA64558CD9C718398CCDDCDE1E6FDB8ABE9477368502 (idénticos)
+Proveedor duplicado HistorialM4M5Configuration: ausente
+ParticipacionesM4DesdeM5: único proveedor productivo verificado por app
+Guardia y adaptación de fallo a503: implementadas en la frontera SesionRepositoryAdapter de M4; M5 sin modificar

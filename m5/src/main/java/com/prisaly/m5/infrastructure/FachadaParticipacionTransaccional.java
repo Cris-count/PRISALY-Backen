@@ -7,7 +7,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import com.prisaly.m5.application.OperacionesParticipacion;
 import com.prisaly.m5.application.ParticipacionFacade;
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
@@ -37,6 +39,16 @@ public class FachadaParticipacionTransaccional implements OperacionesParticipaci
         this.lectura.setReadOnly(true);
     }
 
+    /**
+     * Una sola transacción de escritura para bloquear o crear la participación,
+     * leer sus intentos y, si corresponde, insertar el primero. Si cualquier
+     * paso falla, no queda ni la participación ni el intento.
+     */
+    @Override
+    public ResultadoInicio iniciarOReanudar(ReferenciaConvocatoria convocatoria) {
+        return en(escritura, () -> fachada.iniciarOReanudar(convocatoria));
+    }
+
     @Override
     public ResumenIntento consultarIntento(ReferenciaIntento intento) {
         return en(lectura, () -> fachada.consultarIntento(intento));
@@ -58,7 +70,7 @@ public class FachadaParticipacionTransaccional implements OperacionesParticipaci
         return en(escritura, () -> fachada.finalizarIntento(intento, motivo));
     }
 
-    private static ResumenIntento en(TransactionTemplate plantilla, Supplier<ResumenIntento> operacion) {
+    private static <T> T en(TransactionTemplate plantilla, Supplier<T> operacion) {
         return plantilla.execute(estado -> operacion.get());
     }
 }

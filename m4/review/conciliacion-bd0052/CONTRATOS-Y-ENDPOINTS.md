@@ -2,7 +2,7 @@
 ## Puertos internos
 Se conservan sin cambio los records y firmas de com.prisaly.m4.api. ProgramacionParticipacionPort consulta contexto por convocatoria y estudiante persistidos; ProgramacionAutenticadaPort obtiene identidad mediante StudentAccessPort. ContextoProgramacion ofrece estado exacto de sesión/caso, casoActivo, ventana prevista, fechas reales opcionales, duración, autorización/retiro de convocatoria y observadoEn. No ofrece una decisión de inicio/reanudación/repetición.
 
-M3: adaptador SQL con Caso FOR UPDATE, inserción Sesion y triggers oficiales dentro de la misma transacción. Requiere revisión del protocolo con el Integrante 2. M5: app ensambla ParticipacionesPort con HistorialParticipacionPort mediante HistorialM4M5Configuration. M4 obtiene los UUID de todas sus convocatorias con ConvocatoriaRepository; M5 consulta sus participaciones persistidas. No se accede a repositorios internos ajenos ni se crea una dependencia Maven M4→M5.
+M3: adaptador SQL con Caso FOR UPDATE, inserción Sesion y triggers oficiales dentro de la misma transacción. Requiere revisión del protocolo con el Integrante 2. M5: app descubre el único proveedor ParticipacionesM4DesdeM5 (M5), que consume HistorialParticipacionPort. La configuración duplicada HistorialM4M5Configuration fue retirada en19cf52b. M4 obtiene los UUID de todas sus convocatorias con ConvocatoriaRepository; M5 consulta sus participaciones persistidas. No se accede a repositorios internos ajenos ni se crea una dependencia Maven M4→M5.
 
 ## Integración M4–M5 vigente
 
@@ -20,11 +20,11 @@ La resolución persistida, el retiro y el fallo real de consulta se verifican en
 
 ### Protección de historial desde M4
 
-El puente de app exige la transacción de escritura del llamador. SesionAcademicaService bloquea primero la fila de sesión y luego consulta el historial. Una participación basta para impedir edición o reasignación (409 M4-SESION-CON-PARTICIPACIONES); los intentos quedan cubiertos por su FK obligatoria a Participacion. Se incluyen convocatorias retiradas. Sin participaciones se conserva la validación normal de M4.
+SesionRepositoryAdapter de M4 exige la transacción de escritura del llamador antes de delegar al proveedor único M5. SesionAcademicaService bloquea primero la fila de sesión y luego consulta el historial. Una participación basta para impedir edición o reasignación (409 M4-SESION-CON-PARTICIPACIONES); los intentos quedan cubiertos por su FK obligatoria a Participacion. Se incluyen convocatorias retiradas. Sin participaciones se conserva la validación normal de M4.
 
 La ausencia del proveedor o el fallo de consulta provoca 503 M4-PROVEEDOR-NO-DISPONIBLE, mensaje público genérico y rollback. La consulta sin transacción de escritura se rechaza. M4 conserva su respaldo seguro para ensamblados sin app/M5.
 
-El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión antes de insertar. Este puente no implementa inicio/reanudación ni permite afirmar que esa carrera futura esté resuelta. No hay cambios de esquema ni de identidad estudiantil.
+El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión antes de insertar. Esta integración no implementa inicio/reanudación ni permite afirmar que esa carrera futura esté resuelta. No hay cambios de esquema ni de identidad estudiantil.
 
 ## Diccionario HTTP
 SesionController atiende /m4/sesiones; ConvocatoriaController atiende /m4/sesiones/{sesionId}/convocatorias. app agrega /api. La separación conserva las rutas existentes. Identidad del docente desde M1. X-Docente-Id es opcional, solo comprueba coincidencia con identidad autenticada.
@@ -98,3 +98,36 @@ sequenceDiagram
     C-->>D: 201
   end
 ```
+
+## Propuesta de conciliación de estabilización — pendiente de ratificación
+
+M4 no inserta Participacion. La propuesta recibida asigna a M5 su creación durante el primer inicio autorizado, junto con Intento en una misma transacción; sigue pendiente confirmación formal de Dirección/M5. Se mantienen las propiedades: M4=Sesion/Convocatoria; M5=Intento/Respuesta. No se incorpora código de creación ni elegibilidad por esta propuesta.
+
+| Decisión | Propuesta para revisión | Implementado en este incremento |
+|---|---|---|
+| Escritor de Participacion | M5, únicamente primer inicio autorizado | No; requiere ratificación |
+| Datos del inicio | Convocatoria persistida, estudiante de M1, contexto M4 y política académica aprobada; no identidad declarada por Angular | Solo contratos informativos existentes |
+| Duplicados | Reutilizar Participacion por idConvocatoria y restricción uq_participacion_idconvocatoria; acordar respuesta idempotente o conflicto | Restricción oficial verificada, no nuevo escritor |
+| Rollback | Participacion e Intento nuevos deben confirmarse juntos; error revierte ambos | Probados rollback M4 y FK/UNIQUE con fixtures, no inicio productivo |
+| Convocatoria | M5 resuelve la existente desde sus datos; M4 filtra titularidad | Sí, consultarConvocatoria existente |
+| Listado propio | Proponer List<ContextoProgramacion> listarConvocatoriasEstudianteActual() en ProgramacionAutenticadaPort, obteniendo studentId de M1; paginación y contrato final por ratificar | No; no nueva ruta ni interfaz implementada |
+| Elegibilidad | M5 orquesta la política ratificada usando hechos M4; M4 conserva State e invariantes propias | Pendiente DD-01/DD-02/DD-05/DD-14; no booleano permisivo |
+| Activación lectora | Integración debe iniciar app con --prisaly.m4.consulta-bd0052.enabled=true, de forma controlada | Configuración probada en M4, no se altera app productiva por una solicitud pendiente |
+
+Firmas existentes conservadas: ProgramacionParticipacionPort.consultarSesion(UUID sesionId, UUID estudianteAutenticadoId) y consultarConvocatoria(UUID convocatoriaId, UUID estudianteAutenticadoId), ambas Optional<ContextoProgramacion>. ProgramacionAutenticadaPort ofrece consultarSesion(UUID) y consultarConvocatoria(UUID), usando StudentAccessPort. Optional.empty significa ausencia/titularidad no coincidente; indisponibilidad es excepción503, no false.
+
+### Protocolo transaccional propuesto, no habilitado para inicio
+
+1. M5 obtiene identidad estudiantil confiable de M1; no usa un studentId libre del frontend.
+2. En la transacción de inicio, solicitar a M4 el bloqueo de Sesion y después de Convocatoria, volver a leer titularidad/estado/retiro y evaluar la política ratificada.
+3. Solo después obtener/crear Participacion y bloquear/crear Intento según política de primer inicio o repetición. Mantener bloqueos hasta commit.
+4. Edición, convocatoria y cambios de estado M4 ya toman Sesion FOR UPDATE. El futuro inicio debe compartir ese punto de serialización; no leer primero sin bloqueo y asumir que el contexto permanece vigente.
+5. Evitar un camino inverso Intento→Sesion mientras exista otro Sesion→Intento. Acordar orden con M3, retirada y cierre; no declarar resueltas todas las carreras.
+
+Firma orientativa para revisión: Optional<ContextoProgramacion> bloquearConvocatoriaDelEstudianteActual(UUID convocatoriaId), con transacción de escritura MANDATORY, identidad de M1 y devolución de hechos, sin conceder por sí sola elegibilidad. No se publica ni implementa mientras no esté ratificada.
+
+### H06/H16 y F3-04
+
+Las pruebas usan un reloj fijo para las fronteras de las fixtures y comprueban la lectura inmutable de SinIniciar/EnCurso/Finalizado antes, en y después de inicio/fin. No sustituyen clock_timestamp() PostgreSQL ni prueban un scheduler de vencimiento. DD-01/DD-05 y las reglas de cierre/reanudación/repetición permanecen pendientes.
+
+F3-04 permite máximo positivo inferior, igual o superior al estimado. Se prueban30/60/120 segundos frente a un caso estimado en60, sin agregar una relación máximo≤estimado. V007 documenta que no requiere migración. El texto original RF-18/H16 debe conciliarse antes de modificar esta decisión.

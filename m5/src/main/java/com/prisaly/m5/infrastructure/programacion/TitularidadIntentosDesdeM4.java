@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.prisaly.m4.api.ContextoProgramacion;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.Titularidad;
@@ -78,6 +79,32 @@ public class TitularidadIntentosDesdeM4 implements TitularidadIntentos {
         boolean propio = contexto != null
                 && contexto.filter(c -> convocatoria.get().equals(c.convocatoriaId())
                         && idEstudiante.get().equals(c.estudianteId())).isPresent();
+        return propio ? Titularidad.PROPIO : Titularidad.AJENO;
+    }
+
+    /**
+     * La convocatoria es del estudiante si M4 la devuelve consultada con su
+     * identificador y el contexto coincide. Un vacío de M4 es
+     * {@link Titularidad#INEXISTENTE}: M4 no distingue una convocatoria
+     * inexistente de una ajena. M5 no lee {@code "Convocatoria"}.
+     */
+    @Override
+    public Titularidad deConvocatoria(ReferenciaConvocatoria convocatoria, IdentificadorEstudiante estudiante) {
+        Optional<UUID> idConvocatoria = uuid(convocatoria.valor());
+        if (idConvocatoria.isEmpty()) {
+            return Titularidad.INEXISTENTE;
+        }
+        Optional<UUID> idEstudiante = uuid(estudiante.valor());
+        if (idEstudiante.isEmpty()) {
+            return Titularidad.AJENO;
+        }
+        Optional<ContextoProgramacion> contexto =
+                programacion.consultarConvocatoria(idConvocatoria.get(), idEstudiante.get());
+        if (contexto == null || contexto.isEmpty()) {
+            return Titularidad.INEXISTENTE;
+        }
+        boolean propio = idConvocatoria.get().equals(contexto.get().convocatoriaId())
+                && idEstudiante.get().equals(contexto.get().estudianteId());
         return propio ? Titularidad.PROPIO : Titularidad.AJENO;
     }
 

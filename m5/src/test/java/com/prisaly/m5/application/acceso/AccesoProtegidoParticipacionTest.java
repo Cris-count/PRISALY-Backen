@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.time.Instant;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -17,7 +18,9 @@ import org.junit.jupiter.api.function.Executable;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.OperacionesParticipacion;
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
@@ -117,6 +120,12 @@ class AccesoProtegidoParticipacionTest {
     private static final class OperacionesRegistradas implements OperacionesParticipacion {
         private final List<String> llamadas = new ArrayList<>();
         private final ResumenIntento resumen = new ResumenIntento(PROPIO, EstadoIntento.EN_CURSO, Optional.empty(), List.of());
+
+        @Override
+        public ResultadoInicio iniciarOReanudar(ReferenciaConvocatoria convocatoria) {
+            llamadas.add("iniciar");
+            return new ResultadoInicio(resumen, Instant.EPOCH, Instant.EPOCH.plusSeconds(1), false);
+        }
 
         @Override
         public ResumenIntento consultarIntento(ReferenciaIntento intento) {

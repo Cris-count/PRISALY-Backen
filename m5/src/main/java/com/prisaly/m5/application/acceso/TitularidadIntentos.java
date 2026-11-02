@@ -1,5 +1,6 @@
 package com.prisaly.m5.application.acceso;
 
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 
 /**
@@ -25,4 +26,20 @@ public interface TitularidadIntentos {
      *     convierte en acceso
      */
     Titularidad de(ReferenciaIntento intento, IdentificadorEstudiante estudiante);
+
+    /**
+     * Relación del estudiante con una convocatoria de M4. Una convocatoria
+     * inexistente y una ajena pueden ser indistinguibles: M4 no revela
+     * convocatorias de otros estudiantes.
+     *
+     * <p>Por defecto deniega ({@link Titularidad#AJENO}): una implementación
+     * que no consulta M4 nunca da acceso para iniciar o reanudar.
+     *
+     * @return la relación; nunca {@code null}
+     * @throws RuntimeException si el proveedor no está disponible: nunca se
+     *     convierte en acceso
+     */
+    default Titularidad deConvocatoria(ReferenciaConvocatoria convocatoria, IdentificadorEstudiante estudiante) {
+        return Titularidad.AJENO;
+    }
 }

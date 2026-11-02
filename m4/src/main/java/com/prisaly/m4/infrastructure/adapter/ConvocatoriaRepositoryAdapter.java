@@ -1,19 +1,17 @@
 package com.prisaly.m4.infrastructure.adapter;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import org.springframework.stereotype.Repository;
-
 import com.prisaly.m4.application.port.ConvocatoriaRepository;
 import com.prisaly.m4.domain.model.Convocatoria;
 import com.prisaly.m4.infrastructure.persistence.EntityMapper;
 import com.prisaly.m4.infrastructure.persistence.JpaConvocatoriaRepository;
 
-/**
- * Adaptador de persistencia para convocatorias.
- */
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+/** Adaptador de persistencia para convocatorias. */
 @Repository
 public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository {
 
@@ -26,7 +24,8 @@ public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository {
     @Override
     public Convocatoria guardar(Convocatoria convocatoria) {
         var entity = EntityMapper.toEntity(convocatoria);
-        entity = jpa.save(entity);
+        // Validar FK/unicidad antes de invocar M7; todo permanece en la misma transacción.
+        entity = jpa.saveAndFlush(entity);
         return EntityMapper.toDomain(entity);
     }
 
@@ -37,9 +36,7 @@ public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository {
 
     @Override
     public List<Convocatoria> listarPorSesion(UUID sesionId) {
-        return jpa.findBySesionId(sesionId).stream()
-                .map(EntityMapper::toDomain)
-                .toList();
+        return jpa.findBySesionId(sesionId).stream().map(EntityMapper::toDomain).toList();
     }
 
     @Override

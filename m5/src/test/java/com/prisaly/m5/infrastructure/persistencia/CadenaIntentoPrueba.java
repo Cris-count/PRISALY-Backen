@@ -12,6 +12,7 @@ import java.util.regex.Pattern;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
 import com.prisaly.m5.domain.respuesta.ValorRespuesta;
@@ -32,11 +33,20 @@ final class CadenaIntentoPrueba {
     }
 
     static CadenaIntentoPrueba crear(JdbcTemplate jdbc) {
+        return crear(jdbc, "/db/m5-cadena-intento.sql");
+    }
+
+    /** La misma cadena hasta la Convocatoria, sin Participacion ni Intento: para el primer inicio. */
+    static CadenaIntentoPrueba crearHastaConvocatoria(JdbcTemplate jdbc) {
+        return crear(jdbc, "/db/m5-cadena-convocatoria.sql");
+    }
+
+    private static CadenaIntentoPrueba crear(JdbcTemplate jdbc, String recurso) {
         Map<String, String> valores = new HashMap<>();
         valores.put("sufijo", UUID.randomUUID().toString().substring(0, 8));
         valores.put("rolDocente", String.valueOf(ThreadLocalRandom.current().nextInt(100_000, 1_000_000_000)));
         valores.put("rolEstudiante", String.valueOf(ThreadLocalRandom.current().nextInt(100_000, 1_000_000_000)));
-        Matcher marcador = MARCADOR.matcher(plantilla());
+        Matcher marcador = MARCADOR.matcher(plantilla(recurso));
         StringBuilder sql = new StringBuilder();
         while (marcador.find()) {
             String valor = valores.computeIfAbsent(marcador.group(1), clave -> UUID.randomUUID().toString());
@@ -57,6 +67,10 @@ final class CadenaIntentoPrueba {
 
     UUID estudiante() {
         return UUID.fromString(valores.get("estudiante"));
+    }
+
+    ReferenciaConvocatoria referenciaConvocatoria() {
+        return new ReferenciaConvocatoria(valores.get("convocatoria"));
     }
 
     UUID convocatoria() {
@@ -99,10 +113,10 @@ final class CadenaIntentoPrueba {
         return new ValorRespuesta(valores.get("opcion2a"));
     }
 
-    private static String plantilla() {
-        try (InputStream entrada = CadenaIntentoPrueba.class.getResourceAsStream("/db/m5-cadena-intento.sql")) {
+    private static String plantilla(String recurso) {
+        try (InputStream entrada = CadenaIntentoPrueba.class.getResourceAsStream(recurso)) {
             if (entrada == null) {
-                throw new IllegalStateException("No se encontró db/m5-cadena-intento.sql");
+                throw new IllegalStateException("No se encontró " + recurso);
             }
             return new String(entrada.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {

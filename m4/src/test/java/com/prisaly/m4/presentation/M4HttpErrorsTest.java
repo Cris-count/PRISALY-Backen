@@ -272,4 +272,29 @@ class M4HttpErrorsTest {
                 .andExpect(status().isServiceUnavailable())
                 .andExpect(jsonPath("$.code").value("M4-PROVEEDOR-NO-DISPONIBLE"));
     }
+
+    @Test
+    void indisponibilidadDeHistorialEnEdicionConserva503SinDetalleSql() throws Exception {
+        var docente = java.util.UUID.fromString(DOCENTE);
+        when(service.resolverDocenteAutenticado(null)).thenReturn(docente);
+        var error =
+                new ReglaNegocioException(
+                        "M4-PROVEEDOR-NO-DISPONIBLE",
+                        "No se pudo verificar el historial académico de M5");
+        error.initCause(new IllegalStateException("SELECT detalle_SQL_interno"));
+        when(service.actualizarSesion(any(), any(), any(), any(), any(), any())).thenThrow(error);
+        mvc.perform(
+                        put(ROOT + "/" + SESION)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(
+                                        "{\"titulo\":\"Cambio\",\"fechaInicio\":\"2030-11-05T09:00:00Z\",\"fechaFin\":\"2030-11-05T11:00:00Z\"}"))
+                .andExpect(status().isServiceUnavailable())
+                .andExpect(jsonPath("$.code").value("M4-PROVEEDOR-NO-DISPONIBLE"))
+                .andExpect(
+                        content()
+                                .string(
+                                        org.hamcrest.Matchers.not(
+                                                org.hamcrest.Matchers.containsString(
+                                                        "detalle_SQL_interno"))));
+    }
 }

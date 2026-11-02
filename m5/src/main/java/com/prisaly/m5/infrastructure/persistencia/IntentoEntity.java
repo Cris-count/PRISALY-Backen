@@ -11,10 +11,11 @@ import jakarta.persistence.Table;
 /**
  * Columnas de {@code "Intento"} (BD-005.2, V001) que M5 lee o modifica.
  *
- * <p>M5 no crea intentos todavía (el inicio está bloqueado), por lo que
- * {@code idParticipacion}, {@code numeroIntento}, {@code inicio},
+ * <p>Esta entidad no crea intentos: los inserta {@link RepositorioParticipacionesJdbc}.
+ * Por eso {@code idParticipacion}, {@code numeroIntento}, {@code inicio},
  * {@code limiteTemporal}, {@code idAutorizacion} y {@code estadoEvaluacion}
- * no se mapean o son de solo lectura. {@code estadoEvaluacion} pertenece a M6.
+ * no se mapean o son de solo lectura, y ninguna operación los modifica.
+ * {@code estadoEvaluacion} pertenece a M6.
  */
 @Entity
 @Table(name = "Intento")
