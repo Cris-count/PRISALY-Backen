@@ -118,7 +118,7 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
         }
     }
 
-    private static void assertOfficialContentGuards(Connection connection) throws SQLException {
+    static void assertOfficialContentGuards(Connection connection) throws SQLException {
         // Detect missing/disabled guards rather than claim that locking Caso alone locks its children.
         try (var statement = connection.prepareStatement("""
                 WITH required(table_name, trigger_name) AS (VALUES

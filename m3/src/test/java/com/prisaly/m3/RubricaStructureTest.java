@@ -270,7 +270,7 @@ class RubricaStructureTest {
         CasoApplicationService service = new CasoApplicationService(new CaseAuthorizationPort() {
             public boolean canModifyCase(String user, String id) { return false; }
             public boolean canPublishCase(String user, String id) { return false; }
-        });
+        }, org.mockito.Mockito.mock(com.prisaly.m3.application.port.CasoRepositoryPort.class));
         CasoDomainException error = assertThrows(CasoDomainException.class,
                 () -> service.createIndependentCopy("user", caseWith(rubric(CREATED, List.of())), CASE));
         assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());

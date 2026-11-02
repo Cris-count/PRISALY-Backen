@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
+import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.application.service.CasoApplicationService;
 import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
@@ -39,6 +40,7 @@ class CasoApplicationServiceTest {
     private static final int ESTIMATED_TIME_SECONDS = 300;
 
     private CaseAuthorizationPort authorizationPort;
+    private CasoRepositoryPort repository;
     private CasoApplicationService service;
 
     @BeforeEach
@@ -46,7 +48,55 @@ class CasoApplicationServiceTest {
         authorizationPort = mock(CaseAuthorizationPort.class);
         when(authorizationPort.canModifyCase(anyString(), anyString())).thenReturn(true);
         when(authorizationPort.canPublishCase(anyString(), anyString())).thenReturn(true);
-        service = new CasoApplicationService(authorizationPort);
+        repository = mock(CasoRepositoryPort.class);
+        service = new CasoApplicationService(authorizationPort, repository);
+    }
+
+    @Test
+    void createDraftBuildsThenAuthorizesThenInsertsExactlyTheReturnedInstance() {
+        String caseId = UUID.randomUUID().toString();
+        Caso expected = completeCaseBuilder(caseId).buildDraft();
+        CasoBuilder builder = mock(CasoBuilder.class);
+        when(builder.buildDraft()).thenReturn(expected);
+
+        Caso actual = service.createDraft("docente-1", builder);
+
+        org.junit.jupiter.api.Assertions.assertSame(expected, actual);
+        assertEquals(caseId, actual.id());
+        var order = org.mockito.Mockito.inOrder(builder, authorizationPort, repository);
+        order.verify(builder).buildDraft();
+        order.verify(authorizationPort).canModifyCase("docente-1", caseId);
+        order.verify(repository).insert(org.mockito.ArgumentMatchers.same(expected));
+        order.verifyNoMoreInteractions();
+        org.mockito.Mockito.verifyNoMoreInteractions(repository);
+    }
+
+    @Test
+    void createDraftDeniedAuthorizationDoesNotInsert() {
+        when(authorizationPort.canModifyCase("denied", "case-denied")).thenReturn(false);
+        CasoDomainException error = assertThrows(CasoDomainException.class,
+                () -> service.createDraft("denied", completeCaseBuilder("case-denied")));
+        assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
+        org.mockito.Mockito.verifyNoInteractions(repository);
+    }
+
+    @Test
+    void createDraftConstructionFailurePrecedesAuthorizationAndDoesNotInsert() {
+        assertThrows(CasoDomainException.class,
+                () -> service.createDraft("docente-1", new CasoBuilder()));
+        org.mockito.Mockito.verifyNoInteractions(authorizationPort, repository);
+    }
+
+    @Test
+    void createDraftPropagatesTheOriginalPersistenceFailureWithoutRetry() {
+        RuntimeException failure = new IllegalStateException("Persistence fixture failure");
+        org.mockito.Mockito.doThrow(failure).when(repository)
+                .insert(org.mockito.ArgumentMatchers.any(Caso.class));
+        RuntimeException actual = assertThrows(RuntimeException.class,
+                () -> service.createDraft("docente-1", completeCaseBuilder("case-error")));
+        org.junit.jupiter.api.Assertions.assertSame(failure, actual);
+        verify(repository).insert(org.mockito.ArgumentMatchers.any(Caso.class));
+        org.mockito.Mockito.verifyNoMoreInteractions(repository);
     }
 
     @Test

@@ -2,12 +2,20 @@ package com.prisaly.m3.infrastructure;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m3.application.port.CasoRepositoryPort;
+import com.prisaly.m3.application.port.CaseAuthorizationPort;
+import com.prisaly.m3.application.port.CasoPublicationPort;
+import com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationAdapter;
+import com.prisaly.m3.infrastructure.persistence.jpa.CasoCommandUpdateAdapter;
+import com.prisaly.m3.domain.rule.CasoDomainException;
+import com.prisaly.m3.application.service.CasoApplicationService;
+import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m3.domain.model.CriterioRubrica;
@@ -114,6 +122,312 @@ class CasoPersistenceAdapterIT {
         } finally {
             if (postgres != null) { postgres.stop(); }
         }
+    }
+
+    @Test
+    void publicationRejectsStructuralRubricAndPreservesEveryTableAndFingerprint() {
+        Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
+        List<Integer> counts = academicRowCounts();
+        assertPublicationCode("INCOMPLETE_RUBRIC", () -> publication(true).publish("fixture",
+                UUID.fromString(saved.id()), before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(saved.id())).orElseThrow());
+        assertEquals(counts, academicRowCounts());
+        assertFalse(creationService().isAvailableForScheduling(before.caso()));
+    }
+
+    @Test
+    void publicationAuthorizationPrecedesStalePreconditionAndDoesNotWrite() {
+        Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
+        assertPublicationCode("FORBIDDEN", () -> publication(false).publish("fixture",
+                UUID.fromString(saved.id()), "m3-v2:" + "0".repeat(64)));
+        assertEquals(before, updateReader().findById(UUID.fromString(saved.id())).orElseThrow());
+    }
+
+    @Test
+    void publicationRejectsMissingCaseStaleFingerprintAndNonDraftStates() {
+        assertPublicationCode("CASE_NOT_FOUND", () -> publication(true).publish("fixture",
+                UUID.randomUUID(), "m3-v2:" + "0".repeat(64)));
+        for (CasoEstado state : CasoEstado.values()) {
+            Caso input = root(id(), teacher.toString(), List.of(), null, state, CREATED);
+            repository.insert(input); // Existing insert contract permits physical state fixtures; no transition is asserted.
+            var before = updateReader().findById(UUID.fromString(input.id())).orElseThrow();
+            assertPublicationCode("STALE_CASE", () -> publication(true).publish("fixture",
+                    UUID.fromString(input.id()), "m3-v2:" + "0".repeat(64)));
+            String expected = switch (state) {
+                case BORRADOR -> "CASE_INCOMPLETE";
+                case PUBLICADO -> "ALREADY_PUBLISHED";
+                case ARCHIVADO -> "ARCHIVED_CASE_OPERATION_PENDING";
+            };
+            assertPublicationCode(expected, () -> publication(true).publish("fixture",
+                    UUID.fromString(input.id()), before.fingerprint()));
+            assertEquals(before, updateReader().findById(UUID.fromString(input.id())).orElseThrow());
+        }
+    }
+
+    @Test
+    void publicationRejectsOfficiallyScheduledCaseBeforeAlreadyPublished() {
+        Caso input = root(id(), teacher.toString(), List.of(), null, CasoEstado.PUBLICADO, CREATED);
+        repository.insert(input);
+        jdbc.update("""
+                INSERT INTO public."Sesion" ("idSesion", "idCaso", "idDocenteProgramador",
+                    "nombreEspacioAcademico", "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos")
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, UUID.randomUUID(), UUID.fromString(input.id()), teacher, "Publication F3-03 fixture",
+                Timestamp.from(Instant.parse("2030-01-01T10:00:00Z")),
+                Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")), 300);
+        var before = updateReader().findById(UUID.fromString(input.id())).orElseThrow();
+        assertNotNull(before.caso().fechaBloqueoAcademico());
+        assertPublicationCode("EVALUABLE_CONTENT_LOCKED", () -> publication(true).publish("fixture",
+                UUID.fromString(input.id()), before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(input.id())).orElseThrow());
+        assertTrue(creationService().isAvailableForScheduling(before.caso()));
+    }
+
+    @Test
+    void requiredPublicationSeesOuterChangesUsesSameConnectionAndRollsBackTogether() {
+        Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        UUID caseId = UUID.fromString(saved.id());
+        var before = updateReader().findById(caseId).orElseThrow();
+        var observed = new java.util.concurrent.atomic.AtomicBoolean();
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            var em = org.springframework.orm.jpa.EntityManagerFactoryUtils.getTransactionalEntityManager(
+                    context.getBean(EntityManagerFactory.class));
+            var session = em.unwrap(org.hibernate.Session.class);
+            long outerPid = session.doReturningWork(c -> {
+                try (var s = c.prepareStatement("UPDATE public.\"Caso\" SET \"historia\" = ? WHERE \"idCaso\" = ?")) {
+                    s.setString(1, "Outer pending history"); s.setObject(2, caseId); s.executeUpdate();
+                }
+                try (var s = c.createStatement(); var r = s.executeQuery("SELECT pg_backend_pid()")) {
+                    r.next(); return r.getLong(1);
+                }
+            });
+            var auth = new CaseAuthorizationPort() {
+                public boolean canModifyCase(String user, String id) { return false; }
+                public boolean canPublishCase(String user, String id) {
+                    assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
+                    session.doWork(c -> {
+                        try (var s = c.createStatement(); var r = s.executeQuery(
+                                "SELECT pg_backend_pid(), current_setting('transaction_isolation')")) {
+                            r.next(); assertEquals(outerPid, r.getLong(1));
+                            assertEquals("read committed", r.getString(2));
+                        }
+                    });
+                    observed.set(true);
+                    return true;
+                }
+            };
+            // The uncommitted outer history makes the old precondition stale: proves joined visibility.
+            assertPublicationCode("STALE_CASE", () -> publication(auth).publish("fixture", caseId, before.fingerprint()));
+            assertTrue(status.isRollbackOnly(), "Participating failure must mark the outer transaction rollback-only");
+            status.setRollbackOnly();
+        });
+        assertTrue(observed.get());
+        assertEquals(before, updateReader().findById(caseId).orElseThrow());
+    }
+
+    @Test
+    void publicationRejectsIncompatibleOuterIsolationWithoutAuthorization() {
+        var outer = new TransactionTemplate(transactions);
+        outer.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_REPEATABLE_READ);
+        var auth = org.mockito.Mockito.mock(CaseAuthorizationPort.class);
+        outer.executeWithoutResult(status -> {
+            assertThrows(IllegalStateException.class, () -> publication(auth).publish("fixture",
+                    UUID.randomUUID(), "m3-v2:" + "0".repeat(64)));
+            status.setRollbackOnly();
+        });
+        org.mockito.Mockito.verifyNoInteractions(auth);
+    }
+
+    @Test
+    void publicationWaitsForRootLockAndReadsCommittedChildChangeBeforeCheckingFingerprint() throws Exception {
+        Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        UUID caseId = UUID.fromString(saved.id());
+        var before = updateReader().findById(caseId).orElseThrow();
+        var executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        var pid = new java.util.concurrent.CompletableFuture<Integer>();
+        java.util.concurrent.Future<?> pending = null;
+        try (var blocker = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())) {
+            blocker.setAutoCommit(false);
+            int blockerPid;
+            try (var s = blocker.prepareStatement("SELECT pg_backend_pid() FROM public.\"Caso\" WHERE \"idCaso\" = ? FOR UPDATE")) {
+                s.setObject(1, caseId);
+                try (var r = s.executeQuery()) { assertTrue(r.next()); blockerPid = r.getInt(1); }
+            }
+            pending = executor.submit(() -> new TransactionTemplate(transactions).executeWithoutResult(status -> {
+                var em = org.springframework.orm.jpa.EntityManagerFactoryUtils.getTransactionalEntityManager(
+                        context.getBean(EntityManagerFactory.class));
+                em.unwrap(org.hibernate.Session.class).doWork(c -> {
+                    try (var s = c.createStatement()) {
+                        s.execute("SET LOCAL lock_timeout = '10s'");
+                        s.execute("SET LOCAL statement_timeout = '12s'");
+                        try (var r = s.executeQuery("SELECT pg_backend_pid()")) { r.next(); pid.complete(r.getInt(1)); }
+                    }
+                });
+                publication(true).publish("fixture", caseId, before.fingerprint());
+            }));
+            int waiter = pid.get(5, java.util.concurrent.TimeUnit.SECONDS);
+            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(7);
+            boolean blocked = false;
+            while (System.nanoTime() < deadline && !blocked) {
+                blocked = Boolean.TRUE.equals(jdbc.queryForObject("SELECT ? = ANY(pg_blocking_pids(?))",
+                        Boolean.class, blockerPid, waiter));
+                Thread.onSpinWait();
+            }
+            assertTrue(blocked, "PostgreSQL must observe publication waiting on the root lock");
+            try (var s = blocker.prepareStatement("UPDATE public.\"Pregunta\" SET \"textoAyuda\" = ? WHERE \"idPregunta\" = ?")) {
+                s.setString(1, "Committed concurrent help");
+                s.setObject(2, UUID.fromString(saved.escenarios().getFirst().preguntas().getFirst().id()));
+                assertEquals(1, s.executeUpdate());
+            }
+            blocker.commit();
+            java.util.concurrent.Future<?> completed = pending;
+            var failure = assertThrows(java.util.concurrent.ExecutionException.class,
+                    () -> completed.get(15, java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals("STALE_CASE", assertInstanceOf(CasoDomainException.class, failure.getCause()).code());
+            var after = updateReader().findById(caseId).orElseThrow();
+            assertEquals(CasoEstado.BORRADOR, after.caso().estado());
+            assertEquals("Committed concurrent help", after.caso().escenarios().getFirst()
+                    .preguntas().getFirst().textoAyuda());
+            assertFalse(before.fingerprint().equals(after.fingerprint()));
+        } finally {
+            if (pending != null) { pending.cancel(true); }
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    private static CasoCommandUpdateAdapter updateReader() {
+        return new CasoCommandUpdateAdapter(context.getBean(EntityManagerFactory.class),
+                context.getBean(CasoJpaAggregateReader.class), transactions);
+    }
+
+    private static CasoPublicationPort publication(boolean allowed) {
+        return publication(new CaseAuthorizationPort() {
+            public boolean canModifyCase(String user, String id) { return false; }
+            public boolean canPublishCase(String user, String id) { return allowed; }
+        });
+    }
+
+    private static CasoPublicationPort publication(CaseAuthorizationPort authorization) {
+        return new CasoPublicationAdapter(context.getBean(EntityManagerFactory.class), transactions, authorization);
+    }
+
+    private static void assertPublicationCode(String code, Runnable action) {
+        assertEquals(code, assertThrows(CasoDomainException.class, action::run).code());
+    }
+
+    @Test
+    void serviceCreatesCompleteDraftAndReadsItAfterInsertCommit() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        Caso expected = builder.buildDraft();
+        Caso returned = creationService().createDraft("fixture", builder);
+        assertEquals(expected, returned);
+        Caso loaded = repository.findById(returned.id()).orElseThrow();
+        assertEquals(expected.id(), loaded.id());
+        assertEquals(expected.docenteId(), loaded.docenteId());
+        assertEquals(expected.titulo(), loaded.titulo());
+        assertEquals(expected.tiempoEstimadoSegundos(), loaded.tiempoEstimadoSegundos());
+        assertEquals(expected.historia(), loaded.historia());
+        assertEquals(expected.desarrolloSituacional(), loaded.desarrolloSituacional());
+        assertEquals(expected.activo(), loaded.activo());
+        assertEquals(expected.fechaCreacion(), loaded.fechaCreacion());
+        assertEquals(expected.fechaActualizacion(), loaded.fechaActualizacion());
+        assertEquals(expected.fechaBloqueoAcademico(), loaded.fechaBloqueoAcademico());
+        assertEquals(expected.escenarios(), loaded.escenarios());
+        Rubrica rubric = expected.rubrica();
+        assertEquals(new Rubrica(rubric.id(), rubric.criterios(), rubric.idCaso(), rubric.nombre(),
+                rubric.descripcion(), rubric.puntajeTotal(), loaded.rubrica().definicionEvaluacion(),
+                rubric.fechaCreacion(), rubric.preguntas()), loaded.rubrica());
+        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT CAST(? AS jsonb) = CAST(? AS jsonb)",
+                Boolean.class, rubric.definicionEvaluacion(), loaded.rubrica().definicionEvaluacion()));
+        assertEquals(CasoEstado.BORRADOR, loaded.estado());
+        assertFalse(loaded.contenidoEvaluableBloqueado());
+        assertFalse(creationService().isAvailableForScheduling(loaded));
+    }
+
+    @Test
+    void servicePreservesOfficialDateDefaultWithoutRereadingInsideCallerTransaction() {
+        CasoBuilder builder = new CasoBuilder().withId(id()).withDocenteId(teacher.toString())
+                .withTitulo("Draft default date").withTiempoEstimadoSegundos(300);
+        String caseId = builder.buildDraft().id();
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            Caso returned = creationService().createDraft("fixture", builder);
+            assertNull(returned.fechaCreacion());
+            assertTrue(repository.findById(caseId).isEmpty(), "Independent reader cannot see uncommitted work");
+        });
+        assertNotNull(repository.findById(caseId).orElseThrow().fechaCreacion());
+    }
+
+    @Test
+    void servicePropagatesForeignKeyAndUniqueFailuresWithoutChangingExistingCase() {
+        CasoBuilder unknownTeacher = persistentDraftBuilder(id(), JSON);
+        assertSqlState("23503", () -> creationService().createDraft("fixture", unknownTeacher));
+        assertAbsent(unknownTeacher.buildDraft());
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        Caso saved = creationService().createDraft("fixture", builder);
+        Caso baseline = repository.findById(saved.id()).orElseThrow();
+        List<Integer> counts = academicRowCounts();
+        assertSqlState("23505", () -> creationService().createDraft("fixture", builder));
+        assertEquals(counts, academicRowCounts());
+        assertEquals(baseline, repository.findById(saved.id()).orElseThrow());
+    }
+
+    @Test
+    void serviceRollsBackRootAndChildrenWhenRubricJsonIsInvalid() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), "{invalid-json");
+        List<Integer> counts = academicRowCounts();
+        assertSqlState("22P02", () -> creationService().createDraft("fixture", builder));
+        assertAbsent(builder.buildDraft());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
+    void serviceInsertParticipatesInCallerRollback() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            creationService().createDraft("fixture", builder);
+            status.setRollbackOnly();
+        });
+        assertAbsent(builder.buildDraft());
+    }
+
+    @Test
+    void serviceRejectsLegacyBuilderRubricWithoutDiscardingCriteria() {
+        CasoBuilder builder = new CasoBuilder().withId(id()).withDocenteId(teacher.toString())
+                .withTitulo("Legacy rubric").withTiempoEstimadoSegundos(300)
+                .withRubricaId(id()).addCriterio(id(), "Legacy criterion", 10);
+        Caso input = builder.buildDraft();
+        assertThrows(IllegalArgumentException.class, () -> creationService().createDraft("fixture", builder));
+        assertAbsent(input);
+        assertEquals(1, input.rubrica().criterios().size());
+    }
+
+    private static CasoApplicationService creationService() {
+        // Local fixture authorization only: no claim of effective M1 integration.
+        return new CasoApplicationService(new CaseAuthorizationPort() {
+            public boolean canModifyCase(String user, String caseId) { return true; }
+            public boolean canPublishCase(String user, String caseId) { return false; }
+        }, repository);
+    }
+
+    private static CasoBuilder persistentDraftBuilder(String owner, String json) {
+        String caseId = id();
+        String rubricId = id();
+        Pregunta question = new Pregunta(id(), "Question", List.of(
+                new OpcionRespuesta(id(), "Correct", true, "Explanation", 4),
+                new OpcionRespuesta(id(), "Alternative", false, null, 13)),
+                "Help", "Borrador", true, 3, CREATED, UPDATED);
+        Rubrica rubric = new Rubrica(rubricId, List.of(), caseId, "Structural rubric", null,
+                new BigDecimal("12.50"), json, CREATED, Set.of(
+                        new RubricaPregunta(id(), rubricId, question.id(), new BigDecimal("12.50"), null)));
+        return new CasoBuilder().withId(caseId).withDocenteId(owner).withTitulo("Persistent draft")
+                .withTiempoEstimadoSegundos(300).withHistoria("History")
+                .withDesarrolloSituacional("Development").withActivo(false)
+                .withFechaCreacion(CREATED).withFechaActualizacion(UPDATED).withRubrica(rubric)
+                .addEscenario(id(), "Scenario", "Context", "Instructions", 7, false)
+                .addPreguntaSeleccionUnica(question).and();
     }
 
     @Test
