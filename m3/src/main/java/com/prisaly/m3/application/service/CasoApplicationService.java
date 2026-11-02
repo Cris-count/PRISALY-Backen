@@ -1,6 +1,7 @@
 package com.prisaly.m3.application.service;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
+import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.rule.CasoDomainException;
@@ -20,17 +21,23 @@ public final class CasoApplicationService {
     public static final String CODE_CASE_METADATA_CHANGE_PENDING = "CASE_METADATA_CHANGE_PENDING";
 
     private final CaseAuthorizationPort authorizationPort;
+    private final CasoRepositoryPort repository;
 
-    public CasoApplicationService(CaseAuthorizationPort authorizationPort) {
+    public CasoApplicationService(CaseAuthorizationPort authorizationPort, CasoRepositoryPort repository) {
         if (authorizationPort == null) {
             throw new IllegalArgumentException("authorizationPort is required");
         }
         this.authorizationPort = authorizationPort;
+        if (repository == null) {
+            throw new IllegalArgumentException("repository is required");
+        }
+        this.repository = repository;
     }
 
     public Caso createDraft(String userId, CasoBuilder builder) {
         Caso draft = builder.buildDraft();
         assertCanModify(userId, draft.id());
+        repository.insert(draft);
         return draft;
     }
 

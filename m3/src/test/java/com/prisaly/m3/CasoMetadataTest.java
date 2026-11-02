@@ -40,7 +40,8 @@ class CasoMetadataTest {
         authorization = mock(CaseAuthorizationPort.class);
         when(authorization.canModifyCase(anyString(), anyString())).thenReturn(true);
         when(authorization.canPublishCase(anyString(), anyString())).thenReturn(true);
-        service = new CasoApplicationService(authorization);
+        service = new CasoApplicationService(authorization,
+                mock(com.prisaly.m3.application.port.CasoRepositoryPort.class));
     }
 
     @Test

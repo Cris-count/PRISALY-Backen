@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m3.application.port.CasoRepositoryPort;
+import com.prisaly.m3.application.port.CaseAuthorizationPort;
+import com.prisaly.m3.application.service.CasoApplicationService;
+import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m3.domain.model.CriterioRubrica;
@@ -114,6 +117,118 @@ class CasoPersistenceAdapterIT {
         } finally {
             if (postgres != null) { postgres.stop(); }
         }
+    }
+
+    @Test
+    void serviceCreatesCompleteDraftAndReadsItAfterInsertCommit() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        Caso expected = builder.buildDraft();
+        Caso returned = creationService().createDraft("fixture", builder);
+        assertEquals(expected, returned);
+        Caso loaded = repository.findById(returned.id()).orElseThrow();
+        assertEquals(expected.id(), loaded.id());
+        assertEquals(expected.docenteId(), loaded.docenteId());
+        assertEquals(expected.titulo(), loaded.titulo());
+        assertEquals(expected.tiempoEstimadoSegundos(), loaded.tiempoEstimadoSegundos());
+        assertEquals(expected.historia(), loaded.historia());
+        assertEquals(expected.desarrolloSituacional(), loaded.desarrolloSituacional());
+        assertEquals(expected.activo(), loaded.activo());
+        assertEquals(expected.fechaCreacion(), loaded.fechaCreacion());
+        assertEquals(expected.fechaActualizacion(), loaded.fechaActualizacion());
+        assertEquals(expected.fechaBloqueoAcademico(), loaded.fechaBloqueoAcademico());
+        assertEquals(expected.escenarios(), loaded.escenarios());
+        Rubrica rubric = expected.rubrica();
+        assertEquals(new Rubrica(rubric.id(), rubric.criterios(), rubric.idCaso(), rubric.nombre(),
+                rubric.descripcion(), rubric.puntajeTotal(), loaded.rubrica().definicionEvaluacion(),
+                rubric.fechaCreacion(), rubric.preguntas()), loaded.rubrica());
+        assertEquals(Boolean.TRUE, jdbc.queryForObject("SELECT CAST(? AS jsonb) = CAST(? AS jsonb)",
+                Boolean.class, rubric.definicionEvaluacion(), loaded.rubrica().definicionEvaluacion()));
+        assertEquals(CasoEstado.BORRADOR, loaded.estado());
+        assertFalse(loaded.contenidoEvaluableBloqueado());
+        assertFalse(creationService().isAvailableForScheduling(loaded));
+    }
+
+    @Test
+    void servicePreservesOfficialDateDefaultWithoutRereadingInsideCallerTransaction() {
+        CasoBuilder builder = new CasoBuilder().withId(id()).withDocenteId(teacher.toString())
+                .withTitulo("Draft default date").withTiempoEstimadoSegundos(300);
+        String caseId = builder.buildDraft().id();
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            Caso returned = creationService().createDraft("fixture", builder);
+            assertNull(returned.fechaCreacion());
+            assertTrue(repository.findById(caseId).isEmpty(), "Independent reader cannot see uncommitted work");
+        });
+        assertNotNull(repository.findById(caseId).orElseThrow().fechaCreacion());
+    }
+
+    @Test
+    void servicePropagatesForeignKeyAndUniqueFailuresWithoutChangingExistingCase() {
+        CasoBuilder unknownTeacher = persistentDraftBuilder(id(), JSON);
+        assertSqlState("23503", () -> creationService().createDraft("fixture", unknownTeacher));
+        assertAbsent(unknownTeacher.buildDraft());
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        Caso saved = creationService().createDraft("fixture", builder);
+        Caso baseline = repository.findById(saved.id()).orElseThrow();
+        List<Integer> counts = academicRowCounts();
+        assertSqlState("23505", () -> creationService().createDraft("fixture", builder));
+        assertEquals(counts, academicRowCounts());
+        assertEquals(baseline, repository.findById(saved.id()).orElseThrow());
+    }
+
+    @Test
+    void serviceRollsBackRootAndChildrenWhenRubricJsonIsInvalid() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), "{invalid-json");
+        List<Integer> counts = academicRowCounts();
+        assertSqlState("22P02", () -> creationService().createDraft("fixture", builder));
+        assertAbsent(builder.buildDraft());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
+    void serviceInsertParticipatesInCallerRollback() {
+        CasoBuilder builder = persistentDraftBuilder(teacher.toString(), JSON);
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            creationService().createDraft("fixture", builder);
+            status.setRollbackOnly();
+        });
+        assertAbsent(builder.buildDraft());
+    }
+
+    @Test
+    void serviceRejectsLegacyBuilderRubricWithoutDiscardingCriteria() {
+        CasoBuilder builder = new CasoBuilder().withId(id()).withDocenteId(teacher.toString())
+                .withTitulo("Legacy rubric").withTiempoEstimadoSegundos(300)
+                .withRubricaId(id()).addCriterio(id(), "Legacy criterion", 10);
+        Caso input = builder.buildDraft();
+        assertThrows(IllegalArgumentException.class, () -> creationService().createDraft("fixture", builder));
+        assertAbsent(input);
+        assertEquals(1, input.rubrica().criterios().size());
+    }
+
+    private static CasoApplicationService creationService() {
+        // Local fixture authorization only: no claim of effective M1 integration.
+        return new CasoApplicationService(new CaseAuthorizationPort() {
+            public boolean canModifyCase(String user, String caseId) { return true; }
+            public boolean canPublishCase(String user, String caseId) { return false; }
+        }, repository);
+    }
+
+    private static CasoBuilder persistentDraftBuilder(String owner, String json) {
+        String caseId = id();
+        String rubricId = id();
+        Pregunta question = new Pregunta(id(), "Question", List.of(
+                new OpcionRespuesta(id(), "Correct", true, "Explanation", 4),
+                new OpcionRespuesta(id(), "Alternative", false, null, 13)),
+                "Help", "Borrador", true, 3, CREATED, UPDATED);
+        Rubrica rubric = new Rubrica(rubricId, List.of(), caseId, "Structural rubric", null,
+                new BigDecimal("12.50"), json, CREATED, Set.of(
+                        new RubricaPregunta(id(), rubricId, question.id(), new BigDecimal("12.50"), null)));
+        return new CasoBuilder().withId(caseId).withDocenteId(owner).withTitulo("Persistent draft")
+                .withTiempoEstimadoSegundos(300).withHistoria("History")
+                .withDesarrolloSituacional("Development").withActivo(false)
+                .withFechaCreacion(CREATED).withFechaActualizacion(UPDATED).withRubrica(rubric)
+                .addEscenario(id(), "Scenario", "Context", "Instructions", 7, false)
+                .addPreguntaSeleccionUnica(question).and();
     }
 
     @Test
