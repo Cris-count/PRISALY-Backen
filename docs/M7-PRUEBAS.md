@@ -66,3 +66,10 @@ Informes Surefire (si hay fallos): `m7/target/surefire-reports/`.
 - Fase 1 (persistencia/idempotencia): [`M7-FASE1.md`](M7-FASE1.md)
 - Fase 2 (integración M4–M7): [`M7-FASE2.md`](M7-FASE2.md)
 - Contrato M4 → M7: `NotificacionPort.notificarConvocatoria` (sin simular entrega SMTP)
+
+### Fase 3 — Entrega de correos
+
+- Preparación (decisiones D1–D11): [`M7-FASE3-PREPARACION.md`](M7-FASE3-PREPARACION.md)
+- Implementación: [`M7-FASE3.md`](M7-FASE3.md)
+
+V001–V009 intactas; V010 no autorizada.

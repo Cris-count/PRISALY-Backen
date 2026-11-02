@@ -2,6 +2,7 @@ package com.prisaly.m7.infrastructure;
 
 import com.prisaly.m7.application.RegistroEnvioCorreoPort;
 import com.prisaly.m7.domain.EnvioCorreoConvocatoria;
+import com.prisaly.m7.domain.EstadoEnvioCorreo;
 import jakarta.persistence.EntityManager;
 import java.util.List;
 import java.util.Objects;
@@ -9,7 +10,8 @@ import java.util.UUID;
 
 /**
  * Encola EnvioCorreo en Pendiente. No envía SMTP.
- * Misma claveIdempotencia + mismos datos = éxito; incompatibles = rechazo.
+ * Misma claveIdempotencia + mismos datos inmutables = éxito en cualquier estado (D7).
+ * No reactiva Fallido ni reencola Enviado.
  */
 public class RegistroEnvioCorreoJpaAdapter implements RegistroEnvioCorreoPort {
 
@@ -38,7 +40,7 @@ public class RegistroEnvioCorreoJpaAdapter implements RegistroEnvioCorreoPort {
                 .setParameter("correo", evento.correoDestino())
                 .setParameter("asunto", solicitud.asunto())
                 .setParameter("contenido", solicitud.contenido())
-                .setParameter("estado", EnvioCorreoConvocatoria.ESTADO_PENDIENTE)
+                .setParameter("estado", EstadoEnvioCorreo.PENDIENTE)
                 .setParameter("clave", evento.claveIdempotencia())
                 .executeUpdate();
 
@@ -46,7 +48,7 @@ public class RegistroEnvioCorreoJpaAdapter implements RegistroEnvioCorreoPort {
         List<Object[]> filas = em.createNativeQuery(
                         """
                         SELECT "idUsuarioDestino", "idConvocatoria", "correoDestino",
-                               "asunto", "contenido", "estadoEnvio", "numeroIntentos", "fechaEnvio"
+                               "asunto", "contenido"
                         FROM "EnvioCorreo"
                         WHERE "claveIdempotencia" = :clave
                         """)
@@ -62,20 +64,13 @@ public class RegistroEnvioCorreoJpaAdapter implements RegistroEnvioCorreoPort {
         String correo = (String) fila[2];
         String asunto = (String) fila[3];
         String contenido = (String) fila[4];
-        String estado = (String) fila[5];
-        Number intentos = (Number) fila[6];
-        Object fechaEnvio = fila[7];
         if (!evento.usuarioDestino().equals(usuario)
                 || !evento.convocatoriaId().equals(convocatoria)
                 || !evento.correoDestino().equals(correo)
                 || !solicitud.asunto().equals(asunto)
-                || !solicitud.contenido().equals(contenido)
-                || !EnvioCorreoConvocatoria.ESTADO_PENDIENTE.equals(estado)
-                || intentos == null
-                || intentos.intValue() != 0
-                || fechaEnvio != null) {
+                || !solicitud.contenido().equals(contenido)) {
             throw new IllegalStateException(
-                    "Encolado inconsistente: clave reutilizada con datos incompatibles o ya no Pendiente");
+                    "Encolado inconsistente: clave reutilizada con datos inmutables incompatibles");
         }
     }
 }
