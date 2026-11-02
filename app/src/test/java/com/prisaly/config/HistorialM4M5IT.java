@@ -131,6 +131,21 @@ class HistorialM4M5IT {
     }
 
     @Test
+    void contextoRealDeM4ResuelveLaConvocatoriaYRechazaOtroEstudiante() {
+        var programacion = contexto.getBean(com.prisaly.m4.api.ProgramacionParticipacionPort.class);
+        var datos = programacion.consultarConvocatoria(convocatoria, estudiante).orElseThrow();
+        assertEquals(convocatoria, datos.convocatoriaId());
+        assertEquals(estudiante, datos.estudianteId());
+        assertEquals(sesion, datos.sesionId());
+        var titularidad = contexto.getBean(com.prisaly.m5.application.acceso.TitularidadIntentos.class);
+        assertEquals(com.prisaly.m5.application.acceso.Titularidad.PROPIO,
+                titularidad.deConvocatoria(
+                        new com.prisaly.m5.application.ReferenciaConvocatoria(convocatoria.toString()),
+                        new com.prisaly.m5.application.acceso.IdentificadorEstudiante(estudiante.toString())));
+        assertTrue(programacion.consultarConvocatoria(convocatoria, UUID.randomUUID()).isEmpty());
+    }
+
+    @Test
     void proveedorUnicoEsM5YConvocatoriaSinHistorialPermiteEditar() {
         assertEquals(1, contexto.getBeansOfType(ParticipacionesPort.class).size());
         assertTrue(contexto.containsBean("participacionesM4DesdeM5"));
