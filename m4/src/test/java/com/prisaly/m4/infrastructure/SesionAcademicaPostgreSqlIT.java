@@ -77,6 +77,7 @@ class SesionAcademicaPostgreSqlIT {
         r.add("spring.flyway.locations", SesionAcademicaPostgreSqlIT::location);
     }
 
+    @Autowired org.springframework.context.ApplicationContext applicationContext;
     @Autowired SesionAcademicaService service;
     @Autowired JdbcTemplate jdbc;
     @Autowired PlatformTransactionManager txManager;
@@ -610,5 +611,140 @@ class SesionAcademicaPostgreSqlIT {
                                         "$.code")
                                 .value("M4-SESION-DUPLICADA"));
         assertEquals("Segunda", service.consultarSesion(otra.getId()).getTitulo());
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {30, 60, 120})
+    void f304PermiteDuracionInferiorIgualOSuperiorAlEstimado(int duracion) {
+        assertEquals(
+                60,
+                jdbc.queryForObject(
+                        "SELECT \"tiempoEstimadoSegundos\" FROM \"Caso\" WHERE \"idCaso\"=?",
+                        Integer.class,
+                        caso));
+        var sesion = service.crearSesion(docente, caso, "F3-04", null, inicio, fin, duracion);
+        assertEquals(
+                duracion,
+                service.consultarSesion(sesion.getId()).getTiempoMaximoParticipacionSegundos());
+        assertEquals(0, cantidad("Participacion"));
+    }
+
+    @Test
+    void fkDeConvocatoriaSeValidaAntesDeInvocarNotificacion() {
+        var sesion = crear();
+        var llamadas = new AtomicInteger();
+        var local =
+                new SesionAcademicaService(
+                        applicationContext.getBean(
+                                com.prisaly.m4.application.port.SesionRepository.class),
+                        applicationContext.getBean(
+                                com.prisaly.m4.application.port.ConvocatoriaRepository.class),
+                        identidad,
+                        casos,
+                        (s, e) -> llamadas.incrementAndGet());
+        assertThrows(
+                org.springframework.dao.DataIntegrityViolationException.class,
+                () ->
+                        new TransactionTemplate(txManager)
+                                .execute(
+                                        tx ->
+                                                local.convocarEstudiante(
+                                                        docente,
+                                                        sesion.getId(),
+                                                        UUID.randomUUID())));
+        assertEquals(0, llamadas.get());
+        assertEquals(0, cantidad("Convocatoria"));
+        assertEquals(0, cantidad("Participacion"));
+    }
+
+    @Test
+    void falloSqlDeHistorialDevuelve503YRollbackRecupera() {
+        var sesion = crear();
+        new TransactionTemplate(txManager)
+                .executeWithoutResult(
+                        tx -> {
+                            jdbc.execute(
+                                    "ALTER TABLE \"Participacion\" RENAME TO"
+                                        + " \"ParticipacionOcultaM4IT\"");
+                            var error =
+                                    assertThrows(
+                                            ReglaNegocioException.class,
+                                            () ->
+                                                    service.actualizarSesion(
+                                                            docente,
+                                                            sesion.getId(),
+                                                            "No guardar",
+                                                            null,
+                                                            inicio,
+                                                            fin));
+                            assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", error.getCodigo());
+                            assertEquals(
+                                    503,
+                                    new M4ExceptionHandler()
+                                            .handleReglaNegocio(error)
+                                            .getStatusCode()
+                                            .value());
+                            assertFalse(error.getMessage().contains("ParticipacionOcultaM4IT"));
+                            tx.setRollbackOnly();
+                        });
+        assertEquals("Espacio", service.consultarSesion(sesion.getId()).getTitulo());
+        assertEquals(
+                "Recuperada",
+                service.actualizarSesion(docente, sesion.getId(), "Recuperada", null, inicio, fin)
+                        .getTitulo());
+    }
+
+    @Test
+    void falloSqlDeCasoNoCreaSesionNiMarcaAcademica() {
+        new TransactionTemplate(txManager)
+                .executeWithoutResult(
+                        tx -> {
+                            jdbc.execute("ALTER TABLE \"Caso\" RENAME TO \"CasoOcultoM4IT\"");
+                            var error = assertThrows(ReglaNegocioException.class, this::crear);
+                            assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", error.getCodigo());
+                            tx.setRollbackOnly();
+                        });
+        assertEquals(0, cantidad("Sesion"));
+        assertNull(marca(caso));
+        assertNotNull(crear());
+    }
+
+    @Test
+    void convocatoriasSimultaneasNoDuplicanNiCreanParticipacion() throws Exception {
+        var sesion = crear();
+        var pool = Executors.newFixedThreadPool(6);
+        var gate = new CountDownLatch(1);
+        var exitos = new AtomicInteger();
+        var duplicadas = new AtomicInteger();
+        var errores = Collections.synchronizedList(new ArrayList<Throwable>());
+        var tareas = new ArrayList<Future<?>>();
+        try {
+            for (int i = 0; i < 6; i++)
+                tareas.add(
+                        pool.submit(
+                                () -> {
+                                    try {
+                                        gate.await();
+                                        service.convocarEstudiante(
+                                                docente, sesion.getId(), estudiante);
+                                        exitos.incrementAndGet();
+                                    } catch (ReglaNegocioException error) {
+                                        if ("M4-CONVOCATORIA-DUPLICADA".equals(error.getCodigo()))
+                                            duplicadas.incrementAndGet();
+                                        else errores.add(error);
+                                    } catch (Exception error) {
+                                        errores.add(error);
+                                    }
+                                }));
+            gate.countDown();
+            for (var tarea : tareas) tarea.get(45, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
+        assertTrue(errores.isEmpty(), errores.toString());
+        assertEquals(1, exitos.get());
+        assertEquals(5, duplicadas.get());
+        assertEquals(1, cantidad("Convocatoria"));
+        assertEquals(0, cantidad("Participacion"));
     }
 }

@@ -215,7 +215,11 @@ class HistorialM4M5IT {
                 .executeWithoutResult(tx -> {
                     jdbc.execute(
                             "ALTER TABLE \"Participacion\" RENAME TO \"ParticipacionNoDisponibleIT\"");
-                    var error = assertThrows(PersistenciaIntentoException.class, this::modificar);
+                    var error = assertThrows(ReglaNegocioException.class, this::modificar);
+                    assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", error.getCodigo());
+                    assertInstanceOf(PersistenciaIntentoException.class, error.getCause());
+                    assertEquals(503, new com.prisaly.m4.presentation.controller.M4ExceptionHandler()
+                            .handleReglaNegocio(error).getStatusCode().value());
                     assertFalse(error.getMessage().contains("SELECT"));
                     assertFalse(error.getMessage().contains("ParticipacionNoDisponibleIT"));
                     tx.setRollbackOnly();
