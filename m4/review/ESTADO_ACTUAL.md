@@ -1,8 +1,8 @@
 # M4–M5 — Estado actual y guía de documentación
 
-Actualizado el 01/11/2026. Base develop: 8b6dc33. M4, M5 y el adaptador de avisos M7 ya están incorporados en develop. El nuevo ensamblado de historial M4–M5 en app permanece local, sin commit ni push.
+Actualizado el 01/11/2026. Rama feature/m4-estabilizacion desde develop19cf52b. Auditoría de referencia ee77a579. Correcciones técnicas solo M4 y adaptación de una prueba de app; sin cambios en M1/M3/M5/M7 ni migraciones. PR hacia develop, sin merge unilateral.
 
-Última verificación: **534 pruebas aprobadas**, cero fallos, errores u omitidas. M1:14; M3:127; M4:149; M5:202; M7:22; app:20. Diez casos nuevos validan el puente de historial en PostgreSQL. El conteo coincide entre XML nuevos y resumen Maven. La antigua cifra207/157 incluía17 casos de un XML obsoleto; aquella ejecución correspondía a190/140.
+Última verificación: **684 pruebas aprobadas**, cero fallos, errores u omitidas. M4:178; M5:219; app:21. Conteo XML/Maven coincidente. La evidencia actual sustituye la instantánea anterior534; no se suman XML antiguos ni repeticiones focalizadas.
 
 ## Qué consultar
 
@@ -30,7 +30,7 @@ La creación valida el agregado antes de consultar o bloquear proveedores extern
 
 ## Historial M4–M5 conectado localmente
 
-HistorialM4M5Configuration en app implementa ParticipacionesPort usando ConvocatoriaRepository de M4 y el contrato público HistorialParticipacionPort de M5. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
+App descubre el único proveedor ParticipacionesM4DesdeM5. El puente duplicado de app fue retirado en19cf52b. SesionRepositoryAdapter de M4 exige escritura y adapta errores de historial a503 usando los contratos existentes. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
 
 El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; esta carrera no se declara resuelta mientras ese inicio no exista.
 
@@ -40,7 +40,7 @@ El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; e
 - Inicio/reanudación, reloj, vencimiento, repetición y orden global de bloqueos.
 - Ratificar el ensamblado local de historial M5 y el alcance final de comunicaciones M7. El registro de avisos M7 ya tiene adaptador y pruebas.
 - Confirmar aplicación de V010 y datos en bases compartidas.
-- M2/M6 solo tienen estructura básica en esta base de develop.
+- M2 conserva estructura básica; M6 dispone de consultas de resultados, Proxy y contrato Strategy, sin algoritmo académico productivo.
 
 ## Organización de la carpeta
 
