@@ -1,5 +1,7 @@
 # Estabilización M4 — informe y conciliación
 
+> Resolución posterior de Arquitectura: la implementación M5 mediante SesionRepository está reconocida; no se autorizan cambios adicionales de código ni mecanismos duplicados hasta conciliar. La sección 11 prevalece sobre la propuesta de cierre D-06 de la sección 10. Se conservan sus pruebas como evidencia del candidato 513c444, sin declararlas aprobación final de Arquitectura.
+
 > Corte vigente: 02/11/2026, base develop b3d77d8 más el incremento D-06 de la sección 10. Regresión completa: 839 aprobadas, M4=182, M5=283, app=40, cero fallos/errores/omitidas. Las secciones 1–9 son antecedentes; el bloqueo de arranque de 1960eff y la propuesta pendiente quedan sustituidos por los resultados de la sección 10. Los archivos evidence contienen ahora esta última ejecución.
 
 01/11/2026. Auditoría de referencia ee77a57969ad35e5842c0f95a6a7142192ac269c. Base real inspeccionada antes de modificar código: develop19cf52bc4f84f07b03f8414d03924483ea324993. Rama: feature/m4-estabilizacion. No se modifica directamente develop ni se realiza merge unilateral.
@@ -305,3 +307,17 @@ El total XML filtrado por el marcador de inicio coincide exactamente con la suma
 **Cierre técnico verificable del alcance M4/D-06 como candidato para revisión:** regresión sin fallos e integración conjunta demostrada. La propuesta de la sección 9 queda implementada en el alcance autorizado; aceptación final del código mediante PR hacia develop, sin merge unilateral. No equivale a declarar terminado el recorrido académico del estudiante.
 
 Persisten DD-02/identidad productiva, elegibilidad y reglas temporales/repetición pendientes, conciliación RF-18 y auditoría de bases compartidas/V010. No se valida el simulador Angular en esta ejecución backend ni se habilita el primer inicio productivo. La protección D-06 exige que los escritores de programación utilicen el protocolo M4; no certifica SQL externo o políticas nuevas de cierre. Los tiempos de espera de la prueba no se convierten en una regla académica o configuración global de PostgreSQL.
+
+## 11. Conciliación final solicitada por Arquitectura — sin cambios de código
+
+Se contrastó la resolución con el candidato 513c444cd077696d5f57f914eb9575ebdab687b2 y las referencias origin actualizadas. Esta entrega registra conclusiones documentales; no implementa ni selecciona unilateralmente un protocolo definitivo.
+
+- SesionRepository es una interfaz pública en com.prisaly.m4.application.port, propiedad de M4. No extiende JpaRepository ni devuelve entidades JPA. buscarParaActualizar(UUID) devuelve Optional<SesionAcademica>; su adaptador delega en JpaSesionRepository.bloquearPorId con PESSIMISTIC_WRITE. El repositorio JPA permanece dentro de infrastructure.persistence.
+- actualizarSesion, cambiarCaso, cambiarEstado y convocarEstudiante llaman a cargarSesionParaModificar, que adquiere ese bloqueo bajo la transacción de escritura del servicio. El cambio de estado comparte por tanto la misma reserva de Sesion.
+- El único flujo productivo de escritura de Convocatoria identificado es su creación desde convocarEstudiante, que bloquea Sesion. No se encontró una operación independiente de retirada/autorización. Sin embargo, guardar y los campos modificables permiten futuras actualizaciones: todos los escritores relevantes deben inventariarse y respetar el bloqueo común antes de afirmar que sobra la reserva explícita de Convocatoria.
+- La dirección Maven es M5 → M4; M4 no depende de M5. Consumir el puerto de aplicación no introduce ciclos ni requiere acceso al repositorio JPA interno.
+- Conforme a la resolución, SesionRepository puede conservarse. ProgramacionInicioCoordinadoPort no es una sustitución obligatoria por límites modulares. La alternativa del PR #28 no debe integrarse junto con una segunda implementación de M5. No se elimina ni se fusiona ninguna solución antes de la decisión final de Arquitectura.
+- M5 debe acreditar reserva dentro de la misma transacción de persistencia, relectura/validación después de adquirirla y conservación hasta COMMIT/ROLLBACK, sin REQUIRES_NEW. La visibilidad pública de la interfaz no demuestra por sí sola esas garantías.
+- Se buscaron ProtocoloD06IT/D06IT en los árboles de todas las referencias remotas disponibles sin encontrarlos. origin/feature/m5-inicio-reanudacion apunta a c99b8a28a2f27169224d85a1a9687d5088d10503. Las ocho pruebas se reconocen como información comunicada por M5, no como contenido inspeccionado o ejecutado aquí. Falta su rama/SHA para mapear cada escenario y pedir solo la cobertura que realmente falte.
+
+Pendiente concreto: recibir el SHA de M5, revisar las ocho pruebas y su ensamblado transaccional, confirmar inventario de escritores de Convocatoria y ratificar un único contrato/implementación. Arquitectura emite después el cierre definitivo D-06. El PR se mantiene en borrador; sin merge ni push directo a develop. El acceso estudiantil productivo continúa desactivado. No se repiten pruebas por este cambio exclusivamente documental; se conserva la regresión de 839 aprobadas con el alcance preciso de la sección 10.

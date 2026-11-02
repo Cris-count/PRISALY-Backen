@@ -1,5 +1,7 @@
 # M4–M5 — Estado actual y guía de documentación
 
+> Conciliación posterior de Arquitectura: D-06 permanece pendiente de cierre definitivo. SesionRepository es un puerto público de aplicación de M4 y puede conservarse como mecanismo único si se acredita la transacción de M5. No integrar la alternativa de este candidato junto con otra implementación M5. Las ocho pruebas ProtocoloD06IT comunicadas por M5 requieren rama/SHA para contrastarlas. Véase sección 11 del informe. Las 839 pruebas siguientes corresponden al candidato 513c444 y no certifican esa implementación externa de M5.
+
 Actualizado el 02/11/2026. Candidato en `feature/m4-cierre-d06`, desde develop `b3d77d89e324c1f61ea0364417a37bd2c7c354cc`. **839 pruebas aprobadas, cero fallos, errores u omitidas: M4 182, M5 283 y app 40.** D-06 implementado y verificado con el orden Sesion → Convocatoria → Participacion → Intento; pendiente de revisión del PR, sin merge unilateral. Detalle en la sección 10 del [informe](revision-m4-m5/INFORME.md).
 
 El acceso estudiantil productivo, el primer inicio académico y SMTP siguen bloqueados/desactivados según su configuración y decisiones vigentes. No se modifican migraciones. La corrección de ensamblado en app selecciona explícitamente el proveedor existente M7 de entrega DD-02 sin activar esa funcionalidad. Los antecedentes de 684 pruebas, la auditoría 1960eff y la propuesta D-06 se conservan en las secciones anteriores del informe; no equivalen al corte actual.
