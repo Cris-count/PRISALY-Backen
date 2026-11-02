@@ -9,10 +9,16 @@ import com.prisaly.m5.application.acceso.AccesoProtegidoParticipacion;
 import com.prisaly.m5.application.acceso.ControlAccesoIntentos;
 import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
+import com.prisaly.m5.application.inicio.ElegibilidadInicio;
+import com.prisaly.m5.application.inicio.ElegibilidadNoRatificada;
+import com.prisaly.m5.application.inicio.LimiteTemporalInicio;
+import com.prisaly.m5.application.inicio.LimiteTemporalNoRatificado;
 import com.prisaly.m5.application.port.RepositorioIntentos;
+import com.prisaly.m5.application.port.RepositorioParticipaciones;
 import com.prisaly.m5.application.servicio.ActualizarRespuestaServicio;
 import com.prisaly.m5.application.servicio.ConsultarIntentoServicio;
 import com.prisaly.m5.application.servicio.FinalizarIntentoServicio;
+import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 
 /**
@@ -33,6 +39,12 @@ import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
  * Intento, Participacion y Convocatoria), así que no cambia entre verificar y
  * operar. La elegibilidad académica sí puede cambiar, pero hoy no se evalúa
  * (ver m5/docs).
+ *
+ * <p><b>Primer inicio:</b> la elegibilidad y el límite temporal siguen
+ * pendientes de Dirección Técnica. Este ensamblado usa
+ * {@link ElegibilidadNoRatificada} y {@link LimiteTemporalNoRatificado}, que no
+ * son beans y no pueden sustituirse desde fuera: el primer inicio falla de forma
+ * segura sin escribir, y la reanudación de un intento en curso sí funciona.
  */
 @Configuration(proxyBeanMethods = false)
 public class ConfiguracionParticipacion {
@@ -40,22 +52,28 @@ public class ConfiguracionParticipacion {
     @Bean
     AccesoProtegidoParticipacion accesoProtegidoParticipacion(
             RepositorioIntentos repositorio,
+            RepositorioParticipaciones participaciones,
             PlatformTransactionManager transacciones,
             IdentidadEstudianteActual identidad,
             TitularidadIntentos titularidad) {
-        return ensamblar(repositorio, transacciones, identidad, titularidad);
+        return ensamblar(repositorio, participaciones, transacciones, identidad, titularidad,
+                new ElegibilidadNoRatificada(), new LimiteTemporalNoRatificado());
     }
 
     static AccesoProtegidoParticipacion ensamblar(
             RepositorioIntentos repositorio,
+            RepositorioParticipaciones participaciones,
             PlatformTransactionManager transacciones,
             IdentidadEstudianteActual identidad,
-            TitularidadIntentos titularidad) {
+            TitularidadIntentos titularidad,
+            ElegibilidadInicio elegibilidad,
+            LimiteTemporalInicio limiteTemporal) {
         ParticipacionFacade fachada = new ParticipacionFacade(
                 new ConsultarIntentoServicio(repositorio),
                 new RegistrarRespuestaServicio(repositorio),
                 new ActualizarRespuestaServicio(repositorio),
-                new FinalizarIntentoServicio(repositorio));
+                new FinalizarIntentoServicio(repositorio),
+                new IniciarIntentoServicio(participaciones, repositorio, elegibilidad, limiteTemporal));
         return new AccesoProtegidoParticipacion(
                 new ControlAccesoIntentos(identidad, titularidad),
                 new FachadaParticipacionTransaccional(fachada, transacciones));

@@ -1,7 +1,9 @@
 package com.prisaly.m5.application.acceso;
 
+import com.prisaly.m5.application.ConvocatoriaNoEncontradaException;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 
 /**
@@ -46,5 +48,24 @@ public final class ControlAccesoIntentos {
         }
         // AJENO o una respuesta nula del proveedor: se deniega.
         throw new AccesoIntentoDenegadoException();
+    }
+
+    /**
+     * Verificación previa a iniciar o reanudar: estudiante autenticado (M1) y
+     * titular de la convocatoria (M4). No evalúa elegibilidad.
+     *
+     * @throws EstudianteNoIdentificadoException si no hay estudiante autenticado
+     * @throws ConvocatoriaNoEncontradaException si la convocatoria no existe o
+     *     no es del estudiante: no se distinguen, para no revelar convocatorias ajenas
+     */
+    public IdentificadorEstudiante verificarConvocatoria(ReferenciaConvocatoria convocatoria) {
+        if (convocatoria == null) {
+            throw new DatoAplicacionInvalidoException("La referencia de la convocatoria es obligatoria");
+        }
+        IdentificadorEstudiante estudiante = identidad.actual().orElseThrow(EstudianteNoIdentificadoException::new);
+        if (titularidad.deConvocatoria(convocatoria, estudiante) == Titularidad.PROPIO) {
+            return estudiante;
+        }
+        throw new ConvocatoriaNoEncontradaException();
     }
 }

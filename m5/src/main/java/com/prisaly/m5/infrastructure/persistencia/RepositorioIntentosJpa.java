@@ -43,8 +43,8 @@ import com.prisaly.m5.infrastructure.persistencia.MapeoIntento.FilaRespuesta;
  * {@code ck_intento_tiempos} ({@code "fin" >= "inicio"}) no depende de la
  * diferencia entre el reloj de la JVM y el del servidor de base de datos.
  *
- * <p>No crea intentos: insertar en {@code "Intento"} corresponde al caso de
- * uso de inicio, bloqueado por M1, M4 y DD-14.
+ * <p>No crea intentos: los inserta {@link RepositorioParticipacionesJdbc} en el
+ * caso de uso de inicio.
  */
 @Repository
 public class RepositorioIntentosJpa implements RepositorioIntentos {

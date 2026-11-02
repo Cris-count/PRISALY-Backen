@@ -17,7 +17,10 @@ import org.junit.jupiter.api.Test;
 
 import com.prisaly.m5.application.servicio.ActualizarRespuestaServicio;
 import com.prisaly.m5.application.servicio.ConsultarIntentoServicio;
+import com.prisaly.m5.application.inicio.ElegibilidadNoRatificada;
+import com.prisaly.m5.application.inicio.LimiteTemporalNoRatificado;
 import com.prisaly.m5.application.servicio.FinalizarIntentoServicio;
+import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.Intento;
@@ -50,7 +53,9 @@ class ParticipacionFacadeTest {
                 new ConsultarIntentoServicio(repositorio),
                 new RegistrarRespuestaServicio(repositorio),
                 new ActualizarRespuestaServicio(repositorio),
-                new FinalizarIntentoServicio(repositorio));
+                new FinalizarIntentoServicio(repositorio),
+                new IniciarIntentoServicio(new RepositorioParticipacionesEnMemoria(repositorio), repositorio,
+                        new ElegibilidadNoRatificada(), new LimiteTemporalNoRatificado()));
     }
 
     @Test
@@ -82,7 +87,7 @@ class ParticipacionFacadeTest {
     @Test
     @DisplayName("exige todos sus servicios")
     void exigeServicios() {
-        assertThrows(DatoAplicacionInvalidoException.class, () -> new ParticipacionFacade(null, null, null, null));
+        assertThrows(DatoAplicacionInvalidoException.class, () -> new ParticipacionFacade(null, null, null, null, null));
     }
 
     @Test
@@ -92,11 +97,12 @@ class ParticipacionFacadeTest {
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
                 .toList();
         for (Method metodo : publicos) {
-            assertEquals(ResumenIntento.class, metodo.getReturnType(), metodo.getName());
+            Class<?> esperado = metodo.getName().equals("iniciarOReanudar") ? ResultadoInicio.class : ResumenIntento.class;
+            assertEquals(esperado, metodo.getReturnType(), metodo.getName());
         }
         Set<String> operaciones = publicos.stream().map(Method::getName).collect(Collectors.toSet());
 
-        assertEquals(Set.of("consultarIntento", "registrarRespuesta", "actualizarRespuesta", "finalizarIntento"),
-                operaciones);
+        assertEquals(Set.of("iniciarOReanudar", "consultarIntento", "registrarRespuesta", "actualizarRespuesta",
+                "finalizarIntento"), operaciones);
     }
 }

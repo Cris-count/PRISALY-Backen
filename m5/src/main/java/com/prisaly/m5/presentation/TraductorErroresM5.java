@@ -1,10 +1,14 @@
 package com.prisaly.m5.presentation;
 
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
+import com.prisaly.m5.application.ConvocatoriaNoEncontradaException;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.RepeticionNoHabilitadaException;
 import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
 import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
+import com.prisaly.m5.application.inicio.InicioNoAutorizadoException;
+import com.prisaly.m5.application.inicio.InicioNoDisponibleException;
 import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacionRequeridoException;
 import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
@@ -52,6 +56,20 @@ public final class TraductorErroresM5 {
         // PROVISIONAL: 403 o 404 para un intento ajeno sigue pendiente de decisión.
         if (error instanceof AccesoIntentoDenegadoException e) {
             return error(403, "FORBIDDEN", e.getMessage());
+        }
+        // PROVISIONAL (ARQ-008.3): inexistente y ajena no se distinguen.
+        if (error instanceof ConvocatoriaNoEncontradaException e) {
+            return error(404, "CONVOCATORIA_NO_ENCONTRADA", e.getMessage());
+        }
+        // PROVISIONAL (ARQ-008.3): una decisión académica pendiente impide iniciar.
+        if (error instanceof InicioNoDisponibleException e) {
+            return error(409, "INICIO_NO_DISPONIBLE", e.getMessage());
+        }
+        if (error instanceof InicioNoAutorizadoException e) {
+            return error(403, "INICIO_NO_AUTORIZADO", e.getMessage());
+        }
+        if (error instanceof RepeticionNoHabilitadaException e) {
+            return error(409, "REPETICION_NO_HABILITADA", e.getMessage());
         }
         if (error instanceof IntentoNoEncontradoException e) {
             return error(404, "INTENTO_NO_ENCONTRADO", e.getMessage());

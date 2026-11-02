@@ -2,7 +2,9 @@ package com.prisaly.m5.application.acceso;
 
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.OperacionesParticipacion;
+import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
@@ -30,6 +32,16 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
         }
         this.control = control;
         this.operaciones = operaciones;
+    }
+
+    /**
+     * La convocatoria debe ser del estudiante autenticado; el intento que se
+     * reanuda pertenece a ella, así que también es suyo.
+     */
+    @Override
+    public ResultadoInicio iniciarOReanudar(ReferenciaConvocatoria convocatoria) {
+        control.verificarConvocatoria(convocatoria);
+        return operaciones.iniciarOReanudar(convocatoria);
     }
 
     @Override
