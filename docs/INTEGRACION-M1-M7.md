@@ -21,7 +21,23 @@ Este documento describe el código **disponible en `ee77a57`**, no necesariament
 
 ---
 
-## 1. Diagrama del flujo académico (estado en `ee77a57`)
+## 0.1 Flujo operativo conectado (tras corrección P1)
+
+Con el monolito arrancable y un solo `ParticipacionesPort`, el recorrido **docente** que ya comunica módulos es:
+
+1. **M1** — autenticación de personal (`/v1/personal/autenticar`) → Bearer provisional.
+2. **M4** — crear sesión y `convocarEstudiante` (permiso vía `IdentidadPort` ← M1).
+3. **M7** — en la misma transacción: `Aviso` + `EnvioCorreo` (`Pendiente`). No implica SMTP.
+4. **M5** — si hay participación/intento, M4 consulta `participacionesM4DesdeM5` y bloquea edición/reasignación (`M4-SESION-CON-PARTICIPACIONES`).
+
+**Aún opt-in / bloqueado (no forma parte del flujo default):**
+
+- Worker M7 / SMTP (`prisaly.m7.worker.enabled`).
+- Consulta BD-005.2 (`prisaly.m4.consulta-bd0052.enabled`) → titularidad M5.
+- Auth estudiantil real (**DD-02**).
+- Evaluación M6 productiva (**DD-03**).
+
+## 1. Diagrama del flujo académico (estado en `ee77a57` + corrección P1)
 
 ```mermaid
 flowchart TB
@@ -35,10 +51,9 @@ flowchart TB
   M4Svc -->|"NotificacionPort"| M7[NotificacionM4Adapter]
   M7 --> Cola[Aviso + EnvioCorreo Pendiente]
   Cola -.->|"worker enabled=true"| SMTP[SMTP]
-  PartPort[ParticipacionesPort] --> SesionRepo[SesionRepositoryAdapter]
+  PartPort[ParticipacionesPort M5] --> SesionRepo[SesionRepositoryAdapter]
   SesionRepo --> M4Svc
-  M5Prov[ParticipacionesM4DesdeM5] -.-> PartPort
-  AppProv[historialM4M5 app] -.-> PartPort
+  M5Prov[participacionesM4DesdeM5] --> PartPort
   M1Student[StudentAccessPort denying] --> M5Id[IdentidadEstudianteDesdeM1]
   M4Consulta[ProgramacionParticipacionPort stub] --> M5Tit[TitularidadIntentosDesdeM4]
   M6Read[M6 lectura JPA] -.-> M6Eval[EvaluacionCasoUso sin bean]
@@ -85,7 +100,7 @@ Contrato disponible ≠ flujo HTTP estudiantil operativo.
 | `IdentidadPort` | `IdentidadM1Adapter` o fallback denegador | Servicio M4 | Integrado con M1 si hay `IdentityAccessPort` | `M4ProviderAutoConfiguration` |
 | `CasoAcademicoPort` | JDBC BD-005.2 preferido; sino M3; sino stub 503 | Servicio M4 | Implementado + fallback | Misma auto-config |
 | `NotificacionPort` | **M7** `NotificacionM4Adapter` (`notificacionM7`) | `convocarEstudiante` | Integrado (IT app `NotificacionPortWiringIT` en árbol) | `m7/.../M7Configuration.java`; `app/.../NotificacionPortWiringIT.java` |
-| `ParticipacionesPort` | Ver §3 | `SesionRepositoryAdapter` | Riesgo de ambigüedad | §3 |
+| `ParticipacionesPort` | `participacionesM4DesdeM5` (M5) | `SesionRepositoryAdapter` | Corregido: único proveedor; puente `app` retirado | §3 |
 | `ProgramacionParticipacionPort` | Stub por defecto; JDBC si `enabled=true` | M5 titularidad; `ProgramacionAutenticadaPort` | Disponible bajo configuración | §4 |
 | `ProgramacionAutenticadaPort` | `ProgramacionAutenticadaM1Adapter` | Consultas autenticadas | Implementado; depende de `StudentAccessPort` deny | `M4ProgramacionConsultaAutoConfiguration` |
 
@@ -118,38 +133,29 @@ Contrato disponible ≠ flujo HTTP estudiantil operativo.
 
 ---
 
-## 3. Riesgo prioritario: `ParticipacionesPort` (inspección estática)
+## 3. `ParticipacionesPort` — corrección P1
 
-### 3.1 Definiciones productivas en HEAD
+### 3.1 Estado tras corrección
 
-| Id | Origen | Tipo Spring | Nombre bean típico | `@Primary` / condición |
-| --- | --- | --- | --- | --- |
-| A | `m5/.../ParticipacionesM4DesdeM5.java` | `@Component` | `participacionesM4DesdeM5` | Ninguna |
-| B | `app/.../HistorialM4M5Configuration.java` | `@Bean` | `historialM4M5` | Ninguna |
-| C | `m4/.../M4ProviderAutoConfiguration` | `@Bean` + `@ConditionalOnMissingBean(ParticipacionesPort.class)` | `participacionesNoDisponibles` | Solo si no hay A ni B |
-
-Ambas A y B implementan la misma semántica aproximada: listar convocatorias de la sesión vía M4 y preguntar a `HistorialParticipacionPort.existeParticipacion`.
+| Bean | Origen | Estado |
+| --- | --- | --- |
+| `participacionesM4DesdeM5` | M5 `@Component` | **Único proveedor productivo** |
+| `historialM4M5` | `app` `HistorialM4M5Configuration` | **Retirado** (clase eliminada) |
+| `participacionesNoDisponibles` | M4 `@ConditionalOnMissingBean` | Inactivo mientras exista M5 |
 
 ### 3.2 Consumidor
 
-- `SesionRepositoryAdapter` exige `ParticipacionesPort` por **tipo** en el constructor (`@Autowired` overload con `JdbcTemplate`).
-- Inyección por tipo con **dos** beans sin `@Primary`/`@Qualifier` suele producir `NoUniqueBeanDefinitionException` **si ambos llegan a registrarse**.
+`SesionRepositoryAdapter` recibe por tipo el bean M5. Evidencia: `ParticipacionesPortWiringIT`.
 
-### 3.3 Qué demuestran las pruebas existentes (y qué no)
+### 3.3 Pruebas
 
-| Prueba | Contexto | Afirmación | Límite |
-| --- | --- | --- | --- |
-| `ParticipacionesM4DesdeM5IT` | SpringBootTest **acotado** (importa A, no B) | Exactamente 1 bean, instancia A | No incluye `HistorialM4M5Configuration` |
-| `HistorialM4M5IT` | `@SpringBootTest` app + Testcontainers | Espera `size()==1` y bean `historialM4M5` | **No re-ejecutada en esta entrega**; su resultado en `ee77a57` queda **no verificado aquí** |
-| Arranque `PrisalyApplication` sin perfil de test | — | — | **No verificado** |
+| Prueba | Afirmación |
+| --- | --- |
+| `ParticipacionesPortWiringIT` | Arranque + 1 bean `participacionesM4DesdeM5` inyectado |
+| `HistorialM4M5IT` | Protección de historial vía proveedor M5 |
+| `ParticipacionesM4DesdeM5IT` (m5) | Suite de módulo M5 |
 
-### 3.4 Dictamen del mapa
-
-**Estado:** *riesgo de ambigüedad detectado por inspección estática* — **no** declarado como fallo confirmado de ejecución.
-
-**Acción recomendada a Dirección (sin ejecutar ahora):** IT de contexto completo que haga `getBeansOfType(ParticipacionesPort.class)` sobre `PrisalyApplication` y documente cardinalidad y bean inyectado en `SesionRepositoryAdapter`. Solo después, conciliación app/M5 (un proveedor).
-
-**Responsables tentativos:** Arquitectura + integrantes M4/M5 (cableado); app es ensamblador.
+Detalle: [`P1-PARTICIPACIONESPORT-DIAGNOSTICO.md`](P1-PARTICIPACIONESPORT-DIAGNOSTICO.md).
 
 ---
 
@@ -264,7 +270,7 @@ Alineado con la prioridad provisional de Dirección Técnica:
 
 ## 10. Resumen de riesgos priorizados
 
-1. **P1 — Ambigüedad estática `ParticipacionesPort` (A+B)** sin fallo de arranque confirmado en esta entrega.
+1. **P1 — `ParticipacionesPort`:** corregido (único bean M5; puente `app` retirado). Ver `P1-PARTICIPACIONESPORT-DIAGNOSTICO.md`.
 2. **P2 — Consulta BD-005.2 off:** titularidad M5 fail-closed; activar exige revisión de seguridad/contratos, no solo quitar 503.
 3. **P3 — DD-02:** M5/M4 “listos” a nivel de código no implican estudiante operativo.
 4. **P3 — Worker M7 off:** cola sí; entrega SMTP no.
