@@ -62,6 +62,7 @@ Informes Surefire (si hay fallos): `m7/target/surefire-reports/`.
 
 ## Relacionado
 
+- Mapa de integración M1–M7 (HEAD de referencia en el propio doc): [`INTEGRACION-M1-M7.md`](INTEGRACION-M1-M7.md)
 - Reconocimiento: [`M7-RECONOCIMIENTO.md`](M7-RECONOCIMIENTO.md)
 - Fase 1 (persistencia/idempotencia): [`M7-FASE1.md`](M7-FASE1.md)
 - Fase 2 (integración M4–M7): [`M7-FASE2.md`](M7-FASE2.md)

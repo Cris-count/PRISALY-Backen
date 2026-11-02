@@ -74,3 +74,7 @@ Dirección Central must ratify how students authenticate (correo + código + con
 ## 4. Message to Integrante 4
 
 M1 already exposes compilable `StudentAccessPort` for preparatory integration. Real student identity remains blocked by DD-02; use the port interface and test doubles without building homemade authentication.
+
+## 5. Related
+
+Cross-module integration map (contracts, wiring risks, DD-02 context): [`INTEGRACION-M1-M7.md`](INTEGRACION-M1-M7.md).
