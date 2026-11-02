@@ -3,6 +3,7 @@ package com.prisaly.m5.application;
 import com.prisaly.m5.application.servicio.ActualizarRespuestaServicio;
 import com.prisaly.m5.application.servicio.ConsultarIntentoServicio;
 import com.prisaly.m5.application.servicio.FinalizarIntentoServicio;
+import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
@@ -16,9 +17,10 @@ import com.prisaly.m5.domain.respuesta.ValorRespuesta;
  * académicas propias. Devuelve siempre {@link ResumenIntento}, nunca el
  * agregado mutable.
  *
- * <p>Solo expone operaciones implementadas. Iniciar y reanudar un intento no
- * están disponibles: requieren identidad (M1), convocatoria y ventana de
- * sesión (M4) y la política de repetición (DD-14).
+ * <p>Solo expone operaciones implementadas. Iniciar y reanudar comparten
+ * operación ({@link #iniciarOReanudar}); el primer inicio sigue bloqueado por
+ * las decisiones académicas pendientes, y la repetición (DD-14) no está
+ * habilitada.
  */
 public final class ParticipacionFacade implements OperacionesParticipacion {
 
@@ -26,19 +28,27 @@ public final class ParticipacionFacade implements OperacionesParticipacion {
     private final RegistrarRespuestaServicio registro;
     private final ActualizarRespuestaServicio actualizacion;
     private final FinalizarIntentoServicio finalizacion;
+    private final IniciarIntentoServicio inicio;
 
     public ParticipacionFacade(
             ConsultarIntentoServicio consulta,
             RegistrarRespuestaServicio registro,
             ActualizarRespuestaServicio actualizacion,
-            FinalizarIntentoServicio finalizacion) {
-        if (consulta == null || registro == null || actualizacion == null || finalizacion == null) {
+            FinalizarIntentoServicio finalizacion,
+            IniciarIntentoServicio inicio) {
+        if (consulta == null || registro == null || actualizacion == null || finalizacion == null || inicio == null) {
             throw new DatoAplicacionInvalidoException("La fachada requiere todos sus servicios");
         }
+        this.inicio = inicio;
         this.consulta = consulta;
         this.registro = registro;
         this.actualizacion = actualizacion;
         this.finalizacion = finalizacion;
+    }
+
+    @Override
+    public ResultadoInicio iniciarOReanudar(ReferenciaConvocatoria convocatoria) {
+        return inicio.iniciarOReanudar(convocatoria);
     }
 
     @Override

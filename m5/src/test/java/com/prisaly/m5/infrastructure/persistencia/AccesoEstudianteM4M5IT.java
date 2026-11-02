@@ -244,6 +244,7 @@ class AccesoEstudianteM4M5IT {
     @EntityScan(basePackageClasses = RepositorioIntentosJpa.class)
     @Import({
         RepositorioIntentosJpa.class,
+        RepositorioParticipacionesJdbc.class,
         HistorialParticipacionJdbc.class,
         TitularidadIntentosDesdeM4.class,
         ConfiguracionParticipacion.class
