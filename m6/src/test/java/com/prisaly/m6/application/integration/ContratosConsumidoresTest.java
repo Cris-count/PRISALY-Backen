@@ -128,19 +128,21 @@ class ContratosConsumidoresTest {
             java.util.Objects.requireNonNull(id);
             return Optional.empty();
         };
-        ConsultaContextoAcademicoPort contexts = id -> {
+        ConsultaContextoAcademicoPort contexts = (id, capacidad) -> {
             java.util.Objects.requireNonNull(id);
+            java.util.Objects.requireNonNull(capacidad);
             return Optional.empty();
         };
         assertTrue(attempts.findById(UUID.randomUUID()).isEmpty());
-        assertTrue(contexts.findByCasoId(CASE).isEmpty());
+        assertTrue(contexts.findByCasoId(CASE, "fixture").isEmpty());
         assertThrows(NullPointerException.class, () -> attempts.findById(null));
-        assertThrows(NullPointerException.class, () -> contexts.findByCasoId(null));
+        assertThrows(NullPointerException.class, () -> contexts.findByCasoId(null, "fixture"));
+        assertThrows(NullPointerException.class, () -> contexts.findByCasoId(CASE, null));
         RuntimeException error = new IllegalStateException("Producer unavailable");
         ConsultaIntentoEvaluacionPort failedAttempt = id -> { throw error; };
-        ConsultaContextoAcademicoPort failedContext = id -> { throw error; };
+        ConsultaContextoAcademicoPort failedContext = (id, capacidad) -> { throw error; };
         assertSame(error, assertThrows(RuntimeException.class, () -> failedAttempt.findById(CASE)));
-        assertSame(error, assertThrows(RuntimeException.class, () -> failedContext.findByCasoId(CASE)));
+        assertSame(error, assertThrows(RuntimeException.class, () -> failedContext.findByCasoId(CASE, "fixture")));
         assertEquals(1, ConsultaIntentoEvaluacionPort.class.getDeclaredMethods().length);
         assertEquals(1, ConsultaContextoAcademicoPort.class.getDeclaredMethods().length);
     }
