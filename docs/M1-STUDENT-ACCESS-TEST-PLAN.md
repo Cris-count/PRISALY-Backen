@@ -2,7 +2,7 @@
 
 **Estado:** preparado; **no ejecutado** con adaptador productivo real.  
 **Bloqueo:** DD-02 (ratificación académica de identidad estudiantil).  
-**Contrato publicado:** [`M1-M5-STUDENT-IDENTITY-CONTRACT.md`](M1-M5-STUDENT-IDENTITY-CONTRACT.md).
+**Contrato y plan canónicos:** [`M1-M5-STUDENT-IDENTITY-CONTRACT.md`](M1-M5-STUDENT-IDENTITY-CONTRACT.md) (incluye el enlace único al Plan DD-02 v1.1).
 
 ## 1. Premisas (no negociables hasta ratificación)
 
@@ -38,6 +38,8 @@ Tras ratificación, el adaptador productivo debe:
 | S8 | Proveedor M1 indisponible | código de indisponibilidad; sin acceso |
 | S9 | Regresión: personal Bearer no abre student port | denegación |
 | S10 | `/validar` deja de ser 501 solo con política ratificada | contrato HTTP acordado |
+
+Escenarios OTP ampliados (DD02-01…14, incl. 12a/12b): ver Plan DD-02 v1.1 desde el contrato canónico anterior.
 
 ## 4. Infraestructura de prueba prevista
 

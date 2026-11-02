@@ -24,14 +24,18 @@ M4 NotificacionPort      ◄── M7 NotificacionM4Adapter
 
 ## 2. Decisiones académicas / hallazgos
 
+Una sola fila por decisión. El estado detallado de DD-02 y el enlace canónico al plan v1.1 viven en [`M1-M5-STUDENT-IDENTITY-CONTRACT.md`](M1-M5-STUDENT-IDENTITY-CONTRACT.md) § Related.
+
 | Id | Estado | Impacto en este incremento |
 | --- | --- | --- |
-| **DD-02** | Abierta | Acceso estudiantil permanece denegado; `/validar` = 501 |
+| **DD-02** | Abierta — plan v1.1 listo para ratificación (enlace canónico en el contrato M1–M5) | Acceso estudiantil denegado; `/validar` = 501; sin V010 ni activación |
 | **DD-15** | Abierta (rules Cursor; 0 hits Java) | No se implementa `IAutorizacionDocente` formal |
 | **DD-16** | Abierta (rules Cursor; 0 hits Java) | Sin conciliación nueva de política docente |
 | **H01 / H05 / H12** | Sin trazas en Backend | Cubiertos por refuerzo de authz docente + recorrido M4–M7 + deny estudiantil |
 
 Política `GESTIONAR_SESION` ya usada por M4 vía M1; ratificación formal sigue pendiente en informe BD-005.2 de M4 (no se inventa política nueva aquí).
+
+En la matriz §1, las filas M4/M5 sobre `StudentAccessPort` describen **consumidores** del denying, no una segunda decisión DD-02.
 
 ## 3. Trabajo autorizado ejecutado
 
@@ -41,8 +45,7 @@ Política `GESTIONAR_SESION` ya usada por M4 vía M1; ratificación formal sigue
 - Sin activar autenticación estudiantil.
 
 ### B. Identidad estudiantil
-- Contrato vigente: `docs/M1-M5-STUDENT-IDENTITY-CONTRACT.md`.
-- Plan de pruebas post-ratificación: `docs/M1-STUDENT-ACCESS-TEST-PLAN.md`.
+- Ver contrato y plan canónicos: [`M1-M5-STUDENT-IDENTITY-CONTRACT.md`](M1-M5-STUDENT-IDENTITY-CONTRACT.md).
 - **No** se activa adaptador productivo real.
 
 ### C. M7
