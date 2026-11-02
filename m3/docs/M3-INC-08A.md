@@ -152,3 +152,113 @@ Registrar entorno, conteos, salidas y fallos reales. La última ejecución prese
 la regresión M3 existente. Este incremento no integra M3–M6 ni habilita exposición
 segura de respuestas correctas. La composición app y los productores/consumidores
 de otros módulos quedan fuera de alcance.
+
+## Ampliación autorizada — productor protegido mediante puerto requerido
+
+Esta sección actualiza el estado de la entrada productora descrito arriba; conserva
+la trazabilidad de la fase estructural. Dirección Técnica y Arquitectura autorizaron
+una implementación ejecutable M3 con verificación institucional delegada, sin
+dependencias Maven M3→M1 ni M3→M6. Referencia base reportada: d8b120c.
+
+### Archivos nuevos
+
+- `src/main/java/com/prisaly/m3/api/ContextoAcademicoConsultaPort.java`
+- `src/main/java/com/prisaly/m3/api/AccesoContextoAcademicoDenegadoException.java`
+- `src/main/java/com/prisaly/m3/application/port/AutorizacionContextoAcademicoPort.java`
+- `src/main/java/com/prisaly/m3/infrastructure/persistence/jpa/ContextoAcademicoProtectedReader.java`
+- `src/test/java/com/prisaly/m3/infrastructure/persistence/jpa/ContextoAcademicoProtectedReaderTest.java`
+
+Archivos modificados: ContextoAcademicoProducerReadIT y este documento. No se
+alteran el DTO, mapper, lector transaccional, dominio, POM ni otros módulos.
+
+### Firmas definitivas locales de M3
+
+```java
+Optional<ContextoAcademicoPersistido> consultar(UUID idCaso, String capacidad);
+Decision verificar(String capacidad, UUID idCaso, Operacion operacion);
+```
+
+Operacion contiene CONSULTAR_CONTEXTO_EVALUABLE. Decision admite AUTORIZADO,
+DENEGADO y NO_DISPONIBLE. Solo la confirmación AUTORIZADO del proveedor confiable
+permite leer. La decisión es retorno del puerto requerido, nunca un argumento que
+el consumidor de consulta pueda pasar para acreditarse.
+
+La capacidad se transporta como String opaco mínimo: M3 no lo parsea, no establece
+su codificación o longitud como prueba de autenticidad, no lo registra y no lo
+incluye en respuestas ni excepciones. Un String fabricado también debe pasar por
+verificación. Su inmutabilidad impide borrarlo de memoria de forma garantizada;
+app/M1 deben evitar trazas de argumentos y retención innecesaria. No hay tipos de
+M1/M6, credenciales fabricadas ni booleano de autorización recibido del consumidor.
+
+El contrato requiere que app delegue a M1 para autenticar la capacidad, comprobar
+identidad M6_EVALUACION, operación, UUID exacto, expiración y revocación. La entropía
+de al menos 256 bits, SecureRandom y HMAC-SHA-256 son responsabilidades de M1:
+ninguna de esas funciones se implementa o certifica en M3.
+
+### Protección y errores
+
+ContextoAcademicoProtectedReader se construye explícitamente por inyección del
+puerto requerido y del lector existente; no tiene @Component ni @Bean automático.
+Si el proveedor es null, deniega. No hay implementación permisiva productiva.
+
+Flujo: UUID no null → capacidad presente/no blanca y proveedor presente → verificar
+capacidad/caso/operación → exigir AUTORIZADO → lector → mapper. La verificación es
+exactamente una por llamada y no se cachean decisiones. No se utiliza canModifyCase
+ni canPublishCase. No hay consulta de existencia antes de verificar.
+
+Capacidad ausente, denegada, decisión null, proveedor ausente o fallo RuntimeException
+producen AccesoContextoAcademicoDenegadoException con un mensaje constante, sin UUID,
+capacidad ni causa del verificador. Se omite esa causa para no filtrar un secreto que
+el proveedor pudiera incluir en su mensaje. La auditoría segura del fallo corresponde
+al proveedor institucional sin registrar el valor original de la capacidad.
+
+Los errores del lector y del mapper quedan fuera del catch de seguridad y se
+propagan sin convertirse en ausencia o denegación. Optional.empty se reserva al caso
+inexistente después de verificación válida. El rechazo no depende de la existencia
+del caso. UUID null es error de argumento antes de toda consulta.
+
+### Garantías y límites transaccionales
+
+Se reutiliza CasoJpaAggregateReader sin cambios: REQUIRES_NEW/REPEATABLE_READ y
+su conexión de lectura existente. La verificación sucede antes de abrir esa lectura.
+No se afirma atomicidad entre revocación/expiración institucional y la duración de
+la consulta: M1/Arquitectura deben precisar la vigencia durante una operación en curso.
+No hay snapshot conjunto M3–M5, versión académica ni nueva regla de evaluación.
+
+### Pruebas incorporadas
+
+Seis métodos unitarios adicionales comprueban: capacidad ausente/blanca y proveedor
+ausente; rechazo de escenarios fabricado/vencido/revocado/otro caso/otra operación;
+indisponibilidad, decisión null y ocultación de mensajes sensibles; orden de
+verificación antes de una única lectura y mapeo completo; ausencia autorizada frente
+a denegación sin consultas; propagación de error PostgreSQL y UUID null.
+
+Las etiquetas de las pruebas son escenarios de rechazo, no tokens ni un verificador
+ficticio de producción. Los dobles prueban la reacción de M3, no autenticidad, HMAC,
+entropía, expiración o revocación reales.
+
+La prueba PostgreSQL de seis tablas se extiende para pasar por el lector protegido
+con doble de autorización y comparar todo el mapeo contra la lectura previa.
+Dos métodos nuevos comprueban denegación antes de llamar al lector real, ausencia
+después de autorizar y visibilidad de un cambio confirmado durante la verificación,
+antes de iniciar la lectura académica. La última prueba demuestra orden de frontera,
+no una carrera concurrente durante las seis consultas ni revocación atómica. Las
+pruebas transaccionales/concurrentes preexistentes siguen siendo regresión necesaria.
+
+### Pendiente de ensamblaje y validación
+
+app deberá implementar AutorizacionContextoAcademicoPort delegando al verificador
+real de M1 e inyectarlo en el productor. También realizará la futura traducción al
+consumidor M6. Este incremento no modifica app, M1, M6, dependencias ni permisos.
+
+El mecanismo es ejecutable con un proveedor inyectado, pero no se declara habilitada
+la lectura productiva hasta validar seguridad e integración real M1–M3–M6. DD-03,
+DD-04 y DD-12 siguen fuera de alcance. No se ejecutaron pruebas ni compilación.
+
+Comandos manuales desde PRISALY-Backen:
+
+```powershell
+mvn -pl m3 -am test
+mvn -pl m3 -am -Pdocker-it "-Dit.test=ContextoAcademicoProducerReadIT" "-Dfailsafe.failIfNoSpecifiedTests=false" verify
+mvn -pl m3 -am -Pdocker-it verify
+```

@@ -1,6 +1,10 @@
 package com.prisaly.m3.infrastructure.persistence.jpa;
 
 import static org.junit.jupiter.api.Assertions.*;
+import com.prisaly.m3.application.port.AutorizacionContextoAcademicoPort;
+import com.prisaly.m3.application.port.AutorizacionContextoAcademicoPort.Decision;
+import com.prisaly.m3.application.port.AutorizacionContextoAcademicoPort.Operacion;
+import com.prisaly.m3.api.AccesoContextoAcademicoDenegadoException;
 
 import jakarta.persistence.EntityManagerFactory;
 import java.nio.charset.StandardCharsets;
@@ -78,7 +82,16 @@ class ContextoAcademicoProducerReadIT {
         seedOwner(fixture.caso().idDocente());
         inserts.insert(CasoPersistenceMapper.toDomain(fixture));
         var stored = reader.findById(fixture.caso().idCaso()).orElseThrow();
-        var result = ContextoAcademicoProducerMapper.map(stored);
+        var verificationCount = new java.util.concurrent.atomic.AtomicInteger();
+        var protectedReader = new ContextoAcademicoProtectedReader((capability, caseId, operation) -> {
+            assertEquals(fixture.caso().idCaso(), caseId);
+            assertEquals(Operacion.CONSULTAR_CONTEXTO_EVALUABLE, operation);
+            verificationCount.incrementAndGet();
+            return Decision.AUTORIZADO; // Test double only, not an M1 verifier.
+        }, reader);
+        var result = protectedReader.consultar(fixture.caso().idCaso(), "integration-fixture").orElseThrow();
+        assertEquals(1, verificationCount.get());
+        assertEquals(ContextoAcademicoProducerMapper.map(stored), result);
         assertEquals(stored.caso().idCaso(), result.idCaso());
         assertEquals(stored.caso().fechaCreacion(), result.fechaCreacion());
         assertFalse(result.escenarios().getFirst().activo());
@@ -110,6 +123,42 @@ class ContextoAcademicoProducerReadIT {
         assertTrue(result.escenarios().isEmpty()); assertNull(result.rubrica());
         assertNull(result.historia()); assertNull(result.desarrolloSituacional());
         assertNull(result.fechaActualizacion()); assertNull(result.fechaBloqueoAcademico());
+    }
+
+    @Test
+    void protectedMissingCaseRequiresVerificationAndDeniedRequestsNeverReachRealReader() {
+        var observedReader = org.mockito.Mockito.spy(reader);
+        UUID missing = UUID.randomUUID();
+        var denied = new ContextoAcademicoProtectedReader((capability, id, operation) -> Decision.DENEGADO, observedReader);
+        assertThrows(AccesoContextoAcademicoDenegadoException.class, () -> denied.consultar(missing, "rejected-fixture"));
+        assertThrows(AccesoContextoAcademicoDenegadoException.class,
+                () -> new ContextoAcademicoProtectedReader(null, observedReader).consultar(missing, "rejected-fixture"));
+        org.mockito.Mockito.verifyNoInteractions(observedReader);
+        var accepted = new ContextoAcademicoProtectedReader((capability, id, operation) -> Decision.AUTORIZADO, observedReader);
+        assertTrue(accepted.consultar(missing, "accepted-fixture").isEmpty());
+        org.mockito.Mockito.verify(observedReader).findById(missing);
+    }
+
+    @Test
+    void readerSnapshotStartsAfterVerificationAndSeesPreviouslyCommittedChange() {
+        var original = ContextoAcademicoProducerMapperTest.full().caso();
+        UUID id = UUID.randomUUID();
+        var bare = new CasoJpaAggregateSnapshot(new CasoJpaAggregateSnapshot.CasoRow(id, original.idDocente(),
+                original.nombre(), null, null, 300, "Borrador", true, null, original.fechaCreacion(), null),
+                List.of(), List.of(), List.of(), null, Set.of());
+        seedOwner(original.idDocente());
+        inserts.insert(CasoPersistenceMapper.toDomain(bare));
+        AutorizacionContextoAcademicoPort verification = (capability, requested, operation) -> {
+            assertEquals(id, requested);
+            jdbc.update("UPDATE public.\"Caso\" SET \"historia\" = ? WHERE \"idCaso\" = ?",
+                    "Committed before academic read", id);
+            return Decision.AUTORIZADO; // Controlled ordering fixture, not production authorization.
+        };
+        var result = new ContextoAcademicoProtectedReader(verification, reader)
+                .consultar(id, "ordering-fixture").orElseThrow();
+        assertEquals("Committed before academic read", result.historia());
+        assertTrue(result.escenarios().isEmpty());
+        assertEquals(ContextoAcademicoProducerMapper.map(reader.findById(id).orElseThrow()), result);
     }
 
     private static void seedOwner(UUID owner) {
