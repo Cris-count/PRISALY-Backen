@@ -21,5 +21,8 @@ server:
     context-path: /api
 
 prisaly:
+  m4:
+    consulta-bd0052:
+      enabled: true
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}

@@ -5,6 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m4.application.port.ParticipacionesPort;
+import com.prisaly.m4.api.ProgramacionParticipacionPort;
+import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;
+import com.prisaly.m1.application.port.StudentAccessPort;
+import com.prisaly.m1.domain.rule.IdentityDomainException;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.prisaly.m4.application.port.SesionRepository;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5;
@@ -50,6 +55,13 @@ class ParticipacionesPortWiringIT {
 
     @Test
     void onlyM5ProviderIsRegisteredAndContextUsesSesionRepositoryAdapter() {
+        var programacion = context.getBeansOfType(ProgramacionParticipacionPort.class);
+        assertEquals(1, programacion.size());
+        assertEquals(ProgramacionParticipacionJdbcAdapter.class,
+                AopUtils.getTargetClass(programacion.values().iterator().next()));
+        assertFalse(context.containsBean("consultaNoDisponible"));
+        assertThrows(IdentityDomainException.class,
+                () -> context.getBean(StudentAccessPort.class).requireCurrentStudent());
         Map<String, ParticipacionesPort> providers = context.getBeansOfType(ParticipacionesPort.class);
         assertEquals(1, providers.size());
         assertTrue(providers.containsKey("participacionesM4DesdeM5"));
