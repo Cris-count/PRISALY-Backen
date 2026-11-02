@@ -2,7 +2,7 @@
 
 > Conciliación posterior de Arquitectura: D-06 permanece pendiente de cierre definitivo. SesionRepository es un puerto público de aplicación de M4 y puede conservarse como mecanismo único si se acredita la transacción de M5. No integrar la alternativa de este candidato junto con otra implementación M5. Las ocho pruebas ProtocoloD06IT comunicadas por M5 requieren rama/SHA para contrastarlas. Véase sección 11 del informe. Las 839 pruebas siguientes corresponden al candidato 513c444 y no certifican esa implementación externa de M5.
 
-Actualizado el 02/11/2026. Candidato en `feature/m4-cierre-d06`, desde develop `b3d77d89e324c1f61ea0364417a37bd2c7c354cc`. **839 pruebas aprobadas, cero fallos, errores u omitidas: M4 182, M5 283 y app 40.** D-06 implementado y verificado con el orden Sesion → Convocatoria → Participacion → Intento; pendiente de revisión del PR, sin merge unilateral. Detalle en la sección 10 del [informe](revision-m4-m5/INFORME.md).
+Actualizado el 02/11/2026. Candidato en `feature/m4-cierre-d06`, desde develop `b3d77d89e324c1f61ea0364417a37bd2c7c354cc`. **839 pruebas aprobadas, cero fallos, errores u omitidas: M4 182, M5 283 y app 40.** D-06 implementado y verificado con el orden Sesion → Convocatoria → Participacion → Intento; integrado mediante PR #28 en develop 3984485, verificado con fetch el 02/11/2026. Pendiente de conciliación final de Arquitectura; las 839 pruebas son evidencia histórica del candidato, no una nueva ejecución. Detalle en la sección 10 del [informe](revision-m4-m5/INFORME.md).
 
 El acceso estudiantil productivo, el primer inicio académico y SMTP siguen bloqueados/desactivados según su configuración y decisiones vigentes. No se modifican migraciones. La corrección de ensamblado en app selecciona explícitamente el proveedor existente M7 de entrega DD-02 sin activar esa funcionalidad. Los antecedentes de 684 pruebas, la auditoría 1960eff y la propuesta D-06 se conservan en las secciones anteriores del informe; no equivalen al corte actual.
 
@@ -34,12 +34,12 @@ La creación valida el agregado antes de consultar o bloquear proveedores extern
 
 App descubre el único proveedor ParticipacionesM4DesdeM5. El puente duplicado de app fue retirado en19cf52b. SesionRepositoryAdapter de M4 exige escritura y adapta errores de historial a503 usando los contratos existentes. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
 
-El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; esta carrera no se declara resuelta mientras ese inicio no exista.
+El mecanismo interno de inicio/reanudación ya incorpora la reserva coordinada D-06 en la misma transacción, con orden Sesion → Convocatoria → Participacion → Intento. La ratificación final de Arquitectura sigue pendiente; el primer inicio productivo continúa bloqueado por elegibilidad y límite temporal no ratificados.
 
 ## Pendientes que siguen vigentes
 
 - Identidad estudiantil real DD-02; el adaptador de titularidad M5→M4 ya existe y está probado.
-- Inicio/reanudación, reloj, vencimiento, repetición y orden global de bloqueos.
+- Ratificación final D-06; elegibilidad, cálculo del límite temporal, vencimiento y repetición. Inicio/reanudación internos ya implementados; sin habilitación del recorrido estudiantil.
 - Ratificar el ensamblado local de historial M5 y el alcance final de comunicaciones M7. El registro de avisos M7 ya tiene adaptador y pruebas.
 - Confirmar aplicación de V010 y datos en bases compartidas.
 - M2 conserva estructura básica; M6 dispone de consultas de resultados, Proxy y contrato Strategy, sin algoritmo académico productivo.

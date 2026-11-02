@@ -598,7 +598,10 @@ class HistorialM4M5IT {
                                             + " \"ParticipacionNoDisponibleIT\"");
                             var error = assertThrows(ReglaNegocioException.class, this::modificar);
                             assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", error.getCodigo());
-                            assertInstanceOf(PersistenciaIntentoException.class, error.getCause());
+                            var proveedor = assertInstanceOf(ReglaNegocioException.class, error.getCause());
+                            assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", proveedor.getCodigo());
+                            assertInstanceOf(PersistenciaIntentoException.class, proveedor.getCause());
+                            assertFalse(proveedor.getMessage().contains("ParticipacionNoDisponibleIT"));
                             assertEquals(
                                     503,
                                     new M4ExceptionHandler()
@@ -614,9 +617,9 @@ class HistorialM4M5IT {
     }
 
     @Test
-    void consultaFueraDeTransaccionSeRechazaPorMandatory() {
+    void consultaFueraDeTransaccionSeRechazaAntesDeConsultar() {
         assertThrows(
-                IllegalTransactionStateException.class,
+                IllegalStateException.class,
                 () -> historial.tieneParticipacionesOIntentos(sesion));
     }
 }
