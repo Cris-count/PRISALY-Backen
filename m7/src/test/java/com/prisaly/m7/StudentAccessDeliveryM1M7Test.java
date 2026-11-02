@@ -46,7 +46,7 @@ class StudentAccessDeliveryM1M7Test {
         StudentAccessDeliveryPort deliveryPort = outbox;
         issuance = new StudentAccessCodeIssuanceService(validationService, deliveryPort);
         mockMvc = MockMvcBuilders
-                .standaloneSetup(new EstudianteAccessController(validationService))
+                .standaloneSetup(new EstudianteAccessController(validationService, true))
                 .setControllerAdvice(new IdentityExceptionHandler())
                 .build();
     }

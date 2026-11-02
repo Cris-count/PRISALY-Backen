@@ -1,8 +1,6 @@
 package com.prisaly.m7.infrastructure;
 
 import com.prisaly.m1.application.port.StudentAccessDeliveryPort;
-import com.prisaly.m1.application.service.StudentAccessCodeIssuanceService;
-import com.prisaly.m1.application.service.StudentAccessValidationService;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m7.application.ContextoConvocatoriaPort;
 import com.prisaly.m7.application.NotificarConvocatoriaService;
@@ -18,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
  * {@link NotificacionPort}. Al existir este bean, el fallback de M4
  * ({@code M4ProviderAutoConfiguration}, {@code @ConditionalOnMissingBean}) no se registra.
  * DD-02 student-access delivery uses a separate port/outbox — never {@link NotificacionPort}.
+ * Issuance assembly lives in app (not here) so convocatoria IT contexts do not require M1 services.
  */
 @Configuration(proxyBeanMethods = false)
 public class M7Configuration {
@@ -31,13 +30,6 @@ public class M7Configuration {
     StudentAccessDeliveryPort studentAccessDeliveryM7(
             InMemoryStudentAccessDeliveryAdapter outbox) {
         return outbox;
-    }
-
-    @Bean
-    StudentAccessCodeIssuanceService studentAccessCodeIssuanceM7(
-            StudentAccessValidationService validationService,
-            StudentAccessDeliveryPort studentAccessDeliveryM7) {
-        return new StudentAccessCodeIssuanceService(validationService, studentAccessDeliveryM7);
     }
 
     @Bean
