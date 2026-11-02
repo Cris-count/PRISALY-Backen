@@ -1,31 +1,32 @@
 # Resultado final ejecutado
 
-01/11/2026, 17:39:23 America/Bogota. **BUILD SUCCESS**, duración3:13. Base develop8b6dc33, cambios locales de historial M4–M5.
+01/11/2026, 19:21:15 America/Bogota. **BUILD SUCCESS**, duración4:53. Base develop ee77a57, conciliación local del proveedor único M5.
 
-Comando: mvnw.cmd -B verify -Pdocker-it, con m4.baseline.migrations apuntando al directorio oficial app/src/main/resources/db/migration.
+Comando: mvnw.cmd -B verify -Pdocker-it con m4.baseline.migrations apuntando a app/src/main/resources/db/migration.
 
 | Módulo | Surefire | Failsafe | Total |
 |---|---:|---:|---:|
 | M1 | 8 | 6 | 14 |
-| M3 | 89 | 38 | 127 |
+| M3 | 100 | 60 | 160 |
 | M4 | 107 | 42 | 149 |
-| M5 | 172 | 30 | 202 |
-| M7 | 10 | 12 | 22 |
-| app | 1 | 19 | 20 |
-| **Total** | **387** | **147** | **534** |
+| M5 | 182 | 39 | 221 |
+| M6 | 25 | 19 | 44 |
+| M7 | 23 | 25 | 48 |
+| app | 1 | 20 | 21 |
+| **Total** | **446** | **211** | **657** |
 
-**Cero fallos, errores u omitidas.** M2/M6 sin suites. Surefire incluye una comprobación Docker M4; no todas sus pruebas son unitarias puras.
+**Cero fallos, errores y omitidas.** M2 sin suites. Surefire incluye una comprobación Docker M4: no todas sus pruebas son unitarias puras.
 
-[Conteo por runner](conteo.md), [suites sanitizadas](suites.json), [paquete M4](package-check.txt), [paquete M5](m5-package-check.txt). El colector filtra por el inicio de esta ejecución:534 en XML nuevos y534 en resúmenes Maven, comprobados independientemente. Incluye M7.
+[Conteo por runner](conteo.md), [suites sanitizadas](suites.json), [paquete M4](package-check.txt), [paquete M5](m5-package-check.txt). XML nuevos657 y resúmenes Maven657, comprobados independientemente. El colector excluye informes anteriores al marcador de inicio.
 
-## Diez casos nuevos en app
+## Proveedor único verificado
 
-HistorialM4M5IT usa el contexto completo y los adaptadores reales M4/M5/M7. Verifica un único ParticipacionesPort, edición sin convocatoria y sin historial, bloqueo con participación sin intento o con intento existente, retiro que conserva protección, aislamiento del historial de otra sesión, rechazo de reasignación, error SQL real con503/rollback/recuperación, proveedor ausente y rechazo sin transacción de escritura. La identidad docente es exclusivamente una fixture src/test.
+ParticipacionesM4DesdeM5Test:7 casos. ParticipacionesM4DesdeM5IT:8 casos PostgreSQL. HistorialM4M5IT:10 casos en el contexto completo. Además pasan NotificacionPortWiringIT y las9 pruebas de seguridad HTTP de app.
 
-El fallo SQL se provoca renombrando Participacion dentro de una transacción en PostgreSQL efímero; el rollback restaura el esquema. No se ejecuta sobre bases compartidas. El caso verifica503 mediante el manejador público M4 y la ausencia de detalles SQL en el mensaje; no añade endpoints.
+Se comprueba un único ParticipacionesPort de clase ParticipacionesM4DesdeM5, sin historialM4M5 ni respaldo cuando existe el proveedor real. Sin M5, la autoconfiguración M4 conserva un respaldo que rechaza con503. Se elimina HistorialM4M5Configuration de app y se retira su .class obsoleto de target.
 
-La primera ejecución falló por omitir Rol.descripcion en la fixture. Se corrigió la prueba, se aprobaron10 casos focalizados y se repitió toda la regresión con éxito. Se conserva el log fallido local para diagnóstico; no se cuenta como ejecución aprobada.
+La protección cubre edición con/sin convocatorias o historial, participación sin intento, intento existente, retiro con historial, aislamiento entre sesiones, reasignación y fallo SQL real con503/rollback/recuperación. Se rechaza el uso sin transacción de escritura o con solo lectura.
 
-Logs locales ignorados: m4/target/historial-verificacion.log (primer intento), historial-focalizado.log y historial-verificacion-final.log. Marcador: historial-inicio.txt.
+La identidad docente del IT es una fixture src/test. El fallo SQL y el rollback usan PostgreSQL efímero; no se modifican bases compartidas. No se certifican inicio/reanudación, identidad estudiantil productiva ni la carrera del futuro inicio contra la edición de sesiones.
 
-Las pruebas no habilitan inicio/reanudación ni sustituyen autenticación estudiantil. El protocolo de bloqueo del futuro inicio sigue pendiente. Sin cambios de migraciones, commit ni push.
+Log crudo local ignorado: m4/target/proveedor-unico-verificacion.log. Marcador: proveedor-unico-inicio.txt. Sin cambios de migraciones, commit ni push.

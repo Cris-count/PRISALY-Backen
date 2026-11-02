@@ -2,7 +2,7 @@
 ## Puertos internos
 Se conservan sin cambio los records y firmas de com.prisaly.m4.api. ProgramacionParticipacionPort consulta contexto por convocatoria y estudiante persistidos; ProgramacionAutenticadaPort obtiene identidad mediante StudentAccessPort. ContextoProgramacion ofrece estado exacto de sesión/caso, casoActivo, ventana prevista, fechas reales opcionales, duración, autorización/retiro de convocatoria y observadoEn. No ofrece una decisión de inicio/reanudación/repetición.
 
-M3: adaptador SQL con Caso FOR UPDATE, inserción Sesion y triggers oficiales dentro de la misma transacción. Requiere revisión del protocolo con el Integrante 2. M5: app ensambla ParticipacionesPort con HistorialParticipacionPort mediante HistorialM4M5Configuration. M4 obtiene los UUID de todas sus convocatorias con ConvocatoriaRepository; M5 consulta sus participaciones persistidas. No se accede a repositorios internos ajenos ni se crea una dependencia Maven M4→M5.
+M3: adaptador SQL con Caso FOR UPDATE, inserción Sesion y triggers oficiales dentro de la misma transacción. Requiere revisión del protocolo con el Integrante 2. M5: app descubre un único ParticipacionesPort productivo: ParticipacionesM4DesdeM5, que consume HistorialParticipacionPort. Se elimina la configuración duplicada HistorialM4M5Configuration. M4 obtiene los UUID de todas sus convocatorias con ConvocatoriaRepository; M5 consulta sus participaciones persistidas. No se accede a repositorios internos ajenos ni se crea una dependencia Maven M4→M5.
 
 ## Integración M4–M5 vigente
 
@@ -20,7 +20,7 @@ La resolución persistida, el retiro y el fallo real de consulta se verifican en
 
 ### Protección de historial desde M4
 
-El puente de app exige la transacción de escritura del llamador. SesionAcademicaService bloquea primero la fila de sesión y luego consulta el historial. Una participación basta para impedir edición o reasignación (409 M4-SESION-CON-PARTICIPACIONES); los intentos quedan cubiertos por su FK obligatoria a Participacion. Se incluyen convocatorias retiradas. Sin participaciones se conserva la validación normal de M4.
+El proveedor único M5 exige la transacción de escritura del llamador. SesionAcademicaService bloquea primero la fila de sesión y luego consulta el historial. Una participación basta para impedir edición o reasignación (409 M4-SESION-CON-PARTICIPACIONES); los intentos quedan cubiertos por su FK obligatoria a Participacion. Se incluyen convocatorias retiradas. Sin participaciones se conserva la validación normal de M4.
 
 La ausencia del proveedor o el fallo de consulta provoca 503 M4-PROVEEDOR-NO-DISPONIBLE, mensaje público genérico y rollback. La consulta sin transacción de escritura se rechaza. M4 conserva su respaldo seguro para ensamblados sin app/M5.
 

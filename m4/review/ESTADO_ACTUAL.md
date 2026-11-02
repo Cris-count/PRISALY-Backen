@@ -1,8 +1,8 @@
 # M4–M5 — Estado actual y guía de documentación
 
-Actualizado el 01/11/2026. Base develop: 8b6dc33. M4, M5 y el adaptador de avisos M7 ya están incorporados en develop. El nuevo ensamblado de historial M4–M5 en app permanece local, sin commit ni push.
+Actualizado el 01/11/2026. Base develop: ee77a57, con cierre M5 incorporado. Conciliación local: se conserva ParticipacionesM4DesdeM5 como único proveedor productivo y se elimina HistorialM4M5Configuration de app. Sin commit ni push.
 
-Última verificación: **534 pruebas aprobadas**, cero fallos, errores u omitidas. M1:14; M3:127; M4:149; M5:202; M7:22; app:20. Diez casos nuevos validan el puente de historial en PostgreSQL. El conteo coincide entre XML nuevos y resumen Maven. La antigua cifra207/157 incluía17 casos de un XML obsoleto; aquella ejecución correspondía a190/140.
+Última verificación: **657 pruebas aprobadas**, cero fallos, errores u omitidas. M1:14; M3:160; M4:149; M5:221; M6:44; M7:48; app:21. Conteo independiente XML/resúmenes Maven coincidente. M2 no aporta suites. La cifra histórica207/157 incluía17 casos de un XML obsoleto; aquella ejecución correspondía a190/140.
 
 ## Qué consultar
 
@@ -30,7 +30,7 @@ La creación valida el agregado antes de consultar o bloquear proveedores extern
 
 ## Historial M4–M5 conectado localmente
 
-HistorialM4M5Configuration en app implementa ParticipacionesPort usando ConvocatoriaRepository de M4 y el contrato público HistorialParticipacionPort de M5. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
+App descubre el único componente ParticipacionesM4DesdeM5, que implementa ParticipacionesPort usando ConvocatoriaRepository de M4 y el contrato público HistorialParticipacionPort de M5. Se elimina HistorialM4M5Configuration y su lógica duplicada de app. No crea un ciclo Maven ni consulta repositorios internos M5. Se exige una transacción de escritura; el servicio M4 mantiene el bloqueo de sesión. Se incluyen convocatorias retiradas. Con historial, edición/reasignación responden409; si la consulta falla,503 y rollback.
 
 El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; esta carrera no se declara resuelta mientras ese inicio no exista.
 
@@ -40,7 +40,7 @@ El futuro inicio de participaciones debe adquirir el mismo bloqueo de sesión; e
 - Inicio/reanudación, reloj, vencimiento, repetición y orden global de bloqueos.
 - Ratificar el ensamblado local de historial M5 y el alcance final de comunicaciones M7. El registro de avisos M7 ya tiene adaptador y pruebas.
 - Confirmar aplicación de V010 y datos en bases compartidas.
-- M2/M6 solo tienen estructura básica en esta base de develop.
+- M2 solo tiene estructura básica. M6 incorpora consultas persistidas y contratos de evaluación; falta el algoritmo y su ensamblado académico.
 
 ## Organización de la carpeta
 

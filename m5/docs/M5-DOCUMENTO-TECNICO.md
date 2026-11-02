@@ -154,7 +154,7 @@ la transacción del llamador (`Propagation.MANDATORY`).
 **Semántica:** un Intento exige una Participacion (FK), así que "participaciones
 o intentos" equivale a "participaciones".
 
-**Conexión con M4 (implementada, rama `feature/m5-cierre-tecnico`):**
+**Conexión con M4 (cierre incorporado en develop; conciliación local del proveedor único):**
 `com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5` implementa
 el puerto de M4 `ParticipacionesPort`. Es la opción a) de M5-INC-08 y el mismo
 patrón que M7 usa en develop con `NotificacionPort` (`m7 → m4`).
@@ -163,18 +163,18 @@ patrón que M7 usa en develop con `NotificacionPort` (`m7 → m4`).
    M4 documenta ese puerto como usado por M5, y M5 no lee `"Convocatoria"`.
 2. Historial: `HistorialParticipacionPort` sobre `"Participacion"` (tabla de M5).
 3. Transacción: la de M4, que ya bloqueó la sesión en `buscarParaActualizar`
-   (`FOR UPDATE`); el historial exige `Propagation.MANDATORY`.
-4. Errores: una excepción técnica se propaga y nunca se convierte en `false`.
+   (`FOR UPDATE`); el proveedor exige transacción de escritura y el historial exige `Propagation.MANDATORY`.
+4. Errores: una excepción técnica se adapta a `M4-PROVEEDOR-NO-DISPONIBLE` (503), conservando la causa interna y un mensaje público genérico. Nunca se convierte en `false`.
 
 Con este bean presente, M4 deja de registrar su respaldo que respondía 503
-(`@ConditionalOnMissingBean`).
+(`@ConditionalOnMissingBean`). Se elimina `HistorialM4M5Configuration` de app: su consulta duplicada deja de registrarse. App descubre el único componente productivo de M5. Las pruebas de contexto verifican que no esté presente el respaldo cuando existe el proveedor real; sin M5 se conserva el respaldo seguro.
 
 Dependencias: `m5 → m4 → m1, m3`, `m5 → m1` y `m7 → m4`. Sin ciclos.
 
 | Prueba | Tipo |
 |---|---|
-| `ParticipacionesM4DesdeM5Test` (6) | Unitaria |
-| `ParticipacionesM4DesdeM5IT` (7): bean registrado en lugar del respaldo; con y sin historial; otra sesión; ruta real `SesionRepositoryAdapter` con bloqueo; fallo técnico distinto de `false`; transacción obligatoria | PostgreSQL 16.15 |
+| `ParticipacionesM4DesdeM5Test` (7) | Unitaria |
+| `ParticipacionesM4DesdeM5IT` (8): bean registrado en lugar del respaldo; con y sin historial; otra sesión; ruta real `SesionRepositoryAdapter` con bloqueo; fallo técnico con503; transacción obligatoria de escritura y rechazo de solo lectura | PostgreSQL 16.15 |
 
 **Pendiente de revisión del Integrante 3:**
 

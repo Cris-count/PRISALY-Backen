@@ -72,7 +72,7 @@ class HistorialM4M5IT {
         UUID usuario = UUID.randomUUID();
         jdbc.update(
                 "INSERT INTO \"Rol\" (\"idRol\",\"nombre\",\"descripcion\") VALUES"
-                    + " (1,'Fixture','Prueba')");
+                        + " (1,'Fixture','Prueba')");
         jdbc.update(
                 "INSERT INTO \"Usuario\" (\"idUsuario\",\"idRol\",\"nombre\",\"correo\") VALUES"
                     + " (?,1,'Docente','doc@example.invalid'),(?,1,'Alumno','alumno@example.invalid')",
@@ -126,7 +126,11 @@ class HistorialM4M5IT {
     @Test
     void proveedorUnicoYConvocatoriaSinHistorialPermiteEditar() {
         assertEquals(1, contexto.getBeansOfType(ParticipacionesPort.class).size());
-        assertTrue(contexto.containsBean("historialM4M5"));
+        assertInstanceOf(
+                com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5.class,
+                historial);
+        assertFalse(contexto.containsBean("historialM4M5"));
+        assertFalse(contexto.containsBean("participacionesNoDisponibles"));
         modificar();
         assertEquals("Actualizada", sesiones.consultarSesion(sesion).getTitulo());
     }
@@ -166,26 +170,22 @@ class HistorialM4M5IT {
 
     @Test
     void ausenciaDeProveedorNuncaEquivaleAHistorialVacio() {
-        var sinProveedor =
-                new HistorialM4M5Configuration()
-                        .historialM4M5(
-                                contexto.getBean(
-                                        com.prisaly.m4.application.port.ConvocatoriaRepository
-                                                .class),
-                                new org.springframework.beans.factory.support
-                                                .StaticListableBeanFactory()
-                                        .getBeanProvider(
-                                                com.prisaly.m5.api.HistorialParticipacionPort
-                                                        .class));
-        new TransactionTemplate(transacciones)
-                .executeWithoutResult(
-                        tx -> {
+        new org.springframework.boot.test.context.runner.ApplicationContextRunner()
+                .withConfiguration(
+                        org.springframework.boot.autoconfigure.AutoConfigurations.of(
+                                com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration
+                                        .class))
+                .run(
+                        context -> {
+                            assertEquals(
+                                    1, context.getBeansOfType(ParticipacionesPort.class).size());
+                            assertTrue(context.containsBean("participacionesNoDisponibles"));
                             var error =
                                     assertThrows(
                                             ReglaNegocioException.class,
                                             () ->
-                                                    sinProveedor.tieneParticipacionesOIntentos(
-                                                            sesion));
+                                                    context.getBean(ParticipacionesPort.class)
+                                                            .tieneParticipacionesOIntentos(sesion));
                             assertEquals("M4-PROVEEDOR-NO-DISPONIBLE", error.getCodigo());
                         });
     }

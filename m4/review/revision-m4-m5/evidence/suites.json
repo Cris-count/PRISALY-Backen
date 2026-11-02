@@ -96,7 +96,7 @@
     "module": "m3",
     "runner": "surefire",
     "suite": "com.prisaly.m3.CasoMetadataTest",
-    "tests": 14,
+    "tests": 16,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
@@ -109,10 +109,12 @@
       "publicationPreservesNullMetadata",
       "archivedSafeguardDoesNotBypassAuthorization",
       "builderCarriesExplicitNarrativesActivityAndDates",
+      "schedulingAvailabilityDoesNotRequireRubricQuestionsOrLockMetadata",
       "copyOfDatedSourceIsExplicitlyPendingRatherThanInventingMetadata",
       "replacementPreservesMetadataAndCarriesSuppliedNarratives",
       "replacementCannotIntroduceArchivedState",
       "knownLockDateImpliesLockAndIsNeverReplaced",
+      "schedulingAvailabilityMatchesStateAndActivityMatrixWithoutChangingCase",
       "publicationPreservesEveryMetadataValue",
       "transientCopyPreservesNarrativesAndActivityButNeverSourceLockDate"
     ]
@@ -146,22 +148,31 @@
     "module": "m3",
     "runner": "surefire",
     "suite": "com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest",
-    "tests": 11,
+    "tests": 20,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "cases": [
       "fingerprintAlsoCanonicalizesQuestionOptionAndAssociationRecoveryOrder",
+      "questionAddRequiresDraftAndPreservesStaleArchivedAndAcademicLockPriority",
       "commandsRepresentSingleExplicitAssignmentsIncludingNullWithoutAnOptionalAggregateDto",
+      "optionAddRequiresDraftAndPreservesArchivedStaleAndF303Rejections",
       "caseNameUsesSame150CharacterLimitInCommandAndDomain",
       "requiredFieldsTypesAndPositiveOrdersAreValidatedWithoutCoercion",
       "staleAndLockedPreconditionsAreRejectedWithoutInventingAnAuditDateVersion",
       "fingerprintIncludesEachTableMetadataNullsAndExplicitReferences",
+      "addScenarioRequiresDraftAndPreservesExistingStaleArchivedAndLockPriorities",
       "scenarioTitleUsesSameUnicodeCharacterLimitInCommandAndDomain",
       "fingerprintIsIndependentOfAccidentalRowOrderingButIncludesPhysicalOrder",
+      "questionAddValidatesExistingParentIdentityAndOrderWithoutMutatingSnapshot",
       "membershipRejectsUnknownOrForeignElementsWithoutInferringThemFromOrder",
+      "addScenarioRequiresExplicitIdentityOrderAndUnicodeTitleWithinSqlLimit",
       "sqlShapedSnapshotReconstructsSupplementaryUnicodeTitlesWithoutLoss",
-      "scenarioTitleExceedingSqlLimitIsRejectedByBothLayers"
+      "scenarioTitleExceedingSqlLimitIsRejectedByBothLayers",
+      "questionAddRequiresExplicitIdentityContentStateVisibilityAndPositiveOrder",
+      "optionAddChecksInitialMembershipAndIdentityButDoesNotPreemptEarlierExplicitDeletion",
+      "optionAddValidatesExplicitParametersWithoutNormalizingTextOrChoosingCorrectness",
+      "addScenarioChecksExistingIdentityAndOrderWithoutMutatingSnapshotOrAllowingDependentEdits"
     ]
   },
   {
@@ -210,6 +221,39 @@
       "copyRemapsEachExplicitReferenceWithoutInferringAssociationByOrder",
       "legacyConstructorRemainsExplicitlyTransientWithoutManufacturingRequiredName",
       "aggregateRejectsWrongCaseExternalQuestionAndAmbiguousQuestionIdentity"
+    ]
+  },
+  {
+    "module": "m3",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m3.infrastructure.CasoCommandAddContentIT",
+    "tests": 22,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "officialQuestionFkAndOrderConstraintsRemainActive",
+      "addsExplicitIncorrectAndCorrectOptionsPreservingAcademicContentAndFingerprint",
+      "concurrentQuestionAddsWithSameFingerprintHaveOneWinner",
+      "rejectsMissingCasePublishedArchivedAndStalePreconditionWithoutMutation",
+      "optionAddRejectsNewQuestionParentAndDeletionOfNewOptionInSameBatch",
+      "rejectsDependentEditOfNewScenarioBeforeAnyMutation",
+      "twoAddsWithSameFingerprintHaveExactlyOneWinner",
+      "concurrentOptionAddsWithSameFingerprintHaveExactlyOneWinner",
+      "programmedCaseRejectsOptionAddAndDirectSqlInsertUsingOfficialF303",
+      "officialProgrammingLocksPublishedCaseAndRejectsAddWithCurrentFingerprint",
+      "optionFkAndPositiveOrderRemainProtectedByOfficialSql",
+      "duplicateOptionsOrderAndSecondCorrectRejectAndRollBackEarlierCommands",
+      "officialProgrammingRejectsQuestionAddAndSqlInsertWithoutManualLockChanges",
+      "questionDuplicatesAndCompositeConstraintFailureRollBackEveryCommand",
+      "questionAddRejectsMissingForeignParentsStatesAndStalePreconditionWithoutWriting",
+      "addsQuestionWithExplicitAttributesAndOfficialDateWithoutChangingPriorContent",
+      "questionAddCannotDependOnNewParentOrBeEditedWithinSameBatch",
+      "rejectsDuplicateUuidAndOrderAndRollsBackCompositeSqlFailure",
+      "deletingCorrectThenAddingNewCorrectCanReuseOrderButNeverOldUuidAndReverseOrderRollsBack",
+      "addsEmptyActiveScenarioPreservingAllPriorContentAndOtherCase",
+      "optionAddRejectsUnknownForeignParentsStatesAndStalePreconditionWithoutChanges",
+      "programmingWaitsForAddingDraftThenV009RejectsItWithoutLockingDraft"
     ]
   },
   {
@@ -711,14 +755,17 @@
     "module": "m5",
     "runner": "surefire",
     "suite": "com.prisaly.m5.application.ResumenIntentoTest",
-    "tests": 7,
+    "tests": 10,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "cases": [
       "resumenReflejaElIntento",
+      "ordenUuidComoPostgreSql",
       "resumenEsUnaInstantanea",
+      "ordenIndependienteDeMayusculas",
       "resumenExigeDatos",
+      "respuestasOrdenadasPorPregunta",
       "referenciasSeComparanPorValor",
       "rechazaReferenciaVacia(String)[1]",
       "rechazaReferenciaVacia(String)[2]",
@@ -963,6 +1010,24 @@
   {
     "module": "m5",
     "runner": "surefire",
+    "suite": "com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5Test",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "convocatoriasIncompletas",
+      "consultaConLasConvocatoriasDeLaSesion",
+      "errorTecnicoNoEsFalse",
+      "sinTransaccionOSoloLecturaNoConsultaHistorial",
+      "rechazaNulos",
+      "sinHistorial",
+      "sesionSinConvocatorias"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "surefire",
     "suite": "com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4Test",
     "tests": 8,
     "failures": 0,
@@ -1100,8 +1165,27 @@
   {
     "module": "m5",
     "runner": "failsafe",
+    "suite": "com.prisaly.m5.infrastructure.persistencia.ParticipacionesM4DesdeM5IT",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "exigeTransaccion",
+      "falloTecnicoNoEsFalse",
+      "otraSesionNoCuenta",
+      "proveedorDeM5Registrado",
+      "sesionConHistorial",
+      "sesionSinConvocatorias",
+      "rechazaTransaccionDeSoloLectura",
+      "convocatoriaSinParticipacion"
+    ]
+  },
+  {
+    "module": "m5",
+    "runner": "failsafe",
     "suite": "com.prisaly.m5.infrastructure.persistencia.RepositorioIntentosJpaIT",
-    "tests": 21,
+    "tests": 22,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
@@ -1113,6 +1197,7 @@
       "consultaIntentoPersistido",
       "finalizacionRepetidaSinEfectos",
       "rechazaRespuestaEnIntentoFinalizado",
+      "ordenDeRespuestasConsistente",
       "persisteYRecuperaRespuesta",
       "opcionDeOtraPreguntaSeRevierte",
       "actualizacionesSimultaneasMismaRespuesta",
@@ -1130,47 +1215,249 @@
     ]
   },
   {
-    "module": "m7",
+    "module": "m6",
     "runner": "surefire",
-    "suite": "com.prisaly.m7.M7ObserverTest",
+    "suite": "com.prisaly.m6.application.proxy.EvaluacionProtectionProxyTest",
+    "tests": 8,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "deniedAndUnavailableDecisionsNeverDelegate",
+      "missingProviderDeniesInsteadOfAssigningDefaultPermission",
+      "providerFailureDeniesAndRetainsCauseWithoutCallingDelegate",
+      "eachInvocationChecksAccessAgainWithoutCachingPositiveDecision",
+      "authorizationPrecedesExactlyOneDelegationAndPreservesRequestAndResult",
+      "delegateFailureIsPropagatedWithoutBeingReclassifiedAsAuthorizationFailure",
+      "invalidWiringOrRequestDoesNotExecuteAnAcademicOperation",
+      "absentDecisionIsNotInterpretedAsAuthorization"
+    ]
+  },
+  {
+    "module": "m6",
+    "runner": "surefire",
+    "suite": "com.prisaly.m6.domain.model.CalificacionTest",
+    "tests": 7,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "acceptsPhysicalNumericRangeWithoutInventingPositiveGradeRule",
+      "rejectsEachMandatoryNullWithoutGeneratingDefaults",
+      "rejectsOverflowAndValuesRequiringRoundingWithoutChangingInput",
+      "timestampCannotBeSilentlyRounded",
+      "policyLengthCountsUnicodeCodePointsAndDoesNotRatifyPolicy",
+      "preservesEverySuppliedValueIncludingOpaqueJsonAndNullablePolicy",
+      "recordExposesOnlyImmutableComponentTypesAndFinalInstanceFields"
+    ]
+  },
+  {
+    "module": "m6",
+    "runner": "surefire",
+    "suite": "com.prisaly.m6.domain.model.RetroalimentacionGeneralTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "rejectsEachMandatoryNullWithoutGeneratingDefaults",
+      "rejectsTimestampRequiringPrecisionLoss",
+      "preservesAllFieldsWithoutTrimmingOrInventingContentRules",
+      "recordContainsOnlyImmutableTypesAndFinalInstanceFields"
+    ]
+  },
+  {
+    "module": "m6",
+    "runner": "surefire",
+    "suite": "com.prisaly.m6.domain.strategy.EstrategiaEvaluacionTest",
+    "tests": 6,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "structuralRecordsContainOnlyImmutableComponentsAndFinalFields",
+      "sameCallerCanDelegateToInterchangeableExplicitStrategies",
+      "requestRequiresReferencesWithoutManufacturingIdentifiers",
+      "failurePropagatesWithoutInventingFallbackGrade",
+      "outputPreservesExactDecimalAndOpaqueDocumentWithoutStorageCoercion",
+      "constructingRequestDoesNotExecuteOrSelectStrategy"
+    ]
+  },
+  {
+    "module": "m6",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m6.infrastructure.CalificacionJpaReadIT",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "foreignKeysAndCaseCorrespondenceRemainEnforcedWithOfficialTriggerPriority",
+      "readsAllColumnsByGradeAndPersistentAttemptUuidWithoutMixingAttempts",
+      "officialV003RejectsUpdateAndDeleteAndPreservesStoredGrade",
+      "uniqueAttemptRejectsSecondGradeWithoutChangingOriginal",
+      "repositoryFailuresArePropagatedRatherThanReportedAsMissingGrades",
+      "preservesOfficialDateDefaultAndUnicodePolicyAndDistinguishesJsonNullFromSqlNull",
+      "productionContractsExposeOnlyQueriesAndEntityIsImmutableWithoutPublicSetters",
+      "missingGradeIsEmptyAndNullIdentifiersAreRejected",
+      "readsZeroNegativeAndPhysicalNumericBoundariesExactly"
+    ]
+  },
+  {
+    "module": "m6",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m6.infrastructure.RetroalimentacionGeneralJpaReadIT",
     "tests": 10,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "cases": [
-      "faltaDeObservadorNoEsExito",
+      "productionApiHasOnlyQueriesAndEntityHasNoPublicMutationApi",
+      "rejectsUnknownParticipationAndTeacherThroughOfficialForeignKeys",
+      "textIsPreservedLiterallyIncludingEmptyWhitespaceLineBreaksAndSupplementaryUnicode",
+      "missingFeedbackIsEmptyAndNullIdentifiersAreInvalid",
+      "uniqueParticipationRejectsDuplicateWithoutChangingOriginal",
+      "existingGradeReaderWorksAlongsideFeedbackReaderInSameJpaContext",
+      "readsBothIdentifiersAndAllFiveFieldsWithoutMixingParticipations",
+      "rejectsNullInEachMandatoryColumnIncludingExplicitNullDate",
+      "failuresArePropagatedAndNullInputNeverReachesRepository",
+      "readsPostgresDefaultDateWithoutManufacturingOrLosingMicroseconds"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.ClasificacionErrorCorreoTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "autenticacionEsConfiguracion",
+      "timeoutEsTransitorio",
+      "destinatarioDesconocidoEsPermanente",
+      "cincoXxGenericoEsConfiguracion"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.M4FallbackSinM7Test",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "sinM7SeRegistraElFallbackDeM4"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.M7ObserverTest",
+    "tests": 9,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "servicioRegistraAvisoYEncolaCorreoEnOrden",
+      "adapterDelegaEnServicioSinAutenticarPorUuid",
       "registroEsSincronoYPrevioAExtensiones",
       "identidadEstableYDestinatarioDistinto",
       "camposObligatorios",
-      "falloDeRegistroSePropagaSinEjecutarExtensiones",
-      "contextoAjenoNoProduceAviso",
-      "adapterResuelveContextoYRegistraSinAutenticarPorUuid",
-      "adapterDeniegaSinTransaccionYNoConsulta",
-      "falloPosteriorNoSeOculta",
-      "adapterNoFiltraErroresDelProveedor"
+      "falloDeAvisoNoEncolaCorreo",
+      "adapterDeniegaSinTransaccion",
+      "adapterNoFiltraErroresDelProveedorComoSql",
+      "servicioExigeTransaccionDeEscritura"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.M7WorkerDisabledTest",
+    "tests": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "workerNoSeRegistraSinPropiedad",
+      "workerExigePropiedadesAlHabilitarse"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.PoliticaReintentosTest",
+    "tests": 3,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "topeDeSesentaMinutos",
+      "backoffRatificado",
+      "agotaALosCincoIntentos"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "surefire",
+    "suite": "com.prisaly.m7.ProcesarEnviosPendientesServiceTest",
+    "tests": 4,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "configuracionNoMarcaFallido",
+      "permanenteMarcaFallido",
+      "aceptacionRegistraEnviado",
+      "quintoIntentoTransitorioMarcaFallido"
     ]
   },
   {
     "module": "m7",
     "runner": "failsafe",
     "suite": "com.prisaly.m7.M7ConvocatoriaPostgreSqlIT",
-    "tests": 12,
+    "tests": 14,
     "failures": 0,
     "errors": 0,
     "skipped": 0,
     "cases": [
-      "rechazoDeM4NoGeneraAviso",
+      "dobleRegistroMismaClaveYContenidoNoDuplica",
+      "falloPosteriorEnLaTransaccionExteriorRevierteTodo",
+      "falloAlEncolarCorreoRevierteConvocatoriaYAviso",
+      "rechazoDeM4NoGeneraAvisoNiCorreo",
       "integridadReferencialDeAviso",
-      "falloDespuesDelServicioAntesDeCommitRevierteAmbos",
-      "destinatarioInexistenteRevierteConvocatoria",
-      "convocatoriaYAvisoAtomicosConDestinatarioCorrecto",
-      "observadorPosteriorFallaYRevierteAmbasEscrituras",
-      "dosDestinatariosMismaSesionSonEventosDistintos",
+      "rollbackSiFallaEncoladoTrasAviso",
+      "convocatoriaAvisoYCorreoSeConfirmanJuntos",
+      "exitoSignificaEncoladoNoEntrega",
+      "convocatoriaRegistraAvisoYEncolaCorreoPendiente",
+      "falloAlRegistrarAvisoRevierteConvocatoria",
+      "mismaClaveContenidoIncompatibleRechazaAviso",
       "dosRegistrosConcurrentesDelMismoEventoNoDuplican",
-      "sinConvocatoriaNoSeRegistra",
-      "falloSqlDeAvisoRevierteConvocatoria",
-      "repeticionNoDuplicaNiReescribeLectura",
-      "dosConvocatoriasConcurrentesSoloUnaEsExitosa"
+      "mismaClaveContenidoIncompatibleRechazaEnvio",
+      "unicoProveedorNotificacionPortEsAdaptadorM7"
+    ]
+  },
+  {
+    "module": "m7",
+    "runner": "failsafe",
+    "suite": "com.prisaly.m7.M7EnvioWorkerPostgreSqlIT",
+    "tests": 11,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "agotamientoDeIntentosMarcaFallido",
+      "errorTransitorioProgramaReintento",
+      "configuracionNoMarcaFallido",
+      "reconvocarFallidoNoReactiva",
+      "reconvocarEnviadoEsNoOp",
+      "errorPermanenteMarcaFallido",
+      "leaseAgotadoSinResultadoPasaAFallido",
+      "resultadoSinLeaseNoActualiza",
+      "dosWorkersConcurrentesNoDuplicanEnvioSmtp",
+      "leaseVencidoPermiteRecuperacion",
+      "smtpAceptadoPasaAEnviado"
     ]
   },
   {
@@ -1204,6 +1491,18 @@
       "ausenciaDeProveedorNuncaEquivaleAHistorialVacio",
       "historialDeOtraSesionNoBloqueaEsta",
       "intentoExistenteProtegeHistorial"
+    ]
+  },
+  {
+    "module": "app",
+    "runner": "failsafe",
+    "suite": "com.prisaly.notificaciones.NotificacionPortWiringIT",
+    "tests": 1,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "cases": [
+      "onlyM7ProviderIsRegistered"
     ]
   },
   {
