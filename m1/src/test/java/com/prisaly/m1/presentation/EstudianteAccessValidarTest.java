@@ -13,8 +13,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
- * End-to-end HTTP proof for {@code POST /v1/acceso-estudiante/validar}.
- * Seeds an in-memory challenge (no Flyway / OTP / SMTP / M7 in this step).
+ * HTTP proof for {@code POST /v1/acceso-estudiante/validar}.
+ * Productive default remains disabled (501); enabled path exercises validation only in harness.
  */
 class EstudianteAccessValidarTest {
 
@@ -23,21 +23,31 @@ class EstudianteAccessValidarTest {
     private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
     private static final UUID STUDENT_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
 
-    private MockMvc mockMvc;
     private StudentAccessValidationService validationService;
 
     @BeforeEach
     void setUp() {
         validationService = new StudentAccessValidationService();
-        mockMvc = MockMvcBuilders
-                .standaloneSetup(new EstudianteAccessController(validationService))
-                .setControllerAdvice(new IdentityExceptionHandler())
-                .build();
     }
 
     @Test
-    void validar_withRegisteredChallenge_returnsValidatedStudentIdentity() throws Exception {
+    void validar_whenDisabled_returns501() throws Exception {
+        MockMvc mockMvc = mockMvc(false);
+
+        mockMvc.perform(post("/v1/acceso-estudiante/validar")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {"challengeId":"challenge-dd02-40pct","codigo":"12345678"}
+                                """))
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.code")
+                        .value(EstudianteAccessController.CODE_ESTUDIANTE_ACCESS_PENDING));
+    }
+
+    @Test
+    void validar_whenEnabled_withRegisteredChallenge_returnsValidatedStudentIdentity() throws Exception {
         validationService.registerChallenge(CHALLENGE_ID, CODIGO, USER_ID, STUDENT_ID);
+        MockMvc mockMvc = mockMvc(true);
 
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -52,7 +62,9 @@ class EstudianteAccessValidarTest {
     }
 
     @Test
-    void validar_withUnknownChallenge_deniesAccess() throws Exception {
+    void validar_whenEnabled_withUnknownChallenge_deniesAccess() throws Exception {
+        MockMvc mockMvc = mockMvc(true);
+
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -64,8 +76,9 @@ class EstudianteAccessValidarTest {
     }
 
     @Test
-    void validar_consumesChallenge_secondCallIsDenied() throws Exception {
+    void validar_whenEnabled_consumesChallenge_secondCallIsDenied() throws Exception {
         validationService.registerChallenge(CHALLENGE_ID, CODIGO, USER_ID, STUDENT_ID);
+        MockMvc mockMvc = mockMvc(true);
 
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -82,5 +95,12 @@ class EstudianteAccessValidarTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code")
                         .value(StudentAccessValidationService.CODE_STUDENT_ACCESS_DENIED));
+    }
+
+    private MockMvc mockMvc(boolean studentAccessEnabled) {
+        return MockMvcBuilders
+                .standaloneSetup(new EstudianteAccessController(validationService, studentAccessEnabled))
+                .setControllerAdvice(new IdentityExceptionHandler())
+                .build();
     }
 }

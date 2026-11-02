@@ -165,14 +165,14 @@ class PersonalAuthSecurityIT {
     }
 
     @Test
-    void estudianteValidar_unknownChallenge_isDeniedNot501() throws Exception {
+    void estudianteValidar_remains501WhileStudentAccessDisabled() throws Exception {
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {"challengeId":"challenge-ausente","codigo":"12345678"}
                                 """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code").value("STUDENT_ACCESS_DENIED"));
+                .andExpect(status().isNotImplemented())
+                .andExpect(jsonPath("$.code").value("ESTUDIANTE_ACCESS_PENDING_CONTRACT"));
     }
 
     @Test

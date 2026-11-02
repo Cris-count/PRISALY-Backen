@@ -21,8 +21,14 @@ server:
     context-path: /api
 
 prisaly:
+  m1:
+    student-access:
+      enabled: false
   m4:
     consulta-bd0052:
       enabled: true
+  m7:
+    worker:
+      enabled: false
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
