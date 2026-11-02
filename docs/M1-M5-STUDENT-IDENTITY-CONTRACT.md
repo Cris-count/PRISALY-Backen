@@ -78,3 +78,7 @@ M1 already exposes compilable `StudentAccessPort` for preparatory integration. R
 ## 5. Related
 
 Cross-module integration map (contracts, wiring risks, DD-02 context): [`INTEGRACION-M1-M7.md`](INTEGRACION-M1-M7.md).
+
+Stabilization matrix and pending academic decisions: [`M1-M7-ESTABILIZACION.md`](M1-M7-ESTABILIZACION.md).
+
+Post-ratification test plan (not activated): [`M1-STUDENT-ACCESS-TEST-PLAN.md`](M1-STUDENT-ACCESS-TEST-PLAN.md).
