@@ -13,9 +13,9 @@
 | `IdentityAccessPort` + personnel auth | **Implemented** |
 | `StudentAccessPort` + `AuthenticatedStudent` | **Published (compilable)** |
 | `DenyingStudentAccessService` (safe deny) | **Published** |
-| `POST /v1/acceso-estudiante/validar` | **501** until DD-02 |
-| Real student authentication / token | **Blocked by DD-02** |
-| Runtime `Usuario` → `Estudiante` mapping | **Blocked by DD-02** |
+| `POST /v1/acceso-estudiante/validar` | **Implemented (minimal)** — `challengeId` + código 8 dígitos; éxito `VALIDADO`; fallo `STUDENT_ACCESS_DENIED` |
+| Real student session / cookie / OTP delivery | **Blocked** (sin SMTP, sin V011, denying sigue en `StudentAccessPort`) |
+| Runtime `Usuario` → `Estudiante` mapping | **Blocked by DD-02** (validación usa identidad sembrada en memoria) |
 
 ---
 
@@ -50,7 +50,8 @@ HTTP status mapping is a **presentation** concern:
 | --- | --- |
 | No authenticated identity | **401** |
 | Authenticated (e.g. personnel) but not a student context | **403** (presentation maps domain denial) |
-| `POST /acceso-estudiante/validar` while DD-02 open | **501** |
+| `POST /acceso-estudiante/validar` challenge/código inválido o consumido | **401** (`STUDENT_ACCESS_DENIED`) |
+| `POST /acceso-estudiante/validar` éxito | **200** (`userId`, `studentId`, `challengeId`, `estado=VALIDADO`) |
 
 Domain code `STUDENT_IDENTITY_UNAVAILABLE` is **not** a global HTTP rule in `IdentityExceptionHandler`.
 
@@ -58,7 +59,7 @@ Domain code `STUDENT_IDENTITY_UNAVAILABLE` is **not** a global HTTP rule in `Ide
 
 ## 2. DD-02 (still required for real student auth)
 
-Dirección Central must ratify how students authenticate (correo + código + convocatoria/sesión), what credential M1 issues, lifetime/revocation, and required M4 checks. Until then M1 keeps `/validar` at 501 and the denying adapter.
+`/validar` accepts `challengeId` + 8-digit `codigo` against an in-memory one-time challenge store (test/evidence path). M1 defines `StudentAccessDeliveryPort`; M7 implements an in-memory prep outbox (`InMemoryStudentAccessDeliveryAdapter`) — **not** `NotificacionPort` / `EnvioCorreo`. Issuance registers the challenge then enqueues delivery; prep marks `ENTREGADO_PREP` without SMTP. Flyway V011, productive OTP/SMTP, and session cookies remain blocked. `DenyingStudentAccessService` stays the `StudentAccessPort` adapter until session activation is authorized.
 
 ---
 
@@ -79,7 +80,13 @@ M1 already exposes compilable `StudentAccessPort` for preparatory integration. R
 
 | Documento | Rol |
 | --- | --- |
-| [`DD02-PLAN-IMPLEMENTACION-M1-M7.md`](DD02-PLAN-IMPLEMENTACION-M1-M7.md) | **Enlace canónico** — Plan DD-02 v1.1 para Dirección (sin activación productiva) |
+| [`DD02-PLAN-IMPLEMENTACION-M1-M7.md`](DD02-PLAN-IMPLEMENTACION-M1-M7.md) | **Enlace canónico** — Plan DD-02 v1.1 (ratificación técnica; sin activación productiva) |
+| [`DD02-V010-AUDITORIA.md`](DD02-V010-AUDITORIA.md) | Gate V010 local; numeración condicionada |
+| [`DD02-INVENTARIO-FLYWAY.md`](DD02-INVENTARIO-FLYWAY.md) | Conciliación develop/rama/M4/JAR/historiales |
+| [`DD02-DICCIONARIO-DATOS.md`](DD02-DICCIONARIO-DATOS.md) | Cuatro estructuras DD-02 |
+| [`DD02-DISENO-PERSISTENCIA.md`](DD02-DISENO-PERSISTENCIA.md) | Modelo ER y ciclo de vida |
+| [`DD02-PROPUESTA-MIGRACION.md`](DD02-PROPUESTA-MIGRACION.md) | SQL propuesto (no ejecutar) |
+| [`DD02-PLAN-PRUEBAS-POSTGRES.md`](DD02-PLAN-PRUEBAS-POSTGRES.md) | Integridad, concurrencia, rollback Flyway |
 | [`M1-STUDENT-ACCESS-TEST-PLAN.md`](M1-STUDENT-ACCESS-TEST-PLAN.md) | Plan de pruebas post-ratificación (deny-safe / S1–S10) |
 | [`INTEGRACION-M1-M7.md`](INTEGRACION-M1-M7.md) | Mapa de integración M1–M7 |
 | [`M1-M7-ESTABILIZACION.md`](M1-M7-ESTABILIZACION.md) | Matriz de estabilización M1/M7 |

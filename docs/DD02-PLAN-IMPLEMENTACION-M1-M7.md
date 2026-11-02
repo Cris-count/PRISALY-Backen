@@ -3,8 +3,10 @@
 ## Autenticación estudiantil mediante código temporal institucional
 
 **Responsables:** Integrante 1 — M1 / M7  
-**Estado:** Preparación técnica — lista para ratificación — **sin activación productiva**  
+**Estado:** Ratificación técnica recibida — implementación autorizada bajo condiciones — **sin activación productiva**  
 **Versión:** 1.1  
+**HEAD de referencia de auditoría:** `d85bf85` (`feature/m1-m7-estabilizacion`)  
+**Auditoría / preparación:** [`DD02-V010-AUDITORIA.md`](DD02-V010-AUDITORIA.md) · [`DD02-INVENTARIO-FLYWAY.md`](DD02-INVENTARIO-FLYWAY.md) · diccionario / diseño / SQL / pruebas Postgres (ver contrato M1–M5 § Related)  
 **Supersede:** borrador v1.0 (dictamen técnico + cinco precisiones de ratificación)
 
 ---
@@ -16,14 +18,15 @@
 | DD02-12 | Fallo al **encolar** (rollback) ≠ fallo **SMTP** posterior (reintento / recuperación) |
 | Idempotencia M1–M7 | Una TX PostgreSQL + **Outbox** cifrada; SMTP fuera de la TX |
 | Seguridad | Bearer de **personal** y cookie de **estudiante** separados; sin cruce |
-| V010 | **Cero DDL** hasta autorización explícita de Dirección |
-| Parámetros OTP | Valores **recomendados**, configurables tras ratificación |
+| V010 (M4 propuesta) | Intacta; excluida de `db/migration` por empaque M4 (no por location exclusiva en app) |
+| Parámetros OTP | **Ratificados** (8 dígitos, 5 min, 5 intentos, reenvío 60 s, sesión 8 h, inactividad 30 min) |
+| DDL DD-02 | Propuesta **V011** en app — **no creada** hasta conciliar bases compartidas |
 
-**Estado operativo vigente (sin cambio de código productivo en esta entrega):**
+**Estado operativo vigente:**
 
 - `DenyingStudentAccessService` activo.
 - `StudentAccessPort` / `AuthenticatedStudent` sin cambio de firma.
-- V001–V009 intactas; **V010 no creada**.
+- V001–V009 intactas; V010 M4 intacta fuera de ejecución automática; **V011 no creada**.
 - SMTP productivo y auth estudiantil **no** habilitados.
 
 ---
@@ -187,9 +190,11 @@ M7 no valida credenciales ni crea sesiones.
 
 ---
 
-## 6. Diseño de persistencia (candidato V010)
+## 6. Diseño de persistencia (candidato V011)
 
-**Cero DDL hasta autorización explícita.** V010 es propuesta, no commit.
+**Gate local aprobado** ([`DD02-V010-AUDITORIA.md`](DD02-V010-AUDITORIA.md)). **V011 no se crea** hasta conciliar bases compartidas y autorización explícita. No reutilizar el número V010 (artefacto M4).
+
+Script previsto (cuando se autorice): `app/src/main/resources/db/migration/V011__dd02_acceso_estudiante.sql`
 
 | Tabla candidata | Rol |
 | --- | --- |
@@ -297,22 +302,22 @@ Plan de pruebas deny-safe / S1–S10 y enlace de navegación: partir del contrat
 Respuesta formal pedida sobre:
 
 1. **Parámetros** de autenticación (recomendados abajo).
-2. **Migración V010** (autorizar diseño/DDL; hoy cero DDL).
-3. **Cifrado AES-256-GCM** de la Outbox OTP.
-4. **Persistencia y administración de sesiones** estudiantiles.
+2. **Migración V011** (autorizar DDL tras bases compartidas; hoy **sin archivo**).
+3. **Cifrado AES-256-GCM** de la Outbox OTP — ratificado.
+4. **Persistencia y administración de sesiones** estudiantiles — ratificado.
 
-| Parámetro | Valor recomendado | Estado |
+| Parámetro | Valor | Estado |
 | --- | --- | --- |
-| Longitud OTP | 8 dígitos | Pendiente ratificación |
-| Vigencia OTP | 5 minutos | Pendiente |
-| Sesión máxima | 8 horas | Pendiente |
-| Inactividad | 30 minutos | Pendiente |
-| Intentos máximos | 5 | Pendiente |
-| Reenvío mínimo | 60 segundos | Pendiente |
-| Revocación | Consumo, reenvío, vencimiento o revocación explícita | Pendiente |
-| Persistencia | V010 | Pendiente — **sin DDL** |
-| Cifrado cola OTP | AES-256-GCM | Pendiente |
-| Sesiones | Persistencia compartida segura + cookie | Pendiente |
+| Longitud OTP | 8 dígitos | Ratificado |
+| Vigencia OTP | 5 minutos | Ratificado |
+| Sesión máxima | 8 horas | Ratificado |
+| Inactividad | 30 minutos | Ratificado |
+| Intentos máximos | 5 | Ratificado |
+| Reenvío mínimo | 60 segundos | Ratificado |
+| Revocación | Consumo, reenvío, vencimiento o revocación explícita | Ratificado |
+| Persistencia DDL | **V011** (no V010) | Gate local OK; bases compartidas **pendientes**; archivo **no creado** |
+| Cifrado cola OTP | AES-256-GCM | Ratificado |
+| Sesiones | Persistencia compartida segura + cookie | Ratificado |
 
 ---
 
@@ -320,23 +325,23 @@ Respuesta formal pedida sobre:
 
 | Fase | Estado | Contenido |
 | --- | --- | --- |
-| Preparación | **En curso (este documento)** | Plan v1.1, contratos, Outbox, seguridad |
-| Ratificación | Pendiente | Parámetros, V010, AES-GCM, sesiones |
-| Implementación | Bloqueada hasta ratificación (+ OK V010) | M1 credenciales/sesión; M7 entrega; IT DD02 |
-| Activación | Bloqueada | Acta Dirección; regresión; flag en entorno autorizado |
+| Preparación | Cerrada (plan v1.1 + auditoría V010) | Contratos, Outbox, seguridad, gate local |
+| Ratificación técnica | **Recibida** | Parámetros, AES-GCM, sesiones |
+| Conciliación Flyway compartida | **Pendiente** | Bloquea V011 |
+| Implementación | Bloqueada hasta OK V011 | M1/M7/app detrás de flag |
+| Activación | Bloqueada | Acta final; regresión; flag |
 
-Orden técnico posterior a OK:
+Orden técnico posterior a OK de bases compartidas + V011:
 
-1. Ratificar mecanismo y parámetros.  
-2. Autorizar V010 → aplicar DDL.  
-3. M1 persistencia + políticas.  
-4. M7 Outbox + adaptador + worker OTP (off by default).  
-5. Sesión estudiantil + separación Security.  
-6. Adaptador real de `StudentAccessPort` detrás del flag (denying sigue siendo default).  
-7. Ejecutar DD02-01…14 (12a/12b).  
-8. Validar consumo M4/M5.  
-9. Autorización de activación.  
-10. Habilitar flag solo en entorno autorizado.
+1. Autorizar y crear `V011__dd02_acceso_estudiante.sql`.  
+2. M1 persistencia + políticas OTP/sesión.  
+3. M7 Outbox + adaptador + worker OTP (off by default).  
+4. Sesión estudiantil + separación Security.  
+5. Adaptador real de `StudentAccessPort` detrás del flag (denying default).  
+6. Ejecutar DD02-01…14 (12a/12b).  
+7. Validar consumo M4/M5.  
+8. Autorización de activación.  
+9. Habilitar flag solo en entorno autorizado.
 
 ---
 
@@ -358,4 +363,4 @@ Orden técnico posterior a OK:
 
 ---
 
-**Estado final v1.1:** PREPARACIÓN TÉCNICA LISTA PARA RATIFICACIÓN. DENYING ACTIVO. V010 NO CREADA. PRODUCCIÓN NO HABILITADA. REPOSITORIO PRODUCTIVO SIN CAMBIOS DE CÓDIGO EN ESTA ENTREGA DOCUMENTAL.
+**Estado final v1.1 (post-gate local):** RATIFICACIÓN TÉCNICA RECIBIDA. DENYING ACTIVO. V010 M4 INTACTA (fuera de `db/migration` en JAR). V011 NO CREADA. BASES COMPARTIDAS PENDIENTES. PRODUCCIÓN NO HABILITADA.
