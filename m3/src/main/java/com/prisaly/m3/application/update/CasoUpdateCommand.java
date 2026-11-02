@@ -13,6 +13,41 @@ public sealed interface CasoUpdateCommand {
     enum CampoEscenario { TITULO, CONTEXTO, INSTRUCCIONES, ORDEN }
     enum CampoPregunta { ENUNCIADO, TEXTO_AYUDA, ORDEN }
 
+    /** Explicit correctness; no defaults, implicit deletion or renumbering. */
+    record AgregarOpcionRespuestaCommand(UUID idOpcion, UUID idPregunta, String texto,
+            boolean esCorrecta, String explicacion, int orden) implements CasoUpdateCommand {
+        public AgregarOpcionRespuestaCommand {
+            Objects.requireNonNull(idOpcion, "idOpcion");
+            Objects.requireNonNull(idPregunta, "idPregunta");
+            requiredText(texto, Integer.MAX_VALUE);
+            positiveInteger(orden);
+        }
+    }
+
+    /** Explicit initial editing state/visibility; dates use the official SQL creation default. */
+    record AgregarPreguntaCommand(UUID idPregunta, UUID idEscenario, String enunciado,
+            String textoAyuda, String estadoEdicion, boolean visible, int orden) implements CasoUpdateCommand {
+        public AgregarPreguntaCommand {
+            Objects.requireNonNull(idPregunta, "idPregunta");
+            Objects.requireNonNull(idEscenario, "idEscenario");
+            requiredText(enunciado, Integer.MAX_VALUE);
+            if (!"Borrador".equals(estadoEdicion) && !"Lista".equals(estadoEdicion)) {
+                throw new IllegalArgumentException("estadoEdicion must be Borrador or Lista");
+            }
+            positiveInteger(orden);
+        }
+    }
+
+    /** Empty scenario; initial activity is the official SQL DEFAULT true. */
+    record AgregarEscenarioCommand(UUID idEscenario, String titulo, String contexto,
+            String instrucciones, int orden) implements CasoUpdateCommand {
+        public AgregarEscenarioCommand {
+            Objects.requireNonNull(idEscenario, "idEscenario");
+            optionalText(titulo, 200);
+            positiveInteger(orden);
+        }
+    }
+
     record ActualizarDatosCasoCommand(CampoCaso campo, Object valor) implements CasoUpdateCommand {
         public ActualizarDatosCasoCommand {
             Objects.requireNonNull(campo, "campo");

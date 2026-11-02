@@ -1,5 +1,47 @@
 # M3-INC-10B — Comandos parciales y precondición del agregado
 
+## Extensión autorizada M3-INC-10D
+
+Se añade únicamente AgregarEscenarioCommand para un escenario vacío, padre
+Borrador existente sin bloqueo, UUID y orden explícitos y DEFAULT activo=true.
+No cambian firmas de puertos, formato m3-v2 ni comandos anteriores. Se conserva
+el protocolo transaccional y la prioridad de errores. La matriz de cobertura,
+SQL, pruebas nuevas y decisiones pendientes están en [M3-INC-10D](M3-INC-10D.md).
+Las notas históricas siguientes conservan el alcance/estado de sus incrementos
+originales. Pruebas 10D pendientes de ejecución; no se declara completo M3.
+
+## Registro posterior M3-INC-10C — consistencia RF-09
+
+Autorización del Integrante 2: alinear isAvailableForScheduling() con V009 sin
+ampliar contratos. Ahora exige isPublished() && activo(); isPublished() conserva
+su semántica. No se añaden condiciones de rúbrica, visibilidad, evaluación ni
+programación previa. No se modifican persistencia, triggers ni políticas pendientes.
+
+CasoMetadataTest añade dos métodos: matriz explícita de los tres estados y ambos
+valores de actividad, con igualdad completa y referencias de contenido conservadas;
+y disponibilidad sin rúbrica, preguntas ni fechas. La matriz usa además un bloqueo
+existente para comprobar que no se convierte en un requisito adicional.
+
+Contraste estático: V009 rechaza estado distinto de Publicado o activo distinto de
+true con SQLSTATE 23514 y CONSTRAINT tr_sesion_rf09_caso_programable. La consulta
+del servicio es una observación del objeto recibido, no una reserva concurrente:
+la decisión definitiva al insertar Sesion sigue protegida por PostgreSQL.
+
+DOCKER-TESTS.md concilia pendientes históricos y documenta comandos y una matriz
+PostgreSQL manual con fixtures, triggers activos, comprobación de la restricción
+específica y ROLLBACK. No se amplían las IT fuera de los archivos autorizados.
+
+Evidencia previa reportada por el usuario: 89 unitarias, 26 integraciones anteriores,
+33 integraciones adicionales y compilación satisfactoria. Se conservan las notas
+históricas de este documento: sus menciones a ejecución pendiente describen cada
+intervención original, no invalidan los resultados reportados posteriormente.
+Falta vincular reportes de ejecución y commit para certificar sus recuentos.
+10C no fue ejecutado: no se ejecutaron Git, Maven, Docker ni pruebas. Resultados
+nuevos y matriz PostgreSQL pendientes de validación del Integrante 2.
+
+Siguen pendientes publicación/copia persistidas, DD-03, permisos M1 y conciliación
+ARQ. No se avanza a 10D ni se modifican decisiones académicas.
+
 ## Antecedente y alcance
 
 Dirección Técnica autorizó, mediante la solicitud de este incremento, comandos
