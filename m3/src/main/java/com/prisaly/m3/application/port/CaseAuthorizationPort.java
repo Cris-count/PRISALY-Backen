@@ -6,6 +6,8 @@ package com.prisaly.m3.application.port;
  */
 public interface CaseAuthorizationPort {
 
+    boolean canCreateCase(String userId, String docenteId);
+
     boolean canModifyCase(String userId, String caseId);
 
     boolean canPublishCase(String userId, String caseId);

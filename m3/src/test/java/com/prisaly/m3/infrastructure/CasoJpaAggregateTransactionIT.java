@@ -64,7 +64,9 @@ class CasoJpaAggregateTransactionIT {
     @BeforeAll
     static void prepareDatabase() throws Exception {
         Path migrations = canonicalMigrationDirectory();
-        postgres = new PostgreSQLContainer("postgres:16.15");
+        postgres = new PostgreSQLContainer("postgres:16.15")
+                .withTmpFs(Map.of("/var/lib/postgresql/data", "rw"))
+                .withStartupTimeout(java.time.Duration.ofSeconds(120));
         postgres.start();
         try (var connection = DriverManager.getConnection(
                 postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());

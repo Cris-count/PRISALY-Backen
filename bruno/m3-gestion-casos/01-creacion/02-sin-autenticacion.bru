@@ -1,0 +1,45 @@
+meta {
+  name: Crear sin autenticación
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/casos
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "idCaso": "{{nuevoCasoUuid}}",
+    "titulo": "Borrador de prueba manual",
+    "tiempoEstimadoSegundos": 300,
+    "historia": null,
+    "desarrolloSituacional": null
+  }
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
+}
+
+script:pre-request {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((bru.getVar("nuevoCasoUuid") || bru.getEnvVar("nuevoCasoUuid")) || "")) { throw new Error("Configurar UUID explícito válido en nuevoCasoUuid"); }
+}
+
+tests {
+  test("Sin detalles internos", function () {
+    expect(JSON.stringify(res.body)).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\.hibernate/i);
+  });
+}
+
+docs {
+  No envía Authorization. Esperado: 401 y ninguna inserción.
+  Estado: preparada; no ejecutada. No constituye evidencia académica.
+}

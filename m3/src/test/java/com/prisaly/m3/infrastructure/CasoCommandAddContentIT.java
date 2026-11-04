@@ -60,7 +60,10 @@ class CasoCommandAddContentIT {
                 cwd.resolve("../app/src/main/resources/db/migration").normalize()).stream()
                 .filter(p -> MIGRATIONS.stream().allMatch(n -> Files.isRegularFile(p.resolve(n))))
                 .findFirst().orElseThrow(() -> new IllegalStateException("Official V001-V009 not found"));
-        postgres = new PostgreSQLContainer("postgres:16.15"); postgres.start();
+        postgres = new PostgreSQLContainer("postgres:16.15")
+                .withTmpFs(Map.of("/var/lib/postgresql/data", "rw"))
+                .withStartupTimeout(java.time.Duration.ofSeconds(120));
+        postgres.start();
         datasource = new DriverManagerDataSource(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword());
         Properties properties = new Properties();
         properties.setProperty("connectTimeout", "5"); properties.setProperty("socketTimeout", "12");

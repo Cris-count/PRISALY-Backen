@@ -1,0 +1,1 @@
+BLOQUEADO: canModifyCase deniega explícitamente y no existe política ratificada ni controlador PATCH. No hay solicitudes ejecutables. Pendientes: actualización autorizada, sin autenticación, sin autorización, huella obsoleta, huella malformada, estado incompatible, concurrencia y F3-03. Mantener siete comandos y m3-v2; no usar update(Caso).

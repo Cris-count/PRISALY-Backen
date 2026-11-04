@@ -1,0 +1,1 @@
+BLOQUEADO: no existe política institucional de lectura/visibilidad aprobada ni controlador GET. No hay solicitudes ejecutables. Pendientes: caso existente, inexistente/no visible, sin autenticación y sin autorización. No interpretar un 404 del router como una decisión de visibilidad.

@@ -1,0 +1,909 @@
+{
+  "info": {
+    "name": "PRISALY M3 — DC-M3-REST-03",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Colección preparada, sin resultados de ejecución. Solo POST está implementado. GET/PATCH están bloqueados por autorización y no contienen solicitudes. baseUrl ya incluye /api. Tokens exclusivamente en sesión/local, nunca exportar secretos. HEAD base: ac32db0c38a99d8eaeb9ba9403718ddfce7d8a85; cambios de trabajo aún sin commit."
+  },
+  "auth": {
+    "type": "noauth"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "noPermAccessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "caseId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "nuevoCasoUuid",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "expectedFingerprint",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01 — Creación",
+      "item": [
+        {
+          "name": "Crear borrador válido",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Borrador creado con UUID solicitado\", function () { const body = pm.response.json(); pm.expect(body.estado).to.eql(\"BORRADOR\"); pm.expect(body.idCaso).to.eql(pm.variables.get(\"nuevoCasoUuid\").toLowerCase()); pm.expect(Object.keys(body).sort()).to.eql([\"estado\", \"idCaso\"]); });",
+                  "if (pm.response.code === 201) { const id = pm.response.json().idCaso; pm.collectionVariables.set(\"caseId\", id); pm.environment.set(\"caseId\", id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Cuenta activa M1 con CREAR_CASO. Aportar un UUID nuevo explícito. Esperado: 201 solo después de commit, idCaso y BORRADOR.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear sin autenticación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "No envía Authorization. Esperado: 401 y ninguna inserción.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear sin permiso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"noPermAccessToken\")) { throw new Error(\"Falta token institucional real: noPermAccessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{noPermAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Token real M1 de cuenta activa sin CREAR_CASO. Un token inválido produce 401 y no satisface esta prueba. Esperado: 403.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear con UUID inválido",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"not-a-uuid\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Token autorizado y UUID malformado. Esperado: 400 antes de insertar.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear sin título",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Omite titulo. Esperado: 400 sin asignar un título predeterminado.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear con tiempo cero",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 0,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Viola el tiempo estrictamente positivo. Esperado: 400.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear con campo desconocido",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null,\n  \"campoNoAutorizado\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "El DTO no ignora propiedades desconocidas. Esperado: 400.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar propietario en JSON",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null,\n  \"docenteId\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Incluso null para docenteId es un campo no admitido. El propietario procede exclusivamente de M1. Esperado: 400.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar UUID ya creado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"caseId\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en caseId\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"CASE_CONFLICT\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{caseId}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Ejecutar después del alta válida y mantener caseId de esa respuesta. Esperado: 409, sin sobrescribir el caso original.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar tiempo decimal",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 1.5,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "No convertir decimales a enteros. Esperado: 400.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar título de 151 caracteres",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Límite físico y de dominio de 150 puntos de código. Esperado: 400.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Rechazar NUL en narrativa",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": \"\\u0000\",\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "NUL no puede almacenarse en texto PostgreSQL. Esperado: 400 antes de persistir.\nEstado: preparada, no ejecutada."
+          },
+          "response": []
+        },
+        {
+          "name": "Crear con tiempo negativo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.variables.get(\"accessToken\")) { throw new Error(\"Falta token institucional real: accessToken\"); }",
+                  "if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(pm.variables.get(\"nuevoCasoUuid\") || \"\")) { throw new Error(\"Configurar UUID explícito válido en nuevoCasoUuid\"); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP esperado: 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"Sin detalles internos\", function () { pm.expect(pm.response.text()).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\\.hibernate/i); });",
+                  "pm.test(\"Código de error\", function () { pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{nuevoCasoUuid}}\",\n  \"titulo\": \"Borrador de prueba manual\",\n  \"tiempoEstimadoSegundos\": -1,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            },
+            "description": "Tiempo estimado negativo explícito. Cuenta M1 autorizada. Esperado: 400 INVALID_CASE_REQUEST sin INSERT. Preparada, todavía no ejecutada."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "02 — Consulta — BLOQUEADA",
+      "description": "BLOQUEADO: no existe política institucional de lectura/visibilidad aprobada ni controlador GET. No hay solicitudes ejecutables. Pendientes: caso existente, inexistente/no visible, sin autenticación y sin autorización. No interpretar un 404 del router como una decisión de visibilidad.",
+      "item": []
+    },
+    {
+      "name": "03 — Actualización — BLOQUEADA",
+      "description": "BLOQUEADO: canModifyCase deniega explícitamente y no existe política ratificada ni controlador PATCH. No hay solicitudes ejecutables. Pendientes: actualización autorizada, sin autenticación, sin autorización, huella obsoleta, huella malformada, estado incompatible, concurrencia y F3-03. Mantener siete comandos y m3-v2; no usar update(Caso).",
+      "item": []
+    }
+  ]
+}

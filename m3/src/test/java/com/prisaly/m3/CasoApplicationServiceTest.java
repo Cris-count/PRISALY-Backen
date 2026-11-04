@@ -46,6 +46,7 @@ class CasoApplicationServiceTest {
     @BeforeEach
     void setUp() {
         authorizationPort = mock(CaseAuthorizationPort.class);
+        when(authorizationPort.canCreateCase(anyString(), anyString())).thenReturn(true);
         when(authorizationPort.canModifyCase(anyString(), anyString())).thenReturn(true);
         when(authorizationPort.canPublishCase(anyString(), anyString())).thenReturn(true);
         repository = mock(CasoRepositoryPort.class);
@@ -65,7 +66,7 @@ class CasoApplicationServiceTest {
         assertEquals(caseId, actual.id());
         var order = org.mockito.Mockito.inOrder(builder, authorizationPort, repository);
         order.verify(builder).buildDraft();
-        order.verify(authorizationPort).canModifyCase("docente-1", caseId);
+        order.verify(authorizationPort).canCreateCase("docente-1", expected.docenteId());
         order.verify(repository).insert(org.mockito.ArgumentMatchers.same(expected));
         order.verifyNoMoreInteractions();
         org.mockito.Mockito.verifyNoMoreInteractions(repository);
@@ -73,11 +74,22 @@ class CasoApplicationServiceTest {
 
     @Test
     void createDraftDeniedAuthorizationDoesNotInsert() {
-        when(authorizationPort.canModifyCase("denied", "case-denied")).thenReturn(false);
+        when(authorizationPort.canCreateCase("denied", "docente-1")).thenReturn(false);
         CasoDomainException error = assertThrows(CasoDomainException.class,
                 () -> service.createDraft("denied", completeCaseBuilder("case-denied")));
         assertEquals(CasoApplicationService.CODE_FORBIDDEN, error.code());
         org.mockito.Mockito.verifyNoInteractions(repository);
+    }
+
+    @Test
+    void creationPermissionDoesNotRequireModificationOrPublicationPermission() {
+        when(authorizationPort.canModifyCase(anyString(), anyString())).thenReturn(false);
+        when(authorizationPort.canPublishCase(anyString(), anyString())).thenReturn(false);
+        Caso draft = service.createDraft("docente-1", completeCaseBuilder("creation-only"));
+        verify(authorizationPort).canCreateCase("docente-1", draft.docenteId());
+        verify(authorizationPort, never()).canModifyCase(anyString(), anyString());
+        verify(authorizationPort, never()).canPublishCase(anyString(), anyString());
+        verify(repository).insert(draft);
     }
 
     @Test
