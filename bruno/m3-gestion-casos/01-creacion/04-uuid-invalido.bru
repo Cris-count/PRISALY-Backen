@@ -1,0 +1,46 @@
+meta {
+  name: Crear con UUID inválido
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/casos
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "idCaso": "not-a-uuid",
+    "titulo": "Borrador de prueba manual",
+    "tiempoEstimadoSegundos": 300,
+    "historia": null,
+    "desarrolloSituacional": null
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq INVALID_CASE_REQUEST
+}
+
+script:pre-request {
+  if (!(bru.getVar("accessToken") || bru.getEnvVar("accessToken"))) { throw new Error("Falta token institucional real: accessToken"); }
+}
+
+tests {
+  test("Sin detalles internos", function () {
+    expect(JSON.stringify(res.body)).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\.hibernate/i);
+  });
+}
+
+docs {
+  Token autorizado y UUID malformado. Esperado: 400 antes de insertar.
+  Estado: preparada; no ejecutada. No constituye evidencia académica.
+}

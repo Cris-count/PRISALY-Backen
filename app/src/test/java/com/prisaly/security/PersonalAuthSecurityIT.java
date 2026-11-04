@@ -35,7 +35,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class PersonalAuthSecurityIT {
 
     @Container
-    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16.15");
+    static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16.15")
+            .withTmpFs(java.util.Map.of("/var/lib/postgresql/data", "rw"))
+            .withStartupTimeout(java.time.Duration.ofSeconds(120));
 
     @DynamicPropertySource
     static void datasourceProps(DynamicPropertyRegistry registry) {
