@@ -14,6 +14,7 @@ El acceso estudiantil productivo, el primer inicio académico y SMTP siguen bloq
 | [Resultados verificados](revision-m4-m5/evidence/RESULTADO.md) | Pruebas ejecutadas, alcance y enlaces a evidencia actual |
 | [Conciliación BD-005.2](conciliacion-bd0052/INFORME.md) | Matriz de columnas, tres estados oficiales, RF09/F303, transacciones y tratamiento de V010 |
 | [Contratos y endpoints](conciliacion-bd0052/CONTRATOS-Y-ENDPOINTS.md) | Puertos M4–M5, errores, tiempo, reanudación, repetición y diagramas |
+| [Plan de Pruebas PT-DCP-01 M4](../../docs/PT-DCP-01-M4.md) | Fichas técnicas oficiales, matriz Apartado 5 y trazabilidad de 182 pruebas M4 |
 | [Decisiones REST de M5](../../m5/docs/M5-REST-DEPENDENCIAS-Y-DECISIONES.md) | Operaciones internas, acceso estudiantil y decisiones académicas pendientes |
 
 Herramientas conservadas: [consulta de historial V010, solo lectura](conciliacion-bd0052/CONSULTAS-V010.sql), [verificación del paquete](conciliacion-bd0052/check-package.ps1) y [recolección de resultados por hora de inicio](conciliacion-bd0052/collect-evidence.ps1).
