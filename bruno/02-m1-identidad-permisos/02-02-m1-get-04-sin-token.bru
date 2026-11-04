@@ -1,0 +1,20 @@
+meta {
+  name: 02-02 | M1-GET-04 | Rechazar consulta sin token
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/me
+  body: none
+  auth: none
+}
+
+docs {
+  M1-GET-04. Sin header Authorization. No usa ni altera accessToken.
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
+}

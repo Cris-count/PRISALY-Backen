@@ -1,0 +1,37 @@
+meta {
+  name: 04-05 | M7-via-M4-02 | Rechazar operación sin permiso
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{baseUrl}}/m4/sesiones
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{noPermAccessToken}}
+}
+
+body:json {
+  {
+    "casoId": "{{casoIdBruno}}",
+    "titulo": "Sesion Bruno sin GESTIONAR_SESION",
+    "mensajePersonalizado": "Debe fallar",
+    "fechaInicio": "2030-11-11T14:00:00Z",
+    "fechaFin": "2030-11-11T16:00:00Z",
+    "tiempoMaximoParticipacionSegundos": 3600
+  }
+}
+
+docs {
+  M7-via-M4-02. 403 M4-SIN-PERMISO. Sin sesión nueva, M7 no encola.
+  Usa noPermAccessToken. No altera sesionId del flujo positivo.
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq M4-SIN-PERMISO
+}

@@ -1,0 +1,47 @@
+meta {
+  name: Rechazar UUID ya creado
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{baseUrl}}/v1/casos
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "idCaso": "{{caseId}}",
+    "titulo": "Borrador de prueba manual",
+    "tiempoEstimadoSegundos": 300,
+    "historia": null,
+    "desarrolloSituacional": null
+  }
+}
+
+assert {
+  res.status: eq 409
+  res.body.code: eq CASE_CONFLICT
+}
+
+script:pre-request {
+  if (!(bru.getVar("accessToken") || bru.getEnvVar("accessToken"))) { throw new Error("Falta token institucional real: accessToken"); }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((bru.getVar("caseId") || bru.getEnvVar("caseId")) || "")) { throw new Error("Configurar UUID explícito válido en caseId"); }
+}
+
+tests {
+  test("Sin detalles internos", function () {
+    expect(JSON.stringify(res.body)).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\.hibernate/i);
+  });
+}
+
+docs {
+  Ejecutar después del alta válida y mantener caseId de esa respuesta. Esperado: 409, sin sobrescribir el caso original.
+  Estado: preparada; no ejecutada. No constituye evidencia académica.
+}

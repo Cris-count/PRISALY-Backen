@@ -36,7 +36,9 @@ public final class CasoApplicationService {
 
     public Caso createDraft(String userId, CasoBuilder builder) {
         Caso draft = builder.buildDraft();
-        assertCanModify(userId, draft.id());
+        if (!authorizationPort.canCreateCase(userId, draft.docenteId())) {
+            throw new CasoDomainException(CODE_FORBIDDEN, "Case creation is not authorized");
+        }
         repository.insert(draft);
         return draft;
     }

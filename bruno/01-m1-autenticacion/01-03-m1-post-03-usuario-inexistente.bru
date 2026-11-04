@@ -1,0 +1,32 @@
+meta {
+  name: 01-03 | M1-POST-03 | Rechazar usuario inexistente
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{unknownEmail}}",
+    "password": "{{personnelPassword}}"
+  }
+}
+
+docs {
+  M1-POST-03. ghost.bruno@prisaly.local no debe existir.
+  No sobrescribe accessToken.
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq AUTH_FAILED
+}

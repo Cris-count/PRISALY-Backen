@@ -1,0 +1,32 @@
+meta {
+  name: 01-04 | M1-NEG-01 | Rechazar usuario inactivo
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{inactiveEmail}}",
+    "password": "{{inactivePassword}}"
+  }
+}
+
+docs {
+  M1-NEG-01. Requiere seed M1 (inactive.bruno@prisaly.local).
+  No sobrescribe accessToken.
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq AUTH_FAILED
+}

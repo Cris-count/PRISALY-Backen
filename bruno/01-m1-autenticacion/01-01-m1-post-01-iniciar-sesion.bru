@@ -1,0 +1,42 @@
+meta {
+  name: 01-01 | M1-POST-01 | Iniciar sesión correctamente
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelEmail}}",
+    "password": "{{personnelPassword}}"
+  }
+}
+
+docs {
+  M1-POST-01. Precondiciones: entorno local.secrets (password no vacío), seed M1, backend activo.
+  Guarda accessToken en variable de ejecución (bru.setVar). No versionar el token.
+  Si personnelPassword está vacío, HTTP 400: preparar local.secrets; no es fallo de M1.
+}
+
+assert {
+  res.status: eq 200
+  res.body.accessToken: isDefined
+  res.body.tokenType: eq Bearer
+  res.body.authPrototype: eq TD-M1-AUTH-PROVISIONAL
+  res.body.correo: eq {{personnelEmail}}
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("accessToken", res.body.accessToken);
+  }
+}

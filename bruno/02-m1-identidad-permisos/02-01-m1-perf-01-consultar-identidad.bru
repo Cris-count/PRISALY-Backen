@@ -1,0 +1,27 @@
+meta {
+  name: 02-01 | M1-PERF-01 | Consultar mi identidad
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  M1-PERF-01. Precondición: 01-01 ejecutado (accessToken de sesión).
+  GET /me no devuelve el token (accessToken null en el DTO).
+}
+
+assert {
+  res.status: eq 200
+  res.body.correo: eq {{personnelEmail}}
+  res.body.tokenType: eq Bearer
+  res.body.authPrototype: eq TD-M1-AUTH-PROVISIONAL
+}

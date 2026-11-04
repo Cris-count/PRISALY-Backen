@@ -1,0 +1,32 @@
+meta {
+  name: 01-02 | M1-POST-02 | Rechazar contraseña incorrecta
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelEmail}}",
+    "password": "definitely-wrong-password"
+  }
+}
+
+docs {
+  M1-POST-02. No guarda ni sobrescribe accessToken.
+  Esperado: 401 AUTH_FAILED (mismo código que usuario inexistente).
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq AUTH_FAILED
+}

@@ -1,0 +1,41 @@
+meta {
+  name: 04-03 | M7-via-M4-01 | Convocar estudiante
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "estudianteId": "{{estudianteIdBruno}}"
+  }
+}
+
+docs {
+  M7-via-M4-01. M7 no tiene REST. M4 NotificacionPort persiste Aviso + EnvioCorreo Pendiente.
+  HTTP 201 confirma la convocatoria, no la entrega SMTP (worker deshabilitado).
+  Precondiciones: 04-02 (sesionId), seed estudiante 22222222-...-2201.
+}
+
+assert {
+  res.status: eq 201
+  res.body.id: isDefined
+  res.body.sesionId: isDefined
+  res.body.estudianteId: eq {{estudianteIdBruno}}
+}
+
+script:post-response {
+  if (res.status === 201 && res.body && res.body.id) {
+    bru.setVar("convocatoriaId", res.body.id);
+  }
+}

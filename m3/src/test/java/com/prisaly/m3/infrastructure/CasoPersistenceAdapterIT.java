@@ -204,6 +204,7 @@ class CasoPersistenceAdapterIT {
                 }
             });
             var auth = new CaseAuthorizationPort() {
+                public boolean canCreateCase(String user, String owner) { return false; }
                 public boolean canModifyCase(String user, String id) { return false; }
                 public boolean canPublishCase(String user, String id) {
                     assertTrue(org.springframework.transaction.support.TransactionSynchronizationManager.isActualTransactionActive());
@@ -305,6 +306,7 @@ class CasoPersistenceAdapterIT {
 
     private static CasoPublicationPort publication(boolean allowed) {
         return publication(new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
             public boolean canModifyCase(String user, String id) { return false; }
             public boolean canPublishCase(String user, String id) { return allowed; }
         });
@@ -407,7 +409,8 @@ class CasoPersistenceAdapterIT {
     private static CasoApplicationService creationService() {
         // Local fixture authorization only: no claim of effective M1 integration.
         return new CasoApplicationService(new CaseAuthorizationPort() {
-            public boolean canModifyCase(String user, String caseId) { return true; }
+            public boolean canCreateCase(String user, String owner) { return true; }
+            public boolean canModifyCase(String user, String caseId) { return false; }
             public boolean canPublishCase(String user, String caseId) { return false; }
         }, repository);
     }

@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "PRISALY-M3",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}

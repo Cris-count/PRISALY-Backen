@@ -1,0 +1,24 @@
+meta {
+  name: 02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/autorizacion/crear-caso
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{noPermAccessToken}}
+}
+
+docs {
+  M1-GET-05. Precondición: 02-04-prep. Usa noPermAccessToken, no el token del docente.
+}
+
+assert {
+  res.status: eq 403
+  res.body.code: eq FORBIDDEN
+}

@@ -1,0 +1,900 @@
+{
+  "info": {
+    "name": "PRISALY — Integrante 1 (M1/M7)",
+    "description": "Espejo de bruno/ (carpetas 00–05). Tokens en variables de colección (accessToken, noPermAccessToken, sesionId). Contraseñas solo en Current value del entorno. Orden: 00 → 05. HTTP 201 de convocatoria no implica SMTP. DD-02 deshabilitada.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "noPermAccessToken",
+      "value": ""
+    },
+    {
+      "key": "sesionId",
+      "value": ""
+    },
+    {
+      "key": "convocatoriaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00-verificacion-sistema",
+      "item": [
+        {
+          "name": "00-01 | Salud del backend | GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "PRE-00. Primera solicitud. Backend en :8080."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"service\", function () { pm.expect(body.service).to.eql(\"prisaly-backend\"); });",
+                  "pm.test(\"status ok\", function () { pm.expect(body.status).to.eql(\"ok\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01-m1-autenticacion",
+      "item": [
+        {
+          "name": "01-01 | M1-POST-01 | Iniciar sesión correctamente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Guarda accessToken en variable de colección. Password vacío → 400 (entorno).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{personnelEmail}}\",\n  \"password\": \"{{personnelPassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
+                  "pm.test(\"tokenType\", function () { pm.expect(body.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"authPrototype\", function () { pm.expect(body.authPrototype).to.eql(\"TD-M1-AUTH-PROVISIONAL\"); });",
+                  "pm.test(\"correo\", function () { pm.expect(body.correo).to.eql(pm.environment.get(\"personnelEmail\")); });",
+                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", body.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-02 | M1-POST-02 | Rechazar contraseña incorrecta",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "No guarda ni sobrescribe accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{personnelEmail}}\",\n  \"password\": \"definitely-wrong-password\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code AUTH_FAILED\", function () { pm.expect(body.code).to.eql(\"AUTH_FAILED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-03 | M1-POST-03 | Rechazar usuario inexistente",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "No sobrescribe accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{unknownEmail}}\",\n  \"password\": \"{{personnelPassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code AUTH_FAILED\", function () { pm.expect(body.code).to.eql(\"AUTH_FAILED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-04 | M1-NEG-01 | Rechazar usuario inactivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Seed M1 inactive.bruno. No sobrescribe accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{inactiveEmail}}\",\n  \"password\": \"{{inactivePassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code AUTH_FAILED\", function () { pm.expect(body.code).to.eql(\"AUTH_FAILED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-05 | M1-POST-07 | Rechazar datos de autenticación inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "No sobrescribe accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"no-es-un-correo\",\n  \"password\": \"\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code VALIDATION_ERROR\", function () { pm.expect(body.code).to.eql(\"VALIDATION_ERROR\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02-m1-identidad-permisos",
+      "item": [
+        {
+          "name": "02-01 | M1-PERF-01 | Consultar mi identidad",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Precondición: 01-01 (accessToken)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"correo\", function () { pm.expect(body.correo).to.eql(pm.environment.get(\"personnelEmail\")); });",
+                  "pm.test(\"tokenType\", function () { pm.expect(body.tokenType).to.eql(\"Bearer\"); });",
+                  "pm.test(\"authPrototype\", function () { pm.expect(body.authPrototype).to.eql(\"TD-M1-AUTH-PROVISIONAL\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-02 | M1-GET-04 | Rechazar consulta sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Sin Authorization. No altera accessToken."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code UNAUTHENTICATED\", function () { pm.expect(body.code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-03 | M1-GET-06 | Permitir operación con CREAR_CASO",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Precondición: 01-01."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"allowed\", function () { pm.expect(body.allowed).to.eql(true); });",
+                  "pm.test(\"permission\", function () { pm.expect(body.permission).to.eql(\"CREAR_CASO\"); });",
+                  "pm.test(\"userId\", function () { pm.expect(body.userId).to.be.ok; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-04-prep | Autenticar usuario sin CREAR_CASO",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Guarda noPermAccessToken. No sobrescribe accessToken del docente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{personnelNoPermEmail}}\",\n  \"password\": \"{{personnelNoPermPassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
+                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "    pm.collectionVariables.set(\"noPermAccessToken\", body.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Precondición: 02-04-prep. Usa noPermAccessToken."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code FORBIDDEN\", function () { pm.expect(body.code).to.eql(\"FORBIDDEN\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-05 | M1-NEG-02 | Rechazar token inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token-invalido-no-emitido",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Bearer inexistente. No altera accessToken."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code UNAUTHENTICATED\", function () { pm.expect(body.code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-06 | M1-NEG | Rechazar CREAR_CASO sin token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Equivalente a personal-autorizacion-crear-caso-unauthenticated."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code UNAUTHENTICATED\", function () { pm.expect(body.code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03-m1-acceso-estudiantil",
+      "item": [
+        {
+          "name": "03-01 | M1-POST-08 | Mantener bloqueado DD-02",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/validar",
+            "description": "DTO válido. Flag false → 501.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"challengeId\": \"00000000-0000-0000-0000-000000000001\",\n  \"codigo\": \"12345678\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 501\", function () { pm.response.to.have.status(501); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code ESTUDIANTE_ACCESS_PENDING_CONTRACT\", function () { pm.expect(body.code).to.eql(\"ESTUDIANTE_ACCESS_PENDING_CONTRACT\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-02 | M1-NEG-03 | Rechazar datos inválidos de acceso estudiantil",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/validar",
+            "description": "Body inválido → 400 VALIDATION_ERROR.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante@prisaly.test\",\n  \"codigo\": \"PENDIENTE-DD02\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code VALIDATION_ERROR\", function () { pm.expect(body.code).to.eql(\"VALIDATION_ERROR\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04-m7-integracion-m4",
+      "item": [
+        {
+          "name": "04-01 | M7-PREP-01 | Autenticar docente con GESTIONAR_SESION",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Refresca accessToken. Seed M7: GESTIONAR_SESION.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{personnelEmail}}\",\n  \"password\": \"{{personnelPassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
+                  "pm.test(\"authPrototype\", function () { pm.expect(body.authPrototype).to.eql(\"TD-M1-AUTH-PROVISIONAL\"); });",
+                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "    pm.collectionVariables.set(\"accessToken\", body.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-02 | M7-PREP-02 | Crear sesión académica",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones",
+            "description": "Guarda sesionId. HTTP 201 no implica SMTP.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoIdBruno}}\",\n  \"titulo\": \"Sesion Bruno M7\",\n  \"mensajePersonalizado\": \"Convocatoria de prueba M4-M7 (Bruno)\",\n  \"fechaInicio\": \"2030-11-10T14:00:00Z\",\n  \"fechaFin\": \"2030-11-10T16:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 3600\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"id\", function () { pm.expect(body.id).to.be.ok; });",
+                  "pm.test(\"casoId\", function () { pm.expect(body.casoId).to.eql(pm.environment.get(\"casoIdBruno\")); });",
+                  "if (pm.response.code === 201 && body.id) {",
+                  "    pm.collectionVariables.set(\"sesionId\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-03 | M7-via-M4-01 | Convocar estudiante",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "201 confirma convocatoria, no SMTP. Precondición: sesionId de 04-02.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"{{estudianteIdBruno}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"id\", function () { pm.expect(body.id).to.be.ok; });",
+                  "pm.test(\"sesionId\", function () { pm.expect(body.sesionId).to.be.ok; });",
+                  "pm.test(\"estudianteId\", function () { pm.expect(body.estudianteId).to.eql(pm.environment.get(\"estudianteIdBruno\")); });",
+                  "if (pm.response.code === 201 && body.id) {",
+                  "    pm.collectionVariables.set(\"convocatoriaId\", body.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-04 | M7-VER-01 | Consultar convocatorias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "Lista HTTP M4. No prueba SMTP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-05-prep | Autenticar docente sin GESTIONAR_SESION",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Guarda noPermAccessToken. No sobrescribe accessToken del docente.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{personnelNoPermEmail}}\",\n  \"password\": \"{{personnelNoPermPassword}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
+                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "    pm.collectionVariables.set(\"noPermAccessToken\", body.accessToken);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-05 | M7-via-M4-02 | Rechazar operación sin permiso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones",
+            "description": "403 M4-SIN-PERMISO. No altera sesionId.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoIdBruno}}\",\n  \"titulo\": \"Sesion Bruno sin GESTIONAR_SESION\",\n  \"mensajePersonalizado\": \"Debe fallar\",\n  \"fechaInicio\": \"2030-11-11T14:00:00Z\",\n  \"fechaFin\": \"2030-11-11T16:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 3600\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code M4-SIN-PERMISO\", function () { pm.expect(body.code).to.eql(\"M4-SIN-PERMISO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-06 | M7-via-M4-03 | Rechazar convocatoria sin token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "Sin Authorization. Requiere sesionId de 04-02. Si queda {{sesionId}} literal, preparación incompleta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"{{estudianteIdBruno}}\"\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"sesionId resuelto\", function () {",
+                  "    const sid = pm.collectionVariables.get(\"sesionId\");",
+                  "    pm.expect(sid, \"Ejecutar 04-02 antes; sesionId no puede estar vacío\").to.be.ok;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05-m1-finalizacion",
+      "item": [
+        {
+          "name": "05-01 | M1-POST-09 | Cerrar sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/cerrar-sesion",
+            "description": "DESPUÉS de 01–04. Conserva accessToken para 05-02."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", function () { pm.response.to.have.status(204); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-02 | M1-VER-02 | Verificar token revocado",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "El mismo accessToken debe fallar tras 05-01."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"code UNAUTHENTICATED\", function () { pm.expect(body.code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

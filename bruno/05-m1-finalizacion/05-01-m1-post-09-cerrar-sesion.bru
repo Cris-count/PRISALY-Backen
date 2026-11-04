@@ -1,0 +1,25 @@
+meta {
+  name: 05-01 | M1-POST-09 | Cerrar sesión
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/cerrar-sesion
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  M1-POST-09. Ejecutar DESPUÉS de carpetas 01–04. Revoca el Bearer en memoria.
+  Conserva accessToken en variable para 05-02 (comprobar revocación).
+  Esperado: 204.
+}
+
+assert {
+  res.status: eq 204
+}

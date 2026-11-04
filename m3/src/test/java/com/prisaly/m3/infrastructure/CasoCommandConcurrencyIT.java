@@ -256,7 +256,8 @@ class CasoCommandConcurrencyIT {
                                 new ActualizarDatosCasoCommand(CampoCaso.NOMBRE, "Must roll back"),
                                 new ActualizarEscenarioCommand(UUID.fromString(target.caso().escenarios().getLast().id()),
                                         CampoEscenario.ORDEN, 2))));
-                assertTrue(hasSqlState(failure, "23505"));
+                assertTrue(hasSqlState(failure, "23505"),
+                        () -> "Expected unique violation, got " + failure.getClass().getName());
                 assertFalse(status.isRollbackOnly());
             });
             assertEquals(target, h.read(target));
@@ -423,7 +424,9 @@ class CasoCommandConcurrencyIT {
         Harness(int maximumPoolSize) {
             var config = new HikariConfig();
             config.setJdbcUrl(postgres.getJdbcUrl()); config.setUsername(postgres.getUsername()); config.setPassword(postgres.getPassword());
-            config.setMaximumPoolSize(maximumPoolSize); config.setMinimumIdle(0); config.setConnectionTimeout(500);
+            config.setMaximumPoolSize(maximumPoolSize); config.setMinimumIdle(0);
+            // Physical connection startup is not the pool-exhaustion behavior under test.
+            config.setConnectionTimeout(10_000);
             config.setTransactionIsolation("TRANSACTION_READ_COMMITTED");
             config.addDataSourceProperty("socketTimeout", "12");
             config.setConnectionInitSql("SET statement_timeout = '10s'");
@@ -439,11 +442,32 @@ class CasoCommandConcurrencyIT {
             factory.setJpaPropertyMap(Map.of("hibernate.hbm2ddl.auto", "validate", "hibernate.globally_quoted_identifiers", true));
             try {
                 factory.afterPropertiesSet(); emf = factory.getObject(); assertNotNull(emf);
+                warmConnections(maximumPoolSize);
                 manager = new JpaTransactionManager(emf);
                 var reader = new CasoJpaAggregateReader(emf);
                 inserts = new CasoPersistenceAdapter(emf, reader, manager);
                 updates = new CasoCommandUpdateAdapter(emf, reader, manager);
             } catch (RuntimeException | Error failure) { factory.destroy(); pool.close(); throw failure; }
+        }
+
+        private void warmConnections(int count) {
+            List<Connection> connections = new ArrayList<>();
+            SQLException failure = null;
+            try {
+                for (int i = 0; i < count; i++) { connections.add(pool.getConnection()); }
+            } catch (SQLException ex) {
+                failure = ex;
+            } finally {
+                for (Connection connection : connections) {
+                    try { connection.close(); }
+                    catch (SQLException ex) {
+                        if (failure == null) { failure = ex; } else { failure.addSuppressed(ex); }
+                    }
+                }
+                // Keep the original operational limit, including the one-connection exhaustion test.
+                pool.setConnectionTimeout(500);
+            }
+            if (failure != null) { throw new IllegalStateException("Unable to initialize the test pool", failure); }
         }
 
         private Connection traced(Connection raw) {

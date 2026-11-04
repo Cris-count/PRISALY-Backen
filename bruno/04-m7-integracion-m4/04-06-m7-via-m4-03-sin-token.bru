@@ -1,0 +1,30 @@
+meta {
+  name: 04-06 | M7-via-M4-03 | Rechazar convocatoria sin token
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "estudianteId": "{{estudianteIdBruno}}"
+  }
+}
+
+docs {
+  M7-via-M4-03. Sin Authorization. Reutiliza sesionId del flujo 04-02 (no lo borra).
+  Esperado: 401. Si sesionId no existe, preparación incompleta: ejecutar 04-02 antes.
+}
+
+assert {
+  res.status: eq 401
+}
