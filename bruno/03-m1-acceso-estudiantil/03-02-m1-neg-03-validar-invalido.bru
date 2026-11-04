@@ -1,0 +1,32 @@
+meta {
+  name: 03-02 | M1-NEG-03 | Rechazar datos inválidos de acceso estudiantil
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/v1/acceso-estudiante/validar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "estudiante@prisaly.test",
+    "codigo": "PENDIENTE-DD02"
+  }
+}
+
+docs {
+  M1-NEG-03. Body que no cumple ValidarAccesoEstudianteRequest.
+  @Valid se evalúa antes del 501 → 400 VALIDATION_ERROR.
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq VALIDATION_ERROR
+}

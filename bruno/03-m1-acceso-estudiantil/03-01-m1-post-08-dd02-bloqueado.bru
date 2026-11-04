@@ -1,0 +1,33 @@
+meta {
+  name: 03-01 | M1-POST-08 | Mantener bloqueado DD-02
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/acceso-estudiante/validar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "challengeId": "00000000-0000-0000-0000-000000000001",
+    "codigo": "12345678"
+  }
+}
+
+docs {
+  M1-POST-08. DTO válido (challengeId + codigo 8 dígitos) para no caer en 400.
+  Flag prisaly.m1.student-access.enabled=false → 501 ESTUDIANTE_ACCESS_PENDING_CONTRACT.
+  No activa DD-02. Público (sin token de personal).
+}
+
+assert {
+  res.status: eq 501
+  res.body.code: eq ESTUDIANTE_ACCESS_PENDING_CONTRACT
+}

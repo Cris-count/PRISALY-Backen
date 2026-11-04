@@ -1,7 +1,7 @@
 meta {
-  name: personal-autorizacion-crear-caso-forbidden-get
+  name: 02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO
   type: http
-  seq: 10
+  seq: 5
 }
 
 get {
@@ -12,6 +12,10 @@ get {
 
 headers {
   Authorization: Bearer {{noPermAccessToken}}
+}
+
+docs {
+  M1-GET-05. Precondición: 02-04-prep. Usa noPermAccessToken, no el token del docente.
 }
 
 assert {

@@ -1,0 +1,25 @@
+meta {
+  name: 05-02 | M1-VER-02 | Verificar token revocado
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  M1-VER-02. Precondición: 05-01. El mismo accessToken de ejecución debe fallar
+  (ProvisionalAccessTokenStore). No se borra la variable: el servidor ya la revocó.
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 02-05 | M1-NEG-02 | Rechazar token inválido
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{baseUrl}}/v1/personal/me
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer token-invalido-no-emitido
+}
+
+docs {
+  M1-NEG-02. Bearer que no existe en ProvisionalAccessTokenStore.
+  No altera accessToken de sesión.
+}
+
+assert {
+  res.status: eq 401
+  res.body.code: eq UNAUTHENTICATED
+}

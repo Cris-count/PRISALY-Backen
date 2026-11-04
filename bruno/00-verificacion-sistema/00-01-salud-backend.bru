@@ -1,0 +1,24 @@
+meta {
+  name: 00-01 | Salud del backend | GET /health
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/health
+  body: none
+  auth: none
+}
+
+docs {
+  PRE-00. Modo A: se puede ejecutar sola.
+  Modo B: primera solicitud de la colección.
+  Precondición: backend en http://localhost:8080 (JAR Docker autorizado).
+  Esperado: 200 y JSON { service, status } según ApiStatusController.
+}
+
+assert {
+  res.status: eq 200
+  res.body.service: eq prisaly-backend
+  res.body.status: eq ok
+}

@@ -1,7 +1,7 @@
 meta {
-  name: personal-autorizacion-crear-caso
+  name: 02-03 | M1-GET-06 | Permitir operación con CREAR_CASO
   type: http
-  seq: 8
+  seq: 3
 }
 
 get {
@@ -14,8 +14,13 @@ headers {
   Authorization: Bearer {{accessToken}}
 }
 
+docs {
+  M1-GET-06. Precondición: 01-01. Docente seed con permiso CREAR_CASO.
+}
+
 assert {
   res.status: eq 200
   res.body.allowed: eq true
   res.body.permission: eq CREAR_CASO
+  res.body.userId: isDefined
 }

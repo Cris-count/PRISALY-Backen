@@ -1,0 +1,37 @@
+meta {
+  name: 04-05-prep | Autenticar docente sin GESTIONAR_SESION
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelNoPermEmail}}",
+    "password": "{{personnelNoPermPassword}}"
+  }
+}
+
+docs {
+  Auxiliar de M7-via-M4-02. Guarda noPermAccessToken. No sobrescribe accessToken del docente.
+}
+
+assert {
+  res.status: eq 200
+  res.body.accessToken: isDefined
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("noPermAccessToken", res.body.accessToken);
+  }
+}
