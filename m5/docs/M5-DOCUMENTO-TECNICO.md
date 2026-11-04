@@ -154,7 +154,7 @@ la transacción del llamador (`Propagation.MANDATORY`).
 **Semántica:** un Intento exige una Participacion (FK), así que "participaciones
 o intentos" equivale a "participaciones".
 
-**Conexión con M4 (implementada, rama `feature/m5-cierre-tecnico`):**
+**Conexión con M4 (cierre integrado en develop; refuerzo selectivo del proveedor en preparación):**
 `com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5` implementa
 el puerto de M4 `ParticipacionesPort`. Es la opción a) de M5-INC-08 y el mismo
 patrón que M7 usa en develop con `NotificacionPort` (`m7 → m4`).
@@ -163,27 +163,24 @@ patrón que M7 usa en develop con `NotificacionPort` (`m7 → m4`).
    M4 documenta ese puerto como usado por M5, y M5 no lee `"Convocatoria"`.
 2. Historial: `HistorialParticipacionPort` sobre `"Participacion"` (tabla de M5).
 3. Transacción: la de M4, que ya bloqueó la sesión en `buscarParaActualizar`
-   (`FOR UPDATE`); el historial exige `Propagation.MANDATORY`.
-4. Errores: una excepción técnica se propaga y nunca se convierte en `false`.
+   (`FOR UPDATE`); el proveedor exige transacción de escritura y el historial exige `Propagation.MANDATORY`.
+4. Errores: una excepción técnica se adapta a `M4-PROVEEDOR-NO-DISPONIBLE` (503 en M4), con causa interna y mensaje público genérico; nunca se convierte en `false`. Sin transacción o en solo lectura, el proveedor rechaza antes de consultar.
 
 Con este bean presente, M4 deja de registrar su respaldo que respondía 503
-(`@ConditionalOnMissingBean`).
+(`@ConditionalOnMissingBean`). App descubre este proveedor único; el puente duplicado se eliminó en `19cf52b`.
 
 Dependencias: `m5 → m4 → m1, m3`, `m5 → m1` y `m7 → m4`. Sin ciclos.
 
 | Prueba | Tipo |
 |---|---|
-| `ParticipacionesM4DesdeM5Test` (6) | Unitaria |
-| `ParticipacionesM4DesdeM5IT` (7): bean registrado en lugar del respaldo; con y sin historial; otra sesión; ruta real `SesionRepositoryAdapter` con bloqueo; fallo técnico distinto de `false`; transacción obligatoria | PostgreSQL 16.15 |
+| `ParticipacionesM4DesdeM5Test` (7) | Unitaria |
+| `ParticipacionesM4DesdeM5IT` (8): bean registrado en lugar del respaldo; con y sin historial; otra sesión; ruta real `SesionRepositoryAdapter` con bloqueo; fallo técnico adaptado con causa; transacción obligatoria de escritura y rechazo de solo lectura | PostgreSQL 16.15 |
 
 **Pendiente de revisión del Integrante 3:**
 
 - M5 usa dos tipos de M4 que no están en `m4.api`: `ConvocatoriaRepository` y
   `Convocatoria`. Conviene que M4 los publique en `m4.api`.
-- **Concurrencia futura:** hoy M5 no crea participaciones. Cuando exista el
-  inicio de intentos, M5 deberá bloquear la misma fila de `"Sesion"` (por
-  ejemplo, `FOR SHARE`) antes de insertar la participación, para serializarse
-  con las ediciones de M4.
+- **Concurrencia D-06:** el inicio/reanudación interno ya reserva Sesion y Convocatoria antes de Participacion e Intento mediante ProgramacionInicioCoordinadoPort y CoordinacionInicioDesdeM4, en la misma transacción de escritura READ COMMITTED. Integrado por PR #28; ratificación final de Arquitectura pendiente (m4/review/revision-m4-m5/INFORME.md, sección 11). No se incorpora otra implementación ni se habilita el primer inicio productivo.
 
 ## 7. Contrato propuesto para el frontend (simulador)
 

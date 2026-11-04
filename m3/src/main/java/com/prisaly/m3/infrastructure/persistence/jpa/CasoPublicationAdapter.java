@@ -17,13 +17,11 @@ import java.util.UUID;
 import org.hibernate.Session;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
-import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /** REQUIRED, state-only publication. Academic rubric completeness is deliberately unchanged. */
-@Repository
 public class CasoPublicationAdapter implements CasoPublicationPort {
     private final EntityManagerFactory emf;
     private final CaseAuthorizationPort authorization;

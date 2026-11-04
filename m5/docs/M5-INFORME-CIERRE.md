@@ -2,6 +2,20 @@
 
 Fecha: 2026-11-01. Responsable: Integrante 4. Rama `feature/m5-cierre-tecnico`, creada desde develop `8b6dc33`.
 
+## Actualización de integración — 02/11/2026
+
+Este informe conserva abajo el diagnóstico histórico de la rama de cierre. Sus pendientes de publicación, implementación de inicio/reanudación y cifras esperadas no describen el estado actual de develop.
+
+- Fetch de origin completado: develop y origin/develop en 3984485c2271936119efcbddbbf42c24249431fd.
+- El cierre 98f595e y el inicio/reanudación c99b8a2 ya son ancestros de develop (PR #17 y PR #21). No volver a fusionar la rama antigua normalizada.
+- El proveedor único ParticipacionesM4DesdeM5 ya está seleccionado; la eliminación del puente duplicado de app corresponde a 19cf52b.
+- La rama de preparación integracion/m4-m5-validacion-20261102 recupera selectivamente de 6eb33ef solo el proveedor y sus dos suites: exige transacción de escritura y adapta fallos a M4-PROVEEDOR-NO-DISPONIBLE conservando la causa, sin interpretar errores como historial vacío. No se restaura documentación ni ensamblado antiguos.
+- D-06 está integrado técnicamente por PR #28: reserva coordinada y orden Sesion → Convocatoria → Participacion → Intento. La conciliación final de Arquitectura y la alternativa M5 sin SHA siguen pendientes; no se añade otra implementación.
+- Inicio/reanudación internos implementados; primer inicio productivo bloqueado por ElegibilidadNoRatificada y LimiteTemporalNoRatificado. Sin rutas REST M5, repetición ni activación de acceso estudiantil.
+- Las cifras históricas de este documento y las 839 pruebas del candidato M4 no sustituyen la ejecución actual. La evidencia de esta preparación se registra en docs/INTEGRACION-M4-M5-20261102.md al finalizar verify y verify -Pdocker-it.
+- Sin cambios en V001–V009, V010 ni BD-005.2. Commit, merge a develop y push quedan pendientes de revisión; resultado.txt permanece sin seguimiento.
+
+## Informe histórico de cierre
 ## Dictamen: PARCIALMENTE CERRADO
 
 **Cerrado en código (pendiente de confirmar con Maven):**
