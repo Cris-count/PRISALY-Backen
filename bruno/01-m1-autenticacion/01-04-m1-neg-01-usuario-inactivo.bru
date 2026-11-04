@@ -1,7 +1,7 @@
 meta {
-  name: personal-autenticar-inactive
+  name: 01-04 | M1-NEG-01 | Rechazar usuario inactivo
   type: http
-  seq: 5
+  seq: 4
 }
 
 post {
@@ -19,6 +19,11 @@ body:json {
     "correo": "{{inactiveEmail}}",
     "password": "{{inactivePassword}}"
   }
+}
+
+docs {
+  M1-NEG-01. Requiere seed M1 (inactive.bruno@prisaly.local).
+  No sobrescribe accessToken.
 }
 
 assert {

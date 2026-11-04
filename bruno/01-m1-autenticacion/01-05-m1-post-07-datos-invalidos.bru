@@ -1,0 +1,32 @@
+meta {
+  name: 01-05 | M1-POST-07 | Rechazar datos de autenticación inválidos
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "no-es-un-correo",
+    "password": ""
+  }
+}
+
+docs {
+  M1-POST-07. @Email + @NotBlank en PersonalAutenticarRequest.
+  No sobrescribe accessToken.
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq VALIDATION_ERROR
+}

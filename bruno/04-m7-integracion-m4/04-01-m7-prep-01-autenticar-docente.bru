@@ -1,0 +1,40 @@
+meta {
+  name: 04-01 | M7-PREP-01 | Autenticar docente con GESTIONAR_SESION
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelEmail}}",
+    "password": "{{personnelPassword}}"
+  }
+}
+
+docs {
+  M7-PREP-01. Refresca accessToken para el flujo M4–M7 (el token de 01-01 sigue válido
+  salvo que se haya cerrado sesión). Seed M7 debe otorgar GESTIONAR_SESION.
+  No usar noPermAccessToken aquí.
+}
+
+assert {
+  res.status: eq 200
+  res.body.accessToken: isDefined
+  res.body.authPrototype: eq TD-M1-AUTH-PROVISIONAL
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("accessToken", res.body.accessToken);
+  }
+}

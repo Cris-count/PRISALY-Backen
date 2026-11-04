@@ -1,0 +1,24 @@
+meta {
+  name: 04-04 | M7-VER-01 | Consultar convocatorias
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias
+  body: none
+  auth: none
+}
+
+headers {
+  Authorization: Bearer {{accessToken}}
+}
+
+docs {
+  M7-VER-01. Lista HTTP de convocatorias M4. No prueba Aviso/EnvioCorreo ni SMTP.
+  Persistencia M7: consulta SQL opcional documentada en README.
+}
+
+assert {
+  res.status: eq 200
+}

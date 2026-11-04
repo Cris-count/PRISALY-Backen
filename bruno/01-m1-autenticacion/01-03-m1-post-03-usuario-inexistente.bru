@@ -1,7 +1,7 @@
 meta {
-  name: personal-autenticar-unknown-user
+  name: 01-03 | M1-POST-03 | Rechazar usuario inexistente
   type: http
-  seq: 4
+  seq: 3
 }
 
 post {
@@ -19,6 +19,11 @@ body:json {
     "correo": "{{unknownEmail}}",
     "password": "{{personnelPassword}}"
   }
+}
+
+docs {
+  M1-POST-03. ghost.bruno@prisaly.local no debe existir.
+  No sobrescribe accessToken.
 }
 
 assert {

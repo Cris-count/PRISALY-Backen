@@ -1,0 +1,38 @@
+meta {
+  name: 02-04-prep | Autenticar usuario sin CREAR_CASO
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/v1/personal/autenticar
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+}
+
+body:json {
+  {
+    "correo": "{{personnelNoPermEmail}}",
+    "password": "{{personnelNoPermPassword}}"
+  }
+}
+
+docs {
+  Auxiliar de M1-GET-05. Guarda noPermAccessToken. No sobrescribe accessToken del docente.
+  Precondición: seed M1 usuario sinperm.bruno@prisaly.local y local.secrets.
+}
+
+assert {
+  res.status: eq 200
+  res.body.accessToken: isDefined
+}
+
+script:post-response {
+  if (res.status === 200 && res.body && res.body.accessToken) {
+    bru.setVar("noPermAccessToken", res.body.accessToken);
+  }
+}
