@@ -1,0 +1,47 @@
+meta {
+  name: Crear con tiempo negativo
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{baseUrl}}/v1/casos
+  body: json
+  auth: none
+}
+
+headers {
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+}
+
+body:json {
+  {
+    "idCaso": "{{nuevoCasoUuid}}",
+    "titulo": "Borrador de prueba manual",
+    "tiempoEstimadoSegundos": -1,
+    "historia": null,
+    "desarrolloSituacional": null
+  }
+}
+
+assert {
+  res.status: eq 400
+  res.body.code: eq INVALID_CASE_REQUEST
+}
+
+script:pre-request {
+  if (!(bru.getVar("accessToken") || bru.getEnvVar("accessToken"))) { throw new Error("Falta token institucional real: accessToken"); }
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test((bru.getVar("nuevoCasoUuid") || bru.getEnvVar("nuevoCasoUuid")) || "")) { throw new Error("Configurar UUID explícito válido en nuevoCasoUuid"); }
+}
+
+tests {
+  test("Sin detalles internos", function () {
+    expect(JSON.stringify(res.body)).not.to.match(/SQLSTATE|stackTrace|passwordHash|org\.hibernate/i);
+  });
+}
+
+docs {
+  Viola el tiempo estrictamente positivo. Esperado: 400.
+  Estado: preparada; no ejecutada. No constituye evidencia académica.
+}

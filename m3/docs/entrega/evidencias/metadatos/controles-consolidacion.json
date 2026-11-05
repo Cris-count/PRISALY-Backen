@@ -1,0 +1,38 @@
+{
+    "CheckedAt":  "2026-11-04T18:20:41.8240377-05:00",
+    "Operation":  "Lectura y consolidacion documental, sin ejecutar pruebas ni HTTP",
+    "Branch":  "feature/m3-gestion-casos",
+    "Head":  "e3d7352cfe7a9acb6a8f2f982e63665ab21b0a39",
+    "HeadIsNotExecutionVersion":  true,
+    "Xml":  [
+                {
+                    "Type":  "Unitarias",
+                    "Suites":  10,
+                    "Tests":  132,
+                    "Cases":  132
+                },
+                {
+                    "Type":  "Integracion",
+                    "Suites":  7,
+                    "Tests":  71,
+                    "Cases":  71
+                }
+            ],
+    "PostmanRequests":  13,
+    "ExportedTokensEmpty":  true,
+    "SecretPatternHits":  0,
+    "FilesInspected":  136,
+    "ScanLimit":  "Busquedas de patrones acotadas y depuracion por lista permitida; revision humana final necesaria",
+    "ExcludedDirectories":  [
+                                "target",
+                                ".git",
+                                "node_modules"
+                            ],
+    "ExcludedFiles":  [
+                          "PRISALY_XML_M3_M6.zip",
+                          "entornos privados",
+                          "logs crudos"
+                      ],
+    "NewmanOriginalPreserved":  true,
+    "HistoricalEvidencePreserved":  true
+}

@@ -38,6 +38,7 @@ class CasoMetadataTest {
     @BeforeEach
     void setUp() {
         authorization = mock(CaseAuthorizationPort.class);
+        when(authorization.canCreateCase(anyString(), anyString())).thenReturn(true);
         when(authorization.canModifyCase(anyString(), anyString())).thenReturn(true);
         when(authorization.canPublishCase(anyString(), anyString())).thenReturn(true);
         service = new CasoApplicationService(authorization,

@@ -268,6 +268,7 @@ class RubricaStructureTest {
     @Test
     void authorizationStillPrecedesCopyValidation() {
         CasoApplicationService service = new CasoApplicationService(new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
             public boolean canModifyCase(String user, String id) { return false; }
             public boolean canPublishCase(String user, String id) { return false; }
         }, org.mockito.Mockito.mock(com.prisaly.m3.application.port.CasoRepositoryPort.class));

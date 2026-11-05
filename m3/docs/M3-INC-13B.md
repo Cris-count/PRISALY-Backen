@@ -1,7 +1,9 @@
 # M3-INC-13B — Infraestructura de publicación persistente
 
-Estado: implementación parcial autorizada, pendiente de validación manual y de
-ratificación académica de rúbricas. No constituye publicación funcional completa.
+Estado: implementación parcial autorizada. Validación manual reportada por el
+Integrante 2 el 4 de noviembre de 2026: 132 unitarias y 71 integraciones,
+sin fallos ni errores, BUILD SUCCESS (detalle al final). La ratificación académica
+de rúbricas sigue pendiente. No constituye publicación funcional completa.
 
 ## Resolución y arquitectura
 
@@ -177,3 +179,115 @@ mvn -pl m3 -am -Pdocker-it verify
 La última ejecución incluye regresión INC-10D, 11, 12 y 13A. Registrar salidas,
 conteos, entorno y errores reales. Preservar evidencia anterior separada. INC-13B
 no es completamente funcional y M3 no se declara terminado.
+
+## Continuación autorizada — regresiones técnicas sin ratificación académica
+
+Esta revisión no encontró una definición posterior que autorice cambiar la
+completitud. V003 conserva pendiente DD-03 (fórmula y cobertura exacta al publicar)
+y la resolución de este incremento prohíbe inventar equivalencias. No se modifica
+Rubrica.isComplete(), CasoValidation, el mapper ni el adaptador productivo.
+
+Se añadieron, pendientes de ejecución manual:
+
+- CasoPublicationContractTest.opaqueJsonAndFractionalAssociationsCannotManufactureLegacyCompleteness:
+  un documento opaco que contiene una propiedad llamada criterios no se interpreta
+  como criterios legados. Se conservan JSON, null, UUID de asociaciones y 12.50
+  como BigDecimal. El modelo reconstruido es estructuralmente insertable, pero
+  la publicación sigue rechazando INCOMPLETE_RUBRIC sin cambiar la huella.
+  Ese JSON es un dato de prueba, no una estructura académica aprobada.
+- CasoPersistenceAdapterIT.incompleteRubricRollsBackJoinedWorkWithoutChangingCommittedAggregates:
+  una escritura previa sobre otro borrador dentro de la transacción externa se
+  revierte cuando publicar el caso objetivo alcanza INCOMPLETE_RUBRIC. Comprueba
+  rollback-only, conservación de ambos agregados y huellas y conteos de seis tablas.
+  A diferencia de la regresión anterior de huella obsoleta, esta alcanza la
+  validación académica con una precondición vigente. No alcanza ni acredita el
+  UPDATE de publicación; su rollback posterior sigue pendiente de ratificación.
+
+Corrección documental: el ejemplo de DC-M3-REST-03 ahora utiliza
+`POST {{baseUrl}}/v1/casos`, porque baseUrl ya incluye /api. No cambia el endpoint,
+las colecciones ni sus resultados históricos.
+
+### Cobertura conservada y estado de entrega
+
+| Área | Evidencia de código conservada | Estado de esta intervención |
+| --- | --- | --- |
+| Creación y lectura | CasoApplicationServiceTest y CasoPersistenceAdapterIT | Sin cambios productivos; regresión manual pendiente |
+| Rúbrica y asociaciones | RubricaStructureTest, RubricaJpaReadIT y nueva regresión de contrato | Metadatos persistidos separados de criterios; no se presume completitud |
+| Omisiones, null y eliminación explícita | CasoCommandUpdateIT | Se reutiliza cobertura existente; no se amplían comandos |
+| Concurrencia, huella y F3-03 | CasoCommandConcurrencyIT y CasoCommandAddContentIT | Se conservan garantías y triggers; no se duplica cobertura |
+| Rollback por validación académica | Nueva prueba de transacción REQUIRED | Preparada, no ejecutada |
+| Publicación exitosa y rollback tras su UPDATE | No existe caso positivo académico ratificado | Bloqueado por definición de completitud |
+| Copia persistida y Archivado | Salvaguardas existentes | Políticas pendientes; no se implementan |
+
+Los resultados anteriores pertenecen a sus respectivas corridas. No se declaran
+ejecutadas estas dos pruebas ni se incrementan los conteos históricos.
+
+### Decisión institucional requerida
+
+Ratificar qué condiciones sobre Rubrica y RubricaPregunta permiten publicar:
+alcance de preguntas incluidas, cobertura exigida, tratamiento de actividad y
+visibilidad, campos opcionales académicamente obligatorios y cualquier relación
+exigible con puntajeTotal. Definir además el tratamiento del modelo legado.
+La aprobación de continuar el desarrollo no establece por sí sola estas reglas.
+No se convierte valorPregunta a entero ni se extrae una fórmula del JSON.
+La autorización institucional de publicación y su ensamblaje real siguen siendo
+prerrequisitos independientes; CREAR_CASO no los sustituye.
+
+Validación manual desde la raíz del backend, sin haberla ejecutado aquí:
+
+```powershell
+.\mvnw.cmd -B -pl m3 -am "-Dtest=CasoPublicationContractTest,CasoApplicationServiceTest,CasoMetadataTest,ContenidoAcademicoMetadataTest,RubricaStructureTest,CasoUpdateContractTest,JsonbCanonicalizerTest,CrearCasoRequestTest" "-Dsurefire.failIfNoSpecifiedTests=false" test
+.\mvnw.cmd -B -pl m3 -am -Pdocker-it "-Dit.test=CasoPersistenceAdapterIT,CasoCommandUpdateIT,CasoCommandConcurrencyIT,CasoCommandAddContentIT,CasoJpaAggregateReadIT,CasoJpaAggregateTransactionIT,RubricaJpaReadIT" "-Dfailsafe.failIfNoSpecifiedTests=false" verify
+```
+
+## Resultado real reportado por Integrante 2 — 4 de noviembre de 2026
+
+Fuente: confirmación expresa del Integrante 2, quien ejecutó manualmente Maven.
+Este registro documenta su ejecución; el asistente no volvió a ejecutar pruebas
+ni inspeccionó en esta intervención reportes XML o logs completos de esa corrida.
+Las menciones anteriores a ejecución pendiente corresponden a la preparación
+histórica y quedan actualizadas por esta confirmación en el alcance indicado.
+
+| Tipo | Ejecutadas | Fallos | Errores | Resultado reportado |
+| --- | --- | --- | --- | --- |
+| Unitarias | 132 | 0 | 0 | Satisfactorio |
+| Integración PostgreSQL | 71 | 0 | 0 | Satisfactorio |
+
+Resultado final informado: **BUILD SUCCESS**. Entorno de integración:
+Testcontainers y PostgreSQL 16.15. Desglose confirmado:
+
+- CasoPublicationContractTest: 9 aprobadas, incluidas dentro de las 132 unitarias.
+- CasoPersistenceAdapterIT: 25 aprobadas, incluidas dentro de las 71 integraciones.
+
+Los conteos por clase no se suman otra vez a los totales. Tampoco se suman a
+corridas históricas ni a Bruno/Newman. El número de pruebas omitidas, los comandos
+exactos ejecutados, la hora y los identificadores de reportes no fueron aportados;
+no se infieren a partir de los comandos propuestos anteriormente.
+
+### Avisos de PostgreSQL y Hikari
+
+Se registra la referencia del Integrante 2 a avisos observados de PostgreSQL y
+Hikari. No se suministró su texto literal, frecuencia ni contexto completo.
+No se les asigna una causa ni se clasifican automáticamente como defectos,
+errores funcionales o incidentes resueltos. Para clasificarlos será necesario
+conservar los mensajes originales depurados y correlacionarlos con la corrida.
+El resultado comunicado de esta ejecución fue cero fallos y cero errores.
+
+### Alcance acreditado y pendientes
+
+La confirmación de las dos clases actualiza a aprobadas las regresiones de
+reconstrucción sin criterios artificiales y rollback por rechazo académico,
+según la ejecución reportada. No demuestra una publicación persistente exitosa:
+la prueba de rollback alcanza INCOMPLETE_RUBRIC, no el UPDATE de publicación.
+
+Continúan pendientes la definición DD-03 de completitud/cobertura sobre la
+rúbrica persistida, el caso positivo de publicación, el rollback posterior a su
+UPDATE, las carreras de publicación exitosa y su autorización institucional real.
+Copia persistida y transiciones de Archivado conservan sus decisiones pendientes.
+M3 no se declara terminado por el BUILD SUCCESS.
+
+No se verificó SHA Git, identificación del JAR ni un manifiesto del código de
+esta corrida. No se atribuyen estos resultados a un commit o artefacto histórico.
+Para trazabilidad completa quedan por adjuntar los reportes Surefire/Failsafe,
+logs depurados, comandos y la identificación verificable de la versión ejecutada.
+No se reetiquetan los resultados anteriores de Bruno ni Newman.

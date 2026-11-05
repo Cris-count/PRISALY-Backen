@@ -1,0 +1,1620 @@
+[INFO] Scanning for projects...
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Build Order:
+[INFO] 
+[INFO] PRISALY Backend                                                    [pom]
+[INFO] m1                                                                 [jar]
+[INFO] m3                                                                 [jar]
+[INFO] m4 - Programacion Academica y Convocatorias                        [jar]
+[INFO] 
+[INFO] --------------------< com.prisaly:prisaly-backend >---------------------
+[INFO] Building PRISALY Backend 0.0.1-SNAPSHOT                            [1/4]
+[INFO]   from pom.xml
+[INFO] --------------------------------[ pom ]---------------------------------
+[INFO] 
+[INFO] ---------------------------< com.prisaly:m1 >---------------------------
+[INFO] Building m1 0.0.1-SNAPSHOT                                         [2/4]
+[INFO]   from m1\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ m1 ---
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m1\src\main\resources
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m1\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ m1 ---
+[WARNING] The POM for org.codehaus.plexus:plexus-xml:jar:3.0.1 is invalid, transitive dependencies (if any) will not be available: 1 problem was encountered while building the effective model for org.codehaus.plexus:plexus-xml:3.0.1
+[FATAL] Non-parseable POM C:\Users\Heiner\.m2\repository\org\codehaus\plexus\plexus\18\plexus-18.pom: only whitespace content allowed before start tag and not \u0 (position: START_DOCUMENT seen \u0... @1:2)  @ C:\Users\Heiner\.m2\repository\org\codehaus\plexus\plexus\18\plexus-18.pom, line 1, column 2
+
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ m1 ---
+[INFO] Copying 1 resource from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ m1 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ m1 ---
+[WARNING] The POM for org.apache.maven.resolver:maven-resolver-util:jar:1.4.1 is invalid, transitive dependencies (if any) will not be available: 1 problem was encountered while building the effective model for org.apache.maven.resolver:maven-resolver-util:1.4.1
+[FATAL] Non-parseable POM C:\Users\Heiner\.m2\repository\org\apache\maven\resolver\maven-resolver\1.4.1\maven-resolver-1.4.1.pom: only whitespace content allowed before start tag and not \u0 (position: START_DOCUMENT seen \u0... @1:2)  @ C:\Users\Heiner\.m2\repository\org\apache\maven\resolver\maven-resolver\1.4.1\maven-resolver-1.4.1.pom, line 1, column 2
+
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m1.application.DenyingStudentAccessServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.092 s -- in com.prisaly.m1.application.DenyingStudentAccessServiceTest
+[INFO] Running com.prisaly.m1.application.IdentityAccessServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.425 s -- in com.prisaly.m1.application.IdentityAccessServiceTest
+[INFO] Running com.prisaly.m1.application.PersonnelAuthenticationServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.170 s -- in com.prisaly.m1.application.PersonnelAuthenticationServiceTest
+[INFO] Running com.prisaly.m1.presentation.EstudianteAccessValidarTest
+13:46:04.517 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.1.5.Final
+13:46:04.883 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:46:04.885 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:46:04.888 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 3 ms
+13:46:05.219 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:46:05.219 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:46:05.219 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:46:05.253 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:46:05.253 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:46:05.253 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:46:05.292 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:46:05.292 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:46:05.292 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.413 s -- in com.prisaly.m1.presentation.EstudianteAccessValidarTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 18, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ m1 ---
+[WARNING] The POM for org.apache.maven.shared:file-management:jar:3.2.0 is invalid, transitive dependencies (if any) will not be available: 1 problem was encountered while building the effective model for org.apache.maven.shared:file-management:3.2.0
+[FATAL] Non-parseable POM C:\Users\Heiner\.m2\repository\org\apache\apache\34\apache-34.pom: only whitespace content allowed before start tag and not \u0 (position: START_DOCUMENT seen \u0... @1:2)  @ C:\Users\Heiner\.m2\repository\org\apache\apache\34\apache-34.pom, line 1, column 2
+
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ m1 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m1.infrastructure.IdentityPersistenceIT
+13:46:07.164 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:46:07.168 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:46:07.231 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+13:46:07.526 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:46:08.012 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:46:08.014 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:46:08.034 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.2.0
+  API Version: 1.53
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 7792 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+13:46:08.152 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+13:46:08.259 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:46:08.407 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 978536c943c25d6c4bf404940dd8d8e5328450ac35c21bcb8d659a3c030840cf
+13:46:08.835 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.6830517S
+13:46:08.842 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:46:08.842 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:46:08.844 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+13:46:08.844 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:08.936 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 9c7de615606dbc813a47c3fcec5e48f2306db38786cc36fba1ff7d7813fa0560
+13:46:10.490 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.6457255S
+13:46:10.491 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:63464/test?loggerLevel=OFF)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-02T13:46:10.811-05:00  INFO 12636 --- [           main] c.p.m.i.IdentityPersistenceIT            : Starting IdentityPersistenceIT using Java 21.0.2 with PID 12636 (started by Heiner in C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m1)
+2026-11-02T13:46:10.811-05:00  INFO 12636 --- [           main] c.p.m.i.IdentityPersistenceIT            : No active profile set, falling back to 1 default profile: "default"
+2026-11-02T13:46:11.328-05:00  INFO 12636 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-02T13:46:11.401-05:00  INFO 12636 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 61 ms. Found 4 JPA repository interfaces.
+2026-11-02T13:46:12.374-05:00  INFO 12636 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-02T13:46:12.542-05:00  INFO 12636 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@3e55eeb9
+2026-11-02T13:46:12.542-05:00  INFO 12636 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-02T13:46:12.573-05:00  INFO 12636 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: jdbc:postgresql://localhost:63464/test?loggerLevel=OFF (PostgreSQL 16.15)
+2026-11-02T13:46:12.659-05:00  INFO 12636 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-02T13:46:12.666-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.034s)
+2026-11-02T13:46:12.677-05:00  INFO 12636 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-02T13:46:12.738-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": << Empty Schema >>
+2026-11-02T13:46:12.776-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-02T13:46:12.784-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:12.901-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-02T13:46:12.904-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:12.942-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-02T13:46:12.945-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:12.978-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-02T13:46:12.978-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:12.999-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-02T13:46:13.001-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:13.018-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-02T13:46:13.025-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:13.048-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-02T13:46:13.049-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:13.080-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-02T13:46:13.080-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:13.096-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-02T13:46:13.098-05:00  WARN 12636 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-02T13:46:13.111-05:00  INFO 12636 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.208s)
+2026-11-02T13:46:13.266-05:00  INFO 12636 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-02T13:46:13.334-05:00  INFO 12636 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-11-02T13:46:13.808-05:00  INFO 12636 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-02T13:46:13.885-05:00  INFO 12636 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63464/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-02T13:46:14.794-05:00  INFO 12636 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-02T13:46:14.836-05:00  INFO 12636 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-02T13:46:14.909-05:00  INFO 12636 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-02T13:46:15.948-05:00  WARN 12636 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-02T13:46:16.344-05:00  WARN 12636 --- [           main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: bc1a2575-0f1a-40b3-bce8-ed5ca1666d15
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-11-02T13:46:16.402-05:00  INFO 12636 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-11-02T13:46:16.678-05:00  INFO 12636 --- [           main] c.p.m.i.IdentityPersistenceIT            : Started IdentityPersistenceIT in 6.147 seconds (process running for 10.673)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 11.77 s -- in com.prisaly.m1.infrastructure.IdentityPersistenceIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ m1 ---
+[INFO] 
+[INFO] ---------------------------< com.prisaly:m3 >---------------------------
+[INFO] Building m3 0.0.1-SNAPSHOT                                         [3/4]
+[INFO]   from m3\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ m3 ---
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m3\src\main\resources
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m3\src\main\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ m3 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ m3 ---
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m3\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ m3 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ m3 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m3.CasoApplicationServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 28, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.541 s -- in com.prisaly.m3.CasoApplicationServiceTest
+[INFO] Running com.prisaly.m3.CasoMetadataTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.075 s -- in com.prisaly.m3.CasoMetadataTest
+[INFO] Running com.prisaly.m3.ContenidoAcademicoMetadataTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.prisaly.m3.ContenidoAcademicoMetadataTest
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationContractTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.729 s -- in com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationContractTest
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.159 s -- in com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerMapperTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerMapperTest
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReaderTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.105 s -- in com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReaderTest
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.226 s -- in com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest
+[INFO] Running com.prisaly.m3.RubricaStructureTest
+[INFO] Tests run: 15, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.prisaly.m3.RubricaStructureTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 125, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ m3 ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ m3 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m3.infrastructure.CasoCommandAddContentIT
+13:46:25.142 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:46:25.150 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:46:25.212 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+13:46:25.518 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:46:26.138 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:46:26.140 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:46:26.165 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.2.0
+  API Version: 1.53
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 7792 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+13:46:26.312 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+13:46:26.414 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:46:26.589 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: ae0f467fc177d887ef4b60fc9228f23dece353880fb2f7c95e47805b0f610ec0
+13:46:27.148 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.834898S
+13:46:27.158 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:46:27.158 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:46:27.158 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+13:46:27.165 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:27.304 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 6669123476b8a8be6aaad5a9abe6f8f0b3ca6cf25d72729dce6a7740bdf51459
+13:46:29.240 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT2.0744816S
+13:46:29.241 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:63584/test?loggerLevel=OFF)
+13:46:30.092 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:30.189 [main] INFO org.hibernate.orm.core -- HHH000001: Hibernate ORM core version 7.4.13.Final
+13:46:30.764 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:30.896 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63584/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:31.878 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:31.969 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:34.936 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:34.936 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_opcionrespuesta_idx2"
+  Detail: Key ("idPregunta", orden)=(0f72b115-3e3e-4862-9424-14ff699d5923, 4) already exists.
+13:46:34.964 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:34.964 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "ux_opcion_max_una_correcta"
+  Detail: Key ("idPregunta")=(0f72b115-3e3e-4862-9424-14ff699d5923) already exists.
+13:46:34.996 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:34.996 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "ux_opcion_max_una_correcta"
+  Detail: Key ("idPregunta")=(0f72b115-3e3e-4862-9424-14ff699d5923) already exists.
+13:46:35.427 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:35.427 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_pregunta_idx1"
+  Detail: Key ("idEscenario", orden)=(e95a1a59-a213-46e2-a3d8-47b957a9c664, 19) already exists.
+13:46:36.547 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:36.547 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_escenario_idx1"
+  Detail: Key ("idCaso", orden)=(d3df6339-a8b9-46f2-9e50-a2a843a03b5f, 19) already exists.
+13:46:36.817 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:36.817 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "ux_opcion_max_una_correcta"
+  Detail: Key ("idPregunta")=(5fb1020e-6e1d-4744-ba46-2003f8054dca) already exists.
+13:46:36.850 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:36.850 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_opcionrespuesta_idx2"
+  Detail: Key ("idPregunta", orden)=(5fb1020e-6e1d-4744-ba46-2003f8054dca, 19) already exists.
+13:46:37.718 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.05 s -- in com.prisaly.m3.infrastructure.CasoCommandAddContentIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT
+13:46:38.038 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:38.146 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 728de1bea6ad7eff29841a1c31473eb9f00e36251bcaca8f16551ea571b31dea
+13:46:39.871 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.8329909S
+13:46:39.872 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:63795/test?loggerLevel=OFF)
+13:46:40.107 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Starting...
+13:46:40.144 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Start completed.
+13:46:40.168 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:40.201 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:40.237 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:40.301 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:40.323 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:40.411 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:40.411 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_escenario_idx1"
+  Detail: Key ("idCaso", orden)=(c78f0e25-745d-4f3b-ba6b-60ccc297ebee, 2) already exists.
+13:46:40.440 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:40.441 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown initiated...
+13:46:40.442 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-1 - Shutdown completed.
+13:46:40.445 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Starting...
+13:46:40.459 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Start completed.
+13:46:40.478 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:40.506 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:40.533 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:40.590 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:40.618 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:40.743 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:40.743 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown initiated...
+13:46:40.747 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-2 - Shutdown completed.
+13:46:40.747 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Starting...
+13:46:40.764 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Start completed.
+13:46:40.784 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:40.808 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:40.830 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:40.882 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:40.900 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.011 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.011 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown initiated...
+13:46:41.011 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-3 - Shutdown completed.
+13:46:41.018 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Starting...
+13:46:41.032 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Start completed.
+13:46:41.051 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:41.073 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:41.095 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:41.155 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:41.173 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.260 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.260 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown initiated...
+13:46:41.261 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-4 - Shutdown completed.
+13:46:41.261 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Starting...
+13:46:41.273 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Start completed.
+13:46:41.296 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:41.318 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:41.340 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:41.389 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:41.407 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.478 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.478 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown initiated...
+13:46:41.486 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-5 - Shutdown completed.
+13:46:41.486 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Starting...
+13:46:41.503 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Start completed.
+13:46:41.523 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:41.543 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:41.563 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:41.610 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:41.627 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.691 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.691 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown initiated...
+13:46:41.691 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-6 - Shutdown completed.
+13:46:41.697 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Starting...
+13:46:41.712 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Start completed.
+13:46:41.730 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:41.748 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:41.773 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:41.818 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:41.836 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.950 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:41.951 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown initiated...
+13:46:41.952 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-7 - Shutdown completed.
+13:46:41.952 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Starting...
+13:46:41.961 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Start completed.
+13:46:41.980 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:42.007 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:42.028 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:42.078 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:42.097 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:42.223 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:42.223 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown initiated...
+13:46:42.223 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-8 - Shutdown completed.
+13:46:42.223 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Starting...
+13:46:42.240 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Start completed.
+13:46:42.258 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:42.283 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:42.308 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63795/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:42.351 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:42.375 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:42.926 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: null
+13:46:42.926 [main] WARN org.hibernate.orm.jdbc.error -- HikariPool-9 - Connection is not available, request timed out after 512ms (total=1, active=1, idle=0, waiting=0)
+13:46:42.948 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:42.948 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown initiated...
+13:46:42.948 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-9 - Shutdown completed.
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.281 s -- in com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoCommandUpdateIT
+13:46:43.320 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:43.429 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 24762e141b0c8c24f9e8fa1f06659539a16ec4b701cf1c9d1810363f07b7fe0d
+13:46:44.953 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.6329873S
+13:46:44.954 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:63831/test?loggerLevel=OFF)
+13:46:45.202 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:45.227 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:45.247 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:63831/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:45.297 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:45.332 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:48.529 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:46:48.530 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_escenario_idx1"
+  Detail: Key ("idCaso", orden)=(57a17bf1-b21f-4006-a1d9-c6794244de60, 2) already exists.
+13:46:48.749 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 13, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.866 s -- in com.prisaly.m3.infrastructure.CasoCommandUpdateIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT
+13:46:49.189 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:49.320 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: cc9b1228c570ac9c031644bf4b2fb7ea243b71e08d691f4796698ff367c68500
+13:46:50.937 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.7486294S
+13:46:50.937 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64006/test?loggerLevel=OFF)
+13:46:51.491 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:51.518 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:51.538 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64006/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:51.579 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:51.610 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:51.808 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.967 s -- in com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT
+13:46:52.158 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:52.263 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 05fa79ec34094162d13c7907fa50893e5a4110b99db5855abeecfaf6c02fb94c
+13:46:53.870 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.7125285S
+13:46:53.870 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64047/test?loggerLevel=OFF)
+13:46:54.189 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Starting...
+13:46:54.208 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Start completed.
+13:46:54.223 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:54.239 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:54.261 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64047/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:54.304 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:54.326 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:54.374 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:54.374 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown initiated...
+13:46:54.387 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-10 - Shutdown completed.
+13:46:54.389 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Starting...
+13:46:54.401 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Start completed.
+13:46:54.415 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:54.435 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:54.454 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64047/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:54.512 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:54.542 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:55.054 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: null
+13:46:55.054 [main] WARN org.hibernate.orm.jdbc.error -- HikariPool-11 - Connection is not available, request timed out after 504ms (total=1, active=1, idle=0, waiting=0)
+13:46:55.070 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+13:46:55.070 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown initiated...
+13:46:55.071 [main] INFO com.zaxxer.hikari.HikariDataSource -- HikariPool-11 - Shutdown completed.
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.241 s -- in com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoJpaReadIT
+13:46:55.399 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:55.500 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 4ad534d053a0dcab4a07c6951edc49f6ff30318167c32b19c31ca1764c7f08c6
+13:46:57.071 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.6723485S
+13:46:57.072 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64064/test?loggerLevel=OFF)
+13:46:57.532 [main] INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate -- Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+13:46:57.591 [main] INFO org.springframework.data.repository.config.RepositoryConfigurationDelegate -- Finished Spring Data repository scanning in 54 ms. Found 1 JPA repository interface.
+13:46:57.704 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:46:57.726 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:46:57.748 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64064/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:46:57.797 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:46:57.838 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:46:57.910 [main] INFO org.springframework.data.jpa.repository.query.QueryEnhancerFactories -- Hibernate is in classpath; If applicable, HQL parser will be used.
+13:46:58.098 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.038 s -- in com.prisaly.m3.infrastructure.CasoJpaReadIT
+[INFO] Running com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT
+13:46:58.440 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:46:58.543 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 64ae1d477225ed7a78427eadea3506864f6b4d8a79c43c28eaee3dfd4752ecc6
+13:47:00.186 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.7457694S
+13:47:00.186 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64080/test?loggerLevel=OFF)
+13:47:00.402 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:47:00.424 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:47:00.438 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64080/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:47:00.488 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:47:00.524 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:47:00.607 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:47:00.607 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "pk_opcionrespuesta"
+  Detail: Key ("idOpcion")=(ee2e4c91-e6f6-4ca8-8c51-dfa97870ce05) already exists.
+13:47:01.451 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:47:01.452 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "pk_rubricapregunta"
+  Detail: Key ("idRubricaPregunta")=(d7dcf86b-44be-4177-a17e-39f3f724d99f) already exists.
+13:47:01.705 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 22P02
+13:47:01.708 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: invalid input syntax for type json
+  Detail: Token "invalid" is invalid.
+  Where: JSON data, line 1: {invalid...
+13:47:02.180 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 22P02
+13:47:02.180 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: invalid input syntax for type json
+  Detail: Token "invalid" is invalid.
+  Where: JSON data, line 1: {invalid...
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+13:47:02.993 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23503
+13:47:02.993 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: insert or update on table "Caso" violates foreign key constraint "fk_caso_iddocente"
+  Detail: Key (idDocente)=(1711e8b3-1fc0-4622-89ef-7b4922b92567) is not present in table "Usuario".
+13:47:03.396 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:47:03.398 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "pk_caso"
+  Detail: Key ("idCaso")=(03855c8b-a80b-44dc-b1af-4fccd2ae8ec6) already exists.
+13:47:04.456 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23503
+13:47:04.457 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: insert or update on table "Caso" violates foreign key constraint "fk_caso_iddocente"
+  Detail: Key (idDocente)=(1163be5f-f193-46c6-bc2d-c070e9fe0eb0) is not present in table "Usuario".
+13:47:04.511 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:47:04.511 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "uq_escenario_idx1"
+  Detail: Key ("idCaso", orden)=(3530d0a2-cacf-4ef1-88c1-ac11eb94b787, 2) already exists.
+13:47:04.608 [main] WARN org.hibernate.orm.jdbc.error -- HHH000247: ErrorCode: 0, SQLState: 23505
+13:47:04.608 [main] WARN org.hibernate.orm.jdbc.error -- ERROR: duplicate key value violates unique constraint "ux_opcion_max_una_correcta"
+  Detail: Key ("idPregunta")=(b9d87551-325a-4ba3-9eb8-2e1ae0c5c5fa) already exists.
+13:47:05.556 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 24, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.453 s -- in com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT
+[INFO] Running com.prisaly.m3.infrastructure.EvaluableContentJpaReadIT
+13:47:05.901 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:47:06.023 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 4c1bdac8b5afeb38133d6c987ae40c1d73d0dfeb3a68343b6505837fd4ea8f06
+13:47:07.736 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.8342831S
+13:47:07.736 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64321/test?loggerLevel=OFF)
+13:47:08.261 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:47:08.326 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:47:08.347 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64321/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:47:08.455 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:47:08.505 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:47:08.571 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.060 s -- in com.prisaly.m3.infrastructure.EvaluableContentJpaReadIT
+[INFO] Running com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerReadIT
+13:47:08.961 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:47:09.089 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 034cf067d2b0e2c9efb2983071cccdefba469a4293f88250563ee5dad47498a4
+13:47:10.814 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.8534751S
+13:47:10.815 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64344/test?loggerLevel=OFF)
+13:47:11.032 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:47:11.062 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:47:11.083 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64344/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:47:11.158 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:47:11.197 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:47:11.878 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.283 s -- in com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerReadIT
+[INFO] Running com.prisaly.m3.infrastructure.PostgreSqlDockerIT
+13:47:12.245 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:47:12.373 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 64556bc379945cdef8c9a7a3bb4eb4f986b6cb833b50b1f83b7b879b8f99393a
+13:47:14.051 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.8068021S
+13:47:14.052 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64369/test?loggerLevel=OFF)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.208 s -- in com.prisaly.m3.infrastructure.PostgreSqlDockerIT
+[INFO] Running com.prisaly.m3.infrastructure.RubricaJpaReadIT
+13:47:14.457 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:47:14.576 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 7d6dea1f3cd1ed8ce2fb57357fbbce0535bed4505dafd2669cc7b4381ca226cc
+13:47:16.202 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.7447875S
+13:47:16.203 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64372/test?loggerLevel=OFF)
+13:47:16.871 [main] INFO org.hibernate.orm.jpa -- HHH008540: Processing PersistenceUnitInfo [name: default]
+13:47:16.925 [main] INFO org.springframework.orm.jpa.persistenceunit.SpringPersistenceUnitInfo -- No LoadTimeWeaver setup: ignoring JPA class transformer
+13:47:16.947 [main] INFO org.hibernate.orm.connections.pooling -- HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64372/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+13:47:17.038 [main] INFO org.hibernate.orm.core -- HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+13:47:17.096 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Initialized JPA EntityManagerFactory for persistence unit 'default'
+13:47:17.164 [main] INFO org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean -- Closing JPA EntityManagerFactory for persistence unit 'default'
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.115 s -- in com.prisaly.m3.infrastructure.RubricaJpaReadIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 77, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ m3 ---
+[INFO] 
+[INFO] ---------------------------< com.prisaly:m4 >---------------------------
+[INFO] Building m4 - Programacion Academica y Convocatorias 0.0.1-SNAPSHOT [4/4]
+[INFO]   from m4\pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.5.0:resources (default-resources) @ m4 ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources\db\migration to target\classes\db\m4-propuesta
+[INFO] 
+[INFO] --- compiler:3.15.0:compile (default-compile) @ m4 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.5.0:testResources (default-testResources) @ m4 ---
+[INFO] skip non existing resourceDirectory C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m4\src\test\resources
+[INFO] 
+[INFO] --- compiler:3.15.0:testCompile (default-testCompile) @ m4 ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ m4 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m4.application.AutorizacionM4ServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.677 s -- in com.prisaly.m4.application.AutorizacionM4ServiceTest
+[INFO] Running com.prisaly.m4.application.SesionAcademicaServiceTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.221 s -- in com.prisaly.m4.application.SesionAcademicaServiceTest
+[INFO] Running com.prisaly.m4.domain.SesionAcademicaDomainTest
+[INFO] Tests run: 20, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.068 s -- in com.prisaly.m4.domain.SesionAcademicaDomainTest
+[INFO] Running com.prisaly.m4.infrastructure.ContratosM4AdaptersTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.782 s -- in com.prisaly.m4.infrastructure.ContratosM4AdaptersTest
+[INFO] Running com.prisaly.m4.infrastructure.M4CoordinacionInicioTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.307 s -- in com.prisaly.m4.infrastructure.M4CoordinacionInicioTest
+[INFO] Running com.prisaly.m4.infrastructure.M4EstabilizacionAdaptersTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.210 s -- in com.prisaly.m4.infrastructure.M4EstabilizacionAdaptersTest
+[INFO] Running com.prisaly.m4.infrastructure.M4MigrationResourcesTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.023 s -- in com.prisaly.m4.infrastructure.M4MigrationResourcesTest
+[INFO] Running com.prisaly.m4.infrastructure.M4ProviderSecurityTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.160 s -- in com.prisaly.m4.infrastructure.M4ProviderSecurityTest
+[INFO] Running Verificaci�n de conexi�n a PostgreSQL 16 en Docker (Fase 1)
+13:47:23.252 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:47:23.259 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:47:23.271 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+13:47:23.694 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:47:24.266 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:47:24.269 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:47:24.289 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.2.0
+  API Version: 1.53
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 7792 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+13:47:24.450 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+13:47:24.568 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:47:24.741 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 10cada703672cea24008ee0a35884090c22c998a417a9cef61240e4736a73945
+13:47:25.356 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.9061118S
+13:47:25.367 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:47:25.367 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:47:25.368 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+13:47:25.369 [main] INFO tc.postgres:16-alpine -- Creating container for image: postgres:16-alpine
+13:47:25.503 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine is starting: 0ae9615c7c0bc6b96ba40bacce2181bfb33810b44847e50460b6b4f7a5cd6ff0
+13:47:27.899 [main] INFO tc.postgres:16-alpine -- Container postgres:16-alpine started in PT2.5298506S
+13:47:27.900 [main] INFO tc.postgres:16-alpine -- Container is started (JDBC URL: jdbc:postgresql://localhost:64404/test?loggerLevel=OFF)
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 5.322 s -- in Verificaci�n de conexi�n a PostgreSQL 16 en Docker (Fase 1)
+[INFO] Running com.prisaly.m4.infrastructure.ProgramacionAutenticadaTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in com.prisaly.m4.infrastructure.ProgramacionAutenticadaTest
+[INFO] Running com.prisaly.m4.infrastructure.ProgramacionParticipacionConfigurationTest
+13:47:28.759 [main] WARN org.springframework.context.annotation.AnnotationConfigApplicationContext -- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.beans.factory.UnsatisfiedDependencyException: Error creating bean with name 'inicioCoordinado' defined in com.prisaly.m4.infrastructure.config.M4ProgramacionConsultaAutoConfiguration: Unsatisfied dependency expressed through method 'inicioCoordinado' parameter 1: Error creating bean with name 'consultaBd0052' defined in com.prisaly.m4.infrastructure.config.M4ProgramacionConsultaAutoConfiguration: Unsatisfied dependency expressed through method 'consultaBd0052' parameter 0: No qualifying bean of type 'org.springframework.jdbc.core.JdbcTemplate' available: expected at least 1 bean which qualifies as autowire candidate. Dependency annotations: {}
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.175 s -- in com.prisaly.m4.infrastructure.ProgramacionParticipacionConfigurationTest
+[INFO] Running com.prisaly.m4.presentation.M4HttpErrorsTest
+13:47:29.417 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.1.5.Final
+13:47:29.910 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:29.910 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:29.921 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 9 ms
+13:47:30.227 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.227 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.227 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.230 [main] ERROR com.prisaly.m4.presentation.controller.M4ExceptionHandler -- Error interno no controlado en M4
+java.lang.IllegalStateException: SQL-PRIVADO
+	at com.prisaly.m4.application.service.SesionAcademicaService.consultarSesionAutorizada(SesionAcademicaService.java:69)
+	at com.prisaly.m4.presentation.controller.SesionController.consultarSesion(SesionController.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:160)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:199)
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.falloInesperadoNoRevelaDetalleInterno(M4HttpErrorsTest.java:236)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:701)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:502)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:45)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestMethod(TimeoutExtension.java:86)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:123)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+13:47:30.247 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.247 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.247 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.269 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.269 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.269 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.287 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.287 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.287 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.300 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.300 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.300 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.334 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.334 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.334 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.369 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.369 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.369 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.388 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.388 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.388 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.393 [main] WARN org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver -- Resolved [org.springframework.web.HttpRequestMethodNotSupportedException: Request method 'DELETE' is not supported]
+13:47:30.403 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.403 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.403 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.420 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.420 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.420 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.425 [main] ERROR com.prisaly.m4.presentation.controller.M4ExceptionHandler -- Error interno no controlado en M4
+org.springframework.dao.DataIntegrityViolationException: SQL-PRIVADO
+	at com.prisaly.m4.application.service.SesionAcademicaService.consultarSesionAutorizada(SesionAcademicaService.java:69)
+	at com.prisaly.m4.presentation.controller.SesionController.consultarSesion(SesionController.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:160)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:199)
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridadDesconocidaNoSeDisfrazaDeDuplicado(M4HttpErrorsTest.java:178)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:701)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:502)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:45)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestTemplateMethod(TimeoutExtension.java:94)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:123)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:268)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:246)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.execute(TemplateExecutor.java:96)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.lambda$executeForProvider$1(TemplateExecutor.java:59)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.lambda$executeForProvider$0(TemplateExecutor.java:59)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.AbstractList$RandomAccessSpliterator.forEachRemaining(AbstractList.java:722)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.executeForProvider(TemplateExecutor.java:57)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.execute(TemplateExecutor.java:46)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:112)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:40)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+Caused by: org.hibernate.exception.ConstraintViolationException: SQL-PRIVADO
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridad(M4HttpErrorsTest.java:243)
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridadDesconocidaNoSeDisfrazaDeDuplicado(M4HttpErrorsTest.java:177)
+	... 124 common frames omitted
+Caused by: java.sql.SQLException: SQL-PRIVADO
+	... 126 common frames omitted
+13:47:30.437 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.437 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.437 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.437 [main] ERROR com.prisaly.m4.presentation.controller.M4ExceptionHandler -- Error interno no controlado en M4
+org.springframework.dao.DataIntegrityViolationException: SQL-PRIVADO
+	at com.prisaly.m4.application.service.SesionAcademicaService.consultarSesionAutorizada(SesionAcademicaService.java:69)
+	at com.prisaly.m4.presentation.controller.SesionController.consultarSesion(SesionController.java:72)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.springframework.web.method.support.InvocableHandlerMethod.doInvoke(InvocableHandlerMethod.java:252)
+	at org.springframework.web.method.support.InvocableHandlerMethod.invokeForRequest(InvocableHandlerMethod.java:184)
+	at org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod.invokeAndHandle(ServletInvocableHandlerMethod.java:117)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.invokeHandlerMethod(RequestMappingHandlerAdapter.java:934)
+	at org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter.handleInternal(RequestMappingHandlerAdapter.java:853)
+	at org.springframework.web.servlet.mvc.method.AbstractHandlerMethodAdapter.handle(AbstractHandlerMethodAdapter.java:86)
+	at org.springframework.web.servlet.DispatcherServlet.doDispatch(DispatcherServlet.java:963)
+	at org.springframework.web.servlet.DispatcherServlet.doService(DispatcherServlet.java:866)
+	at org.springframework.web.servlet.FrameworkServlet.processRequest(FrameworkServlet.java:1000)
+	at org.springframework.web.servlet.FrameworkServlet.doGet(FrameworkServlet.java:892)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:622)
+	at org.springframework.web.servlet.FrameworkServlet.service(FrameworkServlet.java:874)
+	at org.springframework.test.web.servlet.TestDispatcherServlet.service(TestDispatcherServlet.java:72)
+	at jakarta.servlet.http.HttpServlet.service(HttpServlet.java:710)
+	at org.springframework.mock.web.MockFilterChain$ServletFilterProxy.doFilter(MockFilterChain.java:160)
+	at org.springframework.mock.web.MockFilterChain.doFilter(MockFilterChain.java:127)
+	at org.springframework.test.web.servlet.MockMvc.perform(MockMvc.java:199)
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridadDesconocidaNoSeDisfrazaDeDuplicado(M4HttpErrorsTest.java:178)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.junit.platform.commons.util.ReflectionUtils.invokeMethod(ReflectionUtils.java:701)
+	at org.junit.platform.commons.support.ReflectionSupport.invokeMethod(ReflectionSupport.java:502)
+	at org.junit.jupiter.engine.support.MethodReflectionUtils.invoke(MethodReflectionUtils.java:45)
+	at org.junit.jupiter.engine.execution.MethodInvocation.proceed(MethodInvocation.java:61)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$ValidatingInvocation.proceed(InvocationInterceptorChain.java:124)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.intercept(TimeoutExtension.java:163)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestableMethod(TimeoutExtension.java:148)
+	at org.junit.jupiter.engine.extension.TimeoutExtension.interceptTestTemplateMethod(TimeoutExtension.java:94)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker$ReflectiveInterceptorCall.lambda$ofVoidMethod$0(InterceptingExecutableInvoker.java:123)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.lambda$invoke$0(InterceptingExecutableInvoker.java:105)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain$InterceptedInvocation.proceed(InvocationInterceptorChain.java:99)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.proceed(InvocationInterceptorChain.java:66)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.chainAndInvoke(InvocationInterceptorChain.java:47)
+	at org.junit.jupiter.engine.execution.InvocationInterceptorChain.invoke(InvocationInterceptorChain.java:39)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:104)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invoke(InterceptingExecutableInvoker.java:98)
+	at org.junit.jupiter.engine.execution.InterceptingExecutableInvoker.invokeVoid(InterceptingExecutableInvoker.java:71)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.lambda$invokeTestMethod$0(TestMethodTestDescriptor.java:219)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.invokeTestMethod(TestMethodTestDescriptor.java:215)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:157)
+	at org.junit.jupiter.engine.descriptor.TestMethodTestDescriptor.execute(TestMethodTestDescriptor.java:70)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:268)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask$DefaultDynamicTestExecutor.execute(NodeTestTask.java:246)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.execute(TemplateExecutor.java:96)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.lambda$executeForProvider$1(TemplateExecutor.java:59)
+	at java.base/java.util.Optional.ifPresent(Optional.java:178)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.lambda$executeForProvider$0(TemplateExecutor.java:59)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.accept(ForEachOps.java:184)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.ReferencePipeline$Head.forEach(ReferencePipeline.java:762)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.ArrayList$ArrayListSpliterator.forEachRemaining(ArrayList.java:1708)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at java.base/java.util.stream.ReferencePipeline$7$1.accept(ReferencePipeline.java:276)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:197)
+	at java.base/java.util.AbstractList$RandomAccessSpliterator.forEachRemaining(AbstractList.java:722)
+	at java.base/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+	at java.base/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+	at java.base/java.util.stream.ForEachOps$ForEachOp.evaluateSequential(ForEachOps.java:151)
+	at java.base/java.util.stream.ForEachOps$ForEachOp$OfRef.evaluateSequential(ForEachOps.java:174)
+	at java.base/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+	at java.base/java.util.stream.ReferencePipeline.forEach(ReferencePipeline.java:596)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.executeForProvider(TemplateExecutor.java:57)
+	at org.junit.jupiter.engine.descriptor.TemplateExecutor.execute(TemplateExecutor.java:46)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:112)
+	at org.junit.jupiter.engine.descriptor.TestTemplateTestDescriptor.execute(TestTemplateTestDescriptor.java:40)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:176)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.invokeAll(SameThreadHierarchicalTestExecutorService.java:42)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$2(NodeTestTask.java:180)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$1(NodeTestTask.java:166)
+	at org.junit.platform.engine.support.hierarchical.Node.around(Node.java:138)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$0(NodeTestTask.java:164)
+	at org.junit.platform.engine.support.hierarchical.ThrowableCollector.execute(ThrowableCollector.java:74)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.executeRecursively(NodeTestTask.java:163)
+	at org.junit.platform.engine.support.hierarchical.NodeTestTask.execute(NodeTestTask.java:116)
+	at org.junit.platform.engine.support.hierarchical.SameThreadHierarchicalTestExecutorService.submit(SameThreadHierarchicalTestExecutorService.java:36)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestExecutor.execute(HierarchicalTestExecutor.java:52)
+	at org.junit.platform.engine.support.hierarchical.HierarchicalTestEngine.execute(HierarchicalTestEngine.java:58)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.executeEngine(EngineExecutionOrchestrator.java:246)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.failOrExecuteEngine(EngineExecutionOrchestrator.java:218)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:179)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:108)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.lambda$execute$0(EngineExecutionOrchestrator.java:66)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.withInterceptedStreams(EngineExecutionOrchestrator.java:157)
+	at org.junit.platform.launcher.core.EngineExecutionOrchestrator.execute(EngineExecutionOrchestrator.java:65)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:125)
+	at org.junit.platform.launcher.core.DefaultLauncher.execute(DefaultLauncher.java:114)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at org.junit.platform.launcher.core.InterceptingLauncher.lambda$execute$2(InterceptingLauncher.java:57)
+	at org.junit.platform.launcher.core.ClasspathAlignmentCheckingLauncherInterceptor.intercept(ClasspathAlignmentCheckingLauncherInterceptor.java:25)
+	at org.junit.platform.launcher.core.InterceptingLauncher.execute(InterceptingLauncher.java:56)
+	at org.junit.platform.launcher.core.DelegatingLauncher.execute(DelegatingLauncher.java:58)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at org.apache.maven.surefire.api.util.ReflectionUtils.invokeMethodWithArray(ReflectionUtils.java:125)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.executeWithCancellationToken(LauncherAdapter.java:68)
+	at org.apache.maven.surefire.junitplatform.LauncherAdapter.execute(LauncherAdapter.java:54)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.execute(JUnitPlatformProvider.java:203)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invokeAllTests(JUnitPlatformProvider.java:168)
+	at org.apache.maven.surefire.junitplatform.JUnitPlatformProvider.invoke(JUnitPlatformProvider.java:136)
+	at org.apache.maven.surefire.booter.ForkedBooter.runSuitesInProcess(ForkedBooter.java:385)
+	at org.apache.maven.surefire.booter.ForkedBooter.execute(ForkedBooter.java:162)
+	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
+	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
+Caused by: org.hibernate.exception.ConstraintViolationException: SQL-PRIVADO
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridad(M4HttpErrorsTest.java:243)
+	at com.prisaly.m4.presentation.M4HttpErrorsTest.integridadDesconocidaNoSeDisfrazaDeDuplicado(M4HttpErrorsTest.java:177)
+	... 124 common frames omitted
+Caused by: java.sql.SQLException: SQL-PRIVADO
+	... 126 common frames omitted
+13:47:30.454 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.454 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.454 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.469 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.469 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.469 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.486 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.486 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.487 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.501 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.501 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.501 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.508 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.508 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.508 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.549 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.549 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.549 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.565 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.565 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.565 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.577 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.577 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.577 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.594 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.594 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.594 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.621 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.621 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.621 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.635 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.635 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.635 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.650 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.650 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.650 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.662 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.662 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.662 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.673 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.673 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.673 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.688 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.688 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.689 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 1 ms
+13:47:30.707 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.707 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.707 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.720 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.720 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.720 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.736 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.736 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.736 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.747 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.747 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+13:47:30.760 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+13:47:30.760 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+13:47:30.760 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 32, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.008 s -- in com.prisaly.m4.presentation.M4HttpErrorsTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 118, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jar:3.5.1:jar (default-jar) @ m4 ---
+[INFO] 
+[INFO] --- failsafe:3.5.6:integration-test (default) @ m4 ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.prisaly.m4.infrastructure.Bd0052BaselineIT
+[WARNING] Tests run: 4, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 0.022 s -- in com.prisaly.m4.infrastructure.Bd0052BaselineIT
+[INFO] Running com.prisaly.m4.infrastructure.M4M1ContratosPostgreSqlIT
+[WARNING] Tests run: 6, Failures: 0, Errors: 0, Skipped: 6, Time elapsed: 0.003 s -- in com.prisaly.m4.infrastructure.M4M1ContratosPostgreSqlIT
+[INFO] Running com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT
+[WARNING] Tests run: 8, Failures: 0, Errors: 0, Skipped: 8, Time elapsed: 0.001 s -- in com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT
+[INFO] Running com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT
+13:47:32.930 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+13:47:32.937 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+13:47:32.997 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+13:47:33.295 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Loaded org.testcontainers.dockerclient.NpipeSocketClientProviderStrategy from ~/.testcontainers.properties, will try it first
+13:47:33.806 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Npipe socket (npipe:////./pipe/docker_engine)
+13:47:33.808 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+13:47:33.829 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker: 
+  Server Version: 29.2.0
+  API Version: 1.53
+  Operating System: Docker Desktop (containerized)
+  Total Memory: 7792 MB
+  Labels: 
+    com.docker.desktop.address=npipe://\\.\pipe\docker_cli
+13:47:33.960 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+13:47:34.062 [main] INFO org.testcontainers.utility.RegistryAuthLocator -- Credential helper/store (docker-credential-desktop) does not have credentials for https://index.docker.io/v1/
+13:47:34.229 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: ffc084ca618f048c928058717355606f97224e768a01f376173327f712c20f10
+13:47:34.691 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.72989S
+13:47:34.703 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+13:47:34.703 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+13:47:34.704 [main] INFO org.testcontainers.DockerClientFactory -- ?? Docker server version should be at least 1.6.0
+13:47:34.704 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+13:47:34.824 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: fada9042ef3d9fd2f0a36e4177bc68a45b24d8f11f24b7b47c6ac8bbffe66f7e
+13:47:36.552 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.8473664S
+13:47:36.553 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: jdbc:postgresql://localhost:64412/test?loggerLevel=OFF)
+13:47:37.148 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: jdbc:postgresql://localhost:64412/test?loggerLevel=OFF (PostgreSQL 16.15)
+13:47:37.228 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+13:47:37.233 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.026s)
+13:47:37.248 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+13:47:37.313 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": << Empty Schema >>
+13:47:37.347 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+13:47:37.359 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.466 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+13:47:37.468 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.507 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+13:47:37.509 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.539 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+13:47:37.541 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.561 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+13:47:37.563 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.586 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+13:47:37.587 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.610 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+13:47:37.610 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.641 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+13:47:37.641 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.659 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+13:47:37.662 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+13:47:37.682 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.205s)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-02T13:47:38.048-05:00  INFO 6488 --- [           main] c.p.m.i.SesionAcademicaPostgreSqlIT      : Starting SesionAcademicaPostgreSqlIT using Java 21.0.2 with PID 6488 (started by Heiner in C:\Users\Heiner\Desktop\PRISALY\PRISALY-Backen\m4)
+2026-11-02T13:47:38.053-05:00  INFO 6488 --- [           main] c.p.m.i.SesionAcademicaPostgreSqlIT      : No active profile set, falling back to 1 default profile: "default"
+2026-11-02T13:47:38.948-05:00  INFO 6488 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-02T13:47:39.038-05:00  INFO 6488 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 77 ms. Found 2 JPA repository interfaces.
+2026-11-02T13:47:39.755-05:00  INFO 6488 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-02T13:47:39.858-05:00  INFO 6488 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-11-02T13:47:40.483-05:00  INFO 6488 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-02T13:47:40.515-05:00  INFO 6488 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-02T13:47:40.543-05:00  INFO 6488 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@1ac30be4
+2026-11-02T13:47:40.547-05:00  INFO 6488 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-02T13:47:40.630-05:00  INFO 6488 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [jdbc:postgresql://localhost:64412/test?loggerLevel=OFF]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-02T13:47:41.570-05:00  INFO 6488 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-02T13:47:41.643-05:00  INFO 6488 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-02T13:47:41.809-05:00  INFO 6488 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-02T13:47:43.498-05:00  WARN 6488 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-02T13:47:44.046-05:00  WARN 6488 --- [           main] .s.a.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: b9542805-4b13-4bfd-a436-f854ba0539e2
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-11-02T13:47:44.111-05:00  INFO 6488 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-11-02T13:47:44.547-05:00  INFO 6488 --- [           main] c.p.m.i.SesionAcademicaPostgreSqlIT      : Started SesionAcademicaPostgreSqlIT in 6.804 seconds (process running for 13.025)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\Heiner\.m2\repository\net\bytebuddy\byte-buddy-agent\1.18.15\byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-02T13:47:45.048-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 77850ee4-23f5-474a-9b85-09852aeae0e3: true
+2026-11-02T13:47:45.259-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 77850ee4-23f5-474a-9b85-09852aeae0e3: true
+2026-11-02T13:47:45.344-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 59845a43-56da-4673-9644-e6f9b5ddcfda: true
+2026-11-02T13:47:45.373-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 59845a43-56da-4673-9644-e6f9b5ddcfda: true
+2026-11-02T13:47:45.387-05:00  WARN 6488 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n dab9f14c-0528-4d43-b319-f543ee393c6c / estudiante 9fbcabe7-5eb6-46b8-92b5-0921d0591b98 � registrada por stub (sin env�o real)
+M4 OFICIAL: escritura JPA Sesion/Convocatoria y lectura puerto M5 coherentes; 21 tablas
+2026-11-02T13:47:45.433-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente a5c49c88-1314-4587-a948-1d78c2f9afe9: true
+2026-11-02T13:47:45.472-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 37249d69-099d-461b-880a-1286ef0b4f23: true
+2026-11-02T13:47:45.486-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 37249d69-099d-461b-880a-1286ef0b4f23: true
+2026-11-02T13:47:45.502-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 37249d69-099d-461b-880a-1286ef0b4f23: true
+2026-11-02T13:47:45.548-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente d173b638-f483-4250-bc3b-fd905150555c: true
+2026-11-02T13:47:45.557-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 62b80998-3aa4-4e08-9514-2885a931d62d: true
+2026-11-02T13:47:45.588-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c568de3e-b304-4cea-bfe9-ef4a9967b788: true
+2026-11-02T13:47:45.599-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c568de3e-b304-4cea-bfe9-ef4a9967b788: true
+2026-11-02T13:47:45.607-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c568de3e-b304-4cea-bfe9-ef4a9967b788: true
+2026-11-02T13:47:45.616-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c568de3e-b304-4cea-bfe9-ef4a9967b788: true
+2026-11-02T13:47:45.648-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 71f1e631-270d-41f3-82b7-ad3c11bce66b: true
+2026-11-02T13:47:45.658-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 71f1e631-270d-41f3-82b7-ad3c11bce66b: true
+2026-11-02T13:47:45.668-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 71f1e631-270d-41f3-82b7-ad3c11bce66b: true
+2026-11-02T13:47:45.760-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente ff5cd036-3a6a-485b-8e2a-1714422a7d19: true
+2026-11-02T13:47:45.803-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 9d2afc0c-540f-4130-b1c3-5eb1cb7fe50b: true
+2026-11-02T13:47:45.843-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 962e683c-b109-4d95-a959-4a0ad3c2734b: true
+2026-11-02T13:47:45.887-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7bd78888-51cb-4e4f-87bd-a71812c61db9: true
+2026-11-02T13:47:45.897-05:00  INFO 6488 --- [pool-3-thread-1] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7bd78888-51cb-4e4f-87bd-a71812c61db9: true
+2026-11-02T13:47:45.899-05:00  INFO 6488 --- [pool-3-thread-2] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7bd78888-51cb-4e4f-87bd-a71812c61db9: true
+2026-11-02T13:47:45.904-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7bd78888-51cb-4e4f-87bd-a71812c61db9: true
+2026-11-02T13:47:45.934-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente b7b6e52a-1005-4a79-bbfb-061e4b7a0096: true
+M4 OFICIAL RF09/F303: caso Publicado programado, marca real y contenido protegido
+2026-11-02T13:47:45.975-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 6500344a-266f-4f57-9cb9-ba7b4cef67c8: true
+2026-11-02T13:47:45.977-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 6500344a-266f-4f57-9cb9-ba7b4cef67c8: true
+2026-11-02T13:47:46.012-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 0bd2e55f-c573-4045-a2d2-e27efa6ddc82: false
+2026-11-02T13:47:46.071-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente d8ca4d91-e14e-4dac-a744-d66719ebe8e5: true
+2026-11-02T13:47:46.081-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente d8ca4d91-e14e-4dac-a744-d66719ebe8e5: true
+2026-11-02T13:47:46.138-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 02ca6a88-e3f8-4355-b017-42596a805b7d: true
+2026-11-02T13:47:46.167-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 6e305171-4965-4300-8f41-dcc01a1bcb92: true
+2026-11-02T13:47:46.177-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 6e305171-4965-4300-8f41-dcc01a1bcb92: true
+2026-11-02T13:47:46.188-05:00  WARN 6488 --- [           main] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23503
+2026-11-02T13:47:46.188-05:00  WARN 6488 --- [           main] org.hibernate.orm.jdbc.error             : ERROR: insert or update on table "Convocatoria" violates foreign key constraint "fk_convocatoria_idestudiante"
+  Detail: Key (idEstudiante)=(d9b84b47-ad8d-4c15-a204-aaea3348df07) is not present in table "Estudiante".
+2026-11-02T13:47:46.250-05:00  INFO 6488 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-11-02T13:47:46.250-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-02T13:47:46.250-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-11-02T13:47:46.388-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 1468a1c4-a463-4169-bce2-33d560965986: true
+2026-11-02T13:47:46.477-05:00  INFO 6488 --- [pool-4-thread-3] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-5] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [ool-4-thread-10] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-4] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-6] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-2] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-7] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-8] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-1] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+2026-11-02T13:47:46.484-05:00  INFO 6488 --- [pool-4-thread-9] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 7056b2bd-4e8a-4835-b0ab-5b205a463d4e: true
+M4 OFICIAL concurrencia: 1 �xito, 9 duplicados esperados, 0 errores inesperados
+2026-11-02T13:47:46.551-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente d2eb02b0-6fea-4b81-8724-a1343d428fdb: true
+M4 OFICIAL rollback: Sesion=0, marca F303 nula desde conexi�n posterior
+2026-11-02T13:47:46.584-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-3] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-6] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-2] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-5] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-4] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.594-05:00  INFO 6488 --- [pool-5-thread-1] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 640169b8-7c45-4555-b3a7-7e5489e69e8d: true
+2026-11-02T13:47:46.600-05:00  WARN 6488 --- [pool-5-thread-1] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n 3a06f27d-c62b-4890-88f3-7760b6e1d8b2 / estudiante 88ecd828-9802-4467-adc9-063f12c4ffb5 � registrada por stub (sin env�o real)
+2026-11-02T13:47:46.638-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente f5288dd3-4b09-499c-99b1-292272046a32: true
+2026-11-02T13:47:46.669-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 3701f581-c6cc-4319-9378-0df0fabbdc7c: true
+2026-11-02T13:47:46.680-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 3701f581-c6cc-4319-9378-0df0fabbdc7c: true
+2026-11-02T13:47:46.687-05:00  WARN 6488 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n 0a9e5c4e-83d5-48f8-a265-39c790e001b6 / estudiante 5fa00beb-a776-4256-ab6e-2aa45c32a723 � registrada por stub (sin env�o real)
+2026-11-02T13:47:46.690-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 3701f581-c6cc-4319-9378-0df0fabbdc7c: true
+2026-11-02T13:47:46.721-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c8663499-9ba8-4da5-80d7-db66c23607b5: true
+2026-11-02T13:47:46.730-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c8663499-9ba8-4da5-80d7-db66c23607b5: true
+2026-11-02T13:47:46.735-05:00  WARN 6488 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n 79947290-881c-4a5c-b8df-8f867c724eb0 / estudiante 7bf378bb-d5b9-4aa8-ac3c-238d0d71d20d � registrada por stub (sin env�o real)
+2026-11-02T13:47:46.740-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c8663499-9ba8-4da5-80d7-db66c23607b5: true
+2026-11-02T13:47:46.769-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente eef8237d-fbe8-475c-b4e8-b87f00cd4c7f: true
+2026-11-02T13:47:46.794-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 0095d89a-6974-4714-901a-b05b0dd6102e: true
+2026-11-02T13:47:46.803-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 0095d89a-6974-4714-901a-b05b0dd6102e: true
+2026-11-02T13:47:46.838-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c446f884-df83-45a1-a568-845d8ac7530b: true
+2026-11-02T13:47:46.848-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c446f884-df83-45a1-a568-845d8ac7530b: true
+2026-11-02T13:47:46.853-05:00  WARN 6488 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n e2064104-8ff0-4c38-ac08-7ec827f5be5d / estudiante 0265276e-2916-40bf-bc12-3c21f363abd9 � registrada por stub (sin env�o real)
+2026-11-02T13:47:46.858-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente c446f884-df83-45a1-a568-845d8ac7530b: true
+2026-11-02T13:47:46.889-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente f1e69db0-ed13-422c-ae99-7788fa518be3: true
+2026-11-02T13:47:46.897-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente f1e69db0-ed13-422c-ae99-7788fa518be3: true
+2026-11-02T13:47:46.902-05:00  WARN 6488 --- [           main] org.hibernate.orm.jdbc.error             : HHH000247: ErrorCode: 0, SQLState: 23503
+2026-11-02T13:47:46.902-05:00  WARN 6488 --- [           main] org.hibernate.orm.jdbc.error             : ERROR: insert or update on table "Convocatoria" violates foreign key constraint "fk_convocatoria_idestudiante"
+  Detail: Key (idEstudiante)=(8d28a621-93c0-4417-9621-f92e12ec908f) is not present in table "Estudiante".
+2026-11-02T13:47:46.929-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e9482913-6583-4cb9-888e-db0fef78f32d: true
+2026-11-02T13:47:46.937-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e9482913-6583-4cb9-888e-db0fef78f32d: true
+2026-11-02T13:47:46.947-05:00  INFO 6488 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-11-02T13:47:46.951-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-02T13:47:46.951-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-11-02T13:47:46.961-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e9482913-6583-4cb9-888e-db0fef78f32d: true
+2026-11-02T13:47:47.007-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e10a8908-967a-446b-a583-56dbffac74c4: true
+2026-11-02T13:47:47.021-05:00  INFO 6488 --- [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-11-02T13:47:47.021-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-02T13:47:47.021-05:00  INFO 6488 --- [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2026-11-02T13:47:47.029-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e10a8908-967a-446b-a583-56dbffac74c4: true
+2026-11-02T13:47:47.038-05:00  WARN 6488 --- [           main] c.p.m.i.adapter.NotificacionStubAdapter  : [M7-STUB] Notificaci�n de convocatoria para sesi�n fd56061f-968f-4d3d-b1c8-b0ffb2ca3845 / estudiante 1764da72-c0cc-4cdb-9c58-a9ab6f11fbdd � registrada por stub (sin env�o real)
+2026-11-02T13:47:47.045-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente e10a8908-967a-446b-a583-56dbffac74c4: true
+2026-11-02T13:47:47.055-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente 5564c0ae-9e93-43f4-bb40-7f8ae6614951: true
+2026-11-02T13:47:47.088-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente b71e838d-c861-4b74-87b0-2df023b92d54: true
+2026-11-02T13:47:47.101-05:00  INFO 6488 --- [           main] c.p.m.i.adapter.IdentidadStubAdapter     : [M1-STUB] Verificaci�n de permiso 'GESTIONAR_SESION' para docente b71e838d-c861-4b74-87b0-2df023b92d54: true
+[INFO] Tests run: 32, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 15.11 s -- in com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 50, Failures: 0, Errors: 0, Skipped: 18
+[INFO] 
+[INFO] 
+[INFO] --- failsafe:3.5.6:verify (default) @ m4 ---
+[INFO] ------------------------------------------------------------------------
+[INFO] Reactor Summary for PRISALY Backend 0.0.1-SNAPSHOT:
+[INFO] 
+[INFO] PRISALY Backend .................................... SUCCESS [  0.003 s]
+[INFO] m1 ................................................. SUCCESS [ 19.591 s]
+[INFO] m3 ................................................. SUCCESS [ 58.897 s]
+[INFO] m4 - Programacion Academica y Convocatorias ........ SUCCESS [ 30.016 s]
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  01:48 min
+[INFO] Finished at: 2026-11-02T13:47:48-05:00
+[INFO] ------------------------------------------------------------------------
