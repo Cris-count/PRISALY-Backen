@@ -1,4 +1,4 @@
-SHA256 M5 local/anidado: E99D4065AD3083B96BBDBA64558CD9C718398CCDDCDE1E6FDB8ABE9477368502 (idénticos)
-Proveedor duplicado HistorialM4M5Configuration: ausente
-ParticipacionesM4DesdeM5: único proveedor productivo verificado por app
-Guardia y adaptación de fallo a503: implementadas en la frontera SesionRepositoryAdapter de M4; M5 sin modificar
+SHA256 M5 local/anidado: C2887942FB4DA8F88208DC7E1E7AB8385F4AE7EE744CCD57ED94AC2F191E176B (idénticos)
+CoordinacionInicioDesdeM4: presente en el módulo anidado
+Ensamblado productivo conserva denegación académica y acceso estudiantil desactivado.
+Verificación funcional: regresión completa 02/11/2026, consultar RESULTADO.md.

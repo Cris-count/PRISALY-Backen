@@ -23,6 +23,36 @@ class CasoPublicationContractTest {
     private static final Instant DATE = Instant.parse("2026-01-01T00:00:00Z");
 
     @Test
+    void componentScanDoesNotRegisterPublicationOrAnAlternativeAuthorizationProvider() throws Exception {
+        var scanner = new org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider(true);
+        var candidates = scanner.findCandidateComponents("com.prisaly.m3");
+        for (var candidate : candidates) {
+            assertNotEquals(CasoPublicationAdapter.class.getName(), candidate.getBeanClassName());
+            Class<?> type = Class.forName(candidate.getBeanClassName(), false,
+                    CasoPublicationAdapter.class.getClassLoader());
+            assertFalse(CaseAuthorizationPort.class.isAssignableFrom(type),
+                    "M3 must not auto-register an authorization substitute");
+            assertFalse(CasoPublicationPort.class.isAssignableFrom(type),
+                    "Publication must wait for explicit institutional wiring");
+        }
+    }
+
+    @Test
+    void onlyConstructorRequiresAuthorizationAndRejectsMissingProvider() {
+        var constructors = CasoPublicationAdapter.class.getConstructors();
+        assertEquals(1, constructors.length);
+        assertArrayEquals(new Class<?>[] {EntityManagerFactory.class,
+                org.springframework.transaction.PlatformTransactionManager.class, CaseAuthorizationPort.class},
+                constructors[0].getParameterTypes());
+        var emf = mock(EntityManagerFactory.class);
+        var manager = mock(org.springframework.transaction.PlatformTransactionManager.class);
+        var failure = assertThrows(NullPointerException.class,
+                () -> new CasoPublicationAdapter(emf, manager, null));
+        assertEquals("authorization", failure.getMessage());
+        verifyNoInteractions(emf, manager);
+    }
+
+    @Test
     void invalidParametersFailBeforeTransactionOrAuthorization() {
         var emf = mock(EntityManagerFactory.class);
         var authorization = mock(CaseAuthorizationPort.class);
