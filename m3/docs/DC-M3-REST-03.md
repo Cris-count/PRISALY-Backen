@@ -1,7 +1,9 @@
 # DC-M3-REST-03 — Creación autorizada y POST de borradores
 
-Estado actual: compilación, pruebas técnicas, arranque y trece solicitudes Bruno
-validados el 4 de noviembre de 2026. Evidencia Postman pendiente. Los apartados
+Estado: compilación, pruebas técnicas, arranque y trece solicitudes Bruno
+validados el 4 de noviembre de 2026 en la corrida histórica registrada. La
+colección Postman se ejecutó posteriormente mediante Newman; sus resultados
+se conservan separados en EVIDENCIA-POSTMAN.md. Capturas Desktop pendientes. Los apartados
 iniciales conservan el registro histórico de preparación; sus menciones a tareas
 pendientes quedan actualizadas por el registro de ejecución al final.
 Rama comprobada leyendo `.git/HEAD`: `feature/m3-gestion-casos`.
@@ -43,7 +45,7 @@ el contrato existente devuelve el objeto construido, no una relectura.
 Ejemplo Postman (variables que debe aportar el responsable):
 
 ```http
-POST {{baseUrl}}/api/v1/casos
+POST {{baseUrl}}/v1/casos
 Authorization: Bearer {{accessToken}}
 Content-Type: application/json
 ```
@@ -458,3 +460,33 @@ Pendientes: completar Postman manualmente, importar colección/entorno, ajustar
 baseUrl, obtener token M1 sin exportarlo y registrar respuestas/capturas auténticas
 con fecha, probador y versión. GET y PATCH siguen bloqueados por políticas
 institucionales; publicación y DD-03 no se habilitan. No se declara M3 terminado.
+
+## Registro posterior de pruebas manuales — 4 de noviembre de 2026
+
+Integrante 2 confirmó una corrida posterior con 132 pruebas unitarias (0 fallos,
+0 errores) y 71 integraciones PostgreSQL (0 fallos, 0 errores), BUILD SUCCESS,
+utilizando Testcontainers y PostgreSQL 16.15. Dentro de esos totales:
+CasoPublicationContractTest, 9 aprobadas; CasoPersistenceAdapterIT, 25 aprobadas.
+La confirmación procede del ejecutor; no se inspeccionaron sus XML/logs completos
+ni se ejecutaron pruebas adicionales para registrar estos resultados.
+
+Esta corrida es independiente de los conteos históricos anteriores. No se suman
+ni se trasladan sus resultados a Bruno o Newman. El detalle, las regresiones y
+los límites constan en [M3-INC-13B](M3-INC-13B.md), sección «Resultado real
+reportado por Integrante 2». Los avisos de PostgreSQL y Hikari quedan registrados
+sin clasificación de defecto: falta su texto y contexto para analizarlos.
+
+No se verificó un SHA ni el artefacto de backend correspondiente a esta corrida;
+el hash y HEAD históricos de este documento no se le atribuyen. Deben conservarse
+los reportes y logs depurados junto con la versión efectivamente validada.
+
+La colección Postman ya cuenta con ejecución automatizada Newman 6.2.1:
+13 solicitudes y 39 aserciones aprobadas, registrada por separado en
+`bruno/m3-gestion-casos/EVIDENCIA-POSTMAN.md`. Este hecho no convierte los
+pendientes históricos de capturas Desktop en evidencia GUI ni identifica la
+versión de backend de aquella corrida. Los resultados Bruno se conservan intactos.
+
+El éxito de las pruebas de rechazo y rollback no acredita publicación persistente
+exitosa: DD-03 y la autorización institucional correspondiente siguen pendientes.
+GET/PATCH, copia persistida y transiciones de Archivado no se habilitan por este
+registro documental. No se declara M3 terminado.

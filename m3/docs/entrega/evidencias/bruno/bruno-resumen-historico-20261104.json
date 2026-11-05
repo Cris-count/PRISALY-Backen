@@ -1,0 +1,318 @@
+{
+    "Tool":  "Bruno CLI 4.3.0",
+    "HistoricalDate":  "2026-11-04",
+    "Requests":  13,
+    "Tests":  14,
+    "Assertions":  27,
+    "Provenance":  "Derivado del reporte original; sin request/response headers ni credenciales",
+    "Results":  [
+                    {
+                        "Name":  "Crear borrador vÃ¡lido",
+                        "Status":  "pass",
+                        "HttpObserved":  201,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      },
+                                      {
+                                          "Name":  "UUID solicitado y respuesta mÃ­nima",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 201",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.estado",
+                                               "Expected":  "eq BORRADOR",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.idCaso",
+                                               "Expected":  "isDefined",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear sin autenticaciÃ³n",
+                        "Status":  "pass",
+                        "HttpObserved":  401,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 401",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq UNAUTHENTICATED",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear sin permiso",
+                        "Status":  "pass",
+                        "HttpObserved":  403,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 403",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq FORBIDDEN",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear con UUID invÃ¡lido",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear sin tÃ­tulo",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear con tiempo cero",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear con campo desconocido",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Rechazar propietario en JSON",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Rechazar UUID ya creado",
+                        "Status":  "pass",
+                        "HttpObserved":  409,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 409",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq CASE_CONFLICT",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Rechazar tiempo decimal",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Rechazar tÃ­tulo de 151 caracteres",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Rechazar NUL en narrativa",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    },
+                    {
+                        "Name":  "Crear con tiempo negativo",
+                        "Status":  "pass",
+                        "HttpObserved":  400,
+                        "Tests":  [
+                                      {
+                                          "Name":  "Sin detalles internos",
+                                          "Status":  "pass"
+                                      }
+                                  ],
+                        "Assertions":  [
+                                           {
+                                               "Expression":  "res.status",
+                                               "Expected":  "eq 400",
+                                               "Status":  "pass"
+                                           },
+                                           {
+                                               "Expression":  "res.body.code",
+                                               "Expected":  "eq INVALID_CASE_REQUEST",
+                                               "Status":  "pass"
+                                           }
+                                       ]
+                    }
+                ]
+}

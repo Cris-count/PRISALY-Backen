@@ -97,6 +97,41 @@ class CasoPublicationContractTest {
     }
 
     @Test
+    void opaqueJsonAndFractionalAssociationsCannotManufactureLegacyCompleteness() {
+        var base = snapshot("Borrador", null, true, true);
+        // Deliberately opaque test data, not an approved academic JSON schema.
+        String json = """
+                {"criterios":[{"descripcion":"opaque fixture","puntaje":12.50}],
+                 "precision":12345678901234567890.123456789}
+                """;
+        var row = base.rubrica();
+        var source = new CasoJpaAggregateSnapshot(base.caso(), base.escenarios(),
+                base.preguntas(), base.opciones(), new RubricaRow(row.idRubrica(), row.idCaso(),
+                row.nombre(), null, row.puntajeTotal(), json, row.fechaCreacion()),
+                base.rubricaPreguntas());
+        String fingerprint = CasoAggregateFingerprint.of(source);
+
+        var mapped = CasoPersistenceMapper.toDomain(source);
+        var rubric = mapped.rubrica();
+        assertTrue(rubric.criterios().isEmpty());
+        assertFalse(rubric.isComplete());
+        assertEquals(json, rubric.definicionEvaluacion());
+        assertEquals(new BigDecimal("12.50"), rubric.puntajeTotal());
+        assertNull(rubric.descripcion());
+        var association = rubric.preguntas().iterator().next();
+        var original = source.rubricaPreguntas().iterator().next();
+        assertEquals(original.idRubricaPregunta().toString(), association.idRubricaPregunta());
+        assertEquals(original.idRubrica().toString(), association.idRubrica());
+        assertEquals(original.idPregunta().toString(), association.idPregunta());
+        assertEquals(new BigDecimal("12.50"), association.valorPregunta());
+        assertNull(association.criterio());
+        assertDoesNotThrow(() -> CasoPersistenceMapper.validateInsert(mapped));
+        reject("INCOMPLETE_RUBRIC", source);
+        assertEquals(fingerprint, CasoAggregateFingerprint.of(source));
+        assertEquals(mapped, CasoPersistenceMapper.toDomain(source));
+    }
+
+    @Test
     void applicationDelegatesOnceWithoutCallingLegacyPublication() {
         var port = mock(CasoPublicationPort.class);
         var source = snapshot("Borrador", null, true, true);

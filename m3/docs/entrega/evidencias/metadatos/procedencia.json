@@ -1,0 +1,257 @@
+{
+    "ConsolidatedAt":  "2026-11-04T18:17:40.0215568-05:00",
+    "BranchObserved":  "feature/m3-gestion-casos",
+    "HeadObserved":  "e3d7352cfe7a9acb6a8f2f982e63665ab21b0a39",
+    "HeadIsNotExecutionVersion":  true,
+    "UnitTests":  132,
+    "IntegrationTests":  71,
+    "MavenBuildSuccessSource":  "Confirmacion del Integrante 2; no se adjunto log completo de esta corrida",
+    "TimestampCaveat":  "XML sin timestamp de suite: LastWriteTime es metadato de archivo, no reloj certificado de ejecucion",
+    "ExcludedPreviousIntegrationReports":  [
+                                               {
+                                                   "File":  "TEST-com.prisaly.m3.infrastructure.CasoJpaReadIT.xml",
+                                                   "LastWriteTime":  "2026-11-04T09:59:00.2288895-05:00",
+                                                   "Reason":  "Reporte de corrida anterior; excluido del total 71"
+                                               },
+                                               {
+                                                   "File":  "TEST-com.prisaly.m3.infrastructure.EvaluableContentJpaReadIT.xml",
+                                                   "LastWriteTime":  "2026-11-04T10:46:26.2982172-05:00",
+                                                   "Reason":  "Reporte de corrida anterior; excluido del total 71"
+                                               },
+                                               {
+                                                   "File":  "TEST-com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerReadIT.xml",
+                                                   "LastWriteTime":  "2026-11-04T10:46:52.3895860-05:00",
+                                                   "Reason":  "Reporte de corrida anterior; excluido del total 71"
+                                               },
+                                               {
+                                                   "File":  "TEST-com.prisaly.m3.infrastructure.PostgreSqlDockerIT.xml",
+                                                   "LastWriteTime":  "2026-11-04T10:47:06.4825818-05:00",
+                                                   "Reason":  "Reporte de corrida anterior; excluido del total 71"
+                                               }
+                                           ],
+    "Evidence":  [
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.CasoApplicationServiceTest.xml",
+                         "OriginalSha256":  "3ABDBFC3BF37B04E7CB6FD97DF3CC0AE1BEF3CFA7427311E7D4CED9324BE7FFD",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:00.8973609-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.CasoApplicationServiceTest.xml",
+                         "Tests":  29,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.CasoMetadataTest.xml",
+                         "OriginalSha256":  "FE936FE96B3F30B85913D4DC69349FC6F44090CC8ED26994A5EEB7AE0AAC8B68",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:01.4037240-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.CasoMetadataTest.xml",
+                         "Tests":  16,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.ContenidoAcademicoMetadataTest.xml",
+                         "OriginalSha256":  "947EF83B851006661A9F87B2DD714252D8CD0C7BA8DE475BC7CBEC3239F6DFDB",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:01.7224639-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.ContenidoAcademicoMetadataTest.xml",
+                         "Tests":  14,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationContractTest.xml",
+                         "OriginalSha256":  "B07D1597FF99AA1A5206B122FD5D7D08B05FA2E4A44A7CA185D75F01147B923A",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:03.6244943-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationContractTest.xml",
+                         "Tests":  9,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest.xml",
+                         "OriginalSha256":  "9C385E291BD1F230DCF84A05FF199454AF32370F3D7D445EA86F6615D909722B",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:04.1682615-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest.xml",
+                         "Tests":  20,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerMapperTest.xml",
+                         "OriginalSha256":  "67EA9FFE2EE2991D1AD999DD138485132FFD299C7799D8DB82709CF235155978",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:04.5901907-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerMapperTest.xml",
+                         "Tests":  7,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReaderTest.xml",
+                         "OriginalSha256":  "3EC13C8B89AE951C7740B81EBA98982D776E295839FC445E4D77165AEFDB8FAE",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:04.9202036-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReaderTest.xml",
+                         "Tests":  6,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest.xml",
+                         "OriginalSha256":  "BEE377C0E5754979DECA42E41F92328C09AD28A435431ACB5BBCA37701DD7882",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:05.2020734-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest.xml",
+                         "Tests":  11,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.presentation.CrearCasoRequestTest.xml",
+                         "OriginalSha256":  "10476F41BA1FC98FA62A7402EEF002D3FFA523868D5E342298C6F4DB4D4770E9",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:05.4815024-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.presentation.CrearCasoRequestTest.xml",
+                         "Tests":  5,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/surefire-reports/TEST-com.prisaly.m3.RubricaStructureTest.xml",
+                         "OriginalSha256":  "C7A76A3C6B2219A4DD2859B0AA699717BB46E387F1853C06154AA767CBD09F5B",
+                         "SourceLastWriteTime":  "2026-11-04T16:39:05.5951164-05:00",
+                         "Destination":  "surefire/TEST-com.prisaly.m3.RubricaStructureTest.xml",
+                         "Tests":  15,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoCommandAddContentIT.xml",
+                         "OriginalSha256":  "4E945B224CD8977EC41E02ACCF09CF3711AB0C9D81798A52CCFF5AB3BF8AF4B0",
+                         "SourceLastWriteTime":  "2026-11-04T16:40:02.4260958-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoCommandAddContentIT.xml",
+                         "Tests":  22,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT.xml",
+                         "OriginalSha256":  "82392C091136D74E6D64425BEBBA392B469A9DDB6B71976AA4DF631A01559679",
+                         "SourceLastWriteTime":  "2026-11-04T16:40:32.9398457-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT.xml",
+                         "Tests":  7,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoCommandUpdateIT.xml",
+                         "OriginalSha256":  "C2CD1D94134AA5770CF695F33A14CBEB8D1D9B46F5E841E5C3961B1C855F3512",
+                         "SourceLastWriteTime":  "2026-11-04T16:40:53.7582446-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoCommandUpdateIT.xml",
+                         "Tests":  13,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT.xml",
+                         "OriginalSha256":  "F5DAF5D3E9D169FA2146FCB179822878E732B76326CE7F5768C45473E1A6D361",
+                         "SourceLastWriteTime":  "2026-11-04T16:41:08.2930069-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT.xml",
+                         "Tests":  1,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT.xml",
+                         "OriginalSha256":  "A15DD8F593A048B49E178DB6B84E99F448ED74098AC077DE2867154971CC5A76",
+                         "SourceLastWriteTime":  "2026-11-04T16:41:21.5237914-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT.xml",
+                         "Tests":  2,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT.xml",
+                         "OriginalSha256":  "FE4F5072A620B61511D2E3043ECF45A6BCCC77875246B30F40F2DDE32A9C1805",
+                         "SourceLastWriteTime":  "2026-11-04T16:42:26.8543924-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT.xml",
+                         "Tests":  25,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/TEST-com.prisaly.m3.infrastructure.RubricaJpaReadIT.xml",
+                         "OriginalSha256":  "2D282FAAD1DF5EF733168BF0D1C22C81055B1D55FE9736F06E7CEC24AC96B699",
+                         "SourceLastWriteTime":  "2026-11-04T16:42:47.4273042-05:00",
+                         "Destination":  "failsafe/TEST-com.prisaly.m3.infrastructure.RubricaJpaReadIT.xml",
+                         "Tests":  1,
+                         "Failures":  0,
+                         "Errors":  0,
+                         "Skipped":  0,
+                         "Treatment":  "XML derivado: solo contadores y testcase; sin properties ni consola",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "m3/target/failsafe-reports/failsafe-summary.xml",
+                         "OriginalSha256":  "26B3F72EA7BBE3ADE43761DB0B92F3D41F8460EBE31A87E9BE9997A0E87CBD12",
+                         "Destination":  "failsafe/failsafe-summary.xml",
+                         "Treatment":  "Resumen sin valores sensibles, conservado"
+                     },
+                     {
+                         "Source":  "%TEMP%/prisaly-m3-postman-safe-results-20261104.json",
+                         "OriginalSha256":  "C456600EABC6AB6818F20AC30C1809CD93288F47C450F4D2945261C15524EDDD",
+                         "Destination":  "newman/newman-resultados-seguros-20261104.json",
+                         "Treatment":  "Copia del informe seguro; sin entorno ni cabeceras",
+                         "ExecutionVersion":  "No verificada"
+                     },
+                     {
+                         "Source":  "docs/evidence/m3-rest-f58fb21709c14437861e25f5b7ce7b6d/21-bruno-all-local-fixture.json",
+                         "OriginalSha256":  "1F06B037251B5709E6302D5548EB2FDF23648D03A70A3D02B9B34F29279267E2",
+                         "Destination":  "bruno/bruno-resumen-historico-20261104.json",
+                         "Treatment":  "Derivado por lista permitida de campos; sin cuerpos ni cabeceras"
+                     }
+                 ]
+}

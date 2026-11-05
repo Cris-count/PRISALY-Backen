@@ -146,6 +146,40 @@ class CasoPersistenceAdapterIT {
     }
 
     @Test
+    void incompleteRubricRollsBackJoinedWorkWithoutChangingCommittedAggregates() {
+        Caso target = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        Caso other = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        UUID targetId = UUID.fromString(target.id());
+        UUID otherId = UUID.fromString(other.id());
+        var targetBefore = updateReader().findById(targetId).orElseThrow();
+        var otherBefore = updateReader().findById(otherId).orElseThrow();
+        List<Integer> counts = academicRowCounts();
+
+        new TransactionTemplate(transactions).executeWithoutResult(status -> {
+            var em = org.springframework.orm.jpa.EntityManagerFactoryUtils.getTransactionalEntityManager(
+                    context.getBean(EntityManagerFactory.class));
+            em.unwrap(org.hibernate.Session.class).doWork(connection -> {
+                try (var statement = connection.prepareStatement(
+                        "UPDATE public.\"Caso\" SET \"historia\" = ? WHERE \"idCaso\" = ?")) {
+                    statement.setString(1, "Pending caller work must roll back on academic rejection");
+                    statement.setObject(2, otherId);
+                    assertEquals(1, statement.executeUpdate());
+                }
+            });
+            // The target has not changed: this must reach rubric validation, not STALE_CASE.
+            assertPublicationCode("INCOMPLETE_RUBRIC", () -> publication(true).publish(
+                    "fixture", targetId, targetBefore.fingerprint()));
+            assertTrue(status.isRollbackOnly(), "Academic rejection must mark the joined transaction rollback-only");
+            // Explicit outer rollback avoids treating UnexpectedRollbackException as test evidence.
+            status.setRollbackOnly();
+        });
+
+        assertEquals(targetBefore, updateReader().findById(targetId).orElseThrow());
+        assertEquals(otherBefore, updateReader().findById(otherId).orElseThrow());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
     void publicationRejectsMissingCaseStaleFingerprintAndNonDraftStates() {
         assertPublicationCode("CASE_NOT_FOUND", () -> publication(true).publish("fixture",
                 UUID.randomUUID(), "m3-v2:" + "0".repeat(64)));

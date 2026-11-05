@@ -1,0 +1,14 @@
+Fecha de consulta: 2026-11-04T18:20:39.9483049-05:00 Rama: feature/m3-gestion-casos HEAD: e3d7352cfe7a9acb6a8f2f982e63665ab21b0a39 Este HEAD no se atribuye a las ejecuciones de pruebas. Estado local observado antes de cerrar el inventario:
+ M app/src/test/java/com/prisaly/config/M3CasoCreationIT.java
+ M app/src/test/java/com/prisaly/config/M3CasoCreationTest.java
+ M bruno/exports/PRISALY_M3_Postman_Collection.json
+ M bruno/m3-gestion-casos/EVIDENCIA-POSTMAN.md
+ M m3/docs/DC-M3-REST-03.md
+ M m3/docs/M3-INC-13B.md
+ M m3/src/test/java/com/prisaly/m3/infrastructure/CasoPersistenceAdapterIT.java
+ M m3/src/test/java/com/prisaly/m3/infrastructure/persistence/jpa/CasoPublicationContractTest.java
+?? PRISALY_XML_M3_M6.zip
+?? m3/docs/DC-INT-02-PREPARACION.md
+?? m3/docs/DC-INT-02-retirar-config-antigua.patch
+?? m3/docs/DC-M3-REST-GET-PATCH.md
+?? m3/docs/entrega/
