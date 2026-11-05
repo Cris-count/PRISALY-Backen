@@ -1,0 +1,410 @@
+{
+  "startedAt": "2026-11-04T21:12:22.966Z",
+  "tool": "Newman 6.2.1",
+  "environment": "Local technical fixture, not production",
+  "backendVersion": "Not verified in this execution; health does not identify a build",
+  "requests": [
+    {
+      "name": "Crear borrador válido",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 201,
+      "response": {
+        "idCaso": "2aff7417-80d2-4f88-a253-c86da57b9507",
+        "estado": "BORRADOR"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 201",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Borrador creado con UUID solicitado",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 201
+    },
+    {
+      "name": "Crear sin autenticación",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 401,
+      "response": {
+        "code": "UNAUTHENTICATED"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 401",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 401
+    },
+    {
+      "name": "Crear sin permiso",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 403,
+      "response": {
+        "code": "FORBIDDEN"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 403",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 403
+    },
+    {
+      "name": "Crear con UUID inválido",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Crear sin título",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Crear con tiempo cero",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Crear con campo desconocido",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Rechazar propietario en JSON",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Rechazar UUID ya creado",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 409,
+      "response": {
+        "code": "CASE_CONFLICT"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 409",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 409
+    },
+    {
+      "name": "Rechazar tiempo decimal",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Rechazar título de 151 caracteres",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Rechazar NUL en narrativa",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    },
+    {
+      "name": "Crear con tiempo negativo",
+      "method": "POST",
+      "url": "http://127.0.0.1:18080/api/v1/casos",
+      "observedHttp": 400,
+      "response": {
+        "code": "INVALID_CASE_REQUEST"
+      },
+      "assertions": [
+        {
+          "name": "HTTP esperado: 400",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Sin detalles internos",
+          "passed": true,
+          "error": null
+        },
+        {
+          "name": "Código de error",
+          "passed": true,
+          "error": null
+        }
+      ],
+      "passed": true,
+      "requestError": null,
+      "expectedHttp": 400
+    }
+  ],
+  "prerequisites": [
+    {
+      "check": "M1 authentication authorized",
+      "http": 200,
+      "expectedPermission": "present",
+      "verified": true
+    },
+    {
+      "check": "M1 authentication without-permission",
+      "http": 200,
+      "expectedPermission": "absent",
+      "verified": true
+    }
+  ],
+  "healthHttp": 200,
+  "testCaseId": "2aff7417-80d2-4f88-a253-c86da57b9507",
+  "runtimeFailures": [],
+  "finishedAt": "2026-11-04T21:12:34.292Z",
+  "executed": 13,
+  "passed": 13,
+  "failed": 0,
+  "blocked": 0,
+  "assertions": 39,
+  "failedAssertions": 0
+}
