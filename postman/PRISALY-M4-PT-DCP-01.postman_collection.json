@@ -1,0 +1,1201 @@
+{
+  "info": {
+    "name": "PRISALY M4 | PT-DCP-01 | Casos HTTP Postman",
+    "description": "Colección M4: rutas existentes. PM4-19 y PM4-20 añadidos como casos planeados; requieren ejecución Postman. Los resultados previos corresponden a otra corrida y se documentan por separado.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{tokenDocente}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:18080/api"
+    },
+    {
+      "key": "correoDocente",
+      "value": ""
+    },
+    {
+      "key": "passwordDocente",
+      "value": ""
+    },
+    {
+      "key": "tokenDocente",
+      "value": ""
+    },
+    {
+      "key": "casoId",
+      "value": ""
+    },
+    {
+      "key": "estudianteId",
+      "value": ""
+    },
+    {
+      "key": "sesionId",
+      "value": ""
+    },
+    {
+      "key": "convocatoriaId",
+      "value": ""
+    },
+    {
+      "key": "fechaInicio",
+      "value": "2030-11-05T14:00:00Z"
+    },
+    {
+      "key": "fechaFin",
+      "value": "2030-11-05T15:00:00Z"
+    },
+    {
+      "key": "fechaFinActualizada",
+      "value": "2030-11-05T16:00:00Z"
+    },
+    {
+      "key": "casoBorradorId",
+      "value": "66666666-6666-4666-8666-666666666666"
+    },
+    {
+      "key": "correoSinPermiso",
+      "value": ""
+    },
+    {
+      "key": "passwordSinPermiso",
+      "value": ""
+    },
+    {
+      "key": "tokenSinPermiso",
+      "value": ""
+    },
+    {
+      "key": "sesionConHistorialId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Preparación M1 fuera del conteo M4",
+      "item": [
+        {
+          "name": "PRE-01 | Autenticar docente M1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/personal/autenticar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "personal",
+                "autenticar"
+              ]
+            },
+            "description": "PRE-01. Operación M1 usada solo para preparar las solicitudes M4; fuera del conteo M4. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correoDocente}}\",\n  \"password\": \"{{passwordDocente}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token devuelto\", function () { pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty; });",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"tokenDocente\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PRE-02 | Autenticar docente sin permiso M1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/v1/personal/autenticar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "personal",
+                "autenticar"
+              ]
+            },
+            "description": "PRE-01. Operación M1 usada solo para preparar las solicitudes M4; fuera del conteo M4. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correoSinPermiso}}\",\n  \"password\": \"{{passwordSinPermiso}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token devuelto\", function () { pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty; });",
+                  "if (pm.response.code === 200) pm.collectionVariables.set(\"tokenSinPermiso\", pm.response.json().accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 Casos positivos M4",
+      "item": [
+        {
+          "name": "PM4-01 | Crear sesión",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-01. Requiere caso Publicado y activo, docente autenticado con GESTIONAR_SESION. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoId}}\",\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"ID de sesión\", function () { pm.expect(body.id).to.be.a(\"string\"); });",
+                  "pm.test(\"Estado inicial\", function () { pm.expect(body.estado).to.eql(\"SinIniciar\"); });",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"sesionId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-02 | Consultar sesión",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            },
+            "description": "PM4-02. Consulta una sesión propia creada previamente. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Misma sesión\", function () { pm.expect(body.id).to.eql(pm.collectionVariables.get(\"sesionId\")); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-03 | Listar sesiones propias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-03. Lista visible para el docente autenticado. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Respuesta lista\", function () { pm.expect(body).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-04 | Actualizar sesión",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            },
+            "description": "PM4-04. Actualizar antes de crear participaciones. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sesión Postman M4 actualizada\",\n  \"mensajePersonalizado\": \"Actualización PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFinActualizada}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Título actualizado\", function () { pm.expect(body.titulo).to.eql(\"Sesión Postman M4 actualizada\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-05 | Crear convocatoria",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "convocatorias"
+              ]
+            },
+            "description": "PM4-05. Requiere estudiante persistido y sesión SinIniciar. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"{{estudianteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", function () { pm.response.to.have.status(201); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Estudiante convocado\", function () { pm.expect(body.estudianteId).to.eql(pm.collectionVariables.get(\"estudianteId\")); });",
+                  "if (pm.response.code === 201) pm.collectionVariables.set(\"convocatoriaId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-06 | Listar convocatorias",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "convocatorias"
+              ]
+            },
+            "description": "PM4-06. Lista las convocatorias de la sesión propia. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Respuesta lista\", function () { pm.expect(body).to.be.an(\"array\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-07 | Iniciar sesión",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "estado"
+              ]
+            },
+            "description": "PM4-07. Transición State SinIniciar a EnCurso. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"EnCurso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Estado EnCurso\", function () { pm.expect(body.estado).to.eql(\"EnCurso\"); });",
+                  "pm.test(\"Marca real\", function () { pm.expect(body.fechaInicioReal).to.exist; });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-08 | Finalizar sesión",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "estado"
+              ]
+            },
+            "description": "PM4-08. Transición State EnCurso a Finalizado. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nuevoEstado\": \"Finalizado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Estado Finalizado\", function () { pm.expect(body.estado).to.eql(\"Finalizado\"); });",
+                  "pm.test(\"Marca real\", function () { pm.expect(body.fechaFinReal).to.exist; });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 Casos negativos M4",
+      "item": [
+        {
+          "name": "PM4-09 | Consulta sin autenticación",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            },
+            "description": "PM4-09. Se envía sin Bearer. Ejecución y resultado observados: pendientes de Postman.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", function () { pm.response.to.have.status(401); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código de seguridad\", function () { pm.expect(body.code).to.eql(\"UNAUTHENTICATED\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-10 | Crear sesión sin casoId",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-10. Validación de campo obligatorio. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código validación\", function () { pm.expect(body.code).to.eql(\"M4-VALIDACION\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-11 | Rechazar fechas invertidas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-11. El fin precede al inicio. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoId}}\",\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"2030-11-05T15:00:00Z\",\n  \"fechaFin\": \"2030-11-05T14:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código fecha\", function () { pm.expect(body.code).to.eql(\"M4-FECHA-INVALIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-12 | Rechazar UUID inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/no-es-uuid",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "no-es-uuid"
+              ]
+            },
+            "description": "PM4-12. El identificador de ruta no es UUID. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-13 | Rechazar sesión inexistente",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/00000000-0000-0000-0000-000000000001",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "00000000-0000-0000-0000-000000000001"
+              ]
+            },
+            "description": "PM4-13. UUID válido sin fila persistida. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", function () { pm.response.to.have.status(404); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código ausente\", function () { pm.expect(body.code).to.eql(\"M4-SESION-NO-ENCONTRADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-14 | Ruta heredada retirada",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/acceso/{{estudianteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "acceso",
+                "{{estudianteId}}"
+              ]
+            },
+            "description": "PM4-14. La ruta existe pero siempre rechaza autorización estudiantil. Ejecución y resultado observados: pendientes de Postman."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 410\", function () { pm.response.to.have.status(410); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código retirado\", function () { pm.expect(body.code).to.eql(\"M4-ACCESO-LEGADO-RETIRADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-15 | Convocatoria duplicada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "convocatorias"
+              ]
+            },
+            "description": "PM4-15. Ejecutar inmediatamente después de PM4-05, antes de iniciar la sesión. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"{{estudianteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código duplicado\", function () { pm.expect(body.code).to.eql(\"M4-CONVOCATORIA-DUPLICADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-16 | Sesión duplicada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-16. Ejecutar inmediatamente después de PM4-01 con los mismos datos. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoId}}\",\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFinActualizada}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código duplicado\", function () { pm.expect(body.code).to.eql(\"M4-SESION-DUPLICADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-17 | Rechazar caso en Borrador",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "Caso existente en estado Borrador: programación prohibida.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoBorradorId}}\",\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Código M4\", function () { pm.expect(pm.response.json().code).to.eql(\"M4-CASO-NO-PUBLICADO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-18 | Rechazar docente sin permiso",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "Docente autenticado sin permiso GESTIONAR_SESION.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoId}}\",\n  \"titulo\": \"Sesión Postman M4\",\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenSinPermiso}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", function () { pm.response.to.have.status(403); });",
+                  "pm.test(\"Código M4\", function () { pm.expect(pm.response.json().code).to.eql(\"M4-SIN-PERMISO\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-19 | Rechazar fechas iguales",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            },
+            "description": "PM4-11. El fin precede al inicio. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n  \"casoId\": \"{{casoId}}\",\r\n  \"titulo\": \"Sesión Postman M4\",\r\n  \"mensajePersonalizado\": \"Prueba PT-DCP-01\",\r\n  \"fechaInicio\": \"2030-11-05T14:00:00Z\",\r\n  \"fechaFin\": \"2030-11-05T14:00:00Z\",\r\n  \"tiempoMaximoParticipacionSegundos\": 1800\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", function () { pm.response.to.have.status(400); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código fecha\", function () { pm.expect(body.code).to.eql(\"M4-FECHA-INVALIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-20 | Rechazar modificación de sesión Finalizado",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            },
+            "description": "PM4-04. Actualizar antes de crear participaciones. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sesión Postman M4 actualizada\",\n  \"mensajePersonalizado\": \"Actualización PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFinActualizada}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Estado protegido\", function () { pm.expect(pm.response.json().code).to.eql(\"M4-OPERACION-NO-PERMITIDA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PM4-21 | Rechazar edición con historial M5",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionConHistorialId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionConHistorialId}}"
+              ]
+            },
+            "description": "PM4-04. Actualizar antes de crear participaciones. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sesión Postman M4 actualizada\",\n  \"mensajePersonalizado\": \"Actualización PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFinActualizada}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "pm.test(\"Historial protegido\", function () { pm.expect(pm.response.json().code).to.eql(\"M4-SESION-CON-PARTICIPACIONES\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
