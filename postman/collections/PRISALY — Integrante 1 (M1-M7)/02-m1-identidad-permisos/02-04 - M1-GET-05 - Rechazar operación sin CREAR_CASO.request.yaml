@@ -1,0 +1,16 @@
+$kind: http-request
+name: 02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO
+description: "Precondición: 02-04-prep. Usa noPermAccessToken."
+url: "{{baseUrl}}/v1/personal/autorizacion/crear-caso"
+method: GET
+headers:
+  Authorization: Bearer {{noPermAccessToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 403", function () { pm.response.to.have.status(403); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code FORBIDDEN", function () { pm.expect(body.code).to.eql("FORBIDDEN"); });
+    language: text/javascript
+order: 5000

@@ -1,0 +1,18 @@
+$kind: http-request
+name: 02-01 | M1-PERF-01 | Consultar mi identidad
+description: "Precondición: 01-01 (accessToken)."
+url: "{{baseUrl}}/v1/personal/me"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("correo", function () { pm.expect(body.correo).to.eql(pm.environment.get("personnelEmail")); });
+      pm.test("tokenType", function () { pm.expect(body.tokenType).to.eql("Bearer"); });
+      pm.test("authPrototype", function () { pm.expect(body.authPrototype).to.eql("TD-M1-AUTH-PROVISIONAL"); });
+    language: text/javascript
+order: 1000

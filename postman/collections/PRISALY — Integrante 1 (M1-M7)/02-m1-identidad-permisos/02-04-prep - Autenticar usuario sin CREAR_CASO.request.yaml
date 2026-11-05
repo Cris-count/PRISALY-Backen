@@ -1,0 +1,26 @@
+$kind: http-request
+name: 02-04-prep | Autenticar usuario sin CREAR_CASO
+description: Guarda noPermAccessToken. No sobrescribe accessToken del docente.
+url: "{{baseUrl}}/v1/personal/autenticar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "{{personnelNoPermEmail}}",
+      "password": "{{personnelNoPermPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
+      if (pm.response.code === 200 && body.accessToken) {
+          pm.collectionVariables.set("noPermAccessToken", body.accessToken);
+      }
+    language: text/javascript
+order: 4000

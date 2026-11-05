@@ -1,0 +1,23 @@
+$kind: http-request
+name: 01-05 | M1-POST-07 | Rechazar datos de autenticación inválidos
+description: No sobrescribe accessToken.
+url: "{{baseUrl}}/v1/personal/autenticar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "no-es-un-correo",
+      "password": ""
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code VALIDATION_ERROR", function () { pm.expect(body.code).to.eql("VALIDATION_ERROR"); });
+    language: text/javascript
+order: 5000

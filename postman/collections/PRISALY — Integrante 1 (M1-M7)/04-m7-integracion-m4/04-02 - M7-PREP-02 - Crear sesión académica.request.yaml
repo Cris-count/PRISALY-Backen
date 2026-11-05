@@ -1,0 +1,32 @@
+$kind: http-request
+name: 04-02 | M7-PREP-02 | Crear sesión académica
+description: Guarda sesionId. HTTP 201 no implica SMTP.
+url: "{{baseUrl}}/m4/sesiones"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+body:
+  type: json
+  content: |
+    {
+      "casoId": "{{casoIdBruno}}",
+      "titulo": "Sesion Bruno M7",
+      "mensajePersonalizado": "Convocatoria de prueba M4-M7 (Bruno)",
+      "fechaInicio": "2030-11-10T14:00:00Z",
+      "fechaFin": "2030-11-10T16:00:00Z",
+      "tiempoMaximoParticipacionSegundos": 3600
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("id", function () { pm.expect(body.id).to.be.ok; });
+      pm.test("casoId", function () { pm.expect(body.casoId).to.eql(pm.environment.get("casoIdBruno")); });
+      if (pm.response.code === 201 && body.id) {
+          pm.collectionVariables.set("sesionId", body.id);
+      }
+    language: text/javascript
+order: 2000

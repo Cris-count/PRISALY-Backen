@@ -1,0 +1,28 @@
+$kind: http-request
+name: 04-05 | M7-via-M4-02 | Rechazar operación sin permiso
+description: 403 M4-SIN-PERMISO. No altera sesionId.
+url: "{{baseUrl}}/m4/sesiones"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{noPermAccessToken}}
+body:
+  type: json
+  content: |
+    {
+      "casoId": "{{casoIdBruno}}",
+      "titulo": "Sesion Bruno sin GESTIONAR_SESION",
+      "mensajePersonalizado": "Debe fallar",
+      "fechaInicio": "2030-11-11T14:00:00Z",
+      "fechaFin": "2030-11-11T16:00:00Z",
+      "tiempoMaximoParticipacionSegundos": 3600
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 403", function () { pm.response.to.have.status(403); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code M4-SIN-PERMISO", function () { pm.expect(body.code).to.eql("M4-SIN-PERMISO"); });
+    language: text/javascript
+order: 6000

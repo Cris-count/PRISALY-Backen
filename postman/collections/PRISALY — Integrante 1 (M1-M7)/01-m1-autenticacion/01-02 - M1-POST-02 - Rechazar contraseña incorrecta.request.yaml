@@ -1,0 +1,23 @@
+$kind: http-request
+name: 01-02 | M1-POST-02 | Rechazar contraseña incorrecta
+description: No guarda ni sobrescribe accessToken.
+url: "{{baseUrl}}/v1/personal/autenticar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "{{personnelEmail}}",
+      "password": "definitely-wrong-password"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 401", function () { pm.response.to.have.status(401); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code AUTH_FAILED", function () { pm.expect(body.code).to.eql("AUTH_FAILED"); });
+    language: text/javascript
+order: 2000

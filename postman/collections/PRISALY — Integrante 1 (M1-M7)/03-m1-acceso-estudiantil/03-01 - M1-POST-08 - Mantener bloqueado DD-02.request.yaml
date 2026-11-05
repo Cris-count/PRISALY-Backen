@@ -1,0 +1,23 @@
+$kind: http-request
+name: 03-01 | M1-POST-08 | Mantener bloqueado DD-02
+description: DTO válido. Flag false → 501.
+url: "{{baseUrl}}/v1/acceso-estudiante/validar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "challengeId": "00000000-0000-0000-0000-000000000001",
+      "codigo": "12345678"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 501", function () { pm.response.to.have.status(501); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code ESTUDIANTE_ACCESS_PENDING_CONTRACT", function () { pm.expect(body.code).to.eql("ESTUDIANTE_ACCESS_PENDING_CONTRACT"); });
+    language: text/javascript
+order: 1000

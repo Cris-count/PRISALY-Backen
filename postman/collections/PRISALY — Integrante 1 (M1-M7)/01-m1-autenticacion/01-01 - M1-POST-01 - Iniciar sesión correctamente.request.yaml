@@ -1,0 +1,29 @@
+$kind: http-request
+name: 01-01 | M1-POST-01 | Iniciar sesión correctamente
+description: Guarda accessToken en variable de colección. Password vacío → 400 (entorno).
+url: "{{baseUrl}}/v1/personal/autenticar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "{{personnelEmail}}",
+      "password": "{{personnelPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
+      pm.test("tokenType", function () { pm.expect(body.tokenType).to.eql("Bearer"); });
+      pm.test("authPrototype", function () { pm.expect(body.authPrototype).to.eql("TD-M1-AUTH-PROVISIONAL"); });
+      pm.test("correo", function () { pm.expect(body.correo).to.eql(pm.environment.get("personnelEmail")); });
+      if (pm.response.code === 200 && body.accessToken) {
+          pm.collectionVariables.set("accessToken", body.accessToken);
+      }
+    language: text/javascript
+order: 1000

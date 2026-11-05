@@ -30,11 +30,36 @@
           "name": "00-01 | Salud del backend | GET /health",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [],
             "url": "{{baseUrl}}/health",
             "description": "PRE-00. Primera solicitud. Backend en :8080."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -59,6 +84,9 @@
           "name": "01-01 | M1-POST-01 | Iniciar sesión correctamente",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -80,6 +108,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"personnelEmail\",\"personnelPassword\"];",
+                  "for (const key of [\"accessToken\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -91,7 +142,8 @@
                   "pm.test(\"tokenType\", function () { pm.expect(body.tokenType).to.eql(\"Bearer\"); });",
                   "pm.test(\"authPrototype\", function () { pm.expect(body.authPrototype).to.eql(\"TD-M1-AUTH-PROVISIONAL\"); });",
                   "pm.test(\"correo\", function () { pm.expect(body.correo).to.eql(pm.environment.get(\"personnelEmail\")); });",
-                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "if (pm.response.code === 200 && body.accessToken && body.tokenType === \"Bearer\" &&",
+                  "    body.authPrototype === \"TD-M1-AUTH-PROVISIONAL\" && body.correo === pm.environment.get(\"personnelEmail\")) {",
                   "    pm.collectionVariables.set(\"accessToken\", body.accessToken);",
                   "}"
                 ]
@@ -103,6 +155,9 @@
           "name": "01-02 | M1-POST-02 | Rechazar contraseña incorrecta",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -124,6 +179,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"personnelEmail\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -141,6 +219,9 @@
           "name": "01-03 | M1-POST-03 | Rechazar usuario inexistente",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -162,6 +243,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"unknownEmail\",\"personnelPassword\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -179,6 +283,9 @@
           "name": "01-04 | M1-NEG-01 | Rechazar usuario inactivo",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -200,6 +307,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"inactiveEmail\",\"inactivePassword\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -217,6 +347,9 @@
           "name": "01-05 | M1-POST-07 | Rechazar datos de autenticación inválidos",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -237,6 +370,29 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -260,6 +416,9 @@
           "name": "02-01 | M1-PERF-01 | Consultar mi identidad",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -271,6 +430,28 @@
             "description": "Precondición: 01-01 (accessToken)."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -291,11 +472,36 @@
           "name": "02-02 | M1-GET-04 | Rechazar consulta sin token",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [],
             "url": "{{baseUrl}}/v1/personal/me",
             "description": "Sin Authorization. No altera accessToken."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -314,6 +520,9 @@
           "name": "02-03 | M1-GET-06 | Permitir operación con CREAR_CASO",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -325,6 +534,28 @@
             "description": "Precondición: 01-01."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -345,6 +576,9 @@
           "name": "02-04-prep | Autenticar usuario sin CREAR_CASO",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -366,6 +600,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"personnelNoPermEmail\",\"personnelNoPermPassword\"];",
+                  "for (const key of [\"noPermAccessToken\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -374,7 +631,9 @@
                   "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
                   "const body = pm.response.json();",
                   "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
-                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "pm.test(\"Sin CREAR_CASO\", function () { pm.expect(body.permisos).to.be.an(\"array\").that.does.not.include(\"CREAR_CASO\"); });",
+                  "if (pm.response.code === 200 && body.accessToken && Array.isArray(body.permisos) &&",
+                  "    !body.permisos.includes(\"CREAR_CASO\")) {",
                   "    pm.collectionVariables.set(\"noPermAccessToken\", body.accessToken);",
                   "}"
                 ]
@@ -386,6 +645,9 @@
           "name": "02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -397,6 +659,28 @@
             "description": "Precondición: 02-04-prep. Usa noPermAccessToken."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\",\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -415,6 +699,9 @@
           "name": "02-05 | M1-NEG-02 | Rechazar token inválido",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -426,6 +713,28 @@
             "description": "Bearer inexistente. No altera accessToken."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -444,11 +753,36 @@
           "name": "02-06 | M1-NEG | Rechazar CREAR_CASO sin token",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [],
             "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
             "description": "Equivalente a personal-autorizacion-crear-caso-unauthenticated."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -472,6 +806,9 @@
           "name": "03-01 | M1-POST-08 | Mantener bloqueado DD-02",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -493,6 +830,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -510,6 +870,9 @@
           "name": "03-02 | M1-NEG-03 | Rechazar datos inválidos de acceso estudiantil",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -530,6 +893,29 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -553,6 +939,9 @@
           "name": "04-01 | M7-PREP-01 | Autenticar docente con GESTIONAR_SESION",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -574,6 +963,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"personnelEmail\",\"personnelPassword\"];",
+                  "for (const key of [\"accessToken\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -583,7 +995,9 @@
                   "const body = pm.response.json();",
                   "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
                   "pm.test(\"authPrototype\", function () { pm.expect(body.authPrototype).to.eql(\"TD-M1-AUTH-PROVISIONAL\"); });",
-                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "pm.test(\"GESTIONAR_SESION\", function () { pm.expect(body.permisos).to.include(\"GESTIONAR_SESION\"); });",
+                  "if (pm.response.code === 200 && body.accessToken && body.authPrototype === \"TD-M1-AUTH-PROVISIONAL\" &&",
+                  "    Array.isArray(body.permisos) && body.permisos.includes(\"GESTIONAR_SESION\")) {",
                   "    pm.collectionVariables.set(\"accessToken\", body.accessToken);",
                   "}"
                 ]
@@ -595,6 +1009,9 @@
           "name": "04-02 | M7-PREP-02 | Crear sesión académica",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -621,6 +1038,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\",\"casoIdBruno\"];",
+                  "for (const key of [\"sesionId\",\"convocatoriaId\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -630,7 +1070,7 @@
                   "const body = pm.response.json();",
                   "pm.test(\"id\", function () { pm.expect(body.id).to.be.ok; });",
                   "pm.test(\"casoId\", function () { pm.expect(body.casoId).to.eql(pm.environment.get(\"casoIdBruno\")); });",
-                  "if (pm.response.code === 201 && body.id) {",
+                  "if (pm.response.code === 201 && body.id && body.casoId === pm.environment.get(\"casoIdBruno\")) {",
                   "    pm.collectionVariables.set(\"sesionId\", body.id);",
                   "}"
                 ]
@@ -642,6 +1082,9 @@
           "name": "04-03 | M7-via-M4-01 | Convocar estudiante",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -668,6 +1111,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\",\"sesionId\",\"estudianteIdBruno\"];",
+                  "for (const key of [\"convocatoriaId\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -676,9 +1142,10 @@
                   "pm.test(\"JSON\", function () { pm.response.to.be.json; });",
                   "const body = pm.response.json();",
                   "pm.test(\"id\", function () { pm.expect(body.id).to.be.ok; });",
-                  "pm.test(\"sesionId\", function () { pm.expect(body.sesionId).to.be.ok; });",
+                  "pm.test(\"sesionId\", function () { pm.expect(body.sesionId).to.eql(pm.variables.get(\"sesionId\")); });",
                   "pm.test(\"estudianteId\", function () { pm.expect(body.estudianteId).to.eql(pm.environment.get(\"estudianteIdBruno\")); });",
-                  "if (pm.response.code === 201 && body.id) {",
+                  "if (pm.response.code === 201 && body.id && body.sesionId === pm.variables.get(\"sesionId\") &&",
+                  "    body.estudianteId === pm.environment.get(\"estudianteIdBruno\")) {",
                   "    pm.collectionVariables.set(\"convocatoriaId\", body.id);",
                   "}"
                 ]
@@ -690,6 +1157,9 @@
           "name": "04-04 | M7-VER-01 | Consultar convocatorias",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -702,11 +1172,40 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\",\"sesionId\",\"convocatoriaId\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });"
+                  "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
+                  "pm.test(\"La lista contiene la convocatoria recién creada\", function () {",
+                  "    const body = pm.response.json();",
+                  "    pm.expect(body).to.be.an(\"array\");",
+                  "    pm.expect(body.some(item => item.id === pm.variables.get(\"convocatoriaId\") &&",
+                  "        item.sesionId === pm.variables.get(\"sesionId\") &&",
+                  "        item.estudianteId === pm.variables.get(\"estudianteIdBruno\"))).to.be.true;",
+                  "});"
                 ]
               }
             }
@@ -716,6 +1215,9 @@
           "name": "04-05-prep | Autenticar docente sin GESTIONAR_SESION",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -737,6 +1239,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"personnelNoPermEmail\",\"personnelNoPermPassword\"];",
+                  "for (const key of [\"noPermAccessToken\"]) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -744,7 +1269,9 @@
                   "pm.test(\"HTTP 200\", function () { pm.response.to.have.status(200); });",
                   "const body = pm.response.json();",
                   "pm.test(\"accessToken\", function () { pm.expect(body.accessToken).to.be.ok; });",
-                  "if (pm.response.code === 200 && body.accessToken) {",
+                  "pm.test(\"Sin GESTIONAR_SESION\", function () { pm.expect(body.permisos).to.be.an(\"array\").that.does.not.include(\"GESTIONAR_SESION\"); });",
+                  "if (pm.response.code === 200 && body.accessToken && Array.isArray(body.permisos) &&",
+                  "    !body.permisos.includes(\"GESTIONAR_SESION\")) {",
                   "    pm.collectionVariables.set(\"noPermAccessToken\", body.accessToken);",
                   "}"
                 ]
@@ -756,6 +1283,9 @@
           "name": "04-05 | M7-via-M4-02 | Rechazar operación sin permiso",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -782,6 +1312,29 @@
           },
           "event": [
             {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\",\"baseUrl\",\"casoIdBruno\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
+            {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
@@ -799,6 +1352,9 @@
           "name": "04-06 | M7-via-M4-03 | Rechazar convocatoria sin token",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Content-Type",
@@ -819,6 +1375,29 @@
             }
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"baseUrl\",\"sesionId\",\"estudianteIdBruno\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "pm.request.body.update(pm.request.body.raw.replace(/\"{{(\\w+)}}\"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -843,6 +1422,9 @@
           "name": "05-01 | M1-POST-09 | Cerrar sesión",
           "request": {
             "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -854,6 +1436,28 @@
             "description": "DESPUÉS de 01–04. Conserva accessToken para 05-02."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {
@@ -869,6 +1473,9 @@
           "name": "05-02 | M1-VER-02 | Verificar token revocado",
           "request": {
             "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
             "header": [
               {
                 "key": "Authorization",
@@ -880,6 +1487,28 @@
             "description": "El mismo accessToken debe fallar tras 05-01."
           },
           "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"baseUrl\"];",
+                  "for (const key of []) pm.collectionVariables.unset(key);",
+                  "const missing = required.filter(key => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "const generated = [\"accessToken\", \"noPermAccessToken\", \"sesionId\", \"convocatoriaId\"];",
+                  "const shadowed = required.filter(key => generated.includes(key) &&",
+                  "    pm.variables.get(key) !== pm.collectionVariables.get(key));",
+                  "if (shadowed.length) {",
+                  "    console.warn(\"PRISALY: quita las variables duplicadas: \" + shadowed.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}",
+                  "if (missing.length) {",
+                  "    console.warn(\"PRISALY: faltan variables para esta solicitud: \" + missing.join(\", \"));",
+                  "    pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
             {
               "listen": "test",
               "script": {

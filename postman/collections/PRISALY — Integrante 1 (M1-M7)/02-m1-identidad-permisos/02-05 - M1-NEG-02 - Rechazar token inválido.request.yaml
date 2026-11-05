@@ -1,0 +1,16 @@
+$kind: http-request
+name: 02-05 | M1-NEG-02 | Rechazar token inválido
+description: "{{bearer_token_070u}} No altera accessToken."
+url: "{{baseUrl}}/v1/personal/me"
+method: GET
+headers:
+  Authorization: "{{bearer_token_06wl}}"
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 401", function () { pm.response.to.have.status(401); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code UNAUTHENTICATED", function () { pm.expect(body.code).to.eql("UNAUTHENTICATED"); });
+    language: text/javascript
+order: 6000
