@@ -43,7 +43,7 @@ class IntentoActualizacionRespuestasTest {
 
         Respuesta actualizada = intento.actualizarRespuesta(P1, B);
 
-        assertEquals(new Respuesta(P1, B), actualizada);
+        assertEquals(new Respuesta(P1, B, 2), actualizada);
         assertEquals(Optional.of(actualizada), intento.respuestaA(P1));
     }
 
@@ -55,7 +55,7 @@ class IntentoActualizacionRespuestasTest {
 
         intento.actualizarRespuesta(P1, C);
 
-        assertEquals(List.of(new Respuesta(P1, C), new Respuesta(P2, B)), intento.respuestas());
+        assertEquals(List.of(new Respuesta(P1, C, 2), new Respuesta(P2, B)), intento.respuestas());
     }
 
     @Test
@@ -113,7 +113,7 @@ class IntentoActualizacionRespuestasTest {
         assertThrows(IntentoFinalizadoException.class, () -> intento.actualizarRespuesta(P1, C));
         assertThrows(IntentoFinalizadoException.class, () -> intento.registrarRespuesta(P2, C));
 
-        assertEquals(List.of(new Respuesta(P1, B)), intento.respuestas());
+        assertEquals(List.of(new Respuesta(P1, B, 2)), intento.respuestas());
         assertEquals(EstadoIntento.FINALIZADO, intento.estado());
     }
 }

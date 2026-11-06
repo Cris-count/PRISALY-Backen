@@ -4,6 +4,7 @@ import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
 import com.prisaly.m5.application.ConvocatoriaNoEncontradaException;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.RevisionObsoletaException;
 import com.prisaly.m5.application.RepeticionNoHabilitadaException;
 import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;
 import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
@@ -78,6 +79,9 @@ public final class TraductorErroresM5 {
                 || error instanceof DatoRespuestaInvalidoException
                 || error instanceof MotivoFinalizacionRequeridoException) {
             return error(400, "DATOS_INVALIDOS", error.getMessage());
+        }
+        if (error instanceof RevisionObsoletaException e) {
+            return error(409, "REVISION_OBSOLETA", e.getMessage());
         }
         if (error instanceof IntentoFinalizadoException e) {
             return error(409, "INTENTO_FINALIZADO", e.getMessage());

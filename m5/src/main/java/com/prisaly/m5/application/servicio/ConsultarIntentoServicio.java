@@ -24,6 +24,6 @@ public final class ConsultarIntentoServicio {
      * @throws IntentoNoEncontradoException si el intento no existe
      */
     public ResumenIntento consultar(ReferenciaIntento referencia) {
-        return ResumenIntento.de(referencia, CargaIntento.cargar(repositorio, referencia));
+        return repositorio.resumir(referencia, CargaIntento.cargar(repositorio, referencia));
     }
 }

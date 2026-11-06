@@ -45,7 +45,7 @@ class ActualizarRespuestaServicioTest {
     @Test
     @DisplayName("reemplaza la respuesta en curso y la guarda una vez")
     void actualizaRespuestaEnCurso() {
-        assertEquals(List.of(new Respuesta(P1, B)), servicio.actualizar(REF, P1, B).respuestas());
+        assertEquals(List.of(new Respuesta(P1, B, 2)), servicio.actualizar(REF, P1, B).respuestas());
         assertEquals(1, repositorio.guardados());
     }
 

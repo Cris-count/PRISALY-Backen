@@ -4,10 +4,12 @@ import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.OperacionesParticipacion;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ReferenciaSesion;
 import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
+import com.prisaly.m5.domain.respuesta.Respuesta;
 import com.prisaly.m5.domain.respuesta.ValorRespuesta;
 
 /**
@@ -44,6 +46,15 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
         return operaciones.iniciarOReanudar(convocatoria);
     }
 
+    /**
+     * Inicio o reanudación por sesión (D01): la convocatoria se resuelve exclusivamente con el
+     * contrato de M4 para el estudiante autenticado, y después se aplica la misma verificación de
+     * {@link #iniciarOReanudar(ReferenciaConvocatoria)}. La elegibilidad no se evalúa aquí.
+     */
+    public ResultadoInicio iniciarOReanudarEnSesion(ReferenciaSesion sesion) {
+        return iniciarOReanudar(control.convocatoriaPropiaEnSesion(sesion));
+    }
+
     @Override
     public ResumenIntento consultarIntento(ReferenciaIntento intento) {
         control.verificar(intento);
@@ -63,9 +74,16 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
         return operaciones.actualizarRespuesta(intento, pregunta, valor);
     }
 
+    /** Guardado con control de revisión (D06), verificado como las demás operaciones del intento. */
+    @Override
+    public Respuesta guardarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor, int revisionEsperada) {
+        control.verificar(intento);
+        return operaciones.guardarRespuesta(intento, pregunta, valor, revisionEsperada);
+    }
+
     /**
-     * El motivo lo decide el servidor (no hay DTO de finalización): el futuro
-     * controlador no debe aceptarlo del cliente.
+     * El motivo lo decide el servidor (no hay DTO de finalización): el controlador no lo acepta
+     * del cliente.
      */
     @Override
     public ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo) {

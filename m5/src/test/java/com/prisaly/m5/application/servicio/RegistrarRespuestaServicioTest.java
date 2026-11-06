@@ -13,6 +13,7 @@ import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.RepositorioIntentosEnMemoria;
 import com.prisaly.m5.application.ResumenIntento;
+import com.prisaly.m5.application.RevisionObsoletaException;
 import com.prisaly.m5.domain.intento.Intento;
 import com.prisaly.m5.domain.intento.IntentoFinalizadoException;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
@@ -49,6 +50,36 @@ class RegistrarRespuestaServicioTest {
         assertEquals(List.of(new Respuesta(P1, A)), resumen.respuestas());
         assertEquals(List.of(new Respuesta(P1, A)), intento.respuestas());
         assertEquals(1, repositorio.guardados());
+    }
+
+    @Test
+    @DisplayName("CAS: cero exige ausencia, la revisión vigente avanza y una obsoleta no guarda")
+    void casObsoletoNoGuardaNiCambiaLaRespuesta() {
+        assertEquals(1, servicio.guardar(REF, P1, A, 0).revision());
+        assertEquals(2, servicio.guardar(REF, P1, A, 1).revision());
+
+        assertThrows(RevisionObsoletaException.class, () -> servicio.guardar(REF, P1, B, 1));
+
+        assertEquals(2, repositorio.guardados());
+        assertEquals(List.of(new Respuesta(P1, A, 2)), intento.respuestas());
+    }
+
+    @Test
+    @DisplayName("CAS: un intento finalizado se rechaza con cualquier revisión y sin guardar")
+    void casSobreIntentoFinalizado() {
+        servicio.guardar(REF, P1, A, 0);
+        intento.finalizar(com.prisaly.m5.domain.intento.MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+
+        assertThrows(com.prisaly.m5.domain.intento.IntentoFinalizadoException.class, () -> servicio.guardar(REF, P1, B, 1));
+        assertThrows(com.prisaly.m5.domain.intento.IntentoFinalizadoException.class, () -> servicio.guardar(REF, P1, B, 7));
+        assertEquals(1, repositorio.guardados());
+    }
+
+    @Test
+    @DisplayName("CAS: una revisión negativa es un dato inválido")
+    void casRevisionNegativa() {
+        assertThrows(com.prisaly.m5.application.DatoAplicacionInvalidoException.class, () -> servicio.guardar(REF, P1, A, -1));
+        assertEquals(0, repositorio.guardados());
     }
 
     @Test

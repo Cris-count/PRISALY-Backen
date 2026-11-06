@@ -5,6 +5,7 @@ import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ReferenciaSesion;
 
 /**
  * Verificación de identidad y titularidad previa a cualquier operación de
@@ -67,5 +68,25 @@ public final class ControlAccesoIntentos {
             return estudiante;
         }
         throw new ConvocatoriaNoEncontradaException();
+    }
+
+    /**
+     * Resolución de la convocatoria propia en una sesión (D01): estudiante autenticado (M1) y una
+     * única convocatoria suya en la sesión, según el contrato de M4. No evalúa elegibilidad.
+     *
+     * @throws EstudianteNoIdentificadoException si no hay estudiante autenticado
+     * @throws ConvocatoriaNoEncontradaException si la sesión no tiene una convocatoria del
+     *     estudiante: inexistente y ajena no se distinguen
+     */
+    public ReferenciaConvocatoria convocatoriaPropiaEnSesion(ReferenciaSesion sesion) {
+        if (sesion == null) {
+            throw new DatoAplicacionInvalidoException("La referencia de la sesión es obligatoria");
+        }
+        IdentificadorEstudiante estudiante = identidad.actual().orElseThrow(EstudianteNoIdentificadoException::new);
+        java.util.Optional<ReferenciaConvocatoria> convocatoria = titularidad.convocatoriaEnSesion(sesion, estudiante);
+        if (convocatoria == null || convocatoria.isEmpty()) {
+            throw new ConvocatoriaNoEncontradaException();
+        }
+        return convocatoria.get();
     }
 }

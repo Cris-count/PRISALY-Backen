@@ -10,6 +10,7 @@ import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapte
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ResumenIntento;
+import com.prisaly.m5.application.RevisionObsoletaException;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.Intento;
@@ -526,11 +527,77 @@ class RepositorioIntentosJpaIT {
                 fachada.consultarIntento(cadena.intento()).respuestas().get(0).valor().valor());
     }
 
+    @Test
+    void casConcurrenteAvanzaUnaVezAunqueLaOpcionSeaLaMisma() throws Exception {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+
+        List<Object> resultados = carrera(
+                () -> fachada.guardarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a(), 1),
+                () -> fachada.guardarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a(), 1));
+
+        assertEquals(1, resultados.stream().filter(Respuesta.class::isInstance).count());
+        assertEquals(1, resultados.stream().filter(RevisionObsoletaException.class::isInstance).count());
+        assertEquals(2, filaRespuesta(cadena.pregunta1().valor()).get("revision"));
+        assertEquals(2, fachada.consultarIntento(cadena.intento()).respuestas().getFirst().revision());
+    }
+
+    @Test
+    @DisplayName("D06: una revisión obsoleta responde sin escribir la opción ni la revisión")
+    void casObsoletoNoEscribe() {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+
+        assertThrows(RevisionObsoletaException.class,
+                () -> fachada.guardarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1b(), 0));
+
+        Map<String, Object> fila = filaRespuesta(cadena.pregunta1().valor());
+        assertEquals(UUID.fromString(cadena.opcion1a().valor()), fila.get("idOpcionSeleccionada"));
+        assertEquals(1, fila.get("revision"));
+    }
+
+    @Test
+    @DisplayName("A-01: dos consultas sin cambios producen resúmenes iguales con los instantes persistidos")
+    void consultaDevuelveTiemposPersistidos() {
+        Map<String, Object> fila = jdbc.queryForMap(
+                "SELECT \"inicio\", \"limiteTemporal\" FROM \"Intento\" WHERE \"idIntento\" = ?",
+                cadena.idIntento());
+
+        var primero = fachada.consultarIntento(cadena.intento());
+        // PostgreSQL avanza su reloj entre lecturas; no debe cambiar la igualdad del resumen.
+        jdbc.execute("SELECT pg_sleep(0.01)");
+        var segundo = fachada.consultarIntento(cadena.intento());
+        assertEquals(primero, segundo);
+        assertEquals(primero.hashCode(), segundo.hashCode());
+        var tiempos = primero.tiempos().orElseThrow();
+
+        assertEquals(((java.sql.Timestamp) fila.get("inicio")).toInstant(), tiempos.inicio());
+        assertEquals(((java.sql.Timestamp) fila.get("limiteTemporal")).toInstant(), tiempos.limiteTemporal());
+        assertEquals(null, tiempos.fin());
+    }
+
+    @Test
+    @DisplayName("D01: la convocatoria de la sesión se resuelve con el contrato de M4 sobre la cadena persistida")
+    void d01ResuelveConvocatoriaDeLaSesion() {
+        var origen = origenPersistido();
+        var titularidad = new com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4(
+                jdbc, new ProgramacionParticipacionJdbcAdapter(jdbc));
+
+        var resuelta = titularidad.convocatoriaEnSesion(
+                new com.prisaly.m5.application.ReferenciaSesion(origen.get("sesion").toString()),
+                new com.prisaly.m5.application.acceso.IdentificadorEstudiante(origen.get("estudiante").toString()));
+        var ajena = titularidad.convocatoriaEnSesion(
+                new com.prisaly.m5.application.ReferenciaSesion(origen.get("sesion").toString()),
+                new com.prisaly.m5.application.acceso.IdentificadorEstudiante(UUID.randomUUID().toString()));
+
+        assertEquals(java.util.Optional.of(new com.prisaly.m5.application.ReferenciaConvocatoria(
+                origen.get("convocatoria").toString())), resuelta);
+        assertEquals(java.util.Optional.empty(), ajena);
+    }
+
     /**
      * Lanza dos operaciones a la vez y devuelve, para cada una, su resultado o la excepción que
      * produjo.
      */
-    private List<Object> carrera(Callable<ResumenIntento> primera, Callable<ResumenIntento> segunda)
+    private List<Object> carrera(Callable<?> primera, Callable<?> segunda)
             throws Exception {
         CountDownLatch salida = new CountDownLatch(1);
         List<Future<Object>> futuros =

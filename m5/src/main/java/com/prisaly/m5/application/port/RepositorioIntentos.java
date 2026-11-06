@@ -3,6 +3,7 @@ package com.prisaly.m5.application.port;
 import java.util.Optional;
 
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.Intento;
 
 /**
@@ -28,6 +29,10 @@ public interface RepositorioIntentos {
 
     /** Busca un intento por su referencia; vacío si no existe. */
     Optional<Intento> buscar(ReferenciaIntento referencia);
+
+    default ResumenIntento resumir(ReferenciaIntento referencia, Intento intento) {
+        return ResumenIntento.de(referencia, intento);
+    }
 
     /** Persiste el estado actual del intento identificado por la referencia. */
     void guardar(ReferenciaIntento referencia, Intento intento);
