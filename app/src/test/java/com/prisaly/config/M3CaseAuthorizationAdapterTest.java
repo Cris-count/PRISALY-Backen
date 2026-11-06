@@ -71,6 +71,58 @@ class M3CaseAuthorizationAdapterTest {
                 () -> adapter.canCreateCase(currentId.toString(), currentId.toString())));
     }
 
+    @Test
+    void creationPermissionDoesNotAuthorizeAnotherTeacherOrAnInvalidCaller() {
+        when(identity.hasPermission(currentId, "CREAR_CASO")).thenReturn(true);
+        assertFalse(adapter.canCreateCase(currentId.toString(), UUID.randomUUID().toString()));
+        for (String caller : new String[] {null, "", "not-a-uuid", " " + currentId,
+                UUID.randomUUID().toString()}) {
+            assertFalse(adapter.canCreateCase(caller, currentId.toString()));
+        }
+        assertFalse(adapter.canCreateCase(currentId.toString(), null));
+        verify(identity, never()).hasPermission(any(), any());
+    }
+
+    @Test
+    void absentOrMalformedAuthenticatedSubjectCannotAuthorizeCreation() {
+        doReturn(null).when(identity).currentUser();
+        assertThrows(CasoAuthenticationException.class,
+                () -> adapter.canCreateCase(currentId.toString(), currentId.toString()));
+        doReturn(new AuthenticatedUser(null, "fixture@prisaly.test", "Fixture", "Docente",
+                "Activo", Set.of("CREAR_CASO"))).when(identity).currentUser();
+        assertThrows(CasoAuthenticationException.class,
+                () -> adapter.canCreateCase(currentId.toString(), currentId.toString()));
+        for (String code : new String[] {"USER_NOT_FOUND", "USER_INACTIVE", "FORBIDDEN"}) {
+            doThrow(new IdentityDomainException(code, "fixture")).when(identity).currentUser();
+            assertEquals("FORBIDDEN", assertThrows(CasoDomainException.class,
+                    () -> adapter.canCreateCase(currentId.toString(), currentId.toString())).code());
+        }
+        verify(identity, never()).hasPermission(any(), any());
+    }
+
+    @Test
+    void institutionalPermissionLookupFailuresNeverBecomeAuthorization() {
+        for (String code : new String[] {"USER_NOT_FOUND", "USER_INACTIVE", "FORBIDDEN"}) {
+            doThrow(new IdentityDomainException(code, "fixture"))
+                    .when(identity).hasPermission(currentId, "CREAR_CASO");
+            assertEquals("FORBIDDEN", assertThrows(CasoDomainException.class,
+                    () -> adapter.canCreateCase(currentId.toString(), currentId.toString())).code());
+        }
+        doThrow(new IdentityDomainException("UNAUTHENTICATED", "fixture"))
+                .when(identity).hasPermission(currentId, "CREAR_CASO");
+        assertThrows(CasoAuthenticationException.class,
+                () -> adapter.canCreateCase(currentId.toString(), currentId.toString()));
+    }
+
+    @Test
+    void cachedPermissionCodesDoNotReplaceTheInstitutionalPermissionCheck() {
+        when(identity.currentUser()).thenReturn(new AuthenticatedUser(currentId,
+                "docente@prisaly.test", "Docente fixture", "Docente", "Activo", Set.of("CREAR_CASO")));
+        when(identity.hasPermission(currentId, "CREAR_CASO")).thenReturn(false);
+        assertFalse(adapter.canCreateCase(currentId.toString(), currentId.toString()));
+        verify(identity).hasPermission(currentId, "CREAR_CASO");
+    }
+
     private AuthenticatedUser user(String status) {
         return new AuthenticatedUser(currentId, "docente@prisaly.test", "Docente fixture",
                 "Docente", status, Set.of());
