@@ -1,0 +1,22 @@
+name: PRISALY Integrante 1 local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080/api'
+  - key: personnelEmail
+    value: docente.bruno@prisaly.local
+  - key: personnelPassword
+    value: ''
+  - key: personnelNoPermEmail
+    value: sinperm.bruno@prisaly.local
+  - key: personnelNoPermPassword
+    value: ''
+  - key: inactiveEmail
+    value: inactive.bruno@prisaly.local
+  - key: inactivePassword
+    value: ''
+  - key: unknownEmail
+    value: ghost.bruno@prisaly.local
+  - key: casoIdBruno
+    value: 33333333-3333-3333-3333-333333333301
+  - key: estudianteIdBruno
+    value: 22222222-2222-2222-2222-222222222201

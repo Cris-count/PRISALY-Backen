@@ -20,6 +20,7 @@ function item(name, method, path, description, script, { body, headers } = {}) {
   const header = (headers || []).map(([key, value]) => ({ key, value, type: "text" }));
   const req = {
     method,
+    auth: { type: "noauth" },
     header,
     url: `{{baseUrl}}${path}`,
     description,
@@ -34,7 +35,39 @@ function item(name, method, path, description, script, { body, headers } = {}) {
       header.unshift({ key: "Content-Type", value: "application/json", type: "text" });
     }
   }
-  return { name, request: req, event: tests(script) };
+  const required = [...new Set(
+    [...JSON.stringify(req).matchAll(/{{(\w+)}}/g)].map((match) => match[1]),
+  )];
+  const reset = [...script.matchAll(/pm\.collectionVariables\.set\("(\w+)"/g)]
+    .map((match) => match[1]);
+  if (reset.includes("sesionId")) reset.push("convocatoriaId");
+  if (name.startsWith("04-04")) required.push("convocatoriaId");
+  const preflight = [
+    `const required = ${JSON.stringify(required)};`,
+    `for (const key of ${JSON.stringify(reset)}) pm.collectionVariables.unset(key);`,
+    'const missing = required.filter(key => !String(pm.variables.get(key) ?? "").trim());',
+    'const generated = ["accessToken", "noPermAccessToken", "sesionId", "convocatoriaId"];',
+    'const shadowed = required.filter(key => generated.includes(key) &&',
+    '    pm.variables.get(key) !== pm.collectionVariables.get(key));',
+    'if (shadowed.length) {',
+    '    console.warn("PRISALY: quita las variables duplicadas: " + shadowed.join(", "));',
+    '    pm.execution.skipRequest();',
+    '}',
+    'if (missing.length) {',
+    '    console.warn("PRISALY: faltan variables para esta solicitud: " + missing.join(", "));',
+    '    pm.execution.skipRequest();',
+    '}',
+  ];
+  if (body != null) {
+    preflight.push(
+      'pm.request.body.update(pm.request.body.raw.replace(/"{{(\\w+)}}"/g, (_, key) => JSON.stringify(String(pm.variables.get(key)))));',
+    );
+  }
+  return {
+    name,
+    request: req,
+    event: [{ listen: "prerequest", script: { type: "text/javascript", exec: preflight } }, ...tests(script)],
+  };
 }
 
 const AUTH = [["Authorization", "Bearer {{accessToken}}"]];
@@ -98,7 +131,8 @@ pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
 pm.test("tokenType", function () { pm.expect(body.tokenType).to.eql("Bearer"); });
 pm.test("authPrototype", function () { pm.expect(body.authPrototype).to.eql("TD-M1-AUTH-PROVISIONAL"); });
 pm.test("correo", function () { pm.expect(body.correo).to.eql(pm.environment.get("personnelEmail")); });
-if (pm.response.code === 200 && body.accessToken) {
+if (pm.response.code === 200 && body.accessToken && body.tokenType === "Bearer" &&
+    body.authPrototype === "TD-M1-AUTH-PROVISIONAL" && body.correo === pm.environment.get("personnelEmail")) {
     pm.collectionVariables.set("accessToken", body.accessToken);
 }
 `,
@@ -218,7 +252,9 @@ pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
 pm.test("JSON", function () { pm.response.to.be.json; });
 const body = pm.response.json();
 pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
-if (pm.response.code === 200 && body.accessToken) {
+pm.test("Sin CREAR_CASO", function () { pm.expect(body.permisos).to.be.an("array").that.does.not.include("CREAR_CASO"); });
+if (pm.response.code === 200 && body.accessToken && Array.isArray(body.permisos) &&
+    !body.permisos.includes("CREAR_CASO")) {
     pm.collectionVariables.set("noPermAccessToken", body.accessToken);
 }
 `,
@@ -302,7 +338,9 @@ pm.test("JSON", function () { pm.response.to.be.json; });
 const body = pm.response.json();
 pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
 pm.test("authPrototype", function () { pm.expect(body.authPrototype).to.eql("TD-M1-AUTH-PROVISIONAL"); });
-if (pm.response.code === 200 && body.accessToken) {
+pm.test("GESTIONAR_SESION", function () { pm.expect(body.permisos).to.include("GESTIONAR_SESION"); });
+if (pm.response.code === 200 && body.accessToken && body.authPrototype === "TD-M1-AUTH-PROVISIONAL" &&
+    Array.isArray(body.permisos) && body.permisos.includes("GESTIONAR_SESION")) {
     pm.collectionVariables.set("accessToken", body.accessToken);
 }
 `,
@@ -325,7 +363,7 @@ pm.test("JSON", function () { pm.response.to.be.json; });
 const body = pm.response.json();
 pm.test("id", function () { pm.expect(body.id).to.be.ok; });
 pm.test("casoId", function () { pm.expect(body.casoId).to.eql(pm.environment.get("casoIdBruno")); });
-if (pm.response.code === 201 && body.id) {
+if (pm.response.code === 201 && body.id && body.casoId === pm.environment.get("casoIdBruno")) {
     pm.collectionVariables.set("sesionId", body.id);
 }
 `,
@@ -351,9 +389,10 @@ pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
 pm.test("JSON", function () { pm.response.to.be.json; });
 const body = pm.response.json();
 pm.test("id", function () { pm.expect(body.id).to.be.ok; });
-pm.test("sesionId", function () { pm.expect(body.sesionId).to.be.ok; });
+pm.test("sesionId", function () { pm.expect(body.sesionId).to.eql(pm.variables.get("sesionId")); });
 pm.test("estudianteId", function () { pm.expect(body.estudianteId).to.eql(pm.environment.get("estudianteIdBruno")); });
-if (pm.response.code === 201 && body.id) {
+if (pm.response.code === 201 && body.id && body.sesionId === pm.variables.get("sesionId") &&
+    body.estudianteId === pm.environment.get("estudianteIdBruno")) {
     pm.collectionVariables.set("convocatoriaId", body.id);
 }
 `,
@@ -369,7 +408,16 @@ if (pm.response.code === 201 && body.id) {
           "GET",
           "/m4/sesiones/{{sesionId}}/convocatorias",
           "Lista HTTP M4. No prueba SMTP.",
-          `pm.test("HTTP 200", function () { pm.response.to.have.status(200); });`,
+          `
+pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+pm.test("La lista contiene la convocatoria recién creada", function () {
+    const body = pm.response.json();
+    pm.expect(body).to.be.an("array");
+    pm.expect(body.some(item => item.id === pm.variables.get("convocatoriaId") &&
+        item.sesionId === pm.variables.get("sesionId") &&
+        item.estudianteId === pm.variables.get("estudianteIdBruno"))).to.be.true;
+});
+`,
           { headers: AUTH },
         ),
         item(
@@ -381,7 +429,9 @@ if (pm.response.code === 201 && body.id) {
 pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
 const body = pm.response.json();
 pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
-if (pm.response.code === 200 && body.accessToken) {
+pm.test("Sin GESTIONAR_SESION", function () { pm.expect(body.permisos).to.be.an("array").that.does.not.include("GESTIONAR_SESION"); });
+if (pm.response.code === 200 && body.accessToken && Array.isArray(body.permisos) &&
+    !body.permisos.includes("GESTIONAR_SESION")) {
     pm.collectionVariables.set("noPermAccessToken", body.accessToken);
 }
 `,

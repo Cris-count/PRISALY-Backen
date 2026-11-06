@@ -1,0 +1,12 @@
+$kind: http-request
+name: 05-01 | M1-POST-09 | Cerrar sesión
+description: DESPUÉS de 01–04. Conserva accessToken para 05-02.
+url: "{{baseUrl}}/v1/personal/cerrar-sesion"
+method: POST
+headers:
+  Authorization: Bearer {{accessToken}}
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 204", function () { pm.response.to.have.status(204); });
+    language: text/javascript
+order: 1000

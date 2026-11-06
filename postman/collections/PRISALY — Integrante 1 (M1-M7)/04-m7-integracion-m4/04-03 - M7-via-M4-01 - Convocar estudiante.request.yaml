@@ -1,0 +1,28 @@
+$kind: http-request
+name: 04-03 | M7-via-M4-01 | Convocar estudiante
+description: "201 confirma convocatoria, no SMTP. Precondición: sesionId de 04-02."
+url: "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{accessToken}}
+body:
+  type: json
+  content: |
+    {
+      "estudianteId": "{{estudianteIdBruno}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 201", function () { pm.response.to.have.status(201); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("id", function () { pm.expect(body.id).to.be.ok; });
+      pm.test("sesionId", function () { pm.expect(body.sesionId).to.be.ok; });
+      pm.test("estudianteId", function () { pm.expect(body.estudianteId).to.eql(pm.environment.get("estudianteIdBruno")); });
+      if (pm.response.code === 201 && body.id) {
+          pm.collectionVariables.set("convocatoriaId", body.id);
+      }
+    language: text/javascript
+order: 3000

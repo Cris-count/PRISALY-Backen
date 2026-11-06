@@ -1,0 +1,15 @@
+$kind: http-request
+name: 00-01 | Salud del backend | GET /health
+description: PRE-00. Primera solicitud. Backend en :8080.
+url: "{{baseUrl}}/health"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("service", function () { pm.expect(body.service).to.eql("prisaly-backend"); });
+      pm.test("status ok", function () { pm.expect(body.status).to.eql("ok"); });
+    language: text/javascript
+order: 1000

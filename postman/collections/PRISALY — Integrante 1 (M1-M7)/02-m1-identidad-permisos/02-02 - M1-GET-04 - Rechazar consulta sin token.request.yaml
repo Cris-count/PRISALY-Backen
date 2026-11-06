@@ -1,0 +1,14 @@
+$kind: http-request
+name: 02-02 | M1-GET-04 | Rechazar consulta sin token
+description: Sin Authorization. No altera accessToken.
+url: "{{baseUrl}}/v1/personal/me"
+method: GET
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 401", function () { pm.response.to.have.status(401); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code UNAUTHENTICATED", function () { pm.expect(body.code).to.eql("UNAUTHENTICATED"); });
+    language: text/javascript
+order: 2000

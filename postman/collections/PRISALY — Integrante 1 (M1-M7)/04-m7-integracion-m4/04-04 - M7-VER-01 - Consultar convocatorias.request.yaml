@@ -1,0 +1,12 @@
+$kind: http-request
+name: 04-04 | M7-VER-01 | Consultar convocatorias
+description: Lista HTTP M4. No prueba SMTP.
+url: "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+scripts:
+  - type: afterResponse
+    code: pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+    language: text/javascript
+order: 4000

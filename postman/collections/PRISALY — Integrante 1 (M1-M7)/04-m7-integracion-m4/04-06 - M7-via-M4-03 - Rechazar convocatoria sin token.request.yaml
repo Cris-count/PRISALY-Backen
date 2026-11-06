@@ -1,0 +1,23 @@
+$kind: http-request
+name: 04-06 | M7-via-M4-03 | Rechazar convocatoria sin token
+description: Sin Authorization. Requiere sesionId de 04-02. Si queda {{sesionId}} literal, preparación incompleta.
+url: "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "estudianteId": "{{estudianteIdBruno}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 401", function () { pm.response.to.have.status(401); });
+      pm.test("sesionId resuelto", function () {
+          const sid = pm.collectionVariables.get("sesionId");
+          pm.expect(sid, "Ejecutar 04-02 antes; sesionId no puede estar vacío").to.be.ok;
+      });
+    language: text/javascript
+order: 7000

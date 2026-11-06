@@ -1,0 +1,23 @@
+$kind: http-request
+name: 03-02 | M1-NEG-03 | Rechazar datos inválidos de acceso estudiantil
+description: Body inválido → 400 VALIDATION_ERROR.
+url: "{{baseUrl}}/v1/acceso-estudiante/validar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "estudiante@prisaly.test",
+      "codigo": "PENDIENTE-DD02"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 400", function () { pm.response.to.have.status(400); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("code VALIDATION_ERROR", function () { pm.expect(body.code).to.eql("VALIDATION_ERROR"); });
+    language: text/javascript
+order: 2000

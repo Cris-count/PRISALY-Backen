@@ -1,0 +1,26 @@
+$kind: collection
+name: PRISALY — Integrante 1 (M1/M7)
+description: "Espejo de bruno/ (carpetas 00–05). Tokens en variables de colección (accessToken, noPermAccessToken, sesionId). Contraseñas solo en Current value del entorno. Orden: 00 → 05. HTTP 201 de convocatoria no implica SMTP. DD-02 deshabilitada."
+variables:
+  - key: accessToken
+    value: ""
+    disabled: false
+    secret: false
+  - key: noPermAccessToken
+    value: ""
+    disabled: false
+    secret: false
+  - key: sesionId
+    value: ""
+    disabled: false
+    secret: false
+  - key: convocatoriaId
+    value: ""
+    disabled: false
+    secret: false
+  - key: bearer_token_070u
+    secret: true
+    disabled: false
+  - key: bearer_token_06wl
+    secret: true
+    disabled: false

@@ -71,11 +71,6 @@ class M3CaseAuthorizationAdapterTest {
                 () -> adapter.canCreateCase(currentId.toString(), currentId.toString())));
     }
 
-    private AuthenticatedUser user(String status) {
-        return new AuthenticatedUser(currentId, "docente@prisaly.test", "Docente fixture",
-                "Docente", status, Set.of());
-    }
-
     @Test
     void creationPermissionDoesNotAuthorizeAnotherTeacherOrAnInvalidCaller() {
         when(identity.hasPermission(currentId, "CREAR_CASO")).thenReturn(true);
@@ -126,5 +121,10 @@ class M3CaseAuthorizationAdapterTest {
         when(identity.hasPermission(currentId, "CREAR_CASO")).thenReturn(false);
         assertFalse(adapter.canCreateCase(currentId.toString(), currentId.toString()));
         verify(identity).hasPermission(currentId, "CREAR_CASO");
+    }
+
+    private AuthenticatedUser user(String status) {
+        return new AuthenticatedUser(currentId, "docente@prisaly.test", "Docente fixture",
+                "Docente", status, Set.of());
     }
 }

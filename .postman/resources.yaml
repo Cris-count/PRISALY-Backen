@@ -1,0 +1,13 @@
+# Use this workspace to collaborate
+workspace:
+  id: 434e1c7f-23a2-445e-8ac6-5b5a413069ed
+
+cloudResources:
+  collections:
+    ../postman/collections/PRISALY — Integrante 1 (M1-M7): 1c10b70e-b50a-4ff8-a000-61a9376ef335
+
+# All resources in the `postman/` folder are automatically registered in Local View.
+# Point to additional files outside the `postman/` folder to register them individually. Example:
+#localResources:
+#  collections:
+#    - ../tests/E2E Test Collection/

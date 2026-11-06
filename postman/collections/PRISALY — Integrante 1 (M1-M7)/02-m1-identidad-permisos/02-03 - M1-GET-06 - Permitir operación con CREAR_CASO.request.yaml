@@ -1,0 +1,18 @@
+$kind: http-request
+name: 02-03 | M1-GET-06 | Permitir operación con CREAR_CASO
+description: "Precondición: 01-01."
+url: "{{baseUrl}}/v1/personal/autorizacion/crear-caso"
+method: GET
+headers:
+  Authorization: Bearer {{accessToken}}
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("allowed", function () { pm.expect(body.allowed).to.eql(true); });
+      pm.test("permission", function () { pm.expect(body.permission).to.eql("CREAR_CASO"); });
+      pm.test("userId", function () { pm.expect(body.userId).to.be.ok; });
+    language: text/javascript
+order: 3000

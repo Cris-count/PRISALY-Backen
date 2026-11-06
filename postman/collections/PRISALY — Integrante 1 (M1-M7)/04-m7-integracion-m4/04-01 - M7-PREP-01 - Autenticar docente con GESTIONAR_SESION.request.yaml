@@ -1,0 +1,27 @@
+$kind: http-request
+name: 04-01 | M7-PREP-01 | Autenticar docente con GESTIONAR_SESION
+description: "Refresca accessToken. Seed M7: GESTIONAR_SESION."
+url: "{{baseUrl}}/v1/personal/autenticar"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: json
+  content: |
+    {
+      "correo": "{{personnelEmail}}",
+      "password": "{{personnelPassword}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test("HTTP 200", function () { pm.response.to.have.status(200); });
+      pm.test("JSON", function () { pm.response.to.be.json; });
+      const body = pm.response.json();
+      pm.test("accessToken", function () { pm.expect(body.accessToken).to.be.ok; });
+      pm.test("authPrototype", function () { pm.expect(body.authPrototype).to.eql("TD-M1-AUTH-PROVISIONAL"); });
+      if (pm.response.code === 200 && body.accessToken) {
+          pm.collectionVariables.set("accessToken", body.accessToken);
+      }
+    language: text/javascript
+order: 1000
