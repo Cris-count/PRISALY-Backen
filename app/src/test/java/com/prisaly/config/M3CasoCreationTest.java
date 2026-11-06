@@ -25,6 +25,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.aop.framework.ProxyFactory;
+import org.springframework.transaction.annotation.AnnotationTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -59,8 +62,12 @@ class M3CasoCreationTest {
         });
         doAnswer(call -> { committed.set(true); return null; }).when(manager).commit(any());
         var authorization = new M3CaseAuthorizationAdapter(identity);
-        var controller = new CasoCreationController(new CasoApplicationService(authorization, repository),
-                authorization, manager);
+        var transactions = new TransactionInterceptor();
+        transactions.setTransactionManager(manager);
+        transactions.setTransactionAttributeSource(new AnnotationTransactionAttributeSource());
+        var proxy = new ProxyFactory(new CasoApplicationService(authorization, repository));
+        proxy.addAdvice(transactions);
+        var controller = new CasoCreationController((CasoApplicationService) proxy.getProxy(), authorization);
         mvc = MockMvcBuilders.standaloneSetup(controller)
                 .setControllerAdvice(new CasoCreationExceptionHandler()).build();
     }

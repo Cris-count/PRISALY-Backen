@@ -11,6 +11,9 @@ import com.prisaly.m3.application.port.CasoCurrentUserPort;
 import com.prisaly.m3.application.port.CasoPublicationPort;
 import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.domain.model.CasoEstado;
+import com.prisaly.m3.domain.builder.CasoBuilder;
+import com.prisaly.m3.domain.rule.CasoDomainException;
+import com.prisaly.m3.application.service.CasoApplicationService;
 import com.prisaly.m3.presentation.CasoCreationController;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +30,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -67,6 +74,8 @@ class M3CasoCreationIT {
     @Autowired CasoRepositoryPort repository;
     @Autowired CaseAuthorizationPort authorization;
     @Autowired JdbcTemplate jdbc;
+    @Autowired CasoApplicationService creationService;
+    @Autowired PlatformTransactionManager transactions;
     @Autowired ObjectMapper json;
     @Autowired @Qualifier("requestMappingHandlerMapping") RequestMappingHandlerMapping mappings;
     private MockMvc mvc;
@@ -247,5 +256,77 @@ class M3CasoCreationIT {
         fields.put("historia", "Narrativa de prueba");
         fields.put("desarrolloSituacional", null);
         return json.writeValueAsString(fields);
+    }
+
+    @Test
+    void applicationCreationCommitsEvenWhenAnOuterCallerRollsBack() {
+        UUID id = UUID.randomUUID();
+        asAuthenticatedOwner(() -> new TransactionTemplate(transactions).executeWithoutResult(outer -> {
+            creationService.createDraft(owner.toString(), draft(id));
+            assertTrue(repository.findById(id.toString()).isPresent(),
+                    "Application creation must commit before returning, independently of the caller");
+            outer.setRollbackOnly();
+        }));
+        assertEquals(1, count(id));
+    }
+
+    @Test
+    void applicationCreationRejectsADifferentOwnerWithoutInserting() {
+        UUID id = UUID.randomUUID();
+        asAuthenticatedOwner(() -> {
+            var failure = assertThrows(CasoDomainException.class, () -> creationService.createDraft(
+                    owner.toString(), draft(id).withDocenteId(UUID.randomUUID().toString())));
+            assertEquals("FORBIDDEN", failure.code());
+        });
+        assertEquals(0, count(id));
+    }
+
+    @Test
+    void applicationCreationRollsBackRootAndEarlierChildrenOnDatabaseFailure() {
+        UUID original = UUID.randomUUID();
+        UUID existingScenario = UUID.randomUUID();
+        UUID failed = UUID.randomUUID();
+        UUID earlierChild = UUID.randomUUID();
+        asAuthenticatedOwner(() -> {
+            creationService.createDraft(owner.toString(), draft(original)
+                    .addEscenario(existingScenario.toString(), "Existing", null, null, 1, true).and());
+            var candidate = draft(failed)
+                    .addEscenario(earlierChild.toString(), "Inserted first", null, null, 1, true).and()
+                    .addEscenario(existingScenario.toString(), "Collision", null, null, 2, true).and();
+            RuntimeException failure = assertThrows(RuntimeException.class,
+                    () -> creationService.createDraft(owner.toString(), candidate));
+            boolean duplicate = false;
+            for (Throwable cause = failure; cause != null; cause = cause.getCause()) {
+                if (cause instanceof java.sql.SQLException sql && "23505".equals(sql.getSQLState())) {
+                    duplicate = true;
+                }
+            }
+            assertTrue(duplicate, "The fixture must fail on the actual database uniqueness constraint");
+        });
+        assertEquals(0, count(failed));
+        assertEquals(0, jdbc.queryForObject(
+                "SELECT count(*) FROM public.\"Escenario\" WHERE \"idEscenario\" = ?", Integer.class, earlierChild));
+        assertEquals(1, count(original));
+        assertEquals(1, jdbc.queryForObject(
+                "SELECT count(*) FROM public.\"Escenario\" WHERE \"idEscenario\" = ?", Integer.class, existingScenario));
+    }
+
+    private CasoBuilder draft(UUID id) {
+        return new CasoBuilder().withId(id.toString()).withDocenteId(owner.toString())
+                .withTitulo("Application transaction regression").withTiempoEstimadoSegundos(300);
+    }
+
+    private void asAuthenticatedOwner(Runnable action) {
+        // Direct application invocation: M1 still reloads the real account and effective permission.
+        // The HTTP tests above separately exercise the real Bearer filter.
+        var previous = SecurityContextHolder.getContext();
+        var current = SecurityContextHolder.createEmptyContext();
+        current.setAuthentication(new UsernamePasswordAuthenticationToken(owner, null, List.of()));
+        SecurityContextHolder.setContext(current);
+        try {
+            action.run();
+        } finally {
+            SecurityContextHolder.setContext(previous);
+        }
     }
 }
