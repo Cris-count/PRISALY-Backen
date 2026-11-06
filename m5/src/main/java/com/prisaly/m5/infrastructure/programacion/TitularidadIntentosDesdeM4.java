@@ -12,6 +12,7 @@ import com.prisaly.m4.api.ContextoProgramacion;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ReferenciaSesion;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.Titularidad;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
@@ -106,6 +107,28 @@ public class TitularidadIntentosDesdeM4 implements TitularidadIntentos {
         boolean propio = idConvocatoria.get().equals(contexto.get().convocatoriaId())
                 && idEstudiante.get().equals(contexto.get().estudianteId());
         return propio ? Titularidad.PROPIO : Titularidad.AJENO;
+    }
+
+    /**
+     * D01: la convocatoria del estudiante en la sesión la resuelve M4
+     * ({@link ProgramacionParticipacionPort#consultarSesion}), que rechaza como indisponibilidad
+     * más de una coincidencia. M5 solo acepta un contexto que coincida con la sesión y el
+     * estudiante consultados; cualquier otro resultado es vacío.
+     */
+    @Override
+    public Optional<ReferenciaConvocatoria> convocatoriaEnSesion(ReferenciaSesion sesion, IdentificadorEstudiante estudiante) {
+        Optional<UUID> idSesion = uuid(sesion.valor());
+        Optional<UUID> idEstudiante = uuid(estudiante.valor());
+        if (idSesion.isEmpty() || idEstudiante.isEmpty()) {
+            return Optional.empty();
+        }
+        Optional<ContextoProgramacion> contexto = programacion.consultarSesion(idSesion.get(), idEstudiante.get());
+        if (contexto == null) {
+            return Optional.empty();
+        }
+        return contexto
+                .filter(c -> idSesion.get().equals(c.sesionId()) && idEstudiante.get().equals(c.estudianteId()))
+                .map(c -> new ReferenciaConvocatoria(c.convocatoriaId().toString()));
     }
 
     private Optional<UUID> convocatoriaDe(UUID idIntento) {

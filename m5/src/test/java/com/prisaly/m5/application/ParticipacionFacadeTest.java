@@ -62,14 +62,14 @@ class ParticipacionFacadeTest {
     @DisplayName("recorre registrar, actualizar, finalizar y consultar delegando en cada servicio")
     void recorridoCompleto() {
         assertEquals(List.of(new Respuesta(P1, A)), fachada.registrarRespuesta(REF, P1, A).respuestas());
-        assertEquals(List.of(new Respuesta(P1, B)), fachada.actualizarRespuesta(REF, P1, B).respuestas());
+        assertEquals(List.of(new Respuesta(P1, B, 2)), fachada.actualizarRespuesta(REF, P1, B).respuestas());
         assertEquals(EstadoIntento.FINALIZADO,
                 fachada.finalizarIntento(REF, MotivoFinalizacion.TIEMPO_VENCIDO).estado());
 
         ResumenIntento consultado = fachada.consultarIntento(REF);
 
         assertEquals(Optional.of(MotivoFinalizacion.TIEMPO_VENCIDO), consultado.motivoFinalizacion());
-        assertEquals(List.of(new Respuesta(P1, B)), consultado.respuestas());
+        assertEquals(List.of(new Respuesta(P1, B, 2)), consultado.respuestas());
         assertEquals(3, repositorio.guardados());
     }
 
@@ -97,12 +97,17 @@ class ParticipacionFacadeTest {
                 .filter(m -> Modifier.isPublic(m.getModifiers()))
                 .toList();
         for (Method metodo : publicos) {
-            Class<?> esperado = metodo.getName().equals("iniciarOReanudar") ? ResultadoInicio.class : ResumenIntento.class;
+            // guardarRespuesta (D06) devuelve la respuesta confirmada: un record inmutable, no el agregado.
+            Class<?> esperado = switch (metodo.getName()) {
+                case "iniciarOReanudar" -> ResultadoInicio.class;
+                case "guardarRespuesta" -> com.prisaly.m5.domain.respuesta.Respuesta.class;
+                default -> ResumenIntento.class;
+            };
             assertEquals(esperado, metodo.getReturnType(), metodo.getName());
         }
         Set<String> operaciones = publicos.stream().map(Method::getName).collect(Collectors.toSet());
 
         assertEquals(Set.of("iniciarOReanudar", "consultarIntento", "registrarRespuesta", "actualizarRespuesta",
-                "finalizarIntento"), operaciones);
+                "guardarRespuesta", "finalizarIntento"), operaciones);
     }
 }
