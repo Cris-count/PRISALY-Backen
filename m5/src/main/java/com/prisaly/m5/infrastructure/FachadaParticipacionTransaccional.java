@@ -9,9 +9,11 @@ import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
+import com.prisaly.m5.domain.respuesta.Respuesta;
 import com.prisaly.m5.domain.respuesta.ValorRespuesta;
 
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Objects;
@@ -54,6 +56,7 @@ public class FachadaParticipacionTransaccional implements OperacionesParticipaci
         this.escritura = new TransactionTemplate(transacciones);
         this.lectura = new TransactionTemplate(transacciones);
         this.lectura.setReadOnly(true);
+        this.lectura.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
     }
 
     /**
@@ -87,6 +90,11 @@ public class FachadaParticipacionTransaccional implements OperacionesParticipaci
     public ResumenIntento actualizarRespuesta(
             ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor) {
         return en(escritura, () -> fachada.actualizarRespuesta(intento, pregunta, valor));
+    }
+
+    @Override
+    public Respuesta guardarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor, int revisionEsperada) {
+        return en(escritura, () -> fachada.guardarRespuesta(intento, pregunta, valor, revisionEsperada));
     }
 
     @Override

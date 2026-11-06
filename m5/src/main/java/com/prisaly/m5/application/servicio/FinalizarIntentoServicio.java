@@ -36,6 +36,6 @@ public final class FinalizarIntentoServicio {
         Intento intento = CargaIntento.cargar(repositorio, referencia);
         intento.finalizar(motivo);
         repositorio.guardar(referencia, intento);
-        return ResumenIntento.de(referencia, intento);
+        return repositorio.resumir(referencia, intento);
     }
 }

@@ -1,5 +1,6 @@
 package com.prisaly.m5.application;
 
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -29,10 +30,19 @@ public record ResumenIntento(
         ReferenciaIntento referencia,
         EstadoIntento estado,
         Optional<MotivoFinalizacion> motivoFinalizacion,
-        List<Respuesta> respuestas) {
+        List<Respuesta> respuestas,
+        Optional<TiemposPersistidos> tiempos) {
+
+    /** Solo estado persistido: la hora de una respuesta HTTP no forma parte de su igualdad. */
+    public record TiemposPersistidos(Instant inicio, Instant limiteTemporal, Instant fin) {}
+
+    public ResumenIntento(ReferenciaIntento referencia, EstadoIntento estado,
+            Optional<MotivoFinalizacion> motivoFinalizacion, List<Respuesta> respuestas) {
+        this(referencia, estado, motivoFinalizacion, respuestas, Optional.empty());
+    }
 
     public ResumenIntento {
-        if (referencia == null || estado == null || motivoFinalizacion == null || respuestas == null) {
+        if (referencia == null || estado == null || motivoFinalizacion == null || respuestas == null || tiempos == null) {
             throw new DatoAplicacionInvalidoException("El resumen del intento requiere todos sus datos");
         }
         if (respuestas.stream().anyMatch(Objects::isNull)) {

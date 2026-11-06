@@ -125,7 +125,7 @@ public final class IniciarIntentoServicio {
 
     private ResumenIntento resumen(ReferenciaIntento referencia) {
         return intentos.buscar(referencia)
-                .map(intento -> ResumenIntento.de(referencia, intento))
+                .map(intento -> intentos.resumir(referencia, intento))
                 .orElseThrow(() -> new IntentoNoEncontradoException(referencia));
     }
 }

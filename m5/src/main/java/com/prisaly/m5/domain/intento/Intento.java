@@ -69,7 +69,11 @@ public final class Intento {
      * @throws RespuestaDuplicadaException si la pregunta ya tiene respuesta
      */
     public Respuesta registrarRespuesta(ReferenciaPregunta pregunta, ValorRespuesta valor) {
-        Respuesta respuesta = new Respuesta(pregunta, valor);
+        return registrarRespuesta(new Respuesta(pregunta, valor));
+    }
+
+    public Respuesta registrarRespuesta(Respuesta respuesta) {
+        ReferenciaPregunta pregunta = respuesta.pregunta();
         verificarModificable("registrar una respuesta");
         if (respuestas.containsKey(pregunta)) {
             throw new RespuestaDuplicadaException(pregunta);
@@ -93,11 +97,20 @@ public final class Intento {
      * @throws RespuestaNoRegistradaException si la pregunta no tiene respuesta
      */
     public Respuesta actualizarRespuesta(ReferenciaPregunta pregunta, ValorRespuesta valor) {
-        Respuesta respuesta = new Respuesta(pregunta, valor);
+        return actualizarRespuesta(pregunta, valor, false);
+    }
+
+    public Respuesta actualizarRespuesta(ReferenciaPregunta pregunta, ValorRespuesta valor, boolean avanzarRevision) {
+        new Respuesta(pregunta, valor);
         verificarModificable("actualizar una respuesta");
-        if (!respuestas.containsKey(pregunta)) {
+        Respuesta anterior = respuestas.get(pregunta);
+        if (anterior == null) {
             throw new RespuestaNoRegistradaException(pregunta);
         }
+        if (!avanzarRevision && anterior.valor().equals(valor)) {
+            return anterior;
+        }
+        Respuesta respuesta = new Respuesta(pregunta, valor, Math.incrementExact(anterior.revision()));
         respuestas.put(pregunta, respuesta);
         return respuesta;
     }

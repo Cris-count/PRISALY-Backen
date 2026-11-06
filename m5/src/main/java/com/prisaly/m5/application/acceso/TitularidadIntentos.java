@@ -1,7 +1,10 @@
 package com.prisaly.m5.application.acceso;
 
+import java.util.Optional;
+
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ReferenciaSesion;
 
 /**
  * Puerto de M5 (lado consumidor): ¿pertenece un intento al estudiante
@@ -41,5 +44,19 @@ public interface TitularidadIntentos {
      */
     default Titularidad deConvocatoria(ReferenciaConvocatoria convocatoria, IdentificadorEstudiante estudiante) {
         return Titularidad.AJENO;
+    }
+
+    /**
+     * Convocatoria del estudiante en una sesión de M4 (D01). M4 resuelve una única convocatoria por
+     * sesión y estudiante; si encuentra varias responde indisponibilidad, que se propaga.
+     *
+     * <p>Por defecto deniega (vacío): una implementación que no consulta M4 nunca resuelve una
+     * convocatoria para iniciar o reanudar.
+     *
+     * @return la convocatoria propia; vacío si no existe o no es del estudiante
+     * @throws RuntimeException si el proveedor no está disponible: nunca se convierte en acceso
+     */
+    default Optional<ReferenciaConvocatoria> convocatoriaEnSesion(ReferenciaSesion sesion, IdentificadorEstudiante estudiante) {
+        return Optional.empty();
     }
 }

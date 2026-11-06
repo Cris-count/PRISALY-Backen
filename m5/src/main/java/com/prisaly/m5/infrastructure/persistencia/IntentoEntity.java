@@ -34,6 +34,12 @@ public class IntentoEntity {
     @Column(name = "motivoFinalizacion", length = 40)
     private String motivoFinalizacion;
 
+    @Column(name = "inicio", insertable = false, updatable = false)
+    private OffsetDateTime inicio;
+
+    @Column(name = "limiteTemporal", insertable = false, updatable = false)
+    private OffsetDateTime limiteTemporal;
+
     @Column(name = "fin")
     private OffsetDateTime fin;
 
@@ -54,6 +60,14 @@ public class IntentoEntity {
 
     public String getMotivoFinalizacion() {
         return motivoFinalizacion;
+    }
+
+    public OffsetDateTime getInicio() {
+        return inicio;
+    }
+
+    public OffsetDateTime getLimiteTemporal() {
+        return limiteTemporal;
     }
 
     public OffsetDateTime getFin() {
