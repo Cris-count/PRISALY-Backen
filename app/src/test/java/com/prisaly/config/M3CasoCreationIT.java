@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.infrastructure.persistence.PermisoRepository;
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
+import com.prisaly.m3.application.port.CasoCurrentUserPort;
 import com.prisaly.m3.application.port.CasoPublicationPort;
 import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.domain.model.CasoEstado;
@@ -95,6 +96,20 @@ class M3CasoCreationIT {
     }
 
     @Test
+    void fullApplicationHasExactlyOneInstitutionalAuthorizationProvider() {
+        // Full app scan: no selected config or authorization replacement hides another provider.
+        assertEquals(1, context.getBeansOfType(CaseAuthorizationPort.class).size());
+        assertEquals(1, context.getBeansOfType(CasoCurrentUserPort.class).size());
+        assertSame(context.getBean(M3CaseAuthorizationAdapter.class), authorization);
+        assertSame(authorization, context.getBean(CasoCurrentUserPort.class));
+        assertNotNull(context.getBean(com.prisaly.m3.application.service.CasoApplicationService.class));
+        assertFalse(context.containsBean("caseAuthorizationFailClosed"));
+        assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
+        assertFalse(authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
+        assertFalse(authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
+    }
+
+    @Test
     void authorizedPostCommitsAndCanBeReadIndependentlyWithTheM1Owner() throws Exception {
         UUID id = UUID.randomUUID();
         String title = "\uD83D\uDE00".repeat(150);
@@ -137,6 +152,16 @@ class M3CasoCreationIT {
         assertEquals(0, count(id));
         catalog.disablePermissionAssignment(owner, permissionId);
         create(id, "Permiso revocado", 403);
+        assertEquals(0, count(id));
+    }
+
+    @Test
+    void invalidBearerTokenCannotCreateOrInsert() throws Exception {
+        UUID id = UUID.randomUUID();
+        mvc.perform(post("/api/v1/casos").contextPath("/api")
+                .header("Authorization", "Bearer invalid-dc-int-02-token")
+                .contentType(MediaType.APPLICATION_JSON).content(body(id, "Token invalido")))
+                .andExpect(status().isUnauthorized());
         assertEquals(0, count(id));
     }
 
