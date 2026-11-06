@@ -7,6 +7,7 @@ import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
+import com.prisaly.m5.domain.respuesta.Respuesta;
 import com.prisaly.m5.domain.respuesta.ValorRespuesta;
 
 /**
@@ -65,6 +66,11 @@ public final class ParticipacionFacade implements OperacionesParticipacion {
     @Override
     public ResumenIntento actualizarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor) {
         return actualizacion.actualizar(intento, pregunta, valor);
+    }
+
+    @Override
+    public Respuesta guardarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor, int revisionEsperada) {
+        return registro.guardar(intento, pregunta, valor, revisionEsperada);
     }
 
     @Override

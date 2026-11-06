@@ -14,6 +14,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.application.ResumenIntento;
+import com.prisaly.m5.application.ResumenIntento.TiemposPersistidos;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.domain.intento.Intento;
 import com.prisaly.m5.infrastructure.persistencia.MapeoIntento.CambioRespuesta;
@@ -100,12 +102,31 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
                 existentes.get(cambio.idPregunta()).reemplazarOpcion(cambio.idOpcionSeleccionada(), ahora);
             }
         }
+        // Un CAS confirmado también avanza la revisión si selecciona la misma opción.
+        for (var respuesta : intento.respuestas()) {
+            var persistida = existentes.get(UUID.fromString(respuesta.pregunta().valor()));
+            if (persistida != null && persistida.getRevision() < respuesta.revision()) {
+                persistida.reemplazarOpcion(UUID.fromString(respuesta.valor().valor()), ahora);
+            }
+        }
         entidad.reflejar(
                 MapeoIntento.estadoAColumna(intento.estado()),
                 intento.motivoFinalizacion().map(Enum::name).orElse(null),
                 ahora);
         // Hace visibles en esta transacción las violaciones de restricciones y triggers.
         respuestas.flush();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public ResumenIntento resumir(ReferenciaIntento referencia, Intento intento) {
+        IntentoEntity fila = intentos.findById(UUID.fromString(referencia.valor()))
+                .orElseThrow(() -> new PersistenciaIntentoException("Intento persistido ausente"));
+        TiemposPersistidos tiempos = new TiemposPersistidos(
+                fila.getInicio().toInstant(), fila.getLimiteTemporal().toInstant(),
+                fila.getFin() == null ? null : fila.getFin().toInstant());
+        return new ResumenIntento(referencia, intento.estado(), intento.motivoFinalizacion(),
+                intento.respuestas(), Optional.of(tiempos));
     }
 
     /** Hora del servidor PostgreSQL, en la conexión de la transacción en curso. */
@@ -119,7 +140,7 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
 
     private List<FilaRespuesta> filasRespuesta(UUID idIntento) {
         return respuestas.findByIdIntentoOrderByIdPreguntaAsc(idIntento).stream()
-                .map(r -> new FilaRespuesta(r.getIdPregunta(), r.getIdOpcionSeleccionada()))
+                .map(r -> new FilaRespuesta(r.getIdPregunta(), r.getIdOpcionSeleccionada(), r.getRevision()))
                 .toList();
     }
 }

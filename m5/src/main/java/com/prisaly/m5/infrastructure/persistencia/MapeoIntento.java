@@ -43,7 +43,10 @@ public final class MapeoIntento {
     }
 
     /** Fila de {@code "Respuesta"} con las columnas que M5 interpreta. */
-    public record FilaRespuesta(UUID idPregunta, UUID idOpcionSeleccionada) {
+    public record FilaRespuesta(UUID idPregunta, UUID idOpcionSeleccionada, int revision) {
+        public FilaRespuesta(UUID idPregunta, UUID idOpcionSeleccionada) {
+            this(idPregunta, idOpcionSeleccionada, 1);
+        }
     }
 
     /** Cambio que el adaptador debe aplicar a {@code "Respuesta"}. */
@@ -79,9 +82,9 @@ public final class MapeoIntento {
     public static Intento reconstruir(FilaIntento fila, List<FilaRespuesta> respuestas) {
         Intento intento = Intento.iniciar();
         for (FilaRespuesta respuesta : respuestas) {
-            intento.registrarRespuesta(
+            intento.registrarRespuesta(new Respuesta(
                     new ReferenciaPregunta(respuesta.idPregunta().toString()),
-                    new ValorRespuesta(respuesta.idOpcionSeleccionada().toString()));
+                    new ValorRespuesta(respuesta.idOpcionSeleccionada().toString()), respuesta.revision()));
         }
         if (FINALIZADO.equals(fila.estado())) {
             intento.finalizar(motivoDe(fila.motivoFinalizacion()));

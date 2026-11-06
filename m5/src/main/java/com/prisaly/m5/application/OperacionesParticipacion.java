@@ -2,6 +2,7 @@ package com.prisaly.m5.application;
 
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
+import com.prisaly.m5.domain.respuesta.Respuesta;
 import com.prisaly.m5.domain.respuesta.ValorRespuesta;
 
 /**
@@ -26,6 +27,10 @@ public interface OperacionesParticipacion {
 
     /** Operación provisional, pendiente de ratificación académica. */
     ResumenIntento actualizarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor);
+
+    default Respuesta guardarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor, int revisionEsperada) {
+        throw new UnsupportedOperationException("CAS requiere el servicio M5");
+    }
 
     ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo);
 }
