@@ -9,11 +9,13 @@ import com.prisaly.m3.domain.rule.CasoPublication;
 import com.prisaly.m3.domain.rule.CasoValidation;
 import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
 import java.util.Objects;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Application use cases for academic cases. Coordinates authorization and domain rules.
  */
-public final class CasoApplicationService {
+public class CasoApplicationService {
 
     public static final String CODE_FORBIDDEN = "FORBIDDEN";
     public static final String CODE_CASE_ID_MISMATCH = "CASE_ID_MISMATCH";
@@ -34,6 +36,8 @@ public final class CasoApplicationService {
         this.repository = repository;
     }
 
+    /** Commit creation independently before returning to any presentation adapter. */
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Caso createDraft(String userId, CasoBuilder builder) {
         Caso draft = builder.buildDraft();
         if (!authorizationPort.canCreateCase(userId, draft.docenteId())) {
