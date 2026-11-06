@@ -555,6 +555,30 @@ class RepositorioIntentosJpaIT {
     }
 
     @Test
+    @DisplayName("DC-M5-NOCHE-01: guardar con una pregunta inexistente se rechaza sin escrituras")
+    void guardarConPreguntaInexistenteNoEscribe() {
+        ReferenciaPregunta inexistente = new ReferenciaPregunta(UUID.randomUUID().toString());
+
+        assertThrows(DataAccessException.class,
+                () -> fachada.guardarRespuesta(cadena.intento(), inexistente, cadena.opcion1a(), 0));
+
+        assertEquals(0, contarRespuestas());
+        assertEquals(EstadoIntento.EN_CURSO, fachada.consultarIntento(cadena.intento()).estado());
+    }
+
+    @Test
+    @DisplayName("DC-M5-NOCHE-01: guardar con una opción inexistente se rechaza sin escrituras")
+    void guardarConOpcionInexistenteNoEscribe() {
+        ValorRespuesta inexistente = new ValorRespuesta(UUID.randomUUID().toString());
+
+        assertThrows(DataAccessException.class,
+                () -> fachada.guardarRespuesta(cadena.intento(), cadena.pregunta1(), inexistente, 0));
+
+        assertEquals(0, contarRespuestas());
+        assertEquals(List.of(), fachada.consultarIntento(cadena.intento()).respuestas());
+    }
+
+    @Test
     @DisplayName("A-01: dos consultas sin cambios producen resúmenes iguales con los instantes persistidos")
     void consultaDevuelveTiemposPersistidos() {
         Map<String, Object> fila = jdbc.queryForMap(
