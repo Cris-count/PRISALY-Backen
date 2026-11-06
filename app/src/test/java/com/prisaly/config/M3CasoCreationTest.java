@@ -139,14 +139,34 @@ class M3CasoCreationTest {
     }
 
     @Test
-    void explicitConfigurationWiresRealBridgeAndDoesNotRegisterPublication() {
+    void explicitConfigurationWiresRealBridgeAndDoesNotRegisterPublication() throws Exception {
         try (var context = new AnnotationConfigApplicationContext()) {
             context.registerBean(IdentityAccessPort.class, () -> identity);
             context.registerBean(CasoRepositoryPort.class, () -> repository);
-            context.register(M3CasoCreationConfig.class);
+            // Discover typed authorization factories instead of selecting only the known good config.
+            // M3CasoCreationIT complements this focused context with the full application scan.
+            var scanner = new org.springframework.context.annotation
+                    .ClassPathScanningCandidateComponentProvider(true);
+            for (var candidate : scanner.findCandidateComponents("com.prisaly.config")) {
+                Class<?> type = Class.forName(candidate.getBeanClassName());
+                boolean suppliesAuthorization = CaseAuthorizationPort.class.isAssignableFrom(type)
+                        || java.util.Arrays.stream(type.getDeclaredMethods()).anyMatch(method ->
+                            method.isAnnotationPresent(org.springframework.context.annotation.Bean.class)
+                            && CaseAuthorizationPort.class.isAssignableFrom(method.getReturnType()));
+                if (suppliesAuthorization) {
+                    context.register(type);
+                }
+            }
             context.refresh();
+            assertEquals(1, context.getBeansOfType(CaseAuthorizationPort.class).size());
+            assertEquals(1, context.getBeansOfType(CasoCurrentUserPort.class).size());
             assertNotNull(context.getBean(CasoApplicationService.class));
-            assertSame(context.getBean(CaseAuthorizationPort.class), context.getBean(CasoCurrentUserPort.class));
+            var authorization = context.getBean(CaseAuthorizationPort.class);
+            assertSame(context.getBean(M3CaseAuthorizationAdapter.class), authorization);
+            assertSame(authorization, context.getBean(CasoCurrentUserPort.class));
+            assertFalse(context.containsBean("caseAuthorizationFailClosed"));
+            assertFalse(authorization.canModifyCase(currentId.toString(), caseId.toString()));
+            assertFalse(authorization.canPublishCase(currentId.toString(), caseId.toString()));
             assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
         }
     }
