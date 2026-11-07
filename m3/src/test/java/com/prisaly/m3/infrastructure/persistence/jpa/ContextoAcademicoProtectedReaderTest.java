@@ -13,6 +13,54 @@ import org.junit.jupiter.api.Test;
 
 class ContextoAcademicoProtectedReaderTest {
     @Test
+    @org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
+    void verifierDiagnosticsNeverReachCapturedOutputOrOutwardStackTrace(
+            org.springframework.boot.test.system.CapturedOutput output) {
+        String secret = "macro-private-capability-" + UUID.randomUUID();
+        var reader = mock(CasoJpaAggregateReader.class);
+        var producer = new ContextoAcademicoProtectedReader((capability, resource, operation) -> {
+            throw new IllegalStateException("Untrusted diagnostic: " + capability,
+                    new RuntimeException("Nested diagnostic: " + capability));
+        }, reader);
+        var error = assertThrows(AccesoContextoAcademicoDenegadoException.class,
+                () -> producer.consultar(UUID.randomUUID(), secret));
+        var trace = new java.io.StringWriter();
+        error.printStackTrace(new java.io.PrintWriter(trace));
+        assertFalse(trace.toString().contains(secret));
+        assertFalse(output.getAll().contains(secret));
+        assertNull(error.getCause());
+        assertEquals(0, error.getSuppressed().length);
+        verifyNoInteractions(reader);
+    }
+
+    @Test
+    void controlledCapabilityIsBoundToCaseAndRevocationIsCheckedOnEveryRead() {
+        var snapshot = ContextoAcademicoProducerMapperTest.full();
+        UUID id = snapshot.caso().idCaso();
+        var reader = mock(CasoJpaAggregateReader.class);
+        when(reader.findById(id)).thenReturn(Optional.of(snapshot));
+        var revoked = new java.util.concurrent.atomic.AtomicBoolean();
+        var checks = new java.util.concurrent.atomic.AtomicInteger();
+        // Explicit controlled verifier: this is no evidence of institutional M1 authorization.
+        AutorizacionContextoAcademicoPort verifier = (capability, resource, operation) -> {
+            checks.incrementAndGet();
+            return "macro-fixture".equals(capability) && id.equals(resource)
+                    && operation == Operacion.CONSULTAR_CONTEXTO_EVALUABLE && !revoked.get()
+                    ? Decision.AUTORIZADO : Decision.DENEGADO;
+        };
+        var producer = new ContextoAcademicoProtectedReader(verifier, reader);
+        assertTrue(producer.consultar(id, "macro-fixture").isPresent());
+        clearInvocations(reader);
+        assertThrows(AccesoContextoAcademicoDenegadoException.class,
+                () -> producer.consultar(UUID.randomUUID(), "macro-fixture"));
+        revoked.set(true);
+        assertThrows(AccesoContextoAcademicoDenegadoException.class,
+                () -> producer.consultar(id, "macro-fixture"));
+        assertEquals(3, checks.get(), "No cached authorization may survive revocation");
+        verifyNoInteractions(reader);
+    }
+
+    @Test
     void absentOrBlankCapabilityOrMissingVerifierNeverReads() {
         var reader = mock(CasoJpaAggregateReader.class);
         var auth = mock(AutorizacionContextoAcademicoPort.class);
