@@ -4,7 +4,11 @@ import com.prisaly.m1.application.port.IdentityAccessPort;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Explicit M1/M6 wiring. M6 does not depend on M1. No academic producer is assembled here. */
+/**
+ * Wires only {@code AutorizacionEvaluacionPort}. A decision here does not authorize
+ * {@code ContextoAcademicoConsultaPort}. M1 exposes no capability operation, so this
+ * configuration does not issue or verify M3 academic capabilities.
+ */
 @Configuration(proxyBeanMethods = false)
 public class M6EvaluacionAuthorizationConfig {
     @Bean

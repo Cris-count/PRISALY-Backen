@@ -17,8 +17,12 @@ import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m3.api.ContextoAcademicoConsultaPort;
+import com.prisaly.m3.application.port.AutorizacionContextoAcademicoPort;
+import com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReader;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso;
+import com.prisaly.m6.application.port.SolicitudCapacidadContextoAcademicoPort;
 import com.prisaly.m6.application.service.PrepararEvaluacionProtegida;
 import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
 import java.util.Set;
@@ -143,7 +147,37 @@ class M6EvaluacionAuthorizationAdapterTest {
             when(identity.currentUser()).thenReturn(usuario("Activo", Set.of("CREAR_CASO")));
             assertEquals(DecisionAcceso.DENEGADO,
                     context.getBean(AutorizacionEvaluacionPort.class).verificarAcceso(solicitud));
+            assertEquals(0, context.getBeansOfType(AutorizacionContextoAcademicoPort.class).size());
+            assertEquals(0, context.getBeansOfType(SolicitudCapacidadContextoAcademicoPort.class).size());
+            assertEquals(0, context.getBeansOfType(ContextoAcademicoConsultaPort.class).size());
         }
+    }
+
+    @Test
+    void laAutorizacionDeEvaluacionNoEmiteNiValidaCapacidadAcademica() throws Exception {
+        assertFalse(AutorizacionContextoAcademicoPort.class.isAssignableFrom(M6EvaluacionAuthorizationAdapter.class));
+        assertFalse(SolicitudCapacidadContextoAcademicoPort.class.isAssignableFrom(
+                M6EvaluacionAuthorizationAdapter.class));
+        assertFalse(ContextoAcademicoConsultaPort.class.isAssignableFrom(M6EvaluacionAuthorizationAdapter.class));
+        var scanner = new ClassPathScanningCandidateComponentProvider(false);
+        scanner.addIncludeFilter(new org.springframework.core.type.filter.AnnotationTypeFilter(
+                org.springframework.context.annotation.Configuration.class));
+        int configurations = 0;
+        for (var candidate : scanner.findCandidateComponents("com.prisaly.config")) {
+            configurations++;
+            Class<?> type = Class.forName(candidate.getBeanClassName());
+            for (var method : type.getDeclaredMethods()) {
+                if (!method.isAnnotationPresent(Bean.class)) {
+                    continue;
+                }
+                Class<?> produced = method.getReturnType();
+                assertFalse(AutorizacionContextoAcademicoPort.class.isAssignableFrom(produced), method.toString());
+                assertFalse(SolicitudCapacidadContextoAcademicoPort.class.isAssignableFrom(produced), method.toString());
+                assertFalse(ContextoAcademicoConsultaPort.class.isAssignableFrom(produced), method.toString());
+                assertFalse(ContextoAcademicoProtectedReader.class.isAssignableFrom(produced), method.toString());
+            }
+        }
+        assertNotEquals(0, configurations);
     }
 
     private static AuthenticatedUser usuario(String estado, Set<String> permisos) {
