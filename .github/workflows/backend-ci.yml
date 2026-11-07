@@ -18,4 +18,4 @@ jobs:
           java-version: "21"
           cache: maven
       - name: Verify without Docker
-        run: ./mvnw -B -pl app -am clean verify
+        run: sh ./mvnw -B -pl app -am clean verify
