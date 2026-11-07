@@ -1,0 +1,55 @@
+name: DC-M4-POSTGRES-02 (temporary campaign)
+
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/m4-postgres-once.yml
+      - .github/scripts/m4_postgres_campaign.py
+
+permissions:
+  contents: read
+
+jobs:
+  postgres-campaign:
+    if: github.head_ref == 'ci/m4-postgres-02'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      TESTCONTAINERS_REUSE_ENABLE: 'false'
+    steps:
+      - name: Checkout campaign harness
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: campaign
+          persist-credentials: false
+      - name: Checkout exact approved candidate
+        uses: actions/checkout@v4
+        with:
+          ref: d8eb62d0e4873ea28f426ed3d59392a5cd1ae95c
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: candidate/**/pom.xml
+      - name: Verify isolated Docker runtime
+        run: |
+          mkdir -p "$RUNNER_TEMP/m4-evidence"
+          docker info > "$RUNNER_TEMP/m4-evidence/docker-info.txt"
+          docker pull postgres:16.15
+          docker image inspect postgres:16.15 > "$RUNNER_TEMP/m4-evidence/postgres-image.json"
+      - name: Run canonical PostgreSQL campaign
+        run: python3 campaign/.github/scripts/m4_postgres_campaign.py candidate "$RUNNER_TEMP/m4-evidence"
+      - name: Preserve results even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m4-postgres-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/m4-evidence
+          retention-days: 7
+          if-no-files-found: error
