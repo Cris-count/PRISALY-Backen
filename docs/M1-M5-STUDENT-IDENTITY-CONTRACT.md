@@ -90,3 +90,4 @@ M1 already exposes compilable `StudentAccessPort` for preparatory integration. R
 | [`M1-STUDENT-ACCESS-TEST-PLAN.md`](M1-STUDENT-ACCESS-TEST-PLAN.md) | Plan de pruebas post-ratificación (deny-safe / S1–S10) |
 | [`INTEGRACION-M1-M7.md`](INTEGRACION-M1-M7.md) | Mapa de integración M1–M7 |
 | [`M1-M7-ESTABILIZACION.md`](M1-M7-ESTABILIZACION.md) | Matriz de estabilización M1/M7 |
+| [`M1-CIERRE-24H.md`](M1-CIERRE-24H.md) | Cierre DC-M1-CIERRE-24H-01: cinco capas, un `CaseAuthorizationPort`, DD-02 bloqueado |
