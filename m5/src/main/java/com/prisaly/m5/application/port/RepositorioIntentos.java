@@ -27,6 +27,19 @@ import com.prisaly.m5.domain.intento.Intento;
  */
 public interface RepositorioIntentos {
 
+    /** Own-table relation only; academic case is resolved through M4, never by cross-module SQL. */
+    record VinculoParticipacion(java.util.UUID idParticipacion, java.util.UUID idConvocatoria) {
+        public VinculoParticipacion {
+            java.util.Objects.requireNonNull(idParticipacion);
+            java.util.Objects.requireNonNull(idConvocatoria);
+        }
+    }
+
+    /** Existing implementations without this read fail closed. Requires the caller's transaction. */
+    default Optional<VinculoParticipacion> vinculo(ReferenciaIntento referencia) {
+        throw new UnsupportedOperationException("Lectura de participacion no disponible");
+    }
+
     /** Busca un intento por su referencia; vacío si no existe. */
     Optional<Intento> buscar(ReferenciaIntento referencia);
 

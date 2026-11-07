@@ -1,0 +1,56 @@
+{
+  "base": "0bf802edc72d0ef0d49cc0db6a0a5ce443d1a7b1",
+  "branch": "feature/m5-m6-lectura-protegida",
+  "date": "2026-11-07",
+  "java": "21.0.2",
+  "springBoot": "4.1.2",
+  "postgresql": "16.15",
+  "finalCommand": "./mvnw.cmd -pl m5 -am -Pdocker-it -Dtest=ConsultaIntentoEvaluacionDesdeM5Test -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ConsultaIntentoEvaluacionM5M6IT -Dfailsafe.failIfNoSpecifiedTests=false verify",
+  "result": "BUILD SUCCESS",
+  "suites": [
+    {
+      "suite": "com.prisaly.m5.infrastructure.evaluacion.ConsultaIntentoEvaluacionDesdeM5Test",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "rechazaVinculoAusenteContextoAjenoYDuplicados",
+        "falloTecnicoNoSeConvierteEnAusencia",
+        "springPublicaFabricaSinLectorGlobal",
+        "conservaProteccionM5",
+        "autorizaEnCadaLecturaYDeniegaAntesDeAcceder",
+        "springSinAutorizadorNoArranca",
+        "mapeaInmutableEnTransaccionEstableSinCargarAgregados",
+        "nuloIndisponibilidadYFalloInstitucionalNoLeen",
+        "conservaEnCursoParaRechazoExplicitoM6",
+        "rechazaOtroIntentoYNulo",
+        "inexistenteEsVacioTrasAutorizacion"
+      ]
+    },
+    {
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "cases": [
+        "autorizacionInstitucionalNoSustituyeTitularidadPersistida",
+        "entregaFinalizadoConParticipacionCasoYRespuestaReales",
+        "conservaEnCursoYNoInventaIntentosAusentes"
+      ]
+    }
+  ],
+  "precedingRegression": {
+    "skipped": 0,
+    "failures": 0,
+    "m4": 117,
+    "m3": 132,
+    "errors": 0,
+    "m5": 272,
+    "m6": 48,
+    "m1": 19
+  },
+  "excluded": "Other PostgreSQL campaigns and institutional APP positive composition",
+  "note": "Preceding regression ran before final denial translation and consumer EN_CURSO assertion; final command reran all new tests after those changes."
+}

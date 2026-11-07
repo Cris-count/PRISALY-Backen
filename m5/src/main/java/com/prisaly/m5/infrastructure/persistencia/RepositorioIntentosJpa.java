@@ -79,6 +79,21 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
 
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<VinculoParticipacion> vinculo(ReferenciaIntento referencia) {
+        UUID id = MapeoIntento.idDe(referencia).orElseThrow(IllegalArgumentException::new);
+        var filas = jdbc.query("""
+                SELECT i."idParticipacion", p."idConvocatoria"
+                FROM public."Intento" i
+                LEFT JOIN public."Participacion" p ON p."idParticipacion" = i."idParticipacion"
+                WHERE i."idIntento" = ?
+                """, (rs, row) -> new VinculoParticipacion(
+                        rs.getObject(1, UUID.class), rs.getObject(2, UUID.class)), id);
+        if (filas.size() > 1) { throw new PersistenciaIntentoException("Vinculo de intento ambiguo"); }
+        return filas.stream().findFirst();
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
     public void guardar(ReferenciaIntento referencia, Intento intento) {
         UUID id = MapeoIntento.idDe(referencia).orElseThrow(
                 () -> new PersistenciaIntentoException("La referencia no es un idIntento uuid: " + referencia.valor()));
