@@ -84,6 +84,19 @@ public final class PrepararContextoEvaluacionService {
                 }
             }
         }
+        // Rubric associations must belong to the rubric and reference this case's questions once each
+        // (structure only, no weights policy). Rubric-case match stays in PrepararEvaluacionProtegida.
+        var rubrica = contexto.rubrica();
+        if (rubrica != null) {
+            Set<UUID> asociaciones = new HashSet<>();
+            Set<UUID> evaluadas = new HashSet<>();
+            for (var asociacion : rubrica.preguntas()) {
+                require(rubrica.idRubrica().equals(asociacion.idRubrica())
+                        && asociaciones.add(asociacion.idRubricaPregunta())
+                        && preguntas.containsKey(asociacion.idPregunta())
+                        && evaluadas.add(asociacion.idPregunta()));
+            }
+        }
         Set<UUID> respondidas = new HashSet<>();
         for (var respuesta : intento.respuestas()) {
             var pregunta = preguntas.get(respuesta.idPregunta());
