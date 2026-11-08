@@ -11,6 +11,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "com.prisaly.m1")
 public class IdentityExceptionHandler {
 
+    @ExceptionHandler(com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStore.CapacityExceededException.class)
+    public ResponseEntity<ErrorResponse> handleTokenCapacity() {
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body(new ErrorResponse("AUTH_CAPACITY_EXCEEDED", "Authentication temporarily unavailable"));
+    }
+
     @ExceptionHandler(IdentityDomainException.class)
     public ResponseEntity<ErrorResponse> handleDomain(IdentityDomainException ex) {
         HttpStatus status = switch (ex.code()) {

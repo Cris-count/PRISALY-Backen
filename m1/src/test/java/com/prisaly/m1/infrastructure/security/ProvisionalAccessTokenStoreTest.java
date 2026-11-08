@@ -76,4 +76,53 @@ class ProvisionalAccessTokenStoreTest {
     void rechazaUnTtlNoPositivo() {
         assertThrows(IllegalArgumentException.class, () -> new ProvisionalAccessTokenStore(new TestClock(), 0));
     }
+
+    @Test
+    void limpiaVencidosAbandonadosSinInvalidarTokensVigentes() {
+        TestClock clock = new TestClock();
+        var store = new ProvisionalAccessTokenStore(clock, 60, 2);
+        store.issue(USER);
+        clock.advance(Duration.ofSeconds(30));
+        String vigente = store.issue(USER);
+        clock.advance(Duration.ofSeconds(30));
+        assertEquals(1, store.purgeExpired());
+        assertEquals(Optional.of(USER), store.resolveActiveUserId(vigente));
+        assertEquals(0, store.purgeExpired());
+        store.issue(USER);
+        assertThrows(ProvisionalAccessTokenStore.CapacityExceededException.class, () -> store.issue(USER));
+        store.revoke(vigente);
+        store.issue(USER);
+    }
+
+    @Test
+    void emitirReclamaCapacidadDeVencidos() {
+        TestClock clock = new TestClock();
+        var store = new ProvisionalAccessTokenStore(clock, 1, 1);
+        String anterior = store.issue(USER);
+        clock.advance(Duration.ofSeconds(1));
+        String actual = store.issue(USER);
+        assertTrue(store.resolveActiveUserId(anterior).isEmpty());
+        assertEquals(Optional.of(USER), store.resolveActiveUserId(actual));
+        assertThrows(IllegalArgumentException.class, () -> new ProvisionalAccessTokenStore(clock, 1, 0));
+    }
+
+    @Test
+    void emisionesConcurrentesRespetanCapacidadSinRevocarSesiones() throws Exception {
+        var store = new ProvisionalAccessTokenStore(new TestClock(), 60, 8);
+        var accepted = new java.util.concurrent.ConcurrentLinkedQueue<String>();
+        var rejected = new java.util.concurrent.atomic.AtomicInteger();
+        try (var pool = java.util.concurrent.Executors.newFixedThreadPool(8)) {
+            var tasks = new java.util.ArrayList<java.util.concurrent.Callable<Void>>();
+            for (int i = 0; i < 40; i++) tasks.add(() -> {
+                try { accepted.add(store.issue(USER)); }
+                catch (ProvisionalAccessTokenStore.CapacityExceededException full) { rejected.incrementAndGet(); }
+                return null;
+            });
+            for (var result : pool.invokeAll(tasks)) result.get();
+        }
+        assertEquals(8, accepted.size());
+        assertEquals(32, rejected.get());
+        accepted.forEach(token -> assertEquals(Optional.of(USER), store.resolveActiveUserId(token)));
+        assertEquals(8, new java.util.HashSet<>(accepted).size());
+    }
 }
