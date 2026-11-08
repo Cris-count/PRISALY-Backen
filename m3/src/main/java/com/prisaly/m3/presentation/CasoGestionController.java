@@ -19,14 +19,27 @@ public final class CasoGestionController {
     public CasoGestionController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
             Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
             Optional<CasoPatchConcurrencyContract> concurrency) {
-        read = new CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository);
+        this(identity, repository, readPolicy, writePolicy, concurrency, Optional.empty());
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public CasoGestionController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
+            Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
+            Optional<CasoPatchConcurrencyContract> concurrency, Optional<CasoUpdatePort> versionedReader) {
+        read = new CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository, versionedReader.orElse(null));
         update = new CasoPersistentUpdateService(identity, writePolicy.orElse(null), repository);
         this.concurrency = concurrency.orElse(null);
     }
 
     @GetMapping(value = "/{idCaso}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public CasoDocenteConsultaResponse get(@PathVariable("idCaso") String id) {
-        return CasoDocenteConsultaResponse.from(read.consultar(id));
+    public ResponseEntity<CasoDocenteConsultaResponse> get(@PathVariable("idCaso") String id) {
+        if (concurrency instanceof CasoEtagConcurrencyContract contract) {
+            var result = read.consultarConVersion(id);
+            return ResponseEntity.ok().cacheControl(CacheControl.noStore()).header(HttpHeaders.ETAG, contract.etag(result.fingerprint()))
+                    .body(CasoDocenteConsultaResponse.from(result.ficha()));
+        }
+        return ResponseEntity.ok().cacheControl(CacheControl.noStore())
+                .body(CasoDocenteConsultaResponse.from(read.consultar(id)));
     }
 
     @PatchMapping(value = "/{idCaso}", consumes = MediaType.APPLICATION_JSON_VALUE)

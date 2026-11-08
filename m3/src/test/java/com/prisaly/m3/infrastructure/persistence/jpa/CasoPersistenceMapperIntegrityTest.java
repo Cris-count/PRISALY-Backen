@@ -10,6 +10,16 @@ import org.junit.jupiter.api.Test;
 
 class CasoPersistenceMapperIntegrityTest {
     @Test
+    void rubricAssociationsWithoutTheirRubricCannotBeSilentlyLostDuringReconstruction() {
+        var source = ContextoAcademicoProducerMapperTest.full();
+        var orphan = new RubricaPreguntaRow(UUID.randomUUID(), UUID.randomUUID(),
+                source.preguntas().getFirst().idPregunta(), new java.math.BigDecimal("1.25"), "Original criterion");
+        var inconsistent = new CasoJpaAggregateSnapshot(source.caso(), source.escenarios(), source.preguntas(),
+                source.opciones(), null, Set.of(orphan));
+        assertThrows(IllegalStateException.class, () -> CasoPersistenceMapper.toDomain(inconsistent));
+    }
+
+    @Test
     void scenarioFromAnotherCaseCannotBeAttachedToTheReconstructedCase() {
         var source = ContextoAcademicoProducerMapperTest.full();
         var scenario = source.escenarios().getFirst();
