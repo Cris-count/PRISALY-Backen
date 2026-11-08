@@ -1,4 +1,4 @@
-# DC-M3-M1-RES-04 — Corrección de errores institucionales M3
+﻿# DC-M3-M1-RES-04 — Corrección de errores institucionales M3
 
 ## Alcance y base
 
@@ -45,17 +45,17 @@ Java 21, PostgreSQL 16.15 en contenedores aislados; no es certificación de la B
 .\mvnw.cmd -B -o -pl app -am -Pdocker-it '-Dtest=CasoGestionControllerTest,CasoEtagControllerTest,CasoDocenteConsultaServiceTest,CasoPersistentUpdateServiceTest,CasoMetadataTest,CasoPublicationContractTest,CasoApplicationServiceTest,CasoPersistenceMapperIntegrityTest,RubricaStructureTest,M3CaseReadAuthorizationAdapterTest' '-Dsurefire.failIfNoSpecifiedTests=false' '-Dit.test=ComposicionInstitucionalM1IT,ComposicionM3LecturaInstitucionalIT,ComposicionM3EdicionPreparadaIT,CasoPersistenceAdapterIT,RubricaJpaReadIT,CasoCommandUpdateIT,CasoJpaAggregateTransactionIT' '-Dfailsafe.failIfNoSpecifiedTests=false' verify
 ```
 
-Resultado combinado de esta ejecuci?n nueva: **237 pruebas ?nicas aprobadas**: 150 unitarias/MVC M3, 63 integraciones PostgreSQL M3, 7 unitarias APP y 17 integraciones APP/M1 (6 sin pol?tica, 6 lectura institucional con pol?tica fixture y 5 edici?n preparada).
+Resultado combinado de esta ejecución nueva: **237 pruebas únicas aprobadas**: 150 unitarias/MVC M3, 63 integraciones PostgreSQL M3, 7 unitarias APP y 17 integraciones APP/M1 (6 sin política, 6 lectura institucional con política fixture y 5 edición preparada).
 
-La primera invocaci?n completa aprob? 150 unitarias/MVC y 61 integraciones PostgreSQL; una de las dos pruebas de CasoJpaAggregateTransactionIT fall? por timeout Hikari de adquisici?n de conexi?n (l?mite existente de 500 ms; se observ? espera de 633 ms), sin conexi?n para obtener metadatos JDBC. El reactor se detuvo antes de APP. Se conservaron el log y XML del error; no se modific? ese test ni su timeout.
+La primera invocación completa aprobó 150 unitarias/MVC y 61 integraciones PostgreSQL; una de las dos pruebas de CasoJpaAggregateTransactionIT falló por timeout Hikari de adquisición de conexión (límite existente de 500 ms; se observó espera de 633 ms), sin conexión para obtener metadatos JDBC. El reactor se detuvo antes de APP. Se conservaron el log y XML del error; no se modificó ese test ni su timeout.
 
-Se repiti? exclusivamente ese grupo de dos pruebas y se continu? con APP/M1, usando el siguiente comando. Las dos aprobaron, al igual que 7 unitarias APP y las 17 integraciones APP/M1: cero fallos, errores u omisiones; BUILD SUCCESS y salida 0. No se afirma que la primera invocaci?n haya sido exitosa. Las 63 integraciones M3 se cuentan una sola vez.
+Se repitió exclusivamente ese grupo de dos pruebas y se continuó con APP/M1, usando el siguiente comando. Las dos aprobaron, al igual que 7 unitarias APP y las 17 integraciones APP/M1: cero fallos, errores u omisiones; BUILD SUCCESS y salida 0. No se afirma que la primera invocación haya sido exitosa. Las 63 integraciones M3 se cuentan una sola vez.
 
 ```powershell
 .\mvnw.cmd -B -o -pl app -am -Pdocker-it '-Dtest=M3CaseReadAuthorizationAdapterTest' '-Dsurefire.failIfNoSpecifiedTests=false' '-Dit.test=CasoJpaAggregateTransactionIT,ComposicionInstitucionalM1IT,ComposicionM3LecturaInstitucionalIT,ComposicionM3EdicionPreparadaIT' '-Dfailsafe.failIfNoSpecifiedTests=false' verify
 ```
 
-Logs locales: m3/target/res04-verify.log y m3/target/res04-composition-retry.log. El primero conserva el timeout y el segundo acredita la repetici?n y la composici?n. Los resultados se cotejaron con XML Surefire/Failsafe. La fuente probada es cf72da8 m?s el delta de los cinco archivos Java de este commit, sin modificaciones posteriores; se verifican sus SHA-256 antes de publicar.
+Logs locales: m3/target/res04-verify.log y m3/target/res04-composition-retry.log. El primero conserva el timeout y el segundo acredita la repetición y la composición. Los resultados se cotejaron con XML Surefire/Failsafe. La fuente probada es cf72da8 más el delta de los cinco archivos Java de este commit, sin modificaciones posteriores; se verifican sus SHA-256 antes de publicar.
 
 Las pruebas unitarias/MVC de autorización M3 usan puertos controlados; las unitarias del adaptador APP también controlan IdentityAccessPort. Las composiciones APP/M1 usan identidad, seguridad y PostgreSQL reales. Las de lectura y edición preparada añaden políticas/permisos fixture y, cuando corresponde, transporte ETag solo de prueba; no acreditan políticas ratificadas ni autorización productiva de PATCH. La composición sin política conserva la denegación productiva y verifica ausencia de proveedor de concurrencia productivo.
 
