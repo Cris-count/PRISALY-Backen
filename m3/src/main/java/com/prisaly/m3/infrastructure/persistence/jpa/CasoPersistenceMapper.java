@@ -74,6 +74,7 @@ final class CasoPersistenceMapper {
     }
 
     static Caso toDomain(CasoJpaAggregateSnapshot snapshot) {
+        validateReadReferences(snapshot);
         var row = snapshot.caso();
         List<Escenario> escenarios = snapshot.escenarios().stream().map(e -> new Escenario(
                 e.idEscenario().toString(), e.titulo(), e.contexto(), e.instrucciones(), e.orden(), e.activo(),
@@ -101,5 +102,19 @@ final class CasoPersistenceMapper {
                 row.tiempoEstimadoSegundos(), estado, escenarios, rubrica, row.fechaBloqueoAcademico() != null,
                 row.historia(), row.desarrolloSituacional(), row.activo(), row.fechaCreacion(),
                 row.fechaActualizacion(), row.fechaBloqueoAcademico());
+    }
+
+    private static void validateReadReferences(CasoJpaAggregateSnapshot snapshot) {
+        // Validate before nesting: stream filters must not silently discard orphan rows
+        // or attach a foreign scenario to this case through the domain's implicit parent.
+        var scenarioIds = snapshot.escenarios().stream()
+                .map(CasoJpaAggregateSnapshot.EscenarioRow::idEscenario).collect(Collectors.toSet());
+        var questionIds = snapshot.preguntas().stream()
+                .map(CasoJpaAggregateSnapshot.PreguntaRow::idPregunta).collect(Collectors.toSet());
+        if (snapshot.escenarios().stream().anyMatch(e -> !snapshot.caso().idCaso().equals(e.idCaso()))
+                || snapshot.preguntas().stream().anyMatch(p -> !scenarioIds.contains(p.idEscenario()))
+                || snapshot.opciones().stream().anyMatch(o -> !questionIds.contains(o.idPregunta()))) {
+            throw new IllegalStateException("Stored case integrity: academic row references a parent outside the case");
+        }
     }
 }
