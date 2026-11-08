@@ -65,7 +65,7 @@ y función alterados conservando nombre, checksum de historial alterado y dos
 arranques Spring reales con HTTP health/401/501. Los resets se limitan al
 PostgreSQLContainer de la prueba; no se usa Flyway target.
 
-**Resultado final inspeccionado: 14 casos PostgreSQL y 7 unitarios aprobados,
+**Primera regresión inspeccionada: 14 casos PostgreSQL y 7 unitarios aprobados,
 0 fallos, 0 errores, 0 omitidos.** SHA ejecutado:
 `e78a9d96c54911f68d12ad6ba61d430578b281c6`.
 
@@ -99,6 +99,33 @@ sin tablas adicionales, tres funciones/cuatro triggers, índice parcial,
 restricciones y fechaUltimaActividad. Confirma asimismo que no son una ampliación
 productiva aprobada. Esta entrega resuelve la compatibilidad técnica demostrada
 en base efímera; **no cierra la conciliación/despliegue de entornos compartidos**.
+
+## Contrato Cristian recibido y aceptación complementaria
+
+Se contrastó el documento DC-M1-POSTCIERRE-02 de Cristian suministrado directamente
+por el usuario, SHA-256 del adjunto:
+`3edd94f4f4a95975ebacd2062305300829e97ae3de0b3692213735dcdc40060c`.
+Confirma los mismos nombres, scripts, condición de candidatas y falta de
+inventarios compartidos ya documentados. No aporta una ratificación productiva
+ni exige cambiar la guarda implementada.
+
+Se añadió una prueba de aceptación SQL bajo el contrato DD-02 reconocido:
+activaciones y sesiones con Usuario A y Estudiante de Usuario B son rechazadas
+con SQLSTATE 23514 y DD02-VINCULO-INCOHERENTE; no queda ninguna fila parcial.
+La misma inserción con el propietario coherente es aceptada para ambas tablas,
+y la guarda continúa aceptando el esquema. Son fixtures efímeros, no cuentas
+productivas ni una prueba de login estudiantil habilitado. No se duplicó lógica M1.
+
+**Regresión actual inspeccionada: 15 PostgreSQL + 7 unitarias, cero fallos,
+errores u omisiones**, sobre `ada08fc7c343cdab3f627036d70472b41a5f09f1`:
+https://github.com/Cris-count/PRISALY-Backen/actions/runs/42509475636
+
+Artefacto `m4-schema-42509475636-1`, ID 13628387843, descargado y verificado.
+XML, log y manifiesto persistidos en
+`docs/evidencias/DC-M1-POSTCIERRE-02-M4/contrato-cristian/`.
+Conserva los dos arranques Spring y las comprobaciones HTTP 200/401/501 de la
+suite. La comparación con 21c08e1 solo añade la prueba; guarda, contratos,
+migraciones y código M1 permanecen idénticos. No sumar este conteo al anterior.
 
 RF/CU canónicos pendientes de fuente V27 verificable. No se declara cierre
 integral DD-02 mientras falten aprobación, historiales compartidos, identidad
