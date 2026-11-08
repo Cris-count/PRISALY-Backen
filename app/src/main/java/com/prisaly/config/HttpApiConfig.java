@@ -87,7 +87,10 @@ public class HttpApiConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept"));
+        // If-Match / ETag carry the M3 aggregate precondition (DC-M3-M1-RES-03). Origins stay the
+        // configured ones; no wildcard origins or headers.
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "If-Match"));
+        configuration.setExposedHeaders(List.of("ETag"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

@@ -4,9 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -155,6 +158,32 @@ class ComposicionInstitucionalM1IT {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"idCaso\":\"" + UUID.randomUUID() + "\",\"titulo\":\"X\",\"tiempoEstimadoSegundos\":1}"))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void corsPermiteIfMatchYExponeEtagSoloAlOrigenConfigurado() throws Exception {
+        String origen = "http://localhost:4200";
+        String caso = "/v1/casos/" + UUID.randomUUID();
+        mockMvc.perform(options(caso)
+                        .header("Origin", origen)
+                        .header("Access-Control-Request-Method", "PATCH")
+                        .header("Access-Control-Request-Headers", "authorization, content-type, if-match"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Access-Control-Allow-Origin", origen))
+                .andExpect(header().string("Access-Control-Allow-Headers", containsStringIgnoringCase("if-match")));
+        mockMvc.perform(options(caso)
+                        .header("Origin", "https://otro-origen.example")
+                        .header("Access-Control-Request-Method", "PATCH"))
+                .andExpect(status().isForbidden());
+        mockMvc.perform(options(caso)
+                        .header("Origin", origen)
+                        .header("Access-Control-Request-Method", "PATCH")
+                        .header("Access-Control-Request-Headers", "x-docente-id"))
+                .andExpect(status().isForbidden());
+        // Actual (non-preflight) responses expose ETag to the browser even when denied.
+        mockMvc.perform(get(caso).header("Origin", origen))
+                .andExpect(status().isUnauthorized())
+                .andExpect(header().string("Access-Control-Expose-Headers", containsStringIgnoringCase("ETag")));
     }
 
     @Test
