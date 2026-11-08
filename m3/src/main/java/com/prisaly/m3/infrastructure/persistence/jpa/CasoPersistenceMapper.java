@@ -105,6 +105,9 @@ final class CasoPersistenceMapper {
     }
 
     private static void validateReadReferences(CasoJpaAggregateSnapshot snapshot) {
+        if (snapshot.rubrica() == null && !snapshot.rubricaPreguntas().isEmpty()) {
+            throw new IllegalStateException("Stored case integrity: rubric associations have no rubric row");
+        }
         // Validate before nesting: stream filters must not silently discard orphan rows
         // or attach a foreign scenario to this case through the domain's implicit parent.
         var scenarioIds = snapshot.escenarios().stream()

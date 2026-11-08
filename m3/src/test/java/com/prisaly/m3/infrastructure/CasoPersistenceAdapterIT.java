@@ -56,6 +56,16 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 class CasoPersistenceAdapterIT {
     /** HTTP composition with controlled policies, not the productive M1/APP assembly. */
     private static org.springframework.test.web.servlet.MockMvc controlledHttp() {
+        return controlledHttp(h -> h.getFirst("X-Test-Fingerprint"), null);
+    }
+
+    private static org.springframework.test.web.servlet.MockMvc controlledEtagHttp() {
+        return controlledHttp(new com.prisaly.m3.presentation.CasoStrongEtagContract(), updateReader());
+    }
+
+    private static org.springframework.test.web.servlet.MockMvc controlledHttp(
+            com.prisaly.m3.presentation.CasoPatchConcurrencyContract transport,
+            com.prisaly.m3.application.port.CasoUpdatePort versioned) {
         var policy = new com.prisaly.m3.application.port.AutorizacionConsultaCasoPort() {
             public Decision verificarAcceso(UUID user, UUID caso) { return Decision.AUTORIZADO; }
             public Decision verificarVisibilidad(UUID user, UUID caso, CasoEstado state, boolean active) {
@@ -70,7 +80,7 @@ class CasoPersistenceAdapterIT {
         return org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
                 new com.prisaly.m3.presentation.CasoGestionController(() -> teacher, repository,
                         java.util.Optional.of(policy), java.util.Optional.of(write),
-                        java.util.Optional.of(h -> h.getFirst("X-Test-Fingerprint"))))
+                        java.util.Optional.of(transport), java.util.Optional.ofNullable(versioned)))
                 .setControllerAdvice(new com.prisaly.m3.presentation.CasoGestionExceptionHandler()).build();
     }
 
@@ -78,6 +88,130 @@ class CasoPersistenceAdapterIT {
             UUID id, String fingerprint, String body) {
         return org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/v1/casos/" + id)
                 .contentType("application/json").header("X-Test-Fingerprint", fingerprint).content(body);
+    }
+
+    private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder patchEtag(
+            UUID id, String etag, String body) {
+        return org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/v1/casos/" + id)
+                .contentType("application/json").header("If-Match", etag).content(body);
+    }
+
+    private static String getEtag(org.springframework.test.web.servlet.MockMvc mvc, UUID id) throws Exception {
+        return mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/v1/casos/" + id))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.*")
+                        .value(org.hamcrest.Matchers.hasSize(4)))
+                .andReturn().getResponse().getHeader("ETag");
+    }
+
+    @Test
+    void etagGetPatchPersistsAndHiddenQuestionChangeInvalidatesTheSameVisibleRepresentation() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        var mvc = controlledEtagHttp();
+        String originalEtag = getEtag(mvc, id);
+        assertEquals('"' + before.fingerprint() + '"', originalEtag);
+        mvc.perform(patchEtag(id, originalEtag, "{\"titulo\":\"ETag persisted\"}"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNoContent());
+        var after = updateReader().findById(id).orElseThrow();
+        assertEquals("ETag persisted", after.caso().titulo());
+        assertEquals(before.caso().escenarios(), after.caso().escenarios());
+        assertEquals(before.caso().rubrica(), after.caso().rubrica());
+        String changedEtag = getEtag(mvc, id);
+        assertFalse(originalEtag.equals(changedEtag));
+        // Change hidden academic data only. The four visible fields remain identical.
+        var question = after.caso().escenarios().getFirst().preguntas().getFirst();
+        jdbc.update("UPDATE public.\"Pregunta\" SET \"textoAyuda\" = ? WHERE \"idPregunta\" = ?",
+                "Hidden academic change", UUID.fromString(question.id()));
+        String hiddenChangeEtag = getEtag(mvc, id);
+        assertFalse(changedEtag.equals(hiddenChangeEtag));
+        assertEquals(after.caso().titulo(), repository.findById(id.toString()).orElseThrow().titulo());
+        mvc.perform(patchEtag(id, changedEtag, "{\"titulo\":\"Stale\"}"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+        assertEquals(hiddenChangeEtag, getEtag(mvc, id));
+    }
+
+    @Test
+    void etagConcurrentWritersProduceOneCommitAndOneConflict() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        var mvc = controlledEtagHttp();
+        String etag = getEtag(mvc, id);
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try {
+            var results = new ArrayList<java.util.concurrent.Future<Integer>>();
+            for (String title : List.of("ETag writer A", "ETag writer B")) {
+                results.add(executor.submit(() -> {
+                    assertTrue(start.await(10, java.util.concurrent.TimeUnit.SECONDS));
+                    return mvc.perform(patchEtag(id, etag, "{\"titulo\":\"" + title + "\"}"))
+                            .andReturn().getResponse().getStatus();
+                }));
+            }
+            start.countDown();
+            var statuses = new ArrayList<Integer>();
+            for (var result : results) { statuses.add(result.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
+            statuses.sort(Integer::compareTo);
+            assertEquals(List.of(204, 409), statuses);
+            assertTrue(Set.of("ETag writer A", "ETag writer B")
+                    .contains(repository.findById(id.toString()).orElseThrow().titulo()));
+        } finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    void etagPatchAfterM4SchedulingPreservesTheNewAcademicLockAndAllContent() throws Exception {
+        Caso input = root(id(), teacher.toString(), List.of(), null, CasoEstado.PUBLICADO, CREATED);
+        repository.insert(input);
+        UUID id = UUID.fromString(input.id());
+        var mvc = controlledEtagHttp();
+        String originalEtag = getEtag(mvc, id);
+        jdbc.update("""
+                INSERT INTO public."Sesion" ("idSesion", "idCaso", "idDocenteProgramador",
+                  "nombreEspacioAcademico", "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos")
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, UUID.randomUUID(), id, teacher, "ETag M4 lock fixture",
+                Timestamp.from(Instant.parse("2030-01-01T10:00:00Z")),
+                Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")), 300);
+        var locked = updateReader().findById(id).orElseThrow();
+        assertNotNull(locked.caso().fechaBloqueoAcademico());
+        String currentEtag = getEtag(mvc, id);
+        assertFalse(currentEtag.equals(originalEtag));
+        for (String validator : List.of(originalEtag, currentEtag)) {
+            mvc.perform(patchEtag(id, validator, "{\"titulo\":\"Forbidden\"}"))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+        }
+        assertEquals(locked, updateReader().findById(id).orElseThrow());
+    }
+
+    @Test
+    void etagPatchSqlFailureRollsBackContentAndValidator() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        var mvc = controlledEtagHttp();
+        String etag = getEtag(mvc, id);
+        jdbc.execute("""
+                CREATE FUNCTION public.m3_etag_failure() RETURNS trigger LANGUAGE plpgsql AS $$
+                BEGIN
+                  IF NEW."historia" = 'ETag failure' THEN RAISE EXCEPTION 'test-only fault'; END IF;
+                  RETURN NEW;
+                END $$
+                """);
+        jdbc.execute("""
+                CREATE TRIGGER m3_etag_failure BEFORE UPDATE ON public."Caso"
+                FOR EACH ROW EXECUTE FUNCTION public.m3_etag_failure()
+                """);
+        try {
+            mvc.perform(patchEtag(id, etag, "{\"titulo\":\"Roll back\",\"historia\":\"ETag failure\"}"))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isInternalServerError());
+            assertEquals(before, updateReader().findById(id).orElseThrow());
+            assertEquals(etag, getEtag(mvc, id));
+        } finally {
+            jdbc.execute("DROP TRIGGER m3_etag_failure ON public.\"Caso\"");
+            jdbc.execute("DROP FUNCTION public.m3_etag_failure()");
+        }
     }
 
     @Test
@@ -858,6 +992,26 @@ class CasoPersistenceAdapterIT {
                 VALUES (?, ?, ?, ?)
                 """, UUID.randomUUID(), UUID.fromString(first.rubrica().id()),
                 UUID.fromString(first.escenarios().getFirst().preguntas().getFirst().id()), BigDecimal.ONE));
+    }
+
+    @Test
+    void rubricMissingReferencesAndNonpositiveStoredValuesAreRejectedWithoutChangingValidData() {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        UUID association = UUID.fromString(lockedAssociationId(before.caso()));
+        for (BigDecimal invalid : List.of(BigDecimal.ZERO, new BigDecimal("-0.25"))) {
+            assertSqlState("23514", () -> jdbc.update(
+                    "UPDATE public.\"RubricaPregunta\" SET \"valorPregunta\" = ? WHERE \"idRubricaPregunta\" = ?",
+                    invalid, association));
+        }
+        // The official transversal trigger rejects missing parents before SQL FK checks.
+        assertSqlState("23514", () -> jdbc.update(
+                "UPDATE public.\"RubricaPregunta\" SET \"idPregunta\" = ? WHERE \"idRubricaPregunta\" = ?",
+                UUID.randomUUID(), association));
+        assertSqlState("23514", () -> jdbc.update(
+                "UPDATE public.\"RubricaPregunta\" SET \"idRubrica\" = ? WHERE \"idRubricaPregunta\" = ?",
+                UUID.randomUUID(), association));
+        assertEquals(before, updateReader().findById(id).orElseThrow());
     }
 
     @Test
