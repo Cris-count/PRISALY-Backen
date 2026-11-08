@@ -1170,7 +1170,7 @@
                 "{{sesionConHistorialId}}"
               ]
             },
-            "description": "PM4-04. Actualizar antes de crear participaciones. Ejecución y resultado observados: pendientes de Postman.",
+            "description": "PM4-21. Rechazar edición de una sesión propia con historial legítimo de M5 (Participacion vinculada a una convocatoria de la sesión; Intento opcional). Bloqueado hasta disponer de ese historial por el flujo autorizado de M5. Una convocatoria sola no cumple la precondición; no insertar historial artificial. Resultado esperado: HTTP 409 y M4-SESION-CON-PARTICIPACIONES, sin modificar la sesión. Ejecución y resultado observados: pendientes de Postman sobre el mismo SHA/JAR candidato.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"titulo\": \"Sesión Postman M4 actualizada\",\n  \"mensajePersonalizado\": \"Actualización PT-DCP-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFinActualizada}}\"\n}",

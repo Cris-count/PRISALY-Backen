@@ -1,0 +1,103 @@
+{
+  "sha": "d8eb62d0e4873ea28f426ed3d59392a5cd1ae95c",
+  "date": "2026-11-07",
+  "source": "dc-macro-04-focused.log: solo líneas de suite, sin sumar resúmenes del módulo",
+  "kind": "Campaña local sin Docker; no PostgreSQL",
+  "build": "BUILD SUCCESS -DskipTests package",
+  "jarSha256": "906CD18F04A8F8B44B76ECCDFADE88555864B00AD108F2388A79CCF8131C4008",
+  "totalTests": 109.0,
+  "mockitoAgent": "5.23.0 por argLine sin cambiar pom",
+  "suites": [
+    {
+      "suite": "com.prisaly.m4.application.SesionAcademicaServiceTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.domain.SesionAcademicaDomainTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.ContratosM4AdaptersTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4CoordinacionInicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4EstabilizacionAdaptersTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4MigrationResourcesTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4ProviderSecurityTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionAutenticadaTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionConfigurationTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "com.prisaly.m5.infrastructure.evaluacion.ConsultaIntentoEvaluacionDesdeM5Test",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "ParticipacionesM4DesdeM5 (proveedor de ParticipacionesPort de M4)",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "TitularidadIntentosDesdeM4",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "suite": "TitularidadIntentosDesdeM4: convocatoria propia en una sesi�n (D01)",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

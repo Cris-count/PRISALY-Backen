@@ -1,0 +1,124 @@
+{
+  "sha": "3563177fb673ce374197907e199c4817d138d705",
+  "date": "2026-11-06",
+  "source": "Nueva ejecución local Surefire; omisión diagnóstica sin m4.baseline.migrations",
+  "build": "BUILD SUCCESS con -DskipTests; pruebas no acreditadas por package",
+  "jarSha256": "7D95F69C19240D2E1593BCEA2DC11050EEE8E8FB9B4EFDA0C3D9B0EFD312C5FC",
+  "suites": [
+    {
+      "suite": "com.prisaly.m4.domain.SesionAcademicaDomainTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "omitted": []
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4MigrationResourcesTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "omitted": []
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.Bd0052BaselineIT",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4,
+      "omitted": [
+        {
+          "name": "publicadoProgramaYBloqueaContenidoConTriggerReal",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "diagnosticoV010CreaDosTablasParalelasYEludeTriggerOficial",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "rollbackRevierteSesionYMarcaAcademicaEnMismaTransaccion",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "rf09RealDeBaseDatosRechazaBorrador",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        }
+      ]
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.M4M1ContratosPostgreSqlIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 6,
+      "omitted": [
+        {
+          "name": "lecturaPropiaYListadoUsanIdentidadYPermisoPersistidosM1",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "creacionSinCabeceraObtieneDocenteDeM1",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "lecturaAjenaYFiltroAjenoSeRechazan",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "permisoRevocadoEnPostgresqlImpideLectura",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "cabeceraDeOtroDocenteNoSuplantaLaIdentidadReal",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "sinAutenticacionNoHayLecturaYAccesoLegadoNoAutoriza",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        }
+      ]
+    },
+    {
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 8,
+      "omitted": [
+        {
+          "name": "informaRetiroCierreYCasoArchivadoSinConvertirDatosEnPermiso",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "consumidorResuelveParticipacionIntentoYUsaSoloPuertoM4",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "esquemaNoDisponibleFallaSinAutorizarNiUsarTablasPropuestas",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "consultaSesionDevuelveContextoOficialSinEntidadesMutables",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "titularidadRechazaOtroEstudianteYNoConfundeIdUsuario",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "contextoTemporalEsInformativoSinCerrarNiAutorizar(String, long)",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "referenciaInexistenteYAjenaNoRevelanContexto",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        },
+        {
+          "name": "observadoEnProvieneDelRelojPostgresql",
+          "reason": "System property [m4.baseline.migrations] does not exist"
+        }
+      ]
+    }
+  ]
+}
