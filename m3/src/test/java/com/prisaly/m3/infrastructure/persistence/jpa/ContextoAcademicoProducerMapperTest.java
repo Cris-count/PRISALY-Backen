@@ -140,6 +140,130 @@ class ContextoAcademicoProducerMapperTest {
                 .noneMatch(m -> Modifier.isPublic(m.getModifiers())));
     }
 
+    @Test
+    void unorderedScenarioRowsAreSortedWithoutReorderingTheSnapshot() {
+        var source = multipleParents();
+        var result = ContextoAcademicoProducerMapper.map(source);
+        assertEquals(List.of(7, 21), result.escenarios().stream()
+                .map(ContextoAcademicoPersistido.Escenario::orden).toList());
+        assertEquals(List.of(source.escenarios().get(1).idEscenario(), source.escenarios().getFirst().idEscenario()),
+                result.escenarios().stream().map(ContextoAcademicoPersistido.Escenario::idEscenario).toList());
+        assertEquals(List.of(21, 7), source.escenarios().stream().map(EscenarioRow::orden).toList());
+    }
+
+    @Test
+    void interleavedQuestionsAreSortedWithinTheirOwnScenario() {
+        var source = multipleParents();
+        var result = ContextoAcademicoProducerMapper.map(source);
+        var first = result.escenarios().getFirst();
+        assertEquals(List.of(source.preguntas().get(2).idPregunta(), QUESTION),
+                first.preguntas().stream().map(ContextoAcademicoPersistido.Pregunta::idPregunta).toList());
+        assertEquals(List.of(3, 13), first.preguntas().stream()
+                .map(ContextoAcademicoPersistido.Pregunta::orden).toList());
+        var second = result.escenarios().get(1);
+        assertEquals(List.of(source.preguntas().getFirst().idPregunta()), second.preguntas().stream()
+                .map(ContextoAcademicoPersistido.Pregunta::idPregunta).toList());
+        assertEquals(13, second.preguntas().getFirst().orden(), "Equal question order is valid in another scenario");
+        assertTrue(result.escenarios().stream().allMatch(e -> e.preguntas().stream()
+                .allMatch(p -> e.idEscenario().equals(p.idEscenario()))));
+    }
+
+    @Test
+    void interleavedOptionsKeepTheirQuestionAndMayReuseOrderAndCorrectnessAcrossParents() {
+        var source = multipleParents();
+        var result = ContextoAcademicoProducerMapper.map(source);
+        var questions = result.escenarios().stream().flatMap(e -> e.preguntas().stream()).toList();
+        var options = questions.stream().flatMap(p -> p.opciones().stream()).toList();
+        assertEquals(4, options.size());
+        assertEquals(source.opciones().stream().map(OpcionRespuestaRow::idOpcion).collect(java.util.stream.Collectors.toSet()),
+                options.stream().map(ContextoAcademicoPersistido.Opcion::idOpcion).collect(java.util.stream.Collectors.toSet()));
+        for (var question : questions) {
+            var expected = source.opciones().stream().filter(o -> o.idPregunta().equals(question.idPregunta()))
+                    .sorted(java.util.Comparator.comparingInt(OpcionRespuestaRow::orden))
+                    .map(o -> new ContextoAcademicoPersistido.Opcion(o.idOpcion(), o.idPregunta(), o.texto(),
+                            o.esCorrecta(), o.explicacion(), o.orden())).toList();
+            assertEquals(expected, question.opciones());
+            assertEquals(4, question.opciones().getFirst().orden());
+            assertEquals(1L, question.opciones().stream().filter(ContextoAcademicoPersistido.Opcion::esCorrecta).count());
+        }
+    }
+
+    @Test
+    void twoCorrectOptionsForOneQuestionAreRejectedEvenWithDistinctIdsAndOrders() {
+        var source = full();
+        var invalid = new CasoJpaAggregateSnapshot(source.caso(), source.escenarios(), source.preguntas(),
+                List.of(source.opciones().getFirst(),
+                        new OpcionRespuestaRow(UUID.randomUUID(), QUESTION, "Also correct", true, null, 29)),
+                source.rubrica(), source.rubricaPreguntas());
+        var failure = assertThrows(IllegalStateException.class, () -> ContextoAcademicoProducerMapper.map(invalid));
+        assertEquals("Academic snapshot integrity: Multiple correct options violate V002", failure.getMessage());
+    }
+
+    @Test
+    void distinctDatesKeepTheirMeaningAndNanosecondsWithoutSwappingFields() {
+        var source = full();
+        var root = source.caso();
+        var question = source.preguntas().getFirst();
+        var rubric = source.rubrica();
+        Instant blocked = Instant.parse("2026-03-03T03:04:05.987654321Z");
+        Instant updated = Instant.parse("2026-02-02T02:03:04.123456789Z");
+        Instant questionCreated = DATE.plusNanos(1);
+        Instant questionUpdated = updated.plusNanos(1);
+        Instant rubricCreated = DATE.plusNanos(2);
+        var distinct = new CasoJpaAggregateSnapshot(new CasoRow(root.idCaso(), root.idDocente(), root.nombre(),
+                root.historia(), root.desarrolloSituacional(), root.tiempoEstimadoSegundos(), root.estado(),
+                root.activo(), blocked, DATE, updated), source.escenarios(),
+                List.of(new PreguntaRow(question.idPregunta(), question.idEscenario(), question.enunciado(),
+                        question.textoAyuda(), question.estadoEdicion(), question.visible(), question.orden(),
+                        questionCreated, questionUpdated)), source.opciones(),
+                new RubricaRow(rubric.idRubrica(), rubric.idCaso(), rubric.nombre(), rubric.descripcion(),
+                        rubric.puntajeTotal(), rubric.definicionEvaluacion(), rubricCreated), source.rubricaPreguntas());
+        var result = ContextoAcademicoProducerMapper.map(distinct);
+        assertAll(
+                () -> assertEquals(blocked, result.fechaBloqueoAcademico()),
+                () -> assertEquals(DATE, result.fechaCreacion()),
+                () -> assertEquals(updated, result.fechaActualizacion()),
+                () -> assertEquals(questionCreated, result.escenarios().getFirst().preguntas().getFirst().fechaCreacion()),
+                () -> assertEquals(questionUpdated, result.escenarios().getFirst().preguntas().getFirst().fechaActualizacion()),
+                () -> assertEquals(rubricCreated, result.rubrica().fechaCreacion()));
+    }
+
+    @Test
+    void lateInvalidOptionOrderAbortsTheWholeMappingAndDoesNotPoisonLaterReads() {
+        var source = multipleParents();
+        var originalOptions = List.copyOf(source.opciones());
+        var options = new ArrayList<>(originalOptions);
+        options.add(new OpcionRespuestaRow(UUID.randomUUID(), QUESTION, "Invalid last row", false, null, 0));
+        var invalid = new CasoJpaAggregateSnapshot(source.caso(), source.escenarios(), source.preguntas(),
+                options, source.rubrica(), source.rubricaPreguntas());
+        var expected = ContextoAcademicoProducerMapper.map(source);
+        var returned = new java.util.concurrent.atomic.AtomicReference<ContextoAcademicoPersistido>();
+        var failure = assertThrows(IllegalStateException.class,
+                () -> returned.set(ContextoAcademicoProducerMapper.map(invalid)));
+        assertEquals("Academic snapshot integrity: Invalid or duplicate physical order", failure.getMessage());
+        assertNull(returned.get(), "No partially mapped context reaches the caller");
+        assertEquals(originalOptions, source.opciones());
+        assertEquals(expected, ContextoAcademicoProducerMapper.map(source));
+    }
+
+    private static CasoJpaAggregateSnapshot multipleParents() {
+        var source = full();
+        UUID otherScenario = UUID.randomUUID();
+        UUID earlierQuestion = UUID.randomUUID();
+        UUID otherQuestion = UUID.randomUUID();
+        return new CasoJpaAggregateSnapshot(source.caso(),
+                List.of(new EscenarioRow(otherScenario, CASE, "Other scenario", null, null, 21, true),
+                        source.escenarios().getFirst()),
+                List.of(new PreguntaRow(otherQuestion, otherScenario, "Other question", null, "Borrador", true, 13, DATE, null),
+                        source.preguntas().getFirst(),
+                        new PreguntaRow(earlierQuestion, SCENARIO, "Earlier question", "Help", "Lista", true, 3, DATE, null)),
+                List.of(new OpcionRespuestaRow(UUID.randomUUID(), earlierQuestion, "Alternative", false, "Explanation", 9),
+                        new OpcionRespuestaRow(UUID.randomUUID(), otherQuestion, "Other correct", true, null, 4),
+                        source.opciones().getFirst(),
+                        new OpcionRespuestaRow(UUID.randomUUID(), earlierQuestion, "Earlier correct", true, "Reason", 4)),
+                source.rubrica(), source.rubricaPreguntas());
+    }
+
     private static void reject(CasoJpaAggregateSnapshot s) {
         assertThrows(IllegalStateException.class, () -> ContextoAcademicoProducerMapper.map(s));
     }
