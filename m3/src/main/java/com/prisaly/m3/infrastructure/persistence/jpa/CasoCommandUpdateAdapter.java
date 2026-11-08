@@ -182,7 +182,7 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
         if (!belongs) { throw error(ELEMENT_NOT_IN_CASE, "Element does not exist in this case"); }
     }
 
-    private static void apply(Connection connection, UUID caseId, CasoUpdateCommand command) throws SQLException {
+    static void apply(Connection connection, UUID caseId, CasoUpdateCommand command) throws SQLException {
         switch (command) {
             case AgregarOpcionRespuestaCommand c -> {
                 try (var statement = connection.prepareStatement("SELECT 1 FROM public.\"OpcionRespuesta\" WHERE \"idOpcion\" = ?")) {

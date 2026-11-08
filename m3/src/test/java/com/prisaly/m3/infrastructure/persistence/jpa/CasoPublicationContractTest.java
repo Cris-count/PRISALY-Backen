@@ -142,6 +142,60 @@ class CasoPublicationContractTest {
         verifyNoMoreInteractions(port);
     }
 
+    @Test
+    void failingInstitutionalPublicationProviderIsDeniedWithoutRetainingDiagnostics() {
+        var authorization = mock(CaseAuthorizationPort.class);
+        when(authorization.canPublishCase("user", ID.toString()))
+                .thenThrow(new IllegalStateException("private institutional diagnostic"));
+        var error = assertThrows(CasoDomainException.class,
+                () -> CasoPublicationAdapter.assertAuthorized(authorization, "user", ID));
+        assertEquals("FORBIDDEN", error.code());
+        assertNull(error.getCause());
+        assertFalse(error.toString().contains("private institutional diagnostic"));
+    }
+
+    @Test
+    void ownershipIsRequiredEvenAfterAnAuthorizationProviderAcceptsTheOperation() {
+        var source = snapshot("Borrador", null, true, true);
+        assertDoesNotThrow(() -> CasoPublicationAdapter.assertOwner(source, source.caso().idDocente().toString()));
+        code("FORBIDDEN", () -> CasoPublicationAdapter.assertOwner(source, UUID.randomUUID().toString()));
+        code("FORBIDDEN", () -> CasoPublicationAdapter.assertOwner(source, "not-an-institutional-identity"));
+    }
+
+    @Test
+    void publicationWithoutTrustedIdentityNeverCallsThePort() {
+        var port = mock(CasoPublicationPort.class);
+        var service = new CasoPersistentPublicationService(port);
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> service.publish(ID, "m3-v2:" + "0".repeat(64)));
+        verifyNoInteractions(port);
+    }
+
+    @Test
+    void failingIdentityIsSanitizedBeforeCallingPublication() {
+        var port = mock(CasoPublicationPort.class);
+        var service = new CasoPersistentPublicationService(port, () -> {
+            throw new IllegalStateException("private identity diagnostic");
+        });
+        var error = assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> service.publish(ID, "m3-v2:" + "0".repeat(64)));
+        assertNull(error.getCause());
+        assertFalse(error.toString().contains("private identity diagnostic"));
+        verifyNoInteractions(port);
+    }
+
+    @Test
+    void trustedIdentityIsPassedToExistingPublicationPortWithoutGrantingPermission() {
+        var port = mock(CasoPublicationPort.class);
+        var source = snapshot("Borrador", null, true, true);
+        var result = new CasoUpdateResult(CasoPersistenceMapper.toDomain(source), CasoAggregateFingerprint.of(source));
+        UUID user = source.caso().idDocente();
+        when(port.publish(user.toString(), ID, result.fingerprint())).thenReturn(result);
+        assertSame(result, new CasoPersistentPublicationService(port, () -> user).publish(ID, result.fingerprint()));
+        verify(port).publish(user.toString(), ID, result.fingerprint());
+        verifyNoMoreInteractions(port);
+    }
+
     private static void reject(String expected, CasoJpaAggregateSnapshot snapshot) {
         code(expected, () -> CasoPublicationAdapter.validatePublication(snapshot, CasoAggregateFingerprint.of(snapshot)));
     }
