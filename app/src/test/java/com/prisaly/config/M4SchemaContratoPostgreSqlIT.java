@@ -55,6 +55,30 @@ class M4SchemaContratoPostgreSqlIT {
     @Test void dd02CompletoSeReconoceSoloConContratoExplicito() {
         dd02(); assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.DD02));
     }
+    @Test void contratoReconocidoConservaRechazoDeVinculoCruzadoEnAmbasTablas() {
+        dd02();
+        var usuarioA = java.util.UUID.randomUUID();
+        var usuarioB = java.util.UUID.randomUUID();
+        var estudianteB = java.util.UUID.randomUUID();
+        jdbc.update("INSERT INTO \"Rol\" (\"idRol\",\"nombre\",\"descripcion\") VALUES (1,'QA','Fixture aislado')");
+        jdbc.update("INSERT INTO \"Usuario\" (\"idUsuario\",\"idRol\",\"nombre\",\"correo\",\"estado\") VALUES (?,1,'A','a@qa.invalid','Activo'),(?,1,'B','b@qa.invalid','Activo')", usuarioA, usuarioB);
+        jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", estudianteB, usuarioB);
+        String activacion = "INSERT INTO \"ActivacionCuentaEstudiante\" (\"idActivacion\",\"idUsuario\",\"idEstudiante\",\"challengeId\",\"codigoHmac\",\"fechaExpiracion\") VALUES (?,?,?,gen_random_uuid(),?,now()+interval '15 minutes')";
+        String sesion = "INSERT INTO \"SesionEstudiante\" (\"idSesionEstudiante\",\"idUsuario\",\"idEstudiante\",\"sesionTokenHmac\",\"fechaExpiracion\",\"fechaUltimaActividad\") VALUES (?,?,?,?,now()+interval '8 hours',now())";
+        for (String sql : java.util.List.of(activacion, sesion)) {
+            var error = assertThrows(org.springframework.dao.DataIntegrityViolationException.class,
+                    () -> jdbc.update(sql, java.util.UUID.randomUUID(), usuarioA, estudianteB, new byte[32]));
+            var causa = assertInstanceOf(java.sql.SQLException.class, error.getMostSpecificCause());
+            assertEquals("23514", causa.getSQLState());
+            assertTrue(causa.getMessage().contains("DD02-VINCULO-INCOHERENTE"));
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"ActivacionCuentaEstudiante\"", Integer.class));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"SesionEstudiante\"", Integer.class));
+        // The same SQL accepts the coherent owner: the rejection above is not a blanket deny.
+        assertEquals(1, jdbc.update(activacion, java.util.UUID.randomUUID(), usuarioB, estudianteB, new byte[32]));
+        assertEquals(1, jdbc.update(sesion, java.util.UUID.randomUUID(), usuarioB, estudianteB, new byte[32]));
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.DD02));
+    }
     @Test void v011SinV012NoBasta() throws Exception {
         var directory = Files.createTempDirectory("m4-v011-only-");
         try (var sql = getClass().getResourceAsStream("/db/dd02-propuesta/V011__acceso_estudiante_cuenta.sql")) {
