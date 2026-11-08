@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.prisaly.m5.application.ReferenciaIntento;
+import com.prisaly.m5.domain.ParticipacionDominioException;
 import com.prisaly.m5.domain.intento.EstadoIntento;
 import com.prisaly.m5.domain.intento.Intento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
@@ -81,10 +82,14 @@ public final class MapeoIntento {
      */
     public static Intento reconstruir(FilaIntento fila, List<FilaRespuesta> respuestas) {
         Intento intento = Intento.iniciar();
-        for (FilaRespuesta respuesta : respuestas) {
-            intento.registrarRespuesta(new Respuesta(
-                    new ReferenciaPregunta(respuesta.idPregunta().toString()),
-                    new ValorRespuesta(respuesta.idOpcionSeleccionada().toString()), respuesta.revision()));
+        try {
+            for (FilaRespuesta respuesta : respuestas) {
+                intento.registrarRespuesta(new Respuesta(
+                        new ReferenciaPregunta(respuesta.idPregunta().toString()),
+                        new ValorRespuesta(respuesta.idOpcionSeleccionada().toString()), respuesta.revision()));
+            }
+        } catch (ParticipacionDominioException filasInvalidas) {
+            throw new PersistenciaIntentoException("Las respuestas persistidas violan las reglas del dominio", filasInvalidas);
         }
         if (FINALIZADO.equals(fila.estado())) {
             intento.finalizar(motivoDe(fila.motivoFinalizacion()));

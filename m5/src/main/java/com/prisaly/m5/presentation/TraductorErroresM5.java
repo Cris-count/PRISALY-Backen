@@ -18,7 +18,9 @@ import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.DatoRespuestaInvalidoException;
 import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
 
+import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.TransactionException;
 
 import java.util.Optional;
 
@@ -98,7 +100,9 @@ public final class TraductorErroresM5 {
         if (error instanceof DataIntegrityViolationException) {
             return error(409, "CONFLICTO_DATOS", MENSAJE_CONFLICTO_DATOS);
         }
-        if (error instanceof PersistenciaIntentoException) {
+        if (error instanceof PersistenciaIntentoException
+                || error instanceof DataAccessException
+                || error instanceof TransactionException) {
             return error(500, "ERROR_INTERNO", MENSAJE_INTERNO);
         }
         return Optional.empty();
