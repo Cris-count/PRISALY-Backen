@@ -4,6 +4,9 @@ import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.presentation.dto.InvalidCasoRequestException;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,10 +38,28 @@ public final class CasoCreationExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> failure(Exception ex) {
-        for (Throwable cause = ex; cause != null; cause = cause.getCause()) {
-            if (cause instanceof SQLException sql && "23505".equals(sql.getSQLState())) {
-                return error(409, "CASE_CONFLICT", "Case creation conflicts with an existing record");
+        var pending = new ArrayDeque<Throwable>();
+        var visited = Collections.newSetFromMap(new IdentityHashMap<Throwable, Boolean>());
+        boolean duplicate = false;
+        pending.add(ex);
+        while (!pending.isEmpty()) {
+            Throwable cause = pending.removeFirst();
+            if (!visited.add(cause)) { continue; }
+            if (cause instanceof SQLException sql) {
+                String state = sql.getSQLState();
+                // A duplicate must not hide a connection, integrity or unknown SQL failure.
+                if (state != null && !state.isEmpty()) {
+                    if (!"23505".equals(state)) {
+                        return error(500, "CASE_CREATION_FAILED", "Case creation failed");
+                    }
+                    duplicate = true;
+                }
+                if (sql.getNextException() != null) { pending.addLast(sql.getNextException()); }
             }
+            if (cause.getCause() != null) { pending.addLast(cause.getCause()); }
+        }
+        if (duplicate) {
+            return error(409, "CASE_CONFLICT", "Case creation conflicts with an existing record");
         }
         // FK failures and infrastructure failures are not automatically client errors.
         return error(500, "CASE_CREATION_FAILED", "Case creation failed");
