@@ -3,6 +3,7 @@ package com.prisaly.m1.application.service;
 import com.prisaly.m1.application.port.AuthenticatedStudent;
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.domain.rule.IdentityDomainException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
@@ -10,6 +11,10 @@ import org.springframework.stereotype.Service;
  * Never reads SecurityContext or client-supplied ids; never treats personnel tokens as students.
  */
 @Service
+@ConditionalOnProperty(
+        name = "prisaly.m1.student-access.enabled",
+        havingValue = "false",
+        matchIfMissing = true)
 public class DenyingStudentAccessService implements StudentAccessPort {
 
     public static final String CODE_STUDENT_IDENTITY_UNAVAILABLE = "STUDENT_IDENTITY_UNAVAILABLE";

@@ -1,9 +1,11 @@
 package com.prisaly.config;
 
+import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
 import com.prisaly.m1.infrastructure.security.ProvisionalBearerAuthenticationFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,19 +26,25 @@ public class HttpApiConfig {
 
     private final List<String> allowedOrigins;
     private final ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter;
+    private final EstudianteSessionFilter estudianteSessionFilter;
 
     public HttpApiConfig(
             @Value("${prisaly.cors.allowed-origins}") String allowedOrigins,
-            ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter) {
+            ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter,
+            ObjectProvider<EstudianteSessionFilter> estudianteSessionFilter) {
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toList();
         this.provisionalBearerAuthenticationFilter = provisionalBearerAuthenticationFilter;
+        this.estudianteSessionFilter = estudianteSessionFilter.getIfAvailable();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        if (estudianteSessionFilter != null) {
+            http.addFilterBefore(estudianteSessionFilter, ProvisionalBearerAuthenticationFilter.class);
+        }
         return http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
@@ -60,6 +68,9 @@ public class HttpApiConfig {
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/personal/autenticar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/validar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/activar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/autenticar").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/cerrar-sesion").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(
                         provisionalBearerAuthenticationFilter,
