@@ -323,5 +323,3 @@ export async function main(args = process.argv.slice(2)) {
 if(process.argv[1] && import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
   main().then(code=>{process.exitCode=code;}).catch(()=>{console.error('Error de argumentos o inicialización; sin ejecución HTTP.');process.exitCode=2;});
 }
-
-

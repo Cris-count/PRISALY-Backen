@@ -1,8 +1,8 @@
 {
-  "runId": "81f04ce6-be87-4513-a46b-865dc810874d",
-  "started": "2026-11-08T15:38:30.648Z",
+  "runId": "f68b8d3a-e152-41c6-a659-610c5651a7c5",
+  "started": "2026-11-08T15:39:55.089Z",
   "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
-  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "sha": "f8ffd85e3d3481896233ae9ae80044a64412c9b2",
   "branch": "test/backend-http-aceptacion",
   "mode": "http",
   "status": "blocked",
@@ -578,11 +578,11 @@
     }
   ],
   "harness": {
-    "run.mjs": "4bd080fddb72846c9d8ed9c94f29acf4ca55f934e0c3a3f2db7467735590f694",
-    "fixture.sql": "8c98880f5e0bbe979b3f23bf79a66730898088dc1c575d4b92cb768fc4863575"
+    "run.mjs": "8d3e5697b5795d7cdca2cf58d6e359c592828c9beea9a5818458f90a3864d317",
+    "fixture.sql": "c247e57457b7fc59fac2234d04755b0aec00c19ef5d775c6049511478823a2ad"
   },
   "problem": "Docker Engine no disponible; no se inició APP ni PostgreSQL",
-  "finished": "2026-11-08T15:38:31.841Z",
+  "finished": "2026-11-08T15:39:56.255Z",
   "totals": {
     "passed": 0,
     "failed": 0,

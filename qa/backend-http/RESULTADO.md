@@ -25,7 +25,7 @@ no disponible. No hay evidencia de respuestas HTTP de PRISALY en esta ejecución
 | APP/PostgreSQL iniciados | Ninguno; no se enviaron solicitudes ni se aplicaron fixtures |
 
 La ejecución seleccionada de campaña tiene runId
-`81f04ce6-be87-4513-a46b-865dc810874d`; consultar `results/DC-EJEC-02/http-summary.json`
+`f68b8d3a-e152-41c6-a659-610c5651a7c5`; consultar `results/DC-EJEC-02/http-summary.json`
 para el UUID exacto y marcas UTC. La ejecución de construcción se conserva
 por separado en build-summary.json. No sumar resultados de modos auxiliares.
 
@@ -74,4 +74,3 @@ Docker operativo y revisar sus respuestas reales.** No acredita cierre productiv
 autorizaciones académicas ni ausencia de los errores APP reportados por otros equipos.
 La siguiente acción es ejecutar el mismo comando en este checkout revisado con
 Docker Linux operativo; no requiere ampliar permisos o crear endpoints.
-
