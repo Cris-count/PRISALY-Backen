@@ -1,0 +1,41 @@
+{
+  "sha": "ada08fc7c343cdab3f627036d70472b41a5f09f1",
+  "suites": [
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4MigrationResourcesTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4CoordinacionInicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4SchemaContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.M4SchemaContratoPostgreSqlIT",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}

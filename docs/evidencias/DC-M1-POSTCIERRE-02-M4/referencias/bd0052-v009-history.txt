@@ -1,0 +1,9 @@
+001|SQL|V001__bd0052_estructura.sql|30384233|true
+002|SQL|V002__bd0052_restricciones.sql|528192129|true
+003|SQL|V003__bd0052_integridad.sql|-1381578847|true
+004|SQL|V004__bd0052_integridad_intentos.sql|-816096926|true
+005|SQL|V005__bd0052_cierre_integridad.sql|352167703|true
+006|SQL|V006__bd0052_proteccion_relaciones.sql|-1907730422|true
+007|SQL|V007__fase3_politicas_aprobadas.sql|-1708425937|true
+008|SQL|V008__bloqueo_caso_al_reasignar_sesion.sql|660836696|true
+009|SQL|V009__rf09_solo_casos_publicados.sql|-215051308|true

@@ -1,0 +1,865 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="24.899" tests="14" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="dd02NoSeAdmitePorDefecto" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="1.663">
+    <system-out>18:13:06.364 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+18:13:06.369 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+18:13:06.401 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+18:13:07.616 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+18:13:07.622 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+18:13:07.637 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 15983 MB
+18:13:07.663 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling docker image: testcontainers/ryuk:0.14.0. Please be patient; this may take some time but only needs to be done once.
+18:13:07.990 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Starting to pull image
+18:13:08.009 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+18:13:08.141 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  1 pending,  1 downloaded,  0 extracted, (242 KB/? MB)
+18:13:08.143 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  0 extracted, (2 MB/2 MB)
+18:13:08.149 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  1 extracted, (2 MB/2 MB)
+18:13:08.448 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  2 extracted, (2 MB/2 MB)
+18:13:08.454 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Image testcontainers/ryuk:0.14.0 pull took PT0.790972756S
+18:13:08.476 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+18:13:08.542 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 2138ff8d05f54395a4d363257ddc64f9bb23f8c1b7bfe2056eaeacd2af8c31e9
+18:13:09.023 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.54742906S
+18:13:09.037 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+18:13:09.037 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+18:13:09.037 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+18:13:09.039 [main] INFO tc.postgres:16.15 -- Pulling docker image: postgres:16.15. Please be patient; this may take some time but only needs to be done once.
+18:13:09.254 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Starting to pull image
+18:13:09.255 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+18:13:09.357 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 13 pending,  1 downloaded,  0 extracted, (1 KB/? MB)
+18:13:09.384 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 12 pending,  2 downloaded,  0 extracted, (383 KB/? MB)
+18:13:09.395 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 11 pending,  3 downloaded,  0 extracted, (383 KB/? MB)
+18:13:09.442 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 10 pending,  4 downloaded,  0 extracted, (494 KB/? MB)
+18:13:09.445 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  9 pending,  5 downloaded,  0 extracted, (494 KB/? MB)
+18:13:09.456 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  8 pending,  6 downloaded,  0 extracted, (494 KB/? MB)
+18:13:09.472 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  7 pending,  7 downloaded,  0 extracted, (494 KB/? MB)
+18:13:09.475 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  6 pending,  8 downloaded,  0 extracted, (497 KB/? MB)
+18:13:09.503 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  5 pending,  9 downloaded,  0 extracted, (1 MB/? MB)
+18:13:09.510 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  4 pending, 10 downloaded,  0 extracted, (1 MB/? MB)
+18:13:09.536 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  3 pending, 11 downloaded,  0 extracted, (1 MB/? MB)
+18:13:09.543 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  2 pending, 12 downloaded,  0 extracted, (1 MB/? MB)
+18:13:09.566 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  1 pending, 13 downloaded,  0 extracted, (1 MB/? MB)
+18:13:09.865 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  0 extracted, (97 MB/152 MB)
+18:13:10.508 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  1 extracted, (115 MB/152 MB)
+18:13:10.793 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  2 extracted, (115 MB/152 MB)
+18:13:10.960 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  3 extracted, (121 MB/152 MB)
+18:13:10.996 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  4 extracted, (122 MB/152 MB)
+18:13:11.300 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  5 extracted, (130 MB/152 MB)
+18:13:11.358 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  6 extracted, (131 MB/152 MB)
+18:13:11.366 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  7 extracted, (131 MB/152 MB)
+18:13:11.376 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  8 extracted, (131 MB/152 MB)
+18:13:14.369 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  9 extracted, (152 MB/152 MB)
+18:13:14.381 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 10 extracted, (152 MB/152 MB)
+18:13:14.390 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 11 extracted, (152 MB/152 MB)
+18:13:14.402 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 12 extracted, (152 MB/152 MB)
+18:13:14.411 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 13 extracted, (152 MB/152 MB)
+18:13:14.420 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 14 extracted, (152 MB/152 MB)
+18:13:14.426 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pull complete. 14 layers, pulled in 5s (downloaded 152 MB at 30 MB/s)
+18:13:14.426 [main] INFO tc.postgres:16.15 -- Image postgres:16.15 pull took PT5.386602729S
+18:13:14.429 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+18:13:14.443 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: ddc0151a5a71733a4d9178d04fb60d2d01b8d046003177ec6250a7f7cde03871
+18:13:15.499 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.070120727S
+18:13:15.500 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: [JDBC REDACTED]
+18:13:16.039 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:16.085 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:16.087 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:16.104 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.015s)
+18:13:16.112 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.008s)
+18:13:16.113 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:16.153 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:16.181 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:16.183 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.017s)
+18:13:16.193 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:16.256 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:16.298 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:16.304 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.386 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:16.387 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.412 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:16.413 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.430 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:16.431 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.444 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:16.445 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.472 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:16.473 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.502 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:16.504 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.524 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:16.526 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.534 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:16.535 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.546 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.145s)
+18:13:16.559 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:16.580 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.011s)
+18:13:16.652 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:16.666 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:16.717 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.050s)
+18:13:16.725 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.007s)
+18:13:16.726 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:16.742 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:16.758 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:16.759 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.006s)
+18:13:16.764 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:16.780 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:16.794 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:16.795 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.868 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:16.869 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.890 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:16.891 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.909 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:16.910 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.922 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:16.923 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.939 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:16.940 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.952 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:16.952 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.964 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:16.965 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.970 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:16.971 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.977 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "011 - acceso estudiante cuenta"
+18:13:16.978 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.990 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "012 - dd02 integridad vinculo"
+18:13:16.991 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:16.998 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.131s)
+18:13:17.010 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.025 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.007s)
+</system-out>
+  </testcase>
+  <testcase name="historialAlteradoNoSeConfundeConEsquemaValido" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.424">
+    <system-out>18:13:17.194 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.203 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:17.257 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.053s)
+18:13:17.264 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:17.264 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:17.283 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.295 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:17.295 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.004s)
+18:13:17.300 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:17.314 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:17.320 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:17.321 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.384 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:17.385 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.405 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:17.406 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.417 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:17.418 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.426 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:17.427 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.436 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:17.437 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.446 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:17.447 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.459 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:17.460 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.466 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:17.466 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.471 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.099s)
+18:13:17.483 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.500 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.007s)
+</system-out>
+  </testcase>
+  <testcase name="v011SinV012NoBasta" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.451">
+    <system-out>18:13:17.622 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.632 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:17.678 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.044s)
+18:13:17.685 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:17.685 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:17.701 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.712 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:17.712 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.004s)
+18:13:17.718 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:17.731 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:17.737 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:17.738 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.802 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:17.803 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.824 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:17.825 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.837 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:17.838 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.848 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:17.850 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.860 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:17.861 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.871 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:17.872 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.884 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:17.884 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.889 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:17.890 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:17.895 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.104s)
+18:13:17.920 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.938 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.009s)
+18:13:17.966 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:17.983 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 10 migrations (execution time 00:00.006s)
+18:13:17.995 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": 009
+18:13:17.997 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "011 - acceso estudiante cuenta"
+18:13:17.998 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.011 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 1 migration to schema "public", now at version v011 (execution time 00:00.010s)
+</system-out>
+  </testcase>
+  <testcase name="mismaCantidadNoOcultaTablaHistoricaAusente" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.368">
+    <system-out>18:13:18.076 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.088 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:18.155 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.066s)
+18:13:18.162 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.007s)
+18:13:18.163 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:18.178 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.187 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:18.187 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.003s)
+18:13:18.192 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:18.205 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:18.211 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:18.212 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.280 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:18.281 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.299 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:18.299 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.309 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:18.309 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.317 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:18.318 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.327 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:18.328 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.336 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:18.336 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.347 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:18.347 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.352 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:18.353 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.357 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.103s)
+18:13:18.368 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.381 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.006s)
+</system-out>
+  </testcase>
+  <testcase name="tablaDesconocidaNoSeAdmite" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.338">
+    <system-out>18:13:18.442 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.451 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:18.499 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.048s)
+18:13:18.507 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.007s)
+18:13:18.507 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:18.532 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.541 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:18.542 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.003s)
+18:13:18.548 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:18.561 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:18.566 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:18.567 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.629 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:18.630 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.644 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:18.645 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.654 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:18.654 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.662 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:18.662 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.672 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:18.673 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.681 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:18.682 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.692 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:18.693 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.699 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:18.700 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.705 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.099s)
+18:13:18.718 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.730 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.005s)
+</system-out>
+  </testcase>
+  <testcase name="fkEliminadaSeDetectaAunqueSiganLas21Tablas" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.361">
+    <system-out>18:13:18.781 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.790 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:18.854 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.063s)
+18:13:18.862 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.007s)
+18:13:18.862 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:18.879 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:18.890 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:18.890 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.003s)
+18:13:18.896 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:18.912 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:18.918 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:18.918 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.977 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:18.977 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:18.990 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:18.991 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.000 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:19.001 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.009 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:19.009 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.027 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:19.028 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.036 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:19.037 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.048 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:19.049 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.054 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:19.055 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.059 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.097s)
+18:13:19.069 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.081 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.005s)
+</system-out>
+  </testcase>
+  <testcase name="checkConMismoNombrePeroSinIntegridadSeDetecta" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.602">
+    <system-out>18:13:19.143 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.153 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:19.196 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.041s)
+18:13:19.203 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:19.203 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:19.218 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.227 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:19.227 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.003s)
+18:13:19.232 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:19.244 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:19.247 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:19.248 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.305 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:19.305 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.318 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:19.319 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.327 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:19.327 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.333 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:19.333 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.340 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:19.341 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.348 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:19.349 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.359 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:19.359 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.363 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:19.364 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.367 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.087s)
+18:13:19.376 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.387 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.004s)
+18:13:19.413 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.421 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:19.469 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.047s)
+18:13:19.476 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:19.476 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:19.490 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.499 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:19.500 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.004s)
+18:13:19.505 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:19.517 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:19.520 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:19.521 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.573 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:19.574 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.588 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:19.589 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.597 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:19.598 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.604 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:19.604 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.611 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:19.613 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.620 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:19.620 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.630 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:19.631 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.635 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:19.636 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.640 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "011 - acceso estudiante cuenta"
+18:13:19.641 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.657 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "012 - dd02 integridad vinculo"
+18:13:19.658 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.665 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.097s)
+18:13:19.674 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.685 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.004s)
+</system-out>
+  </testcase>
+  <testcase name="springArrancaSobreCandidataSinHabilitarIdentidadEstudiantil" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="6.991">
+    <system-out>18:13:19.744 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.752 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:19.807 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.052s)
+18:13:19.814 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:19.814 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:19.830 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.837 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:19.837 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.002s)
+18:13:19.842 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:19.853 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:19.857 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:19.857 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.914 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:19.915 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.927 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:19.928 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.936 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:19.937 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.942 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:19.943 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.950 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:19.950 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.957 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:19.957 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.966 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:19.966 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.970 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:19.971 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:19.974 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.084s)
+18:13:19.982 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:19.991 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.003s)
+18:13:20.015 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:20.025 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:13:20.068 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.042s)
+18:13:20.075 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.006s)
+18:13:20.075 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:13:20.089 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:20.097 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:13:20.097 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.003s)
+18:13:20.102 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:13:20.114 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:13:20.119 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:13:20.119 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.181 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:13:20.181 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.194 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:13:20.195 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.204 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:13:20.204 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.211 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:13:20.212 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.220 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:13:20.221 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.229 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:13:20.230 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.243 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:13:20.243 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.249 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:13:20.249 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.255 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "011 - acceso estudiante cuenta"
+18:13:20.256 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.271 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "012 - dd02 integridad vinculo"
+18:13:20.272 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:13:20.280 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.113s)
+18:13:20.294 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:13:20.314 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 11 migrations (execution time 00:00.012s)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-08T18:13:20.829Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.13 with PID 2723 (started by runner in /home/runner/work/PRISALY-Backen/PRISALY-Backen/app)
+2026-11-08T18:13:20.830Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T18:13:21.570Z  INFO 2723 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T18:13:21.643Z  INFO 2723 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 66 ms. Found 11 JPA repository interfaces.
+2026-11-08T18:13:22.327Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-11-08T18:13:22.394Z  INFO 2723 --- [prisaly-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-08T18:13:22.395Z  INFO 2723 --- [prisaly-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-08T18:13:22.427Z  INFO 2723 --- [prisaly-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 1554 ms
+2026-11-08T18:13:22.522Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-08T18:13:22.538Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@17810908
+2026-11-08T18:13:22.540Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-08T18:13:22.552Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:22.566Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.006s)
+2026-11-08T18:13:22.581Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 012
+2026-11-08T18:13:22.581Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-08T18:13:22.670Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T18:13:22.716Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-11-08T18:13:23.123Z  INFO 2723 --- [prisaly-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T18:13:23.227Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [[JDBC REDACTED]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T18:13:24.214Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T18:13:24.258Z  INFO 2723 --- [prisaly-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T18:13:24.321Z  INFO 2723 --- [prisaly-backend] [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-08T18:13:26.129Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 42429 (http) with context path '/api'
+2026-11-08T18:13:26.138Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 5.747 seconds (process running for 20.563)
+2026-11-08T18:13:26.548Z  INFO 2723 --- [prisaly-backend] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-08T18:13:26.549Z  INFO 2723 --- [prisaly-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-08T18:13:26.550Z  INFO 2723 --- [prisaly-backend] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-11-08T18:13:26.679Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-11-08T18:13:26.680Z  INFO 2723 --- [prisaly-backend] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-11-08T18:13:26.687Z  INFO 2723 --- [prisaly-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T18:13:26.689Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-08T18:13:26.694Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+</system-out>
+  </testcase>
+  <testcase name="dd02CompletoSeReconoceSoloConContratoExplicito" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.718">
+    <system-out>2026-11-08T18:13:26.736Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:26.744Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:26.797Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.052s)
+2026-11-08T18:13:26.805Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.007s)
+2026-11-08T18:13:26.805Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:26.823Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:26.833Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:26.834Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-11-08T18:13:26.840Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:26.864Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:26.869Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:26.870Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.927Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:26.928Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.944Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:26.945Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.955Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:26.956Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.964Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:26.964Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.973Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:26.974Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.982Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:26.983Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:26.996Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:26.997Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.003Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:27.004Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.008Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.096s)
+2026-11-08T18:13:27.019Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.034Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.007s)
+2026-11-08T18:13:27.079Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.090Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.160Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.069s)
+2026-11-08T18:13:27.170Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.009s)
+2026-11-08T18:13:27.170Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.186Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.197Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:27.197Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.004s)
+2026-11-08T18:13:27.204Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:27.217Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:27.220Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:27.221Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.285Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:27.286Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.299Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:27.300Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.309Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:27.310Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.317Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:27.317Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.325Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:27.326Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.334Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:27.335Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.344Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:27.344Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.349Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:27.349Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.355Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "011 - acceso estudiante cuenta"
+2026-11-08T18:13:27.355Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.365Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "012 - dd02 integridad vinculo"
+2026-11-08T18:13:27.366Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.373Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.104s)
+2026-11-08T18:13:27.381Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.391Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.004s)
+</system-out>
+  </testcase>
+  <testcase name="v010ParalelaSeRechazaSinBorrarHistorial" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.362">
+    <system-out>2026-11-08T18:13:27.456Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.464Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.511Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.047s)
+2026-11-08T18:13:27.518Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.006s)
+2026-11-08T18:13:27.518Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.532Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.539Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:27.540Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.003s)
+2026-11-08T18:13:27.545Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:27.556Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:27.560Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:27.561Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.617Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:27.618Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.638Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:27.638Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.647Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:27.648Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.657Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:27.658Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.664Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:27.665Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.671Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:27.671Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.681Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:27.681Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.685Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:27.685Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:27.689Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.088s)
+2026-11-08T18:13:27.697Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.707Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.003s)
+2026-11-08T18:13:27.730Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.746Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 10 migrations (execution time 00:00.007s)
+2026-11-08T18:13:27.757Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 009
+2026-11-08T18:13:27.762Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "010 - m4 sesiones convocatorias"
+2026-11-08T18:13:27.779Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 1 migration to schema "public", now at version v010 (execution time 00:00.012s)
+</system-out>
+  </testcase>
+  <testcase name="historicoCompletoConservaIdentidadYDatos" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.402">
+    <system-out>2026-11-08T18:13:27.819Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.826Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.877Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.049s)
+2026-11-08T18:13:27.884Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.007s)
+2026-11-08T18:13:27.884Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:27.902Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:27.911Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:27.912Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.003s)
+2026-11-08T18:13:27.919Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:27.934Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:27.945Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:27.947Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.005Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:28.006Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.020Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:28.020Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.028Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:28.029Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.035Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:28.035Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.045Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:28.045Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.052Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:28.053Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.062Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:28.062Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.068Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:28.068Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.072Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.091s)
+2026-11-08T18:13:28.084Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:28.093Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.003s)
+</system-out>
+  </testcase>
+  <testcase name="springArrancaSobreHistorico" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="1.36">
+    <system-out>2026-11-08T18:13:28.219Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:28.228Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:28.274Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.045s)
+2026-11-08T18:13:28.281Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.006s)
+2026-11-08T18:13:28.281Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:28.295Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:28.302Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:28.302Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.002s)
+2026-11-08T18:13:28.308Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:28.319Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:28.324Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:28.324Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.379Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:28.380Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.393Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:28.394Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.403Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:28.404Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.411Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:28.411Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.420Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:28.420Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.433Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:28.436Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.450Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:28.450Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.455Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:28.456Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:28.460Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.092s)
+2026-11-08T18:13:28.484Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:28.495Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-08T18:13:28.583Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Starting ForkedBooter v3.5.6 using Java 21.0.13 with PID 2723 (started by runner in /home/runner/work/PRISALY-Backen/PRISALY-Backen/app)
+2026-11-08T18:13:28.583Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T18:13:28.776Z  INFO 2723 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T18:13:28.799Z  INFO 2723 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 21 ms. Found 11 JPA repository interfaces.
+2026-11-08T18:13:28.891Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat initialized with port 0 (http)
+2026-11-08T18:13:28.892Z  INFO 2723 --- [prisaly-backend] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-08T18:13:28.892Z  INFO 2723 --- [prisaly-backend] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/11.0.27]
+2026-11-08T18:13:28.904Z  INFO 2723 --- [prisaly-backend] [           main] b.w.c.s.WebApplicationContextInitializer : Root WebApplicationContext: initialization completed in 317 ms
+2026-11-08T18:13:28.943Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-08T18:13:28.954Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@258184e7
+2026-11-08T18:13:28.954Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-08T18:13:28.955Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:28.967Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.005s)
+2026-11-08T18:13:28.980Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": 009
+2026-11-08T18:13:28.980Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Schema "public" is up to date. No migration necessary.
+2026-11-08T18:13:28.998Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T18:13:29.025Z  INFO 2723 --- [prisaly-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T18:13:29.031Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [[JDBC REDACTED]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T18:13:29.210Z  INFO 2723 --- [prisaly-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T18:13:29.239Z  INFO 2723 --- [prisaly-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T18:13:29.525Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.TomcatWebServer          : Tomcat started on port 42329 (http) with context path '/api'
+2026-11-08T18:13:29.527Z  INFO 2723 --- [prisaly-backend] [           main] o.a.maven.surefire.booter.ForkedBooter   : Started ForkedBooter in 1.014 seconds (process running for 23.952)
+2026-11-08T18:13:29.531Z  INFO 2723 --- [prisaly-backend] [1-auto-2-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/api]    : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-08T18:13:29.531Z  INFO 2723 --- [prisaly-backend] [1-auto-2-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-08T18:13:29.531Z  INFO 2723 --- [prisaly-backend] [1-auto-2-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-11-08T18:13:29.551Z  INFO 2723 --- [prisaly-backend] [           main] o.s.boot.tomcat.GracefulShutdown         : Commencing graceful shutdown. Waiting for active requests to complete
+2026-11-08T18:13:29.552Z  INFO 2723 --- [prisaly-backend] [tomcat-shutdown] o.s.boot.tomcat.GracefulShutdown         : Graceful shutdown complete
+2026-11-08T18:13:29.556Z  INFO 2723 --- [prisaly-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T18:13:29.556Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown initiated...
+2026-11-08T18:13:29.559Z  INFO 2723 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Shutdown completed.
+</system-out>
+  </testcase>
+  <testcase name="triggerDeshabilitadoSeDetecta" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.669">
+    <system-out>2026-11-08T18:13:29.586Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:29.593Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:29.639Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.045s)
+2026-11-08T18:13:29.646Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.007s)
+2026-11-08T18:13:29.647Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:29.666Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:29.675Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:29.675Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-11-08T18:13:29.681Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:29.694Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:29.697Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:29.698Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.760Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:29.761Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.774Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:29.775Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.785Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:29.785Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.791Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:29.792Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.799Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:29.800Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.806Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:29.807Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.817Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:29.817Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.822Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:29.822Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:29.826Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.094s)
+2026-11-08T18:13:29.837Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:29.849Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.006s)
+2026-11-08T18:13:29.882Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:29.891Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:29.954Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.062s)
+2026-11-08T18:13:29.961Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.006s)
+2026-11-08T18:13:29.961Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:29.977Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:29.985Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:29.986Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.003s)
+2026-11-08T18:13:29.991Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:30.003Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:30.008Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:30.009Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.072Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:30.074Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.088Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:30.089Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.098Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:30.098Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.104Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:30.105Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.112Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:30.113Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.120Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:30.121Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.131Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:30.132Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.136Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:30.137Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.142Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "011 - acceso estudiante cuenta"
+2026-11-08T18:13:30.142Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.165Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "012 - dd02 integridad vinculo"
+2026-11-08T18:13:30.166Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.173Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.111s)
+2026-11-08T18:13:30.183Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.193Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.004s)
+</system-out>
+  </testcase>
+  <testcase name="funcionConMismoNombrePeroCuerpoDistintoSeDetecta" classname="com.prisaly.config.M4SchemaContratoPostgreSqlIT" time="0.638">
+    <system-out>2026-11-08T18:13:30.252Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.259Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:30.307Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.046s)
+2026-11-08T18:13:30.313Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.006s)
+2026-11-08T18:13:30.313Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:30.327Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.333Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:30.334Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.002s)
+2026-11-08T18:13:30.339Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:30.349Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:30.352Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:30.353Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.408Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:30.408Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.424Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:30.425Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.435Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:30.436Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.443Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:30.443Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.451Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:30.452Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.460Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:30.461Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.473Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:30.473Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.478Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:30.479Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.483Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.092s)
+2026-11-08T18:13:30.496Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.507Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-11-08T18:13:30.536Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.545Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:30.610Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.065s)
+2026-11-08T18:13:30.618Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully cleaned schema "public" (execution time 00:00.007s)
+2026-11-08T18:13:30.618Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.command.clean.CleanExecutor      : Successfully dropped post-schema database level objects (execution time 00:00.000s)
+2026-11-08T18:13:30.636Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.649Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T18:13:30.649Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.004s)
+2026-11-08T18:13:30.656Z  INFO 2723 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T18:13:30.672Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T18:13:30.675Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T18:13:30.676Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.727Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T18:13:30.728Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.739Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T18:13:30.740Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.747Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T18:13:30.748Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.754Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T18:13:30.754Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.762Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T18:13:30.762Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.769Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T18:13:30.769Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.779Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T18:13:30.779Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.783Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T18:13:30.784Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.787Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "011 - acceso estudiante cuenta"
+2026-11-08T18:13:30.788Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.798Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "012 - dd02 integridad vinculo"
+2026-11-08T18:13:30.798Z  WARN 2723 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T18:13:30.804Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 11 migrations to schema "public", now at version v012 (execution time 00:00.092s)
+2026-11-08T18:13:30.814Z  INFO 2723 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T18:13:30.824Z  INFO 2723 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 11 migrations (execution time 00:00.003s)
+</system-out>
+  </testcase>
+</testsuite>

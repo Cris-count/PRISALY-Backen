@@ -1,0 +1,14 @@
+{
+  "sha": "ada08fc7c343cdab3f627036d70472b41a5f09f1",
+  "run": "https://github.com/Cris-count/PRISALY-Backen/actions/runs/42509475636",
+  "artifactId": 13628387843,
+  "archiveSha256": "52140d53a54867d5950b502b7bba6ddeafa67a74c38369939b69b4f2f1eeccf9",
+  "files": {
+    "app-TEST-com.prisaly.config.M4SchemaContratoPostgreSqlIT.xml": "e519ff613a8626ed5a282586fcc481b8e5f070ddd77dac26d4fb032fcb1e80dd",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4CoordinacionInicioTest.xml": "d557dd01d26daf1cd0ded31deedca18c0102f5c8f6ed28b7ac73e76e33d52151",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4MigrationResourcesTest.xml": "e32bbf8ac890c6573eb08a8c6d11070d21e4069343fcba71775f54991bee47a1",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4SchemaContractTest.xml": "d756fb2d7627323db6d59f92bf0eeaef80891ee69af3b602c4cb86ed25b597f2",
+    "maven.txt": "4e137f4707d83d87b0944ea10f89ccac9baaa53aa9fbeb42cba49ff9cf76c886",
+    "summary.json": "217c3633cf2c5ebf3aa36758ba954d18b7e5099c2c32f907366683d7bc8ed4b7"
+  }
+}

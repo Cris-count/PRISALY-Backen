@@ -1,0 +1,753 @@
+column|AutorizacionRepeticion|1|idAutorizacion|uuid|true|||
+column|AutorizacionRepeticion|2|idParticipacion|uuid|true|||
+column|AutorizacionRepeticion|3|idDocenteAutorizador|uuid|true|||
+column|AutorizacionRepeticion|4|motivo|text|false|||
+column|AutorizacionRepeticion|5|fechaAutorizacion|timestamp with time zone|true|||now()
+column|AutorizacionRepeticion|6|fechaVencimiento|timestamp with time zone|false|||
+column|AutorizacionRepeticion|7|estadoAutorizacion|character varying(25)|true|||'Vigente'::character varying
+column|Aviso|1|idAviso|uuid|true|||
+column|Aviso|2|idUsuarioDestino|uuid|true|||
+column|Aviso|3|idParticipacion|uuid|false|||
+column|Aviso|4|tipo|character varying(50)|true|||
+column|Aviso|5|contenido|text|true|||
+column|Aviso|6|claveEvento|character varying(150)|true|||
+column|Aviso|7|fechaCreacion|timestamp with time zone|true|||now()
+column|Aviso|8|fechaLectura|timestamp with time zone|false|||
+column|Calificacion|1|idCalificacion|uuid|true|||
+column|Calificacion|2|idIntento|uuid|true|||
+column|Calificacion|3|idRubrica|uuid|true|||
+column|Calificacion|4|valor|numeric(8,2)|true|||
+column|Calificacion|5|fechaCalculo|timestamp with time zone|true|||now()
+column|Calificacion|6|detalleEvaluacion|jsonb|true|||
+column|Calificacion|7|versionPolitica|character varying(50)|false|||
+column|Caso|10|fechaCreacion|timestamp with time zone|true|||now()
+column|Caso|11|fechaActualizacion|timestamp with time zone|false|||
+column|Caso|1|idCaso|uuid|true|||
+column|Caso|2|idDocente|uuid|true|||
+column|Caso|3|nombre|character varying(150)|true|||
+column|Caso|4|historia|text|false|||
+column|Caso|5|desarrolloSituacional|text|false|||
+column|Caso|6|tiempoEstimadoSegundos|integer|true|||
+column|Caso|7|estado|character varying(20)|true|||'Borrador'::character varying
+column|Caso|8|activo|boolean|true|||true
+column|Caso|9|fechaBloqueoAcademico|timestamp with time zone|false|||
+column|Convocatoria|1|idConvocatoria|uuid|true|||
+column|Convocatoria|2|idSesion|uuid|true|||
+column|Convocatoria|3|idEstudiante|uuid|true|||
+column|Convocatoria|4|fechaConvocatoria|timestamp with time zone|true|||now()
+column|Convocatoria|5|estadoAutorizacion|character varying(25)|true|||'Autorizado'::character varying
+column|Convocatoria|6|fechaRetiro|timestamp with time zone|false|||
+column|EnvioCorreo|10|ultimoError|text|false|||
+column|EnvioCorreo|11|fechaCreacion|timestamp with time zone|true|||now()
+column|EnvioCorreo|12|fechaUltimoIntento|timestamp with time zone|false|||
+column|EnvioCorreo|13|proximoReintento|timestamp with time zone|false|||
+column|EnvioCorreo|14|fechaEnvio|timestamp with time zone|false|||
+column|EnvioCorreo|1|idEnvioCorreo|uuid|true|||
+column|EnvioCorreo|2|idUsuarioDestino|uuid|true|||
+column|EnvioCorreo|3|idConvocatoria|uuid|false|||
+column|EnvioCorreo|4|correoDestino|character varying(255)|true|||
+column|EnvioCorreo|5|asunto|character varying(255)|true|||
+column|EnvioCorreo|6|contenido|text|true|||
+column|EnvioCorreo|7|estadoEnvio|character varying(25)|true|||'Pendiente'::character varying
+column|EnvioCorreo|8|numeroIntentos|integer|true|||0
+column|EnvioCorreo|9|claveIdempotencia|character varying(150)|true|||
+column|Escenario|1|idEscenario|uuid|true|||
+column|Escenario|2|idCaso|uuid|true|||
+column|Escenario|3|titulo|character varying(200)|false|||
+column|Escenario|4|contexto|text|false|||
+column|Escenario|5|instrucciones|text|false|||
+column|Escenario|6|orden|integer|true|||
+column|Escenario|7|activo|boolean|true|||true
+column|Estudiante|1|idEstudiante|uuid|true|||
+column|Estudiante|2|idUsuario|uuid|true|||
+column|Estudiante|3|apodo|character varying(80)|false|||
+column|Estudiante|4|avatarConfig|jsonb|false|||
+column|Estudiante|5|fechaRegistro|timestamp with time zone|true|||now()
+column|Intento|10|idAutorizacion|uuid|false|||
+column|Intento|1|idIntento|uuid|true|||
+column|Intento|2|idParticipacion|uuid|true|||
+column|Intento|3|numeroIntento|integer|true|||
+column|Intento|4|inicio|timestamp with time zone|true|||
+column|Intento|5|fin|timestamp with time zone|false|||
+column|Intento|6|limiteTemporal|timestamp with time zone|true|||
+column|Intento|7|estado|character varying(25)|true|||
+column|Intento|8|estadoEvaluacion|character varying(25)|true|||'Pendiente'::character varying
+column|Intento|9|motivoFinalizacion|character varying(40)|false|||
+column|OpcionRespuesta|1|idOpcion|uuid|true|||
+column|OpcionRespuesta|2|idPregunta|uuid|true|||
+column|OpcionRespuesta|3|texto|text|true|||
+column|OpcionRespuesta|4|esCorrecta|boolean|true|||false
+column|OpcionRespuesta|5|explicacion|text|false|||
+column|OpcionRespuesta|6|orden|integer|true|||
+column|Participacion|1|idParticipacion|uuid|true|||
+column|Participacion|2|idConvocatoria|uuid|true|||
+column|Participacion|3|estado|character varying(25)|true|||'Pendiente'::character varying
+column|Participacion|4|fechaInicio|timestamp with time zone|false|||
+column|Participacion|5|fechaFin|timestamp with time zone|false|||
+column|Participacion|6|calificacionFinal|numeric(8,2)|false|||
+column|Participacion|7|detalleResultadoFinal|jsonb|false|||
+column|Permiso|1|idPermiso|integer|true|d||
+column|Permiso|2|codigo|character varying(100)|true|||
+column|Permiso|3|nombre|character varying(100)|true|||
+column|Permiso|4|descripcion|text|false|||
+column|Pregunta|1|idPregunta|uuid|true|||
+column|Pregunta|2|idEscenario|uuid|true|||
+column|Pregunta|3|enunciado|text|true|||
+column|Pregunta|4|textoAyuda|text|false|||
+column|Pregunta|5|estadoEdicion|character varying(20)|true|||'Borrador'::character varying
+column|Pregunta|6|visible|boolean|true|||true
+column|Pregunta|7|orden|integer|true|||
+column|Pregunta|8|fechaCreacion|timestamp with time zone|true|||now()
+column|Pregunta|9|fechaActualizacion|timestamp with time zone|false|||
+column|Respuesta|1|idRespuesta|uuid|true|||
+column|Respuesta|2|idIntento|uuid|true|||
+column|Respuesta|3|idPregunta|uuid|true|||
+column|Respuesta|4|idOpcionSeleccionada|uuid|true|||
+column|Respuesta|5|revision|integer|true|||1
+column|Respuesta|6|fechaActualizacion|timestamp with time zone|true|||now()
+column|RetroalimentacionGeneral|1|idRetroalimentacion|uuid|true|||
+column|RetroalimentacionGeneral|2|idParticipacion|uuid|true|||
+column|RetroalimentacionGeneral|3|idDocente|uuid|true|||
+column|RetroalimentacionGeneral|4|contenido|text|true|||
+column|RetroalimentacionGeneral|5|fechaRegistro|timestamp with time zone|true|||now()
+column|Rol|1|idRol|integer|true|d||
+column|Rol|2|nombre|character varying(30)|true|||
+column|Rol|3|descripcion|text|true|||
+column|RubricaPregunta|1|idRubricaPregunta|uuid|true|||
+column|RubricaPregunta|2|idRubrica|uuid|true|||
+column|RubricaPregunta|3|idPregunta|uuid|true|||
+column|RubricaPregunta|4|valorPregunta|numeric(8,2)|true|||
+column|RubricaPregunta|5|criterio|text|false|||
+column|Rubrica|1|idRubrica|uuid|true|||
+column|Rubrica|2|idCaso|uuid|true|||
+column|Rubrica|3|nombre|character varying(150)|true|||
+column|Rubrica|4|descripcion|text|false|||
+column|Rubrica|5|puntajeTotal|numeric(8,2)|false|||
+column|Rubrica|6|definicionEvaluacion|jsonb|false|||
+column|Rubrica|7|fechaCreacion|timestamp with time zone|true|||now()
+column|Sesion|10|lugarFisico|character varying(200)|false|||
+column|Sesion|11|mensajePersonalizado|text|false|||
+column|Sesion|12|codigoAutorizacionHash|character varying(255)|false|||
+column|Sesion|13|estado|character varying(20)|true|||'SinIniciar'::character varying
+column|Sesion|14|fechaCreacion|timestamp with time zone|true|||now()
+column|Sesion|1|idSesion|uuid|true|||
+column|Sesion|2|idCaso|uuid|true|||
+column|Sesion|3|idDocenteProgramador|uuid|true|||
+column|Sesion|4|nombreEspacioAcademico|character varying(150)|true|||
+column|Sesion|5|inicioPrevisto|timestamp with time zone|true|||
+column|Sesion|6|finPrevisto|timestamp with time zone|true|||
+column|Sesion|7|fechaInicioReal|timestamp with time zone|false|||
+column|Sesion|8|fechaFinReal|timestamp with time zone|false|||
+column|Sesion|9|tiempoMaximoParticipacionSegundos|integer|true|||
+column|UsuarioPermiso|1|idUsuario|uuid|true|||
+column|UsuarioPermiso|2|idPermiso|integer|true|||
+column|UsuarioPermiso|3|habilitado|boolean|true|||true
+column|UsuarioPermiso|4|idAdministradorAsignador|uuid|false|||
+column|UsuarioPermiso|5|fechaAsignacion|timestamp with time zone|true|||now()
+column|Usuario|1|idUsuario|uuid|true|||
+column|Usuario|2|idRol|integer|true|||
+column|Usuario|3|nombre|character varying(150)|true|||
+column|Usuario|4|correo|character varying(255)|true|||
+column|Usuario|5|passwordHash|character varying(255)|false|||
+column|Usuario|6|estado|character varying(20)|true|||'Activo'::character varying
+column|Usuario|7|fechaCreacion|timestamp with time zone|true|||now()
+column|Usuario|8|fechaActualizacion|timestamp with time zone|false|||
+constraint|AutorizacionRepeticion|ck_autorizacion_estado_f302|true|CHECK ((("estadoAutorizacion")::text = ANY ((ARRAY['Vigente'::character varying, 'Utilizada'::character varying, 'Revocada'::character varying, 'Vencida'::character varying])::text[])))
+constraint|AutorizacionRepeticion|ck_autorizacion_vencimiento|true|CHECK ((("fechaVencimiento" IS NULL) OR ("fechaVencimiento" > "fechaAutorizacion")))
+constraint|AutorizacionRepeticion|fk_autorizacionrepeticion_iddocenteautorizador|true|FOREIGN KEY ("idDocenteAutorizador") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|AutorizacionRepeticion|fk_autorizacionrepeticion_idparticipacion|true|FOREIGN KEY ("idParticipacion") REFERENCES "Participacion"("idParticipacion") ON DELETE RESTRICT
+constraint|AutorizacionRepeticion|pk_autorizacionrepeticion|true|PRIMARY KEY ("idAutorizacion")
+constraint|AutorizacionRepeticion|uq_autorizacionrepeticion_idx1|true|UNIQUE ("idAutorizacion", "idParticipacion")
+constraint|Aviso|fk_aviso_idparticipacion|true|FOREIGN KEY ("idParticipacion") REFERENCES "Participacion"("idParticipacion") ON DELETE RESTRICT
+constraint|Aviso|fk_aviso_idusuariodestino|true|FOREIGN KEY ("idUsuarioDestino") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|Aviso|pk_aviso|true|PRIMARY KEY ("idAviso")
+constraint|Aviso|uq_aviso_idx1|true|UNIQUE ("idUsuarioDestino", "claveEvento")
+constraint|Calificacion|fk_calificacion_idintento|true|FOREIGN KEY ("idIntento") REFERENCES "Intento"("idIntento") ON DELETE RESTRICT
+constraint|Calificacion|fk_calificacion_idrubrica|true|FOREIGN KEY ("idRubrica") REFERENCES "Rubrica"("idRubrica") ON DELETE RESTRICT
+constraint|Calificacion|pk_calificacion|true|PRIMARY KEY ("idCalificacion")
+constraint|Calificacion|uq_calificacion_idintento|true|UNIQUE ("idIntento")
+constraint|Caso|ck_caso_estado|true|CHECK (((estado)::text = ANY ((ARRAY['Borrador'::character varying, 'Publicado'::character varying, 'Archivado'::character varying])::text[])))
+constraint|Caso|ck_caso_tiempo|true|CHECK (("tiempoEstimadoSegundos" > 0))
+constraint|Caso|fk_caso_iddocente|true|FOREIGN KEY ("idDocente") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|Caso|pk_caso|true|PRIMARY KEY ("idCaso")
+constraint|Convocatoria|fk_convocatoria_idestudiante|true|FOREIGN KEY ("idEstudiante") REFERENCES "Estudiante"("idEstudiante") ON DELETE RESTRICT
+constraint|Convocatoria|fk_convocatoria_idsesion|true|FOREIGN KEY ("idSesion") REFERENCES "Sesion"("idSesion") ON DELETE RESTRICT
+constraint|Convocatoria|pk_convocatoria|true|PRIMARY KEY ("idConvocatoria")
+constraint|Convocatoria|uq_convocatoria_idx1|true|UNIQUE ("idSesion", "idEstudiante")
+constraint|EnvioCorreo|ck_envio_intentos|true|CHECK (("numeroIntentos" >= 0))
+constraint|EnvioCorreo|fk_enviocorreo_idconvocatoria|true|FOREIGN KEY ("idConvocatoria") REFERENCES "Convocatoria"("idConvocatoria") ON DELETE RESTRICT
+constraint|EnvioCorreo|fk_enviocorreo_idusuariodestino|true|FOREIGN KEY ("idUsuarioDestino") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|EnvioCorreo|pk_enviocorreo|true|PRIMARY KEY ("idEnvioCorreo")
+constraint|EnvioCorreo|uq_enviocorreo_claveidempotencia|true|UNIQUE ("claveIdempotencia")
+constraint|Escenario|ck_escenario_orden|true|CHECK ((orden >= 1))
+constraint|Escenario|fk_escenario_idcaso|true|FOREIGN KEY ("idCaso") REFERENCES "Caso"("idCaso") ON DELETE RESTRICT
+constraint|Escenario|pk_escenario|true|PRIMARY KEY ("idEscenario")
+constraint|Escenario|uq_escenario_idx1|true|UNIQUE ("idCaso", orden)
+constraint|Estudiante|fk_estudiante_idusuario|true|FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|Estudiante|pk_estudiante|true|PRIMARY KEY ("idEstudiante")
+constraint|Estudiante|uq_estudiante_idusuario|true|UNIQUE ("idUsuario")
+constraint|Intento|ck_intento_estado_f301|true|CHECK (((estado)::text = ANY ((ARRAY['EnCurso'::character varying, 'Finalizado'::character varying])::text[])))
+constraint|Intento|ck_intento_numero|true|CHECK (("numeroIntento" >= 1))
+constraint|Intento|ck_intento_repeticion|true|CHECK ((("numeroIntento" = 1) OR ("idAutorizacion" IS NOT NULL)))
+constraint|Intento|ck_intento_tiempos|true|CHECK ((("limiteTemporal" > inicio) AND ((fin IS NULL) OR (fin >= inicio))))
+constraint|Intento|fk_intento_idautorizacion_idparticipacion|true|FOREIGN KEY ("idAutorizacion", "idParticipacion") REFERENCES "AutorizacionRepeticion"("idAutorizacion", "idParticipacion") ON DELETE RESTRICT
+constraint|Intento|fk_intento_idparticipacion|true|FOREIGN KEY ("idParticipacion") REFERENCES "Participacion"("idParticipacion") ON DELETE RESTRICT
+constraint|Intento|pk_intento|true|PRIMARY KEY ("idIntento")
+constraint|Intento|uq_intento_idautorizacion|true|UNIQUE ("idAutorizacion")
+constraint|Intento|uq_intento_idx1|true|UNIQUE ("idParticipacion", "numeroIntento")
+constraint|OpcionRespuesta|ck_opcion_orden|true|CHECK ((orden >= 1))
+constraint|OpcionRespuesta|fk_opcionrespuesta_idpregunta|true|FOREIGN KEY ("idPregunta") REFERENCES "Pregunta"("idPregunta") ON DELETE RESTRICT
+constraint|OpcionRespuesta|pk_opcionrespuesta|true|PRIMARY KEY ("idOpcion")
+constraint|OpcionRespuesta|uq_opcionrespuesta_idx1|true|UNIQUE ("idOpcion", "idPregunta")
+constraint|OpcionRespuesta|uq_opcionrespuesta_idx2|true|UNIQUE ("idPregunta", orden)
+constraint|Participacion|fk_participacion_idconvocatoria|true|FOREIGN KEY ("idConvocatoria") REFERENCES "Convocatoria"("idConvocatoria") ON DELETE RESTRICT
+constraint|Participacion|pk_participacion|true|PRIMARY KEY ("idParticipacion")
+constraint|Participacion|uq_participacion_idconvocatoria|true|UNIQUE ("idConvocatoria")
+constraint|Permiso|pk_permiso|true|PRIMARY KEY ("idPermiso")
+constraint|Permiso|uq_permiso_codigo|true|UNIQUE (codigo)
+constraint|Pregunta|ck_pregunta_estado|true|CHECK ((("estadoEdicion")::text = ANY ((ARRAY['Borrador'::character varying, 'Lista'::character varying])::text[])))
+constraint|Pregunta|ck_pregunta_orden|true|CHECK ((orden >= 1))
+constraint|Pregunta|fk_pregunta_idescenario|true|FOREIGN KEY ("idEscenario") REFERENCES "Escenario"("idEscenario") ON DELETE RESTRICT
+constraint|Pregunta|pk_pregunta|true|PRIMARY KEY ("idPregunta")
+constraint|Pregunta|uq_pregunta_idx1|true|UNIQUE ("idEscenario", orden)
+constraint|Respuesta|ck_respuesta_revision|true|CHECK ((revision >= 1))
+constraint|Respuesta|fk_respuesta_idintento|true|FOREIGN KEY ("idIntento") REFERENCES "Intento"("idIntento") ON DELETE RESTRICT
+constraint|Respuesta|fk_respuesta_idopcionseleccionada_idpregunta|true|FOREIGN KEY ("idOpcionSeleccionada", "idPregunta") REFERENCES "OpcionRespuesta"("idOpcion", "idPregunta") ON DELETE RESTRICT
+constraint|Respuesta|fk_respuesta_idpregunta|true|FOREIGN KEY ("idPregunta") REFERENCES "Pregunta"("idPregunta") ON DELETE RESTRICT
+constraint|Respuesta|pk_respuesta|true|PRIMARY KEY ("idRespuesta")
+constraint|Respuesta|uq_respuesta_idx1|true|UNIQUE ("idIntento", "idPregunta")
+constraint|RetroalimentacionGeneral|fk_retroalimentaciongeneral_iddocente|true|FOREIGN KEY ("idDocente") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|RetroalimentacionGeneral|fk_retroalimentaciongeneral_idparticipacion|true|FOREIGN KEY ("idParticipacion") REFERENCES "Participacion"("idParticipacion") ON DELETE RESTRICT
+constraint|RetroalimentacionGeneral|pk_retroalimentaciongeneral|true|PRIMARY KEY ("idRetroalimentacion")
+constraint|RetroalimentacionGeneral|uq_retroalimentaciongeneral_idparticipacion|true|UNIQUE ("idParticipacion")
+constraint|Rol|pk_rol|true|PRIMARY KEY ("idRol")
+constraint|Rol|uq_rol_nombre|true|UNIQUE (nombre)
+constraint|RubricaPregunta|ck_rubricapregunta_valor|true|CHECK (("valorPregunta" > (0)::numeric))
+constraint|RubricaPregunta|fk_rubricapregunta_idpregunta|true|FOREIGN KEY ("idPregunta") REFERENCES "Pregunta"("idPregunta") ON DELETE RESTRICT
+constraint|RubricaPregunta|fk_rubricapregunta_idrubrica|true|FOREIGN KEY ("idRubrica") REFERENCES "Rubrica"("idRubrica") ON DELETE RESTRICT
+constraint|RubricaPregunta|pk_rubricapregunta|true|PRIMARY KEY ("idRubricaPregunta")
+constraint|RubricaPregunta|uq_rubricapregunta_idpregunta|true|UNIQUE ("idPregunta")
+constraint|RubricaPregunta|uq_rubricapregunta_idx1|true|UNIQUE ("idRubrica", "idPregunta")
+constraint|Rubrica|ck_rubrica_total|true|CHECK ((("puntajeTotal" IS NULL) OR ("puntajeTotal" > (0)::numeric)))
+constraint|Rubrica|fk_rubrica_idcaso|true|FOREIGN KEY ("idCaso") REFERENCES "Caso"("idCaso") ON DELETE RESTRICT
+constraint|Rubrica|pk_rubrica|true|PRIMARY KEY ("idRubrica")
+constraint|Rubrica|uq_rubrica_idcaso|true|UNIQUE ("idCaso")
+constraint|Sesion|ck_sesion_estado|true|CHECK (((estado)::text = ANY ((ARRAY['SinIniciar'::character varying, 'EnCurso'::character varying, 'Finalizado'::character varying])::text[])))
+constraint|Sesion|ck_sesion_fechas|true|CHECK ((("finPrevisto" > "inicioPrevisto") AND (("fechaInicioReal" IS NULL) OR ("fechaFinReal" IS NULL) OR ("fechaFinReal" >= "fechaInicioReal"))))
+constraint|Sesion|ck_sesion_tiempo|true|CHECK (("tiempoMaximoParticipacionSegundos" > 0))
+constraint|Sesion|fk_sesion_idcaso|true|FOREIGN KEY ("idCaso") REFERENCES "Caso"("idCaso") ON DELETE RESTRICT
+constraint|Sesion|fk_sesion_iddocenteprogramador|true|FOREIGN KEY ("idDocenteProgramador") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|Sesion|pk_sesion|true|PRIMARY KEY ("idSesion")
+constraint|UsuarioPermiso|fk_usuariopermiso_idadministradorasignador|true|FOREIGN KEY ("idAdministradorAsignador") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|UsuarioPermiso|fk_usuariopermiso_idpermiso|true|FOREIGN KEY ("idPermiso") REFERENCES "Permiso"("idPermiso") ON DELETE RESTRICT
+constraint|UsuarioPermiso|fk_usuariopermiso_idusuario|true|FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("idUsuario") ON DELETE RESTRICT
+constraint|UsuarioPermiso|pk_usuariopermiso|true|PRIMARY KEY ("idUsuario", "idPermiso")
+constraint|Usuario|fk_usuario_idrol|true|FOREIGN KEY ("idRol") REFERENCES "Rol"("idRol") ON DELETE RESTRICT
+constraint|Usuario|pk_usuario|true|PRIMARY KEY ("idUsuario")
+constraint|Usuario|uq_usuario_correo|true|UNIQUE (correo)
+function|prisaly_bloquear_caso_al_programar||CREATE OR REPLACE FUNCTION public.prisaly_bloquear_caso_al_programar()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE v_fecha timestamptz;
+BEGIN
+ SELECT "fechaBloqueoAcademico" INTO v_fecha
+   FROM public."Caso" WHERE "idCaso"=NEW."idCaso" FOR UPDATE;
+ IF NOT FOUND THEN RETURN NEW; END IF; -- deja el diagnóstico a la FK
+ IF v_fecha IS NULL THEN
+   UPDATE public."Caso" SET "fechaBloqueoAcademico"=clock_timestamp()
+    WHERE "idCaso"=NEW."idCaso" AND "fechaBloqueoAcademico" IS NULL;
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_calificacion_inmutable||CREATE OR REPLACE FUNCTION public.prisaly_calificacion_inmutable()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+BEGIN
+ RAISE EXCEPTION 'Calificación histórica inmutable; corrección requiere procedimiento autorizado' USING ERRCODE='23514';
+END $function$
+
+function|prisaly_caso_contenido_f303|p_tabla text, p_id uuid|CREATE OR REPLACE FUNCTION public.prisaly_caso_contenido_f303(p_tabla text, p_id uuid)
+ RETURNS uuid
+ LANGUAGE plpgsql
+ STABLE
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE v uuid;
+BEGIN
+ CASE p_tabla
+ WHEN 'Escenario' THEN SELECT "idCaso" INTO v FROM public."Escenario" WHERE "idEscenario"=p_id;
+ WHEN 'Pregunta' THEN SELECT e."idCaso" INTO v FROM public."Pregunta" q JOIN public."Escenario" e ON e."idEscenario"=q."idEscenario" WHERE q."idPregunta"=p_id;
+ WHEN 'OpcionRespuesta' THEN SELECT e."idCaso" INTO v FROM public."OpcionRespuesta" o JOIN public."Pregunta" q ON q."idPregunta"=o."idPregunta" JOIN public."Escenario" e ON e."idEscenario"=q."idEscenario" WHERE o."idOpcion"=p_id;
+ WHEN 'Rubrica' THEN SELECT "idCaso" INTO v FROM public."Rubrica" WHERE "idRubrica"=p_id;
+ WHEN 'RubricaPregunta' THEN SELECT r."idCaso" INTO v FROM public."RubricaPregunta" rp JOIN public."Rubrica" r ON r."idRubrica"=rp."idRubrica" WHERE rp."idRubricaPregunta"=p_id;
+ END CASE;
+ RETURN v;
+END $function$
+
+function|prisaly_caso_participacion|p uuid|CREATE OR REPLACE FUNCTION public.prisaly_caso_participacion(p uuid)
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE
+AS $function$
+ SELECT s."idCaso" FROM "Participacion" a JOIN "Convocatoria" c ON c."idConvocatoria"=a."idConvocatoria" JOIN "Sesion" s ON s."idSesion"=c."idSesion" WHERE a."idParticipacion"=p
+$function$
+
+function|prisaly_caso_pregunta|p uuid|CREATE OR REPLACE FUNCTION public.prisaly_caso_pregunta(p uuid)
+ RETURNS uuid
+ LANGUAGE sql
+ STABLE
+AS $function$
+ SELECT e."idCaso" FROM "Pregunta" q JOIN "Escenario" e ON e."idEscenario"=q."idEscenario" WHERE q."idPregunta"=p
+$function$
+
+function|prisaly_consumir_autorizacion_intento||CREATE OR REPLACE FUNCTION public.prisaly_consumir_autorizacion_intento()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idAutorizacion" IS NOT NULL THEN
+    UPDATE public."AutorizacionRepeticion"
+       SET "estadoAutorizacion"='Utilizada'
+     WHERE "idAutorizacion"=NEW."idAutorizacion"
+       AND "idParticipacion"=NEW."idParticipacion"
+       AND "estadoAutorizacion"='Vigente'
+       AND "fechaAutorizacion"<=clock_timestamp()
+       AND ("fechaVencimiento" IS NULL OR "fechaVencimiento">clock_timestamp());
+    IF NOT FOUND THEN
+      RAISE EXCEPTION 'La autorización no pudo consumirse de manera atómica'
+        USING ERRCODE='23514', CONSTRAINT='tr_autorizacion_consumo_f302';
+    END IF;
+  END IF;
+  RETURN NEW;
+END $function$
+
+function|prisaly_impedir_delete_intento||CREATE OR REPLACE FUNCTION public.prisaly_impedir_delete_intento()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  RAISE EXCEPTION 'Un intento académico no puede eliminarse'
+    USING ERRCODE='23514', CONSTRAINT='tr_intento_no_delete';
+END
+$function$
+
+function|prisaly_impedir_reabrir_intento||CREATE OR REPLACE FUNCTION public.prisaly_impedir_reabrir_intento()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF OLD."estado" = 'Finalizado' AND NEW."estado" = 'EnCurso' THEN
+    RAISE EXCEPTION 'Intento finalizado no puede reabrirse'
+      USING ERRCODE='23514', CONSTRAINT='tr_intento_no_reabrir';
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_caso_f303||CREATE OR REPLACE FUNCTION public.prisaly_proteger_caso_f303()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+ IF TG_OP='DELETE' THEN
+   IF OLD."fechaBloqueoAcademico" IS NOT NULL THEN
+     RAISE EXCEPTION 'Caso bloqueado: eliminación prohibida'
+       USING ERRCODE='23514',CONSTRAINT='tr_caso_contenido_f303';
+   END IF;
+   RETURN OLD;
+ END IF;
+ IF OLD."fechaBloqueoAcademico" IS NOT NULL THEN
+   IF NEW."fechaBloqueoAcademico" IS DISTINCT FROM OLD."fechaBloqueoAcademico" OR
+      (NEW."nombre",NEW."historia",NEW."desarrolloSituacional",NEW."tiempoEstimadoSegundos",NEW."idDocente")
+      IS DISTINCT FROM
+      (OLD."nombre",OLD."historia",OLD."desarrolloSituacional",OLD."tiempoEstimadoSegundos",OLD."idDocente") THEN
+      RAISE EXCEPTION 'Contenido académico del caso bloqueado'
+        USING ERRCODE='23514',CONSTRAINT='tr_caso_contenido_f303';
+   END IF;
+ ELSIF NEW."fechaBloqueoAcademico" IS NOT NULL THEN
+   IF pg_trigger_depth() < 2 THEN
+     RAISE EXCEPTION 'La fecha de bloqueo solo puede establecerse al programar sesión'
+       USING ERRCODE='23514',CONSTRAINT='tr_caso_contenido_f303';
+   END IF;
+   -- La marca se establece por el trigger de Sesion, en cuyo contexto se permite
+   -- pasar de NULL a fecha; otros clientes deben carecer de privilegio UPDATE directo.
+   IF (NEW."nombre",NEW."historia",NEW."desarrolloSituacional",NEW."tiempoEstimadoSegundos",NEW."idDocente")
+      IS DISTINCT FROM (OLD."nombre",OLD."historia",OLD."desarrolloSituacional",OLD."tiempoEstimadoSegundos",OLD."idDocente") THEN
+      RAISE EXCEPTION 'No se permite modificar contenido simultáneamente con el bloqueo'
+        USING ERRCODE='23514',CONSTRAINT='tr_caso_contenido_f303';
+   END IF;
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_proteger_caso_sesion||CREATE OR REPLACE FUNCTION public.prisaly_proteger_caso_sesion()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idCaso" IS DISTINCT FROM OLD."idCaso" THEN
+    PERFORM 1 FROM public."Sesion"
+      WHERE "idSesion" = OLD."idSesion" FOR UPDATE;
+    IF EXISTS (SELECT 1 FROM public."Convocatoria"
+               WHERE "idSesion" = OLD."idSesion") THEN
+      RAISE EXCEPTION 'Caso de sesión convocada es inmutable'
+        USING ERRCODE='23514', CONSTRAINT='tr_sesion_caso_inmutable';
+    END IF;
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_contenido_f303||CREATE OR REPLACE FUNCTION public.prisaly_proteger_contenido_f303()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE v_old uuid; v_new uuid; v_caso uuid; v_bloqueo timestamptz;
+BEGIN
+ IF TG_TABLE_NAME='Escenario' THEN
+  IF TG_OP<>'INSERT' THEN v_old=OLD."idCaso"; END IF;
+  IF TG_OP<>'DELETE' THEN v_new=NEW."idCaso"; END IF;
+ ELSIF TG_TABLE_NAME='Pregunta' THEN
+  IF TG_OP<>'INSERT' THEN v_old=public.prisaly_caso_contenido_f303('Pregunta',OLD."idPregunta"); END IF;
+  IF TG_OP<>'DELETE' THEN SELECT "idCaso" INTO v_new FROM public."Escenario" WHERE "idEscenario"=NEW."idEscenario"; END IF;
+ ELSIF TG_TABLE_NAME='OpcionRespuesta' THEN
+  IF TG_OP<>'INSERT' THEN v_old=public.prisaly_caso_contenido_f303('OpcionRespuesta',OLD."idOpcion"); END IF;
+  IF TG_OP<>'DELETE' THEN SELECT e."idCaso" INTO v_new FROM public."Pregunta" q JOIN public."Escenario" e ON e."idEscenario"=q."idEscenario" WHERE q."idPregunta"=NEW."idPregunta"; END IF;
+ ELSIF TG_TABLE_NAME='Rubrica' THEN
+  IF TG_OP<>'INSERT' THEN v_old=OLD."idCaso"; END IF;
+  IF TG_OP<>'DELETE' THEN v_new=NEW."idCaso"; END IF;
+ ELSIF TG_TABLE_NAME='RubricaPregunta' THEN
+  IF TG_OP<>'INSERT' THEN v_old=public.prisaly_caso_contenido_f303('RubricaPregunta',OLD."idRubricaPregunta"); END IF;
+  IF TG_OP<>'DELETE' THEN SELECT "idCaso" INTO v_new FROM public."Rubrica" WHERE "idRubrica"=NEW."idRubrica"; END IF;
+ END IF;
+ FOR v_caso IN SELECT DISTINCT u.id FROM unnest(ARRAY[v_old,v_new]) AS u(id) WHERE u.id IS NOT NULL ORDER BY u.id LOOP
+  SELECT "fechaBloqueoAcademico" INTO v_bloqueo FROM public."Caso" WHERE "idCaso"=v_caso FOR UPDATE;
+  IF v_bloqueo IS NOT NULL THEN
+   RAISE EXCEPTION 'Contenido evaluable de caso programado es inmutable'
+     USING ERRCODE='23514',CONSTRAINT='tr_contenido_bloqueo_f303';
+  END IF;
+ END LOOP;
+ IF TG_OP='DELETE' THEN RETURN OLD; END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_proteger_convocatoria_participacion||CREATE OR REPLACE FUNCTION public.prisaly_proteger_convocatoria_participacion()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idConvocatoria" IS DISTINCT FROM OLD."idConvocatoria" THEN
+    RAISE EXCEPTION 'Convocatoria de participación es inmutable'
+      USING ERRCODE='23514', CONSTRAINT='tr_participacion_convocatoria_inmutable';
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_destino_autorizacion||CREATE OR REPLACE FUNCTION public.prisaly_proteger_destino_autorizacion()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idParticipacion" IS DISTINCT FROM OLD."idParticipacion" THEN
+    RAISE EXCEPTION 'Destino de autorización es inmutable'
+      USING ERRCODE='23514', CONSTRAINT='tr_autorizacion_destino_inmutable';
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_estudiante_convocatoria||CREATE OR REPLACE FUNCTION public.prisaly_proteger_estudiante_convocatoria()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idEstudiante" IS DISTINCT FROM OLD."idEstudiante"
+     AND EXISTS (SELECT 1 FROM public."Participacion"
+                 WHERE "idConvocatoria"=OLD."idConvocatoria") THEN
+    RAISE EXCEPTION 'Estudiante con participación registrada es inmutable'
+      USING ERRCODE='23514', CONSTRAINT='tr_convocatoria_estudiante_inmutable';
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_identidad_intento||CREATE OR REPLACE FUNCTION public.prisaly_proteger_identidad_intento()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idParticipacion" IS DISTINCT FROM OLD."idParticipacion"
+     OR NEW."numeroIntento" IS DISTINCT FROM OLD."numeroIntento"
+     OR NEW."idAutorizacion" IS DISTINCT FROM OLD."idAutorizacion" THEN
+    RAISE EXCEPTION 'Identidad y autorización del intento son inmutables'
+      USING ERRCODE='23514', CONSTRAINT='tr_intento_identidad_inmutable';
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_proteger_sesion_convocatoria||CREATE OR REPLACE FUNCTION public.prisaly_proteger_sesion_convocatoria()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+  IF NEW."idSesion" IS DISTINCT FROM OLD."idSesion" THEN
+    PERFORM 1 FROM public."Convocatoria"
+      WHERE "idConvocatoria" = OLD."idConvocatoria" FOR UPDATE;
+    IF EXISTS (SELECT 1 FROM public."Participacion"
+               WHERE "idConvocatoria" = OLD."idConvocatoria") THEN
+      RAISE EXCEPTION 'Sesion de convocatoria con participación es inmutable'
+        USING ERRCODE='23514', CONSTRAINT='tr_convocatoria_sesion_inmutable';
+    END IF;
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_validar_calificacion||CREATE OR REPLACE FUNCTION public.prisaly_validar_calificacion()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE v_part uuid; v_caso uuid;
+BEGIN
+ SELECT "idParticipacion" INTO v_part FROM "Intento" WHERE "idIntento"=NEW."idIntento";
+ SELECT "idCaso" INTO v_caso FROM "Rubrica" WHERE "idRubrica"=NEW."idRubrica";
+ IF v_caso IS DISTINCT FROM prisaly_caso_participacion(v_part) THEN
+  RAISE EXCEPTION 'Rúbrica no pertenece al caso evaluado' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_validar_caso_programable_rf09||CREATE OR REPLACE FUNCTION public.prisaly_validar_caso_programable_rf09()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE v_estado text; v_activo boolean;
+BEGIN
+ IF TG_OP='UPDATE' THEN
+  IF NEW."idCaso" IS NOT DISTINCT FROM OLD."idCaso" THEN RETURN NEW; END IF;
+ END IF;
+ -- Mismo bloqueo de fila que V007/V008: serializa cambios de estado/activo.
+ SELECT "estado","activo" INTO v_estado,v_activo FROM public."Caso"
+ WHERE "idCaso"=NEW."idCaso" FOR UPDATE;
+ IF NOT FOUND THEN RETURN NEW; END IF; -- diagnostico referencial por FK historica
+ IF v_estado IS DISTINCT FROM 'Publicado' OR v_activo IS DISTINCT FROM true THEN
+  RAISE EXCEPTION 'RF-09: solo se permite programar un caso Publicado y activo'
+   USING ERRCODE='23514',CONSTRAINT='tr_sesion_rf09_caso_programable';
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_validar_intento||CREATE OR REPLACE FUNCTION public.prisaly_validar_intento()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+DECLARE
+ v_aut public."AutorizacionRepeticion"%ROWTYPE;
+ v_prev boolean;
+ v_est uuid;
+ v_caso uuid;
+BEGIN
+  -- Bloqueo existente por participacion (mantenido por compatibilidad).
+  PERFORM 1 FROM public."Participacion"
+    WHERE "idParticipacion"=NEW."idParticipacion" FOR UPDATE;
+  SELECT c."idEstudiante", s."idCaso" INTO v_est, v_caso
+    FROM public."Participacion" p
+    JOIN public."Convocatoria" c ON c."idConvocatoria"=p."idConvocatoria"
+    JOIN public."Sesion" s ON s."idSesion"=c."idSesion"
+    WHERE p."idParticipacion"=NEW."idParticipacion";
+  -- Un id desconocido sera rechazado por FK; no disfrazarlo como repeticion.
+  IF v_est IS NULL OR v_caso IS NULL THEN RETURN NEW; END IF;
+
+  -- Serializacion entre participaciones y sesiones del MISMO estudiante.
+  PERFORM 1 FROM public."Estudiante" WHERE "idEstudiante"=v_est FOR NO KEY UPDATE;
+  IF NOT FOUND THEN RETURN NEW; END IF;
+
+  -- Releer historial DESPUES de adquirir el bloqueo.
+  SELECT EXISTS (
+    SELECT 1 FROM public."Intento" i
+      JOIN public."Participacion" p ON p."idParticipacion"=i."idParticipacion"
+      JOIN public."Convocatoria" c ON c."idConvocatoria"=p."idConvocatoria"
+      JOIN public."Sesion" s ON s."idSesion"=c."idSesion"
+    WHERE c."idEstudiante"=v_est AND s."idCaso"=v_caso
+  ) INTO v_prev;
+
+  IF (NEW."numeroIntento" > 1 OR v_prev) AND NEW."idAutorizacion" IS NULL THEN
+    RAISE EXCEPTION 'Repetición exige autorización expresa'
+      USING ERRCODE='23514', CONSTRAINT='tr_intento_autorizacion';
+  END IF;
+
+  IF NEW."idAutorizacion" IS NOT NULL THEN
+    SELECT * INTO v_aut FROM public."AutorizacionRepeticion"
+      WHERE "idAutorizacion"=NEW."idAutorizacion" FOR UPDATE;
+    IF NOT FOUND OR v_aut."idParticipacion" <> NEW."idParticipacion"
+       OR v_aut."estadoAutorizacion" <> 'Vigente'
+       OR v_aut."fechaAutorizacion" > clock_timestamp()
+       OR (v_aut."fechaVencimiento" IS NOT NULL
+           AND v_aut."fechaVencimiento" <= clock_timestamp()) THEN
+      RAISE EXCEPTION 'Autorización inválida o vencida'
+        USING ERRCODE='23514', CONSTRAINT='tr_intento_autorizacion';
+    END IF;
+    IF EXISTS (SELECT 1 FROM public."Intento"
+       WHERE "idAutorizacion"=NEW."idAutorizacion") THEN
+      RAISE EXCEPTION 'Autorización ya consumida'
+        USING ERRCODE='23505', CONSTRAINT='tr_intento_autorizacion';
+    END IF;
+  END IF;
+  RETURN NEW;
+END
+$function$
+
+function|prisaly_validar_respuesta||CREATE OR REPLACE FUNCTION public.prisaly_validar_respuesta()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE v_part uuid;
+BEGIN
+ SELECT "idParticipacion" INTO v_part FROM "Intento" WHERE "idIntento"=NEW."idIntento";
+ IF prisaly_caso_pregunta(NEW."idPregunta") IS DISTINCT FROM prisaly_caso_participacion(v_part) THEN
+  RAISE EXCEPTION 'Pregunta no pertenece al caso de la participación' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_validar_rubricapregunta||CREATE OR REPLACE FUNCTION public.prisaly_validar_rubricapregunta()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$
+DECLARE v_caso uuid;
+BEGIN
+ SELECT "idCaso" INTO v_caso FROM "Rubrica" WHERE "idRubrica"=NEW."idRubrica";
+ IF prisaly_caso_pregunta(NEW."idPregunta") IS DISTINCT FROM v_caso THEN
+  RAISE EXCEPTION 'Pregunta no pertenece al caso de la rúbrica' USING ERRCODE='23514';
+ END IF;
+ RETURN NEW;
+END $function$
+
+function|prisaly_validar_transicion_autorizacion||CREATE OR REPLACE FUNCTION public.prisaly_validar_transicion_autorizacion()
+ RETURNS trigger
+ LANGUAGE plpgsql
+ SET search_path TO 'pg_catalog', 'public'
+AS $function$
+BEGIN
+ IF NEW."estadoAutorizacion" IS DISTINCT FROM OLD."estadoAutorizacion"
+    AND (OLD."estadoAutorizacion" <> 'Vigente' OR NEW."estadoAutorizacion" NOT IN ('Utilizada','Revocada','Vencida')) THEN
+   RAISE EXCEPTION 'Transición de autorización no permitida'
+     USING ERRCODE='23514',CONSTRAINT='tr_autorizacion_transicion_f302';
+ END IF;
+ RETURN NEW;
+END $function$
+
+index|AutorizacionRepeticion|true|true|CREATE UNIQUE INDEX pk_autorizacionrepeticion ON public."AutorizacionRepeticion" USING btree ("idAutorizacion")
+index|AutorizacionRepeticion|true|true|CREATE UNIQUE INDEX uq_autorizacionrepeticion_idx1 ON public."AutorizacionRepeticion" USING btree ("idAutorizacion", "idParticipacion")
+index|Aviso|true|true|CREATE UNIQUE INDEX pk_aviso ON public."Aviso" USING btree ("idAviso")
+index|Aviso|true|true|CREATE UNIQUE INDEX uq_aviso_idx1 ON public."Aviso" USING btree ("idUsuarioDestino", "claveEvento")
+index|Calificacion|true|true|CREATE UNIQUE INDEX pk_calificacion ON public."Calificacion" USING btree ("idCalificacion")
+index|Calificacion|true|true|CREATE UNIQUE INDEX uq_calificacion_idintento ON public."Calificacion" USING btree ("idIntento")
+index|Caso|true|true|CREATE UNIQUE INDEX pk_caso ON public."Caso" USING btree ("idCaso")
+index|Convocatoria|true|true|CREATE INDEX ix_convocatoria_estudiante ON public."Convocatoria" USING btree ("idEstudiante")
+index|Convocatoria|true|true|CREATE UNIQUE INDEX pk_convocatoria ON public."Convocatoria" USING btree ("idConvocatoria")
+index|Convocatoria|true|true|CREATE UNIQUE INDEX uq_convocatoria_idx1 ON public."Convocatoria" USING btree ("idSesion", "idEstudiante")
+index|EnvioCorreo|true|true|CREATE INDEX ix_envio_pendiente ON public."EnvioCorreo" USING btree ("estadoEnvio", "proximoReintento")
+index|EnvioCorreo|true|true|CREATE UNIQUE INDEX pk_enviocorreo ON public."EnvioCorreo" USING btree ("idEnvioCorreo")
+index|EnvioCorreo|true|true|CREATE UNIQUE INDEX uq_enviocorreo_claveidempotencia ON public."EnvioCorreo" USING btree ("claveIdempotencia")
+index|Escenario|true|true|CREATE UNIQUE INDEX pk_escenario ON public."Escenario" USING btree ("idEscenario")
+index|Escenario|true|true|CREATE UNIQUE INDEX uq_escenario_idx1 ON public."Escenario" USING btree ("idCaso", orden)
+index|Estudiante|true|true|CREATE UNIQUE INDEX pk_estudiante ON public."Estudiante" USING btree ("idEstudiante")
+index|Estudiante|true|true|CREATE UNIQUE INDEX uq_estudiante_idusuario ON public."Estudiante" USING btree ("idUsuario")
+index|Intento|true|true|CREATE UNIQUE INDEX pk_intento ON public."Intento" USING btree ("idIntento")
+index|Intento|true|true|CREATE UNIQUE INDEX uq_intento_idautorizacion ON public."Intento" USING btree ("idAutorizacion")
+index|Intento|true|true|CREATE UNIQUE INDEX uq_intento_idx1 ON public."Intento" USING btree ("idParticipacion", "numeroIntento")
+index|Intento|true|true|CREATE UNIQUE INDEX ux_intento_unico_encurso ON public."Intento" USING btree ("idParticipacion") WHERE ((estado)::text = 'EnCurso'::text)
+index|OpcionRespuesta|true|true|CREATE UNIQUE INDEX pk_opcionrespuesta ON public."OpcionRespuesta" USING btree ("idOpcion")
+index|OpcionRespuesta|true|true|CREATE UNIQUE INDEX uq_opcionrespuesta_idx1 ON public."OpcionRespuesta" USING btree ("idOpcion", "idPregunta")
+index|OpcionRespuesta|true|true|CREATE UNIQUE INDEX uq_opcionrespuesta_idx2 ON public."OpcionRespuesta" USING btree ("idPregunta", orden)
+index|OpcionRespuesta|true|true|CREATE UNIQUE INDEX ux_opcion_max_una_correcta ON public."OpcionRespuesta" USING btree ("idPregunta") WHERE ("esCorrecta" = true)
+index|Participacion|true|true|CREATE UNIQUE INDEX pk_participacion ON public."Participacion" USING btree ("idParticipacion")
+index|Participacion|true|true|CREATE UNIQUE INDEX uq_participacion_idconvocatoria ON public."Participacion" USING btree ("idConvocatoria")
+index|Permiso|true|true|CREATE UNIQUE INDEX pk_permiso ON public."Permiso" USING btree ("idPermiso")
+index|Permiso|true|true|CREATE UNIQUE INDEX uq_permiso_codigo ON public."Permiso" USING btree (codigo)
+index|Pregunta|true|true|CREATE UNIQUE INDEX pk_pregunta ON public."Pregunta" USING btree ("idPregunta")
+index|Pregunta|true|true|CREATE UNIQUE INDEX uq_pregunta_idx1 ON public."Pregunta" USING btree ("idEscenario", orden)
+index|Respuesta|true|true|CREATE UNIQUE INDEX pk_respuesta ON public."Respuesta" USING btree ("idRespuesta")
+index|Respuesta|true|true|CREATE UNIQUE INDEX uq_respuesta_idx1 ON public."Respuesta" USING btree ("idIntento", "idPregunta")
+index|RetroalimentacionGeneral|true|true|CREATE UNIQUE INDEX pk_retroalimentaciongeneral ON public."RetroalimentacionGeneral" USING btree ("idRetroalimentacion")
+index|RetroalimentacionGeneral|true|true|CREATE UNIQUE INDEX uq_retroalimentaciongeneral_idparticipacion ON public."RetroalimentacionGeneral" USING btree ("idParticipacion")
+index|Rol|true|true|CREATE UNIQUE INDEX pk_rol ON public."Rol" USING btree ("idRol")
+index|Rol|true|true|CREATE UNIQUE INDEX uq_rol_nombre ON public."Rol" USING btree (nombre)
+index|RubricaPregunta|true|true|CREATE UNIQUE INDEX pk_rubricapregunta ON public."RubricaPregunta" USING btree ("idRubricaPregunta")
+index|RubricaPregunta|true|true|CREATE UNIQUE INDEX uq_rubricapregunta_idpregunta ON public."RubricaPregunta" USING btree ("idPregunta")
+index|RubricaPregunta|true|true|CREATE UNIQUE INDEX uq_rubricapregunta_idx1 ON public."RubricaPregunta" USING btree ("idRubrica", "idPregunta")
+index|Rubrica|true|true|CREATE UNIQUE INDEX pk_rubrica ON public."Rubrica" USING btree ("idRubrica")
+index|Rubrica|true|true|CREATE UNIQUE INDEX uq_rubrica_idcaso ON public."Rubrica" USING btree ("idCaso")
+index|Sesion|true|true|CREATE INDEX ix_sesion_caso ON public."Sesion" USING btree ("idCaso")
+index|Sesion|true|true|CREATE UNIQUE INDEX pk_sesion ON public."Sesion" USING btree ("idSesion")
+index|UsuarioPermiso|true|true|CREATE UNIQUE INDEX pk_usuariopermiso ON public."UsuarioPermiso" USING btree ("idUsuario", "idPermiso")
+index|Usuario|true|true|CREATE UNIQUE INDEX pk_usuario ON public."Usuario" USING btree ("idUsuario")
+index|Usuario|true|true|CREATE UNIQUE INDEX uq_usuario_correo ON public."Usuario" USING btree (correo)
+index|Usuario|true|true|CREATE UNIQUE INDEX ux_usuario_correo_insensible ON public."Usuario" USING btree (lower((correo)::text))
+relation|AutorizacionRepeticion|r|false|false
+relation|Aviso|r|false|false
+relation|Calificacion|r|false|false
+relation|Caso|r|false|false
+relation|Convocatoria|r|false|false
+relation|EnvioCorreo|r|false|false
+relation|Escenario|r|false|false
+relation|Estudiante|r|false|false
+relation|Intento|r|false|false
+relation|OpcionRespuesta|r|false|false
+relation|Participacion|r|false|false
+relation|Permiso|r|false|false
+relation|Pregunta|r|false|false
+relation|Respuesta|r|false|false
+relation|RetroalimentacionGeneral|r|false|false
+relation|Rol|r|false|false
+relation|RubricaPregunta|r|false|false
+relation|Rubrica|r|false|false
+relation|Sesion|r|false|false
+relation|UsuarioPermiso|r|false|false
+relation|Usuario|r|false|false
+sequence|Permiso_idPermiso_seq|integer|1|1|2147483647|1|1|false
+sequence|Rol_idRol_seq|integer|1|1|2147483647|1|1|false
+trigger|AutorizacionRepeticion|tr_autorizacion_destino_inmutable|O|CREATE TRIGGER tr_autorizacion_destino_inmutable BEFORE UPDATE OF "idParticipacion" ON public."AutorizacionRepeticion" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_destino_autorizacion()
+trigger|AutorizacionRepeticion|tr_autorizacion_transicion_f302|O|CREATE TRIGGER tr_autorizacion_transicion_f302 BEFORE UPDATE OF "estadoAutorizacion" ON public."AutorizacionRepeticion" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_transicion_autorizacion()
+trigger|Calificacion|tr_calificacion_caso|O|CREATE TRIGGER tr_calificacion_caso BEFORE INSERT OR UPDATE OF "idIntento", "idRubrica" ON public."Calificacion" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_calificacion()
+trigger|Calificacion|tr_calificacion_no_update|O|CREATE TRIGGER tr_calificacion_no_update BEFORE DELETE OR UPDATE ON public."Calificacion" FOR EACH ROW EXECUTE FUNCTION prisaly_calificacion_inmutable()
+trigger|Caso|tr_caso_contenido_f303|O|CREATE TRIGGER tr_caso_contenido_f303 BEFORE DELETE OR UPDATE ON public."Caso" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_caso_f303()
+trigger|Convocatoria|tr_convocatoria_estudiante_inmutable|O|CREATE TRIGGER tr_convocatoria_estudiante_inmutable BEFORE UPDATE OF "idEstudiante" ON public."Convocatoria" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_estudiante_convocatoria()
+trigger|Convocatoria|tr_convocatoria_sesion_inmutable|O|CREATE TRIGGER tr_convocatoria_sesion_inmutable BEFORE UPDATE OF "idSesion" ON public."Convocatoria" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_sesion_convocatoria()
+trigger|Escenario|tr_escenario_bloqueo_f303|O|CREATE TRIGGER tr_escenario_bloqueo_f303 BEFORE INSERT OR DELETE OR UPDATE ON public."Escenario" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_contenido_f303()
+trigger|Intento|tr_autorizacion_consumo_f302|O|CREATE TRIGGER tr_autorizacion_consumo_f302 AFTER INSERT ON public."Intento" FOR EACH ROW EXECUTE FUNCTION prisaly_consumir_autorizacion_intento()
+trigger|Intento|tr_intento_autorizacion|O|CREATE TRIGGER tr_intento_autorizacion BEFORE INSERT ON public."Intento" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_intento()
+trigger|Intento|tr_intento_identidad_inmutable|O|CREATE TRIGGER tr_intento_identidad_inmutable BEFORE UPDATE OF "idParticipacion", "numeroIntento", "idAutorizacion" ON public."Intento" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_identidad_intento()
+trigger|Intento|tr_intento_no_delete|O|CREATE TRIGGER tr_intento_no_delete BEFORE DELETE ON public."Intento" FOR EACH ROW EXECUTE FUNCTION prisaly_impedir_delete_intento()
+trigger|Intento|tr_intento_no_reabrir|O|CREATE TRIGGER tr_intento_no_reabrir BEFORE UPDATE OF estado ON public."Intento" FOR EACH ROW EXECUTE FUNCTION prisaly_impedir_reabrir_intento()
+trigger|OpcionRespuesta|tr_opcion_bloqueo_f303|O|CREATE TRIGGER tr_opcion_bloqueo_f303 BEFORE INSERT OR DELETE OR UPDATE ON public."OpcionRespuesta" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_contenido_f303()
+trigger|Participacion|tr_participacion_convocatoria_inmutable|O|CREATE TRIGGER tr_participacion_convocatoria_inmutable BEFORE UPDATE OF "idConvocatoria" ON public."Participacion" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_convocatoria_participacion()
+trigger|Pregunta|tr_pregunta_bloqueo_f303|O|CREATE TRIGGER tr_pregunta_bloqueo_f303 BEFORE INSERT OR DELETE OR UPDATE ON public."Pregunta" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_contenido_f303()
+trigger|Respuesta|tr_respuesta_caso|O|CREATE TRIGGER tr_respuesta_caso BEFORE INSERT OR UPDATE OF "idIntento", "idPregunta", "idOpcionSeleccionada" ON public."Respuesta" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_respuesta()
+trigger|RubricaPregunta|tr_rubricapregunta_bloqueo_f303|O|CREATE TRIGGER tr_rubricapregunta_bloqueo_f303 BEFORE INSERT OR DELETE OR UPDATE ON public."RubricaPregunta" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_contenido_f303()
+trigger|RubricaPregunta|tr_rubricapregunta_caso|O|CREATE TRIGGER tr_rubricapregunta_caso BEFORE INSERT OR UPDATE OF "idRubrica", "idPregunta" ON public."RubricaPregunta" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_rubricapregunta()
+trigger|Rubrica|tr_rubrica_bloqueo_f303|O|CREATE TRIGGER tr_rubrica_bloqueo_f303 BEFORE INSERT OR DELETE OR UPDATE ON public."Rubrica" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_contenido_f303()
+trigger|Sesion|tr_sesion_00_rf09_caso_programable|O|CREATE TRIGGER tr_sesion_00_rf09_caso_programable BEFORE INSERT OR UPDATE OF "idCaso" ON public."Sesion" FOR EACH ROW EXECUTE FUNCTION prisaly_validar_caso_programable_rf09()
+trigger|Sesion|tr_sesion_bloqueo_caso_f303|O|CREATE TRIGGER tr_sesion_bloqueo_caso_f303 BEFORE INSERT ON public."Sesion" FOR EACH ROW EXECUTE FUNCTION prisaly_bloquear_caso_al_programar()
+trigger|Sesion|tr_sesion_bloqueo_reasignacion_f303|O|CREATE TRIGGER tr_sesion_bloqueo_reasignacion_f303 BEFORE UPDATE OF "idCaso" ON public."Sesion" FOR EACH ROW WHEN ((new."idCaso" IS DISTINCT FROM old."idCaso")) EXECUTE FUNCTION prisaly_bloquear_caso_al_programar()
+trigger|Sesion|tr_sesion_caso_inmutable|O|CREATE TRIGGER tr_sesion_caso_inmutable BEFORE UPDATE OF "idCaso" ON public."Sesion" FOR EACH ROW EXECUTE FUNCTION prisaly_proteger_caso_sesion()

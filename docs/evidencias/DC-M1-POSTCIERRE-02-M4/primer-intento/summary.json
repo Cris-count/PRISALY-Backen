@@ -1,0 +1,23 @@
+{
+  "sha": "bcbd17ccbab494db7b5cd60e508b424ca8d92273",
+  "suites": [
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4SchemaContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.M4SchemaReferenceIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 1,
+      "skipped": 0
+    }
+  ]
+}
