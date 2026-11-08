@@ -102,8 +102,9 @@ class ComposicionInstitucionalM1IT {
         Object escrituraM3 = unico(CaseAuthorizationPort.class);
         assertInstanceOf(M3CaseAuthorizationAdapter.class, escrituraM3);
         assertSame(escrituraM3, unico(CasoCurrentUserPort.class));
-        // No ratified M3 read policy nor HTTP concurrency transport: no provider may exist.
-        assertTrue(context.getBeansOfType(AutorizacionConsultaCasoPort.class).isEmpty());
+        // DC-M3-RES-02: one institutional read provider, with the policy still pending (denies).
+        assertInstanceOf(M3CaseReadAuthorizationAdapter.class, unico(AutorizacionConsultaCasoPort.class));
+        // No ratified HTTP concurrency transport: no provider may exist.
         assertTrue(context.getBeansOfType(CasoPatchConcurrencyContract.class).isEmpty());
         assertTrue(context.getBeansOfType(EstudianteSessionFilter.class).isEmpty());
     }

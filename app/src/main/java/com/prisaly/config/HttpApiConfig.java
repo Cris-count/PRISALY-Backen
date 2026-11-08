@@ -2,6 +2,7 @@ package com.prisaly.config;
 
 import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
 import com.prisaly.m1.infrastructure.security.ProvisionalBearerAuthenticationFilter;
+import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.List;
@@ -64,6 +65,9 @@ public class HttpApiConfig {
                                     "{\"code\":\"FORBIDDEN\",\"message\":\"Access denied\"}");
                         }))
                 .authorizeHttpRequests(auth -> auth
+                        // The container's internal error dispatch must render the original failure
+                        // (e.g. 500); securing it turned infrastructure errors into 401.
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/personal/autenticar").permitAll()
