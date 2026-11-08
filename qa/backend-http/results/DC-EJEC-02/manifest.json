@@ -1,0 +1,14 @@
+{
+  "productSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "files": {
+    "run.mjs": "41372be7edc0e634d1ab810d1d2f47f33e46e301c391500301b39c3a9e8f57bd",
+    "run.test.mjs": "2e190f71e4658cd947d01a4b09747301a47f5bb580109feba03b82032d5cfc8e",
+    "fixture.sql": "8c98880f5e0bbe979b3f23bf79a66730898088dc1c575d4b92cb768fc4863575",
+    "results/DC-EJEC-02/build-summary.json": "1b4aae001f8fdf2c381e5078088c45d3aee23cba3887356327cd1b9f6055ae24",
+    "results/DC-EJEC-02/build.txt": "b2e2640ec8095fb7025e549fa3410862f7c9e10dc8dfc66adc07a66435a37ce0",
+    "results/DC-EJEC-02/docker-preflight.txt": "8bf69fe59662c48af09aa8577b37b1fb78a1e3326c4c24a52aaf71745f410eae",
+    "results/DC-EJEC-02/harness-tests.tap": "499276218d99059acb1664cbc1cdd47880f80f54927d0ac11b0b7d5f94ffae72",
+    "results/DC-EJEC-02/http-summary.json": "d1f688045f4db31ff7b14fa2b38496ce2db3ebeb133074048c8b69d1e4ae1f03",
+    "results/DC-EJEC-02/matrix.csv": "92517123c19791dbe6e60608efd373d605b768ce664f7628a7e6e036ebd3b2bb"
+  }
+}
