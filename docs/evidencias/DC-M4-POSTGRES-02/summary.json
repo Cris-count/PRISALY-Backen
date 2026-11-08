@@ -1,0 +1,96 @@
+{
+  "sha": "d8eb62d0e4873ea28f426ed3d59392a5cd1ae95c",
+  "maven_exit": 0,
+  "totals": {
+    "tests": 114,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "suites": [
+    {
+      "suite": "Bd0052BaselineIT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "M4M1ContratosPostgreSqlIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "ProgramacionParticipacionPostgreSqlIT",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "SesionAcademicaPostgreSqlIT",
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "ParticipacionesM4DesdeM5IT",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "InicioIntentoIT",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "HistorialM4M5IT",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "ParticipacionesPortWiringIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "NotificacionPortWiringIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    },
+    {
+      "suite": "ConsultaIntentoEvaluacionM5M6IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "failures_detail": []
+    }
+  ],
+  "problems": [],
+  "migrations": "V001-V009 manifest; baseline cases passed",
+  "diagnostic_v010": "excluded",
+  "shared_databases": "not used"
+}

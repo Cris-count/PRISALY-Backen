@@ -1,0 +1,16 @@
+[
+  "sh",
+  "./mvnw",
+  "-B",
+  "-fae",
+  "-pl",
+  "app",
+  "-am",
+  "verify",
+  "-Pdocker-it",
+  "-Dtest=SesionAcademicaDomainTest,M4MigrationResourcesTest,M4CoordinacionInicioTest,M4ProviderSecurityTest,ParticipacionesM4DesdeM5Test",
+  "-Dsurefire.failIfNoSpecifiedTests=false",
+  "-Dit.test=Bd0052BaselineIT#rf09RealDeBaseDatosRechazaBorrador+publicadoProgramaYBloqueaContenidoConTriggerReal+rollbackRevierteSesionYMarcaAcademicaEnMismaTransaccion,M4M1ContratosPostgreSqlIT,ProgramacionParticipacionPostgreSqlIT,SesionAcademicaPostgreSqlIT,ParticipacionesM4DesdeM5IT,InicioIntentoIT,HistorialM4M5IT,ParticipacionesPortWiringIT,NotificacionPortWiringIT,ConsultaIntentoEvaluacionM5M6IT",
+  "-Dfailsafe.failIfNoSpecifiedTests=false",
+  "-Dm4.baseline.migrations=/home/runner/work/PRISALY-Backen/PRISALY-Backen/candidate/app/src/main/resources/db/migration"
+]

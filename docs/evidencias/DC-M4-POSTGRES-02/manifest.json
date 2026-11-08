@@ -1,0 +1,23 @@
+{
+  "sha": "d8eb62d0e4873ea28f426ed3d59392a5cd1ae95c",
+  "migrations": {
+    "V001__bd0052_estructura.sql": "896de22167cccda77577649f6fd2b5a90eb53960c26cfaf12e439b8296326974",
+    "V002__bd0052_restricciones.sql": "6ed5dd7c317f02a1cf3df7e6a564a0091d1b2d66f2295fcd3d8f87658b8e8c55",
+    "V003__bd0052_integridad.sql": "59f539968be4aabd4ac0ea49e3578c2e25f2a1f055e3c19c3abca39845fe42f7",
+    "V004__bd0052_integridad_intentos.sql": "ea96bfb7c9a1174da5e0a576668b793df0a09276c1801ada248b781945eac8b2",
+    "V005__bd0052_cierre_integridad.sql": "cd4bb975acb16b9ffe6844f51f6308d45246ed882f574b4b6f9e8e7aeaf06274",
+    "V006__bd0052_proteccion_relaciones.sql": "2c84a279d2355a6282e05a158d9322fc04bcdf220117fa9557b5f5acfc7fca6b",
+    "V007__fase3_politicas_aprobadas.sql": "9fabebb25970339abc1de9cbeb90c3ccda4138008a4ee2e78846781932d80ed2",
+    "V008__bloqueo_caso_al_reasignar_sesion.sql": "53508d12ba652695270fed87e69c7bf7347c30cb8d071735a8372f833667f833",
+    "V009__rf09_solo_casos_publicados.sql": "807f745e8e1ee85cfbe5f6096449a81f106eb236f70d6171bd12ca6db064c5a5"
+  },
+  "expected_postgresql_cases": 114,
+  "runner": {
+    "RUNNER_OS": "Linux",
+    "RUNNER_ARCH": "X64",
+    "ImageOS": "ubuntu24",
+    "ImageVersion": "20261101.360.1",
+    "GITHUB_RUN_ID": "42407696966",
+    "GITHUB_RUN_ATTEMPT": "1"
+  }
+}
