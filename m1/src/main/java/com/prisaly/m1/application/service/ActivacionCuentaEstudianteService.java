@@ -76,7 +76,9 @@ public class ActivacionCuentaEstudianteService {
         return new CodigoEmitido(challengeId, codigo);
     }
 
-    @Transactional
+    // A denial must commit the failed-attempt increment; rolling it back would never reach
+    // INTENTOS_MAXIMOS. Technical errors (e.g. IllegalStateException) still roll back.
+    @Transactional(noRollbackFor = IdentityDomainException.class)
     public void activar(UUID challengeId, String codigo, String contrasena) {
         if (challengeId == null || codigo == null || !codigo.matches("\\d{8}")) {
             throw denegado();

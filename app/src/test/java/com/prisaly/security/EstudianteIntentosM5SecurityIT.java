@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.prisaly.PrisalyApplication;
 import java.util.List;
 import java.util.UUID;
 
@@ -36,7 +37,7 @@ import tools.jackson.databind.ObjectMapper;
  * Solo casos negativos: mientras DD-02 siga abierta ninguna credencial produce identidad
  * estudiantil. Las denegaciones no deben escribir en las tablas de participación de BD-005.2.
  */
-@SpringBootTest
+@SpringBootTest(classes = PrisalyApplication.class)
 @Testcontainers
 class EstudianteIntentosM5SecurityIT {
 

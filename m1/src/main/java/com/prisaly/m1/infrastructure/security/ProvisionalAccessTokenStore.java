@@ -1,12 +1,15 @@
 package com.prisaly.m1.infrastructure.security;
 
 import java.security.SecureRandom;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,18 +23,29 @@ public class ProvisionalAccessTokenStore {
     private final SecureRandom secureRandom;
     private final Map<String, TokenRecord> tokensByValue;
     private final long ttlSeconds;
+    private final Clock clock;
 
+    @Autowired
     public ProvisionalAccessTokenStore() {
+        this(Clock.systemUTC(), DEFAULT_TTL_SECONDS);
+    }
+
+    // The clock makes expiry verifiable; production uses the system clock and the 8 h TTL.
+    public ProvisionalAccessTokenStore(Clock clock, long ttlSeconds) {
+        if (ttlSeconds <= 0) {
+            throw new IllegalArgumentException("Token TTL must be positive");
+        }
         this.secureRandom = new SecureRandom();
         this.tokensByValue = new ConcurrentHashMap<>();
-        this.ttlSeconds = DEFAULT_TTL_SECONDS;
+        this.ttlSeconds = ttlSeconds;
+        this.clock = Objects.requireNonNull(clock, "clock");
     }
 
     public String issue(UUID userId) {
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-        Instant expiresAt = Instant.now().plusSeconds(ttlSeconds);
+        Instant expiresAt = clock.instant().plusSeconds(ttlSeconds);
         tokensByValue.put(token, new TokenRecord(userId, expiresAt));
         return token;
     }
@@ -41,7 +55,7 @@ public class ProvisionalAccessTokenStore {
         if (record == null) {
             return Optional.empty();
         }
-        if (Instant.now().isAfter(record.expiresAt())) {
+        if (!clock.instant().isBefore(record.expiresAt())) {
             tokensByValue.remove(token);
             return Optional.empty();
         }
