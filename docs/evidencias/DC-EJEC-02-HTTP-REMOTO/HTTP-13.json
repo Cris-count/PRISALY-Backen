@@ -1,0 +1,41 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/casos",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "idCaso": "8cc1ccfa-e1c7-4509-b018-431b317e0ebb",
+      "titulo": "Borrador aceptación HTTP",
+      "tiempoEstimadoSegundos": 60
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "idCaso": "8cc1ccfa-e1c7-4509-b018-431b317e0ebb",
+      "estado": "BORRADOR"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-13",
+    "method": "POST",
+    "path": "/v1/casos",
+    "expectedStatus": 201,
+    "expectedCode": null,
+    "precondition": "Docente con CREAR_CASO; borrador mínimo",
+    "module": "M3",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 201,
+    "status": "passed",
+    "evidence": "HTTP-13.json",
+    "failures": []
+  }
+}

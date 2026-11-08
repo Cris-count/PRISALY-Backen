@@ -1,0 +1,32 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/personal/cerrar-sesion",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 204,
+    "body": null
+  },
+  "assertions": {
+    "id": "HTTP-31",
+    "method": "POST",
+    "path": "/v1/personal/cerrar-sesion",
+    "expectedStatus": 204,
+    "expectedCode": null,
+    "precondition": "Revocación del Bearer [REDACTED]",
+    "module": "M1/APP",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 204,
+    "status": "passed",
+    "evidence": "HTTP-31.json",
+    "failures": []
+  }
+}

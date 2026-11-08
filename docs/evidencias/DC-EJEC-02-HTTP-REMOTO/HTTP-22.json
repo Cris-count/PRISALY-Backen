@@ -1,0 +1,35 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "GET",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 403,
+    "body": {
+      "code": "M4-SESION-AJENA",
+      "message": "El docente no es propietario de esta sesión"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-22",
+    "method": "GET",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7",
+    "expectedStatus": 403,
+    "expectedCode": "M4-SESION-AJENA",
+    "precondition": "Otro docente con permiso",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 403,
+    "status": "passed",
+    "evidence": "HTTP-22.json",
+    "failures": []
+  }
+}

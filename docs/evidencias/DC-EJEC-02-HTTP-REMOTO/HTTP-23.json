@@ -1,0 +1,35 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "GET",
+    "path": "/m4/sesiones/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 404,
+    "body": {
+      "code": "M4-SESION-NO-ENCONTRADA",
+      "message": "Sesión académica no encontrada: aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-23",
+    "method": "GET",
+    "path": "/m4/sesiones/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "expectedStatus": 404,
+    "expectedCode": "M4-SESION-NO-ENCONTRADA",
+    "precondition": "Docente autorizado; ID inexistente",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 404,
+    "status": "passed",
+    "evidence": "HTTP-23.json",
+    "failures": []
+  }
+}

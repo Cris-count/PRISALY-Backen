@@ -1,0 +1,39 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/acceso-estudiante/validar",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "challengeId": "[REDACTED]",
+      "codigo": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 501,
+    "body": {
+      "code": "ESTUDIANTE_ACCESS_PENDING_CONTRACT",
+      "message": "Student access must be coordinated with M4/M5; DD-02 is not activated"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-27",
+    "method": "POST",
+    "path": "/v1/acceso-estudiante/validar",
+    "expectedStatus": 501,
+    "expectedCode": "ESTUDIANTE_ACCESS_PENDING_CONTRACT",
+    "precondition": "DD-02 deshabilitada",
+    "module": "M1/APP",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 501,
+    "status": "passed",
+    "evidence": "HTTP-27.json",
+    "failures": []
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/m4/sesiones",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "casoId": "33333333-3333-3333-3333-333333333301",
+      "titulo": "Aceptación HTTP 7cd69bb0-db46-48d4-a035-bc9c65516054",
+      "mensajePersonalizado": "Prueba PT-DCP-01",
+      "fechaInicio": "2035-11-08T14:00:00Z",
+      "fechaFin": "2035-11-08T15:00:00Z",
+      "tiempoMaximoParticipacionSegundos": 1800
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": "d60522e7-af6c-45e9-a1ae-6dbcd8de20f7",
+      "casoId": "33333333-3333-3333-3333-333333333301",
+      "docenteId": "11111111-1111-1111-1111-111111111101",
+      "titulo": "Aceptación HTTP 7cd69bb0-db46-48d4-a035-bc9c65516054",
+      "mensajePersonalizado": "Prueba PT-DCP-01",
+      "fechaInicio": "2035-11-08T14:00:00Z",
+      "fechaFin": "2035-11-08T15:00:00Z",
+      "estado": "SinIniciar",
+      "creadoEn": "2026-11-08T16:02:15.001107113Z",
+      "fechaInicioReal": null,
+      "fechaFinReal": null,
+      "tiempoMaximoParticipacionSegundos": 1800
+    }
+  },
+  "assertions": {
+    "id": "HTTP-20",
+    "method": "POST",
+    "path": "/m4/sesiones",
+    "expectedStatus": 201,
+    "expectedCode": null,
+    "precondition": "Caso Publicado activo fixture; no prueba publicación HTTP",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 201,
+    "status": "passed",
+    "evidence": "HTTP-20.json",
+    "failures": []
+  }
+}

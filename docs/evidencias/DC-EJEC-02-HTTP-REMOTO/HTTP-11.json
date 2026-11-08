@@ -1,0 +1,40 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/casos",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "idCaso": "8cc1ccfa-e1c7-4509-b018-431b317e0ebb",
+      "titulo": "Borrador aceptación HTTP",
+      "tiempoEstimadoSegundos": 60
+    }
+  },
+  "response": {
+    "status": 401,
+    "body": {
+      "code": "UNAUTHENTICATED",
+      "message": "Authentication required"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-11",
+    "method": "POST",
+    "path": "/v1/casos",
+    "expectedStatus": 401,
+    "expectedCode": "UNAUTHENTICATED",
+    "precondition": "Sin credencial",
+    "module": "M3",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 401,
+    "status": "passed",
+    "evidence": "HTTP-11.json",
+    "failures": []
+  }
+}

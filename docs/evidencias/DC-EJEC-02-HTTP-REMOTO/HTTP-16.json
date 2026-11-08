@@ -1,0 +1,44 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/m4/sesiones",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "casoId": "33333333-3333-3333-3333-333333333301",
+      "titulo": "Sin permiso",
+      "mensajePersonalizado": "Prueba PT-DCP-01",
+      "fechaInicio": "2035-11-08T14:00:00Z",
+      "fechaFin": "2035-11-08T15:00:00Z",
+      "tiempoMaximoParticipacionSegundos": 1800
+    }
+  },
+  "response": {
+    "status": 403,
+    "body": {
+      "code": "M4-SIN-PERMISO",
+      "message": "El docente no tiene permiso para gestionar sesiones académicas"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-16",
+    "method": "POST",
+    "path": "/m4/sesiones",
+    "expectedStatus": 403,
+    "expectedCode": "M4-SIN-PERMISO",
+    "precondition": "Personal sin GESTIONAR_SESION",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 403,
+    "status": "passed",
+    "evidence": "HTTP-16.json",
+    "failures": []
+  }
+}

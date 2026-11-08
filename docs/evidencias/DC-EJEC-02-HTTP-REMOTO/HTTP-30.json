@@ -1,0 +1,40 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "PUT",
+    "path": "/v1/estudiantes/intentos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/respuestas/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "idOpcionSeleccionada": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      "revisionEsperada": 0
+    }
+  },
+  "response": {
+    "status": 403,
+    "body": {
+      "code": "STUDENT_IDENTITY_UNAVAILABLE",
+      "message": "La operación requiere un estudiante autenticado"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-30",
+    "method": "PUT",
+    "path": "/v1/estudiantes/intentos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/respuestas/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+    "expectedStatus": 403,
+    "expectedCode": "STUDENT_IDENTITY_UNAVAILABLE",
+    "precondition": "Bearer [REDACTED] sin escritura",
+    "module": "M5",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 403,
+    "status": "passed",
+    "evidence": "HTTP-30.json",
+    "failures": []
+  }
+}

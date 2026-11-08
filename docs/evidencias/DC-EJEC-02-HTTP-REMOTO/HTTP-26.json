@@ -1,0 +1,39 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "estudianteId": "22222222-2222-2222-2222-222222222201"
+    }
+  },
+  "response": {
+    "status": 409,
+    "body": {
+      "code": "M4-CONVOCATORIA-DUPLICADA",
+      "message": "El estudiante ya está convocado a esta sesión"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-26",
+    "method": "POST",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "expectedStatus": 409,
+    "expectedCode": "M4-CONVOCATORIA-DUPLICADA",
+    "precondition": "Repetición de convocatoria",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 409,
+    "status": "passed",
+    "evidence": "HTTP-26.json",
+    "failures": []
+  }
+}

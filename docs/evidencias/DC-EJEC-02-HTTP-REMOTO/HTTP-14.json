@@ -1,0 +1,42 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/casos",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "idCaso": "64146f22-2ee1-4e56-a3c4-fa373e6dfd82",
+      "titulo": "Borrador aceptación HTTP",
+      "tiempoEstimadoSegundos": 60,
+      "docenteId": "11111111-1111-1111-1111-111111111104"
+    }
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "code": "INVALID_CASE_REQUEST",
+      "message": "Invalid case creation request"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-14",
+    "method": "POST",
+    "path": "/v1/casos",
+    "expectedStatus": 400,
+    "expectedCode": "INVALID_CASE_REQUEST",
+    "precondition": "Payload con propietario inyectado",
+    "module": "M3",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 400,
+    "status": "passed",
+    "evidence": "HTTP-14.json",
+    "failures": []
+  }
+}
