@@ -2,6 +2,8 @@ package com.prisaly.m3.infrastructure.persistence.jpa;
 
 import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.domain.model.Caso;
+import com.prisaly.m3.domain.rule.CasoDomainException;
+import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
 import jakarta.persistence.EntityManagerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -14,10 +16,11 @@ import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * M3-INC-10A: insert-only SQL writer plus the existing consistent JPA reader.
+ * Aggregate SQL writer plus the existing consistent JPA reader.
  * SQL is parameterized and runs on Hibernate's transaction-bound connection.
  * No mutable duplicate entities, JSON FormatMapper, cascades or schema changes.
  * Authorization remains the application/M1 responsibility; this is not an entry point.
@@ -27,6 +30,7 @@ public class CasoPersistenceAdapter implements CasoRepositoryPort {
     private final EntityManagerFactory entityManagerFactory;
     private final CasoJpaAggregateReader reader;
     private final TransactionTemplate writeTransaction;
+    private final TransactionTemplate updateTransaction;
 
     public CasoPersistenceAdapter(EntityManagerFactory entityManagerFactory,
             CasoJpaAggregateReader reader, PlatformTransactionManager transactionManager) {
@@ -37,6 +41,9 @@ public class CasoPersistenceAdapter implements CasoRepositoryPort {
             throw new IllegalArgumentException("Writer must use the application's EntityManagerFactory and transaction manager");
         }
         writeTransaction = new TransactionTemplate(transactionManager); // REQUIRED: joins compatible caller transactions.
+        updateTransaction = new TransactionTemplate(transactionManager);
+        updateTransaction.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+        updateTransaction.setIsolationLevel(TransactionDefinition.ISOLATION_READ_COMMITTED);
     }
 
     @Override
@@ -58,7 +65,40 @@ public class CasoPersistenceAdapter implements CasoRepositoryPort {
 
     @Override
     public void update(Caso caso) {
-        throw new UnsupportedOperationException("M3-INC-10A supports insert/findById only; aggregate updates require approval");
+        throw new IllegalArgumentException("Update requires the existing m3-v2 aggregate fingerprint");
+    }
+
+    @Override
+    public void update(Caso caso, String expectedFingerprint) {
+        Objects.requireNonNull(caso, "caso");
+        var caseId = CasoPersistenceMapper.uuid(caso.id());
+        CasoCommandUpdateAdapter.validateFingerprintVersion(expectedFingerprint);
+        updateTransaction.executeWithoutResult(status -> {
+            var em = Objects.requireNonNull(EntityManagerFactoryUtils.getTransactionalEntityManager(entityManagerFactory));
+            em.unwrap(Session.class).doWork(connection -> {
+                if (connection.getAutoCommit()
+                        || connection.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED) {
+                    throw new IllegalStateException("Update requires a real READ COMMITTED transaction");
+                }
+                var before = CasoTransactionalSnapshotReader.read(connection, caseId, true);
+                if (before == null) {
+                    throw new CasoDomainException(CasoCommandUpdateAdapter.CASE_NOT_FOUND, "Case does not exist");
+                }
+                CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
+                // A committed M4 scheduling lock invalidates the original snapshot before
+                // comparing replacement metadata; preserve the existing STALE_CASE contract.
+                CasoCommandUpdateAdapter.validateExpected(before, expectedFingerprint, java.util.List.of());
+                var commands = CasoReplacementCommands.between(CasoPersistenceMapper.toDomain(before), caso);
+                CasoCommandUpdateAdapter.validateExpected(before, expectedFingerprint, commands);
+                ContenidoEvaluableLock.assertEditable(CasoPersistenceMapper.toDomain(before));
+                for (var command : commands) { CasoCommandUpdateAdapter.validateMembership(before, command); }
+                for (var command : commands) { CasoCommandUpdateAdapter.apply(connection, caseId, command); }
+                var after = CasoTransactionalSnapshotReader.read(connection, caseId, false);
+                if (after == null || !caso.equals(CasoPersistenceMapper.toDomain(after))) {
+                    throw new IllegalStateException("Update readback differs from the requested aggregate");
+                }
+            });
+        });
     }
 
     private static void insertAggregate(Connection connection, Caso caso) throws SQLException {

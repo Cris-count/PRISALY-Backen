@@ -55,6 +55,7 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
                 }
                 var before = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, true));
                 assertAuthorized(authorization, userId, caseId);
+                assertOwner(before, userId);
                 CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
                 assertSchedulingGuards(connection);
                 Caso published = validatePublication(before, expectedFingerprint);
@@ -105,8 +106,24 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
     }
 
     static void assertAuthorized(CaseAuthorizationPort authorization, String userId, UUID caseId) {
-        if (!authorization.canPublishCase(userId, caseId.toString())) {
+        boolean allowed;
+        try { allowed = authorization.canPublishCase(userId, caseId.toString()); }
+        catch (RuntimeException failure) {
             throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Publication is not authorized");
+        }
+        if (!allowed) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Publication is not authorized");
+        }
+    }
+
+    static void assertOwner(CasoJpaAggregateSnapshot snapshot, String userId) {
+        UUID user;
+        try { user = CasoPersistenceMapper.uuid(userId); }
+        catch (RuntimeException failure) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Publication owner mismatch");
+        }
+        if (!user.equals(snapshot.caso().idDocente())) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Publication owner mismatch");
         }
     }
 

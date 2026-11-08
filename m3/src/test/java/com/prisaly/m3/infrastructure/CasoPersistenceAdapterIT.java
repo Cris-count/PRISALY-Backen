@@ -54,6 +54,136 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /** M3-INC-10A: official schema, real SQL constraints and atomic aggregate inserts. */
 class CasoPersistenceAdapterIT {
+    /** HTTP composition with controlled policies, not the productive M1/APP assembly. */
+    private static org.springframework.test.web.servlet.MockMvc controlledHttp() {
+        var policy = new com.prisaly.m3.application.port.AutorizacionConsultaCasoPort() {
+            public Decision verificarAcceso(UUID user, UUID caso) { return Decision.AUTORIZADO; }
+            public Decision verificarVisibilidad(UUID user, UUID caso, CasoEstado state, boolean active) {
+                return Decision.AUTORIZADO;
+            }
+        };
+        var write = new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
+            public boolean canModifyCase(String user, String caso) { return teacher.toString().equals(user); }
+            public boolean canPublishCase(String user, String caso) { return false; }
+        };
+        return org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
+                new com.prisaly.m3.presentation.CasoGestionController(() -> teacher, repository,
+                        java.util.Optional.of(policy), java.util.Optional.of(write),
+                        java.util.Optional.of(h -> h.getFirst("X-Test-Fingerprint"))))
+                .setControllerAdvice(new com.prisaly.m3.presentation.CasoGestionExceptionHandler()).build();
+    }
+
+    private static org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder patchHttp(
+            UUID id, String fingerprint, String body) {
+        return org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch("/v1/casos/" + id)
+                .contentType("application/json").header("X-Test-Fingerprint", fingerprint).content(body);
+    }
+
+    @Test
+    void httpPatchCommitsBeforeResponseAndGetReturnsOnlySafeProjection() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        var mvc = controlledHttp();
+        mvc.perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"Guardado por HTTP\",\"historia\":null}"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isNoContent());
+        var after = updateReader().findById(id).orElseThrow();
+        assertEquals("Guardado por HTTP", after.caso().titulo());
+        assertNull(after.caso().historia());
+        assertEquals(before.caso().docenteId(), after.caso().docenteId());
+        assertEquals(before.caso().fechaCreacion(), after.caso().fechaCreacion());
+        assertEquals(before.caso().fechaActualizacion(), after.caso().fechaActualizacion());
+        assertEquals(before.caso().fechaBloqueoAcademico(), after.caso().fechaBloqueoAcademico());
+        assertEquals(before.caso().estado(), after.caso().estado());
+        assertEquals(before.caso().activo(), after.caso().activo());
+        assertEquals(before.caso().escenarios(), after.caso().escenarios());
+        assertEquals(before.caso().rubrica(), after.caso().rubrica());
+        mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/v1/casos/" + id))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.titulo").value("Guardado por HTTP"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.*").value(org.hamcrest.Matchers.hasSize(4)));
+        mvc.perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"Obsoleto\"}"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+        assertEquals(after, updateReader().findById(id).orElseThrow());
+    }
+
+    @Test
+    void twoConcurrentHttpPatchesWithSameFingerprintHaveExactlyOneWinner() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        var mvc = controlledHttp();
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        var start = new java.util.concurrent.CountDownLatch(1);
+        try {
+            var tasks = new ArrayList<java.util.concurrent.Future<Integer>>();
+            for (String title : List.of("HTTP writer A", "HTTP writer B")) {
+                tasks.add(executor.submit(() -> {
+                    assertTrue(start.await(10, java.util.concurrent.TimeUnit.SECONDS));
+                    return mvc.perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"" + title + "\"}"))
+                            .andReturn().getResponse().getStatus();
+                }));
+            }
+            start.countDown();
+            var statuses = new ArrayList<Integer>();
+            for (var task : tasks) { statuses.add(task.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
+            statuses.sort(Integer::compareTo);
+            assertEquals(List.of(204, 409), statuses);
+            var after = updateReader().findById(id).orElseThrow();
+            assertTrue(Set.of("HTTP writer A", "HTTP writer B").contains(after.caso().titulo()));
+            assertEquals(before.caso().escenarios(), after.caso().escenarios());
+        } finally {
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    void httpPatchRollsBackEarlierCommandWhenLaterDatabaseWriteFails() throws Exception {
+        var before = savedReplacement();
+        UUID id = UUID.fromString(before.caso().id());
+        // Fault injection only in the disposable test database; official migrations remain untouched.
+        jdbc.execute("""
+                CREATE FUNCTION public.m3_http_test_failure() RETURNS trigger LANGUAGE plpgsql AS $$
+                BEGIN
+                  IF NEW."historia" = 'HTTP rollback fault' THEN RAISE EXCEPTION 'injected private failure'; END IF;
+                  RETURN NEW;
+                END $$
+                """);
+        jdbc.execute("""
+                CREATE TRIGGER m3_http_test_failure BEFORE UPDATE ON public."Caso"
+                FOR EACH ROW EXECUTE FUNCTION public.m3_http_test_failure()
+                """);
+        try {
+            controlledHttp().perform(patchHttp(id, before.fingerprint(),
+                    "{\"titulo\":\"Must roll back\",\"historia\":\"HTTP rollback fault\"}"))
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isInternalServerError())
+                    .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.content().string(
+                            org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("injected"))));
+            assertEquals(before, updateReader().findById(id).orElseThrow());
+        } finally {
+            jdbc.execute("DROP TRIGGER m3_http_test_failure ON public.\"Caso\"");
+            jdbc.execute("DROP FUNCTION public.m3_http_test_failure()");
+        }
+    }
+
+    @Test
+    void httpPatchCannotEditAfterOfficialSchedulingTriggerLocksContent() throws Exception {
+        Caso input = root(id(), teacher.toString(), List.of(), null, CasoEstado.PUBLICADO, CREATED);
+        repository.insert(input);
+        UUID id = UUID.fromString(input.id());
+        jdbc.update("""
+                INSERT INTO public."Sesion" ("idSesion", "idCaso", "idDocenteProgramador",
+                  "nombreEspacioAcademico", "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos")
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                """, UUID.randomUUID(), id, teacher, "HTTP lock fixture",
+                Timestamp.from(Instant.parse("2030-01-01T10:00:00Z")),
+                Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")), 300);
+        var before = updateReader().findById(id).orElseThrow();
+        controlledHttp().perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"Forbidden\"}"))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+        assertEquals(before, updateReader().findById(id).orElseThrow());
+    }
+
     private static final List<String> MIGRATIONS = List.of(
             "V001__bd0052_estructura.sql", "V002__bd0052_restricciones.sql",
             "V003__bd0052_integridad.sql", "V004__bd0052_integridad_intentos.sql",
@@ -129,7 +259,7 @@ class CasoPersistenceAdapterIT {
         Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
         var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
         List<Integer> counts = academicRowCounts();
-        assertPublicationCode("INCOMPLETE_RUBRIC", () -> publication(true).publish("fixture",
+        assertPublicationCode("INCOMPLETE_RUBRIC", () -> publication(true).publish(teacher.toString(),
                 UUID.fromString(saved.id()), before.fingerprint()));
         assertEquals(before, updateReader().findById(UUID.fromString(saved.id())).orElseThrow());
         assertEquals(counts, academicRowCounts());
@@ -140,7 +270,7 @@ class CasoPersistenceAdapterIT {
     void publicationAuthorizationPrecedesStalePreconditionAndDoesNotWrite() {
         Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
         var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
-        assertPublicationCode("FORBIDDEN", () -> publication(false).publish("fixture",
+        assertPublicationCode("FORBIDDEN", () -> publication(false).publish(teacher.toString(),
                 UUID.fromString(saved.id()), "m3-v2:" + "0".repeat(64)));
         assertEquals(before, updateReader().findById(UUID.fromString(saved.id())).orElseThrow());
     }
@@ -168,7 +298,7 @@ class CasoPersistenceAdapterIT {
             });
             // The target has not changed: this must reach rubric validation, not STALE_CASE.
             assertPublicationCode("INCOMPLETE_RUBRIC", () -> publication(true).publish(
-                    "fixture", targetId, targetBefore.fingerprint()));
+                    teacher.toString(), targetId, targetBefore.fingerprint()));
             assertTrue(status.isRollbackOnly(), "Academic rejection must mark the joined transaction rollback-only");
             // Explicit outer rollback avoids treating UnexpectedRollbackException as test evidence.
             status.setRollbackOnly();
@@ -181,20 +311,20 @@ class CasoPersistenceAdapterIT {
 
     @Test
     void publicationRejectsMissingCaseStaleFingerprintAndNonDraftStates() {
-        assertPublicationCode("CASE_NOT_FOUND", () -> publication(true).publish("fixture",
+        assertPublicationCode("CASE_NOT_FOUND", () -> publication(true).publish(teacher.toString(),
                 UUID.randomUUID(), "m3-v2:" + "0".repeat(64)));
         for (CasoEstado state : CasoEstado.values()) {
             Caso input = root(id(), teacher.toString(), List.of(), null, state, CREATED);
             repository.insert(input); // Existing insert contract permits physical state fixtures; no transition is asserted.
             var before = updateReader().findById(UUID.fromString(input.id())).orElseThrow();
-            assertPublicationCode("STALE_CASE", () -> publication(true).publish("fixture",
+            assertPublicationCode("STALE_CASE", () -> publication(true).publish(teacher.toString(),
                     UUID.fromString(input.id()), "m3-v2:" + "0".repeat(64)));
             String expected = switch (state) {
                 case BORRADOR -> "CASE_INCOMPLETE";
                 case PUBLICADO -> "ALREADY_PUBLISHED";
                 case ARCHIVADO -> "ARCHIVED_CASE_OPERATION_PENDING";
             };
-            assertPublicationCode(expected, () -> publication(true).publish("fixture",
+            assertPublicationCode(expected, () -> publication(true).publish(teacher.toString(),
                     UUID.fromString(input.id()), before.fingerprint()));
             assertEquals(before, updateReader().findById(UUID.fromString(input.id())).orElseThrow());
         }
@@ -213,7 +343,7 @@ class CasoPersistenceAdapterIT {
                 Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")), 300);
         var before = updateReader().findById(UUID.fromString(input.id())).orElseThrow();
         assertNotNull(before.caso().fechaBloqueoAcademico());
-        assertPublicationCode("EVALUABLE_CONTENT_LOCKED", () -> publication(true).publish("fixture",
+        assertPublicationCode("EVALUABLE_CONTENT_LOCKED", () -> publication(true).publish(teacher.toString(),
                 UUID.fromString(input.id()), before.fingerprint()));
         assertEquals(before, updateReader().findById(UUID.fromString(input.id())).orElseThrow());
         assertTrue(creationService().isAvailableForScheduling(before.caso()));
@@ -254,7 +384,7 @@ class CasoPersistenceAdapterIT {
                 }
             };
             // The uncommitted outer history makes the old precondition stale: proves joined visibility.
-            assertPublicationCode("STALE_CASE", () -> publication(auth).publish("fixture", caseId, before.fingerprint()));
+            assertPublicationCode("STALE_CASE", () -> publication(auth).publish(teacher.toString(), caseId, before.fingerprint()));
             assertTrue(status.isRollbackOnly(), "Participating failure must mark the outer transaction rollback-only");
             status.setRollbackOnly();
         });
@@ -268,7 +398,7 @@ class CasoPersistenceAdapterIT {
         outer.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_REPEATABLE_READ);
         var auth = org.mockito.Mockito.mock(CaseAuthorizationPort.class);
         outer.executeWithoutResult(status -> {
-            assertThrows(IllegalStateException.class, () -> publication(auth).publish("fixture",
+            assertThrows(IllegalStateException.class, () -> publication(auth).publish(teacher.toString(),
                     UUID.randomUUID(), "m3-v2:" + "0".repeat(64)));
             status.setRollbackOnly();
         });
@@ -300,7 +430,7 @@ class CasoPersistenceAdapterIT {
                         try (var r = s.executeQuery("SELECT pg_backend_pid()")) { r.next(); pid.complete(r.getInt(1)); }
                     }
                 });
-                publication(true).publish("fixture", caseId, before.fingerprint());
+                publication(true).publish(teacher.toString(), caseId, before.fingerprint());
             }));
             int waiter = pid.get(5, java.util.concurrent.TimeUnit.SECONDS);
             long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(7);
@@ -352,6 +482,34 @@ class CasoPersistenceAdapterIT {
 
     private static void assertPublicationCode(String code, Runnable action) {
         assertEquals(code, assertThrows(CasoDomainException.class, action::run).code());
+    }
+
+    @Test
+    void teacherQueryProjectsRealPersistedCaseWithoutChangingAcademicContent() {
+        Caso input = full(JSON);
+        repository.insert(input);
+        Caso before = repository.findById(input.id()).orElseThrow();
+        var policy = new com.prisaly.m3.application.port.AutorizacionConsultaCasoPort() {
+            public Decision verificarAcceso(UUID usuario, UUID caso) {
+                return teacher.equals(usuario) && UUID.fromString(input.id()).equals(caso)
+                        ? Decision.AUTORIZADO : Decision.DENEGADO;
+            }
+            public Decision verificarVisibilidad(UUID usuario, UUID caso, CasoEstado estado, boolean activo) {
+                // Controlled test policy only, not production visibility authorization.
+                return Decision.AUTORIZADO;
+            }
+        };
+        var query = new com.prisaly.m3.application.service.CasoDocenteConsultaService(() -> teacher, policy, repository);
+        var response = com.prisaly.m3.presentation.dto.CasoDocenteConsultaResponse.from(query.consultar(input.id()));
+        assertEquals(UUID.fromString(input.id()), response.idCaso());
+        assertEquals(input.titulo(), response.titulo());
+        assertEquals(input.tiempoEstimadoSegundos(), response.tiempoEstimadoSegundos());
+        assertEquals(input.estado().name(), response.estado());
+        assertEquals(before, repository.findById(input.id()).orElseThrow());
+        var denied = new com.prisaly.m3.application.service.CasoDocenteConsultaService(
+                () -> UUID.randomUUID(), policy, repository);
+        assertEquals(com.prisaly.m3.application.service.CasoDocenteConsultaService.ACCESO_DENEGADO,
+                assertThrows(CasoDomainException.class, () -> denied.consultar(input.id())).code());
     }
 
     @Test
@@ -703,7 +861,7 @@ class CasoPersistenceAdapterIT {
     }
 
     @Test
-    void refusesLossyLegacyRepresentationsUnsupportedUpdateAndSubmicrosecondDates() {
+    void refusesLossyLegacyRepresentationsUpdateWithoutPreconditionAndSubmicrosecondDates() {
         Caso legacyScenario = root(id(), teacher.toString(), List.of(new Escenario(id(), "Legacy", List.of())),
                 null, CasoEstado.BORRADOR, CREATED);
         assertThrows(IllegalArgumentException.class, () -> repository.insert(legacyScenario));
@@ -716,7 +874,292 @@ class CasoPersistenceAdapterIT {
                 CasoEstado.BORRADOR, Instant.parse("2026-01-02T03:04:05.123456789Z"));
         assertThrows(IllegalArgumentException.class, () -> repository.insert(precise));
         assertAbsent(precise);
-        assertThrows(UnsupportedOperationException.class, () -> repository.update(precise));
+        assertThrows(IllegalArgumentException.class, () -> repository.update(precise));
+    }
+
+    @Test
+    void authorizedReplacementPersistsExistingFieldsWithoutRecreatingRelationships() {
+        var before = savedReplacement();
+        Caso target = editedReplacement(before.caso(), "Updated root", "Updated scenario", "Updated question");
+        List<Integer> counts = academicRowCounts();
+        authorizedUpdater().update(UUID.fromString(target.id()), before.fingerprint(), target);
+        Caso after = repository.findById(target.id()).orElseThrow();
+        assertEquals(target, after);
+        assertEquals(before.caso().docenteId(), after.docenteId());
+        assertEquals(before.caso().fechaCreacion(), after.fechaCreacion());
+        assertEquals(before.caso().fechaActualizacion(), after.fechaActualizacion());
+        assertEquals(before.caso().fechaBloqueoAcademico(), after.fechaBloqueoAcademico());
+        assertEquals(before.caso().rubrica(), after.rubrica());
+        assertEquals(before.caso().escenarios().getFirst().preguntas().getFirst().opciones(),
+                after.escenarios().getFirst().preguntas().getFirst().opciones());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
+    void replacementRejectsOwnerLifecycleAndAuditChangesWithoutMutation() {
+        var before = savedReplacement();
+        Caso c = before.caso();
+        for (Caso invalid : List.of(
+                new Caso(c.id(), c.titulo(), id(), c.tiempoEstimadoSegundos(), c.estado(), c.escenarios(), c.rubrica(),
+                        false, c.historia(), c.desarrolloSituacional(), c.activo(), c.fechaCreacion(), c.fechaActualizacion(), null),
+                new Caso(c.id(), c.titulo(), c.docenteId(), c.tiempoEstimadoSegundos(), CasoEstado.PUBLICADO, c.escenarios(), c.rubrica(),
+                        false, c.historia(), c.desarrolloSituacional(), c.activo(), c.fechaCreacion(), c.fechaActualizacion(), null),
+                new Caso(c.id(), c.titulo(), c.docenteId(), c.tiempoEstimadoSegundos(), c.estado(), c.escenarios(), c.rubrica(),
+                        false, c.historia(), c.desarrolloSituacional(), !c.activo(), c.fechaCreacion(), c.fechaActualizacion(), null),
+                new Caso(c.id(), c.titulo(), c.docenteId(), c.tiempoEstimadoSegundos(), c.estado(), c.escenarios(), c.rubrica(),
+                        false, c.historia(), c.desarrolloSituacional(), c.activo(), c.fechaCreacion(), UPDATED.plusSeconds(1), null))) {
+            assertThrows(IllegalArgumentException.class, () -> repository.update(invalid, before.fingerprint()));
+            assertEquals(before, updateReader().findById(UUID.fromString(c.id())).orElseThrow());
+        }
+    }
+
+    @Test
+    void replacementRejectsForeignScenarioAndImplicitOptionDeletion() {
+        var before = savedReplacement();
+        Caso c = before.caso();
+        var s = c.escenarios().getFirst();
+        var scenarios = new ArrayList<>(c.escenarios());
+        scenarios.set(0, new Escenario(id(), s.titulo(), s.contexto(), s.instrucciones(), s.orden(), s.activo(), s.preguntas()));
+        var foreign = replacementContent(c, c.titulo(), c.historia(), scenarios);
+        assertThrows(IllegalArgumentException.class, () -> repository.update(foreign, before.fingerprint()));
+        var question = s.preguntas().getFirst();
+        var questions = new ArrayList<>(s.preguntas());
+        questions.set(0, new Pregunta(question.id(), question.enunciado(), List.of(), question.textoAyuda(),
+                question.estadoEdicion(), question.visible(), question.orden(), question.fechaCreacion(), question.fechaActualizacion()));
+        scenarios.set(0, new Escenario(s.id(), s.titulo(), s.contexto(), s.instrucciones(), s.orden(), s.activo(), questions));
+        var deletion = replacementContent(c, c.titulo(), c.historia(), scenarios);
+        assertThrows(IllegalArgumentException.class, () -> repository.update(deletion, before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(c.id())).orElseThrow());
+    }
+
+    @Test
+    void failedLaterScenarioWriteRollsBackTheEarlierRootWrite() {
+        var before = savedReplacement();
+        var target = editedReplacement(before.caso(), "Must roll back", "Invalid\u0000scenario", "Never persisted");
+        List<Integer> counts = academicRowCounts();
+        assertThrows(RuntimeException.class, () -> repository.update(target, before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(target.id())).orElseThrow());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
+    void staleReplacementNeverOverwritesAnAlreadyCommittedChange() {
+        var before = savedReplacement();
+        var winner = replacementContent(before.caso(), "Winner", before.caso().historia(), before.caso().escenarios());
+        repository.update(winner, before.fingerprint());
+        var stale = replacementContent(before.caso(), "Stale writer", before.caso().historia(), before.caso().escenarios());
+        assertEquals(CasoCommandUpdateAdapter.STALE_CASE, assertThrows(CasoDomainException.class,
+                () -> repository.update(stale, before.fingerprint())).code());
+        assertEquals(winner, repository.findById(winner.id()).orElseThrow());
+    }
+
+    @Test
+    void simultaneousReplacementsWithOneFingerprintHaveExactlyOneWinner() throws Exception {
+        var before = savedReplacement();
+        var start = new java.util.concurrent.CountDownLatch(1);
+        var executor = java.util.concurrent.Executors.newFixedThreadPool(2);
+        try {
+            var results = new ArrayList<java.util.concurrent.Future<String>>();
+            for (String title : List.of("Concurrent A", "Concurrent B")) {
+                results.add(executor.submit(() -> {
+                    if (!start.await(10, java.util.concurrent.TimeUnit.SECONDS)) { throw new IllegalStateException("Start timeout"); }
+                    try {
+                        repository.update(replacementContent(before.caso(), title, before.caso().historia(), before.caso().escenarios()), before.fingerprint());
+                        return "UPDATED";
+                    } catch (CasoDomainException failure) { return failure.code(); }
+                }));
+            }
+            start.countDown();
+            var outcomes = new ArrayList<String>();
+            for (var result : results) { outcomes.add(result.get(30, java.util.concurrent.TimeUnit.SECONDS)); }
+            assertEquals(1L, outcomes.stream().filter("UPDATED"::equals).count());
+            assertEquals(1L, outcomes.stream().filter(CasoCommandUpdateAdapter.STALE_CASE::equals).count());
+            assertTrue(Set.of("Concurrent A", "Concurrent B").contains(repository.findById(before.caso().id()).orElseThrow().titulo()));
+        } finally {
+            start.countDown();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(10, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    void replacementRequiresExistingCaseAndExplicitFingerprint() {
+        var before = savedReplacement();
+        assertThrows(IllegalArgumentException.class, () -> repository.update(before.caso()));
+        assertThrows(IllegalArgumentException.class, () -> repository.update(before.caso(), null));
+        Caso missing = root(id(), teacher.toString(), List.of(), null, CasoEstado.BORRADOR, CREATED);
+        assertEquals(CasoCommandUpdateAdapter.CASE_NOT_FOUND, assertThrows(CasoDomainException.class,
+                () -> repository.update(missing, before.fingerprint())).code());
+        assertEquals(before, updateReader().findById(UUID.fromString(before.caso().id())).orElseThrow());
+    }
+
+    @Test
+    void repositoryReplacementCannotBypassAnAcademicLockOrArchivedState() {
+        for (CasoEstado state : List.of(CasoEstado.ARCHIVADO, CasoEstado.PUBLICADO)) {
+            Caso input = root(id(), teacher.toString(), List.of(), null, state, CREATED);
+            repository.insert(input);
+            if (state == CasoEstado.PUBLICADO) {
+                // Establish the lock through the official scheduling trigger, never by changing audit metadata.
+                jdbc.update("""
+                        INSERT INTO public."Sesion" ("idSesion", "idCaso", "idDocenteProgramador",
+                            "nombreEspacioAcademico", "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos")
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """, UUID.randomUUID(), UUID.fromString(input.id()), teacher, "Replacement lock fixture",
+                        Timestamp.from(Instant.parse("2030-01-01T10:00:00Z")),
+                        Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")), 300);
+            }
+            var before = updateReader().findById(UUID.fromString(input.id())).orElseThrow();
+            var changed = replacementContent(before.caso(), "Forbidden", null, List.of());
+            assertThrows(CasoDomainException.class, () -> repository.update(changed, before.fingerprint()));
+            assertEquals(before, updateReader().findById(UUID.fromString(input.id())).orElseThrow());
+        }
+    }
+
+    @Test
+    void persistedPublicationRejectsANonOwnerBeforeAcademicValidation() {
+        var before = savedReplacement();
+        assertPublicationCode("FORBIDDEN", () -> publication(true).publish(UUID.randomUUID().toString(),
+                UUID.fromString(before.caso().id()), before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(before.caso().id())).orElseThrow());
+    }
+
+    @Test
+    void identityAwarePublicationStillRejectsStructuralCompletenessWithoutWriting() {
+        Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
+        var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
+        var service = new com.prisaly.m3.application.service.CasoPersistentPublicationService(publication(true), () -> teacher);
+        List<Integer> counts = academicRowCounts();
+        assertPublicationCode("INCOMPLETE_RUBRIC", () -> service.publish(UUID.fromString(before.caso().id()), before.fingerprint()));
+        assertEquals(before, updateReader().findById(UUID.fromString(before.caso().id())).orElseThrow());
+        assertEquals(counts, academicRowCounts());
+    }
+
+    @Test
+    void m4VisibilityProtocolRequiresBothPublishedAndActiveWithoutChangingEither() {
+        for (CasoEstado state : CasoEstado.values()) {
+            for (boolean active : List.of(false, true)) {
+                Caso base = root(id(), teacher.toString(), List.of(), null, state, CREATED);
+                Caso input = new Caso(base.id(), base.titulo(), base.docenteId(), base.tiempoEstimadoSegundos(),
+                        state, List.of(), null, false, null, null, active, CREATED, null, null);
+                repository.insert(input);
+                // Exact predicate consumed by M4's existing SQL adapter, not a new M4 provider.
+                boolean visible = Boolean.TRUE.equals(jdbc.queryForObject(
+                        "SELECT \"estado\" = 'Publicado' AND \"activo\" FROM public.\"Caso\" WHERE \"idCaso\" = ?",
+                        Boolean.class, UUID.fromString(input.id())));
+                assertEquals(state == CasoEstado.PUBLICADO && active, visible);
+                assertEquals(visible, creationService().isAvailableForScheduling(repository.findById(input.id()).orElseThrow()));
+                assertEquals(input, repository.findById(input.id()).orElseThrow());
+            }
+        }
+    }
+
+    @Test
+    void m4SchedulingLockCommittedWhileReplacementWaitsInvalidatesItsFingerprint() throws Exception {
+        // Already-published storage fixture, not a successful publication transition or institutional grant.
+        Caso input = root(id(), teacher.toString(), List.of(), null, CasoEstado.PUBLICADO, CREATED);
+        repository.insert(input);
+        UUID caseId = UUID.fromString(input.id());
+        var before = updateReader().findById(caseId).orElseThrow();
+        Caso stale = replacementContent(before.caso(), "Must not overwrite M4", null, List.of());
+        var executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        java.util.concurrent.Future<?> pending = null;
+        try (var scheduling = DriverManager.getConnection(postgres.getJdbcUrl(), postgres.getUsername(), postgres.getPassword())) {
+            scheduling.setAutoCommit(false);
+            int blockerPid;
+            try (var statement = scheduling.prepareStatement(
+                    "SELECT \"estado\", \"activo\", pg_backend_pid() FROM public.\"Caso\" WHERE \"idCaso\" = ? FOR UPDATE")) {
+                statement.setObject(1, caseId);
+                try (var rows = statement.executeQuery()) {
+                    assertTrue(rows.next());
+                    assertEquals("Publicado", rows.getString(1));
+                    assertTrue(rows.getBoolean(2));
+                    blockerPid = rows.getInt(3);
+                }
+            }
+            pending = executor.submit(() -> repository.update(stale, before.fingerprint()));
+            long deadline = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(15);
+            boolean blocked = false;
+            while (!blocked && System.nanoTime() < deadline) {
+                Long waiters = jdbc.queryForObject(
+                        "SELECT count(*) FROM pg_stat_activity WHERE ? = ANY(pg_blocking_pids(pid))", Long.class, blockerPid);
+                blocked = waiters != null && waiters > 0;
+                Thread.onSpinWait();
+            }
+            assertTrue(blocked, "PostgreSQL must observe the replacement waiting for M4's root lock");
+            try (var statement = scheduling.prepareStatement("""
+                    INSERT INTO public."Sesion" ("idSesion", "idCaso", "idDocenteProgramador",
+                        "nombreEspacioAcademico", "inicioPrevisto", "finPrevisto", "tiempoMaximoParticipacionSegundos")
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """)) {
+                statement.setObject(1, UUID.randomUUID()); statement.setObject(2, caseId); statement.setObject(3, teacher);
+                statement.setString(4, "M4 scheduling protocol fixture");
+                statement.setTimestamp(5, Timestamp.from(Instant.parse("2030-01-01T10:00:00Z")));
+                statement.setTimestamp(6, Timestamp.from(Instant.parse("2030-01-01T11:00:00Z")));
+                statement.setInt(7, 300);
+                assertEquals(1, statement.executeUpdate());
+            }
+            // solicitarBloqueoAcademico confirms the official trigger's write in the scheduling transaction.
+            try (var statement = scheduling.prepareStatement(
+                    "SELECT \"fechaBloqueoAcademico\" IS NOT NULL FROM public.\"Caso\" WHERE \"idCaso\" = ?")) {
+                statement.setObject(1, caseId);
+                try (var rows = statement.executeQuery()) { assertTrue(rows.next()); assertTrue(rows.getBoolean(1)); }
+            }
+            scheduling.commit();
+            java.util.concurrent.Future<?> completed = pending;
+            var failure = assertThrows(java.util.concurrent.ExecutionException.class,
+                    () -> completed.get(30, java.util.concurrent.TimeUnit.SECONDS));
+            assertEquals(CasoCommandUpdateAdapter.STALE_CASE, assertInstanceOf(CasoDomainException.class, failure.getCause()).code());
+            var after = updateReader().findById(caseId).orElseThrow();
+            assertNotNull(after.caso().fechaBloqueoAcademico());
+            assertEquals(before.caso().titulo(), after.caso().titulo());
+            assertEquals(before.caso().activo(), after.caso().activo());
+            assertEquals(before.caso().estado(), after.caso().estado());
+            assertEquals(before.caso().fechaCreacion(), after.caso().fechaCreacion());
+            assertEquals(before.caso().fechaActualizacion(), after.caso().fechaActualizacion());
+            assertFalse(before.fingerprint().equals(after.fingerprint()));
+            assertEquals("EVALUABLE_CONTENT_LOCKED", assertThrows(CasoDomainException.class,
+                    () -> repository.update(replacementContent(after.caso(), "Still forbidden", null, List.of()), after.fingerprint())).code());
+            assertEquals(after, updateReader().findById(caseId).orElseThrow());
+        } finally {
+            if (pending != null) { pending.cancel(true); }
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(15, java.util.concurrent.TimeUnit.SECONDS));
+        }
+    }
+
+    private static com.prisaly.m3.application.update.CasoUpdateResult savedReplacement() {
+        Caso input = full(JSON);
+        repository.insert(input);
+        return updateReader().findById(UUID.fromString(input.id())).orElseThrow();
+    }
+
+    private static com.prisaly.m3.application.service.CasoPersistentUpdateService authorizedUpdater() {
+        // Explicit test double. APP's productive modification authorization remains closed.
+        var auth = new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
+            public boolean canModifyCase(String user, String caso) { return teacher.toString().equals(user); }
+            public boolean canPublishCase(String user, String caso) { return false; }
+        };
+        return new com.prisaly.m3.application.service.CasoPersistentUpdateService(() -> teacher, auth, repository);
+    }
+
+    private static Caso replacementContent(Caso c, String title, String history, List<Escenario> scenarios) {
+        return new Caso(c.id(), title, c.docenteId(), c.tiempoEstimadoSegundos(), c.estado(), scenarios, c.rubrica(),
+                c.contenidoEvaluableBloqueado(), history, c.desarrolloSituacional(), c.activo(),
+                c.fechaCreacion(), c.fechaActualizacion(), c.fechaBloqueoAcademico());
+    }
+
+    private static Caso editedReplacement(Caso c, String title, String scenarioTitle, String statement) {
+        var scenarios = new ArrayList<>(c.escenarios());
+        var s = scenarios.getFirst();
+        var questions = new ArrayList<>(s.preguntas());
+        var q = questions.getFirst();
+        questions.set(0, new Pregunta(q.id(), statement, q.opciones(), "Updated help", q.estadoEdicion(),
+                q.visible(), q.orden(), q.fechaCreacion(), q.fechaActualizacion()));
+        scenarios.set(0, new Escenario(s.id(), scenarioTitle, "Updated context", "Updated instructions", s.orden(), s.activo(), questions));
+        return new Caso(c.id(), title, c.docenteId(), c.tiempoEstimadoSegundos() + 60, c.estado(), scenarios, c.rubrica(),
+                c.contenidoEvaluableBloqueado(), "Updated history", "Updated development", c.activo(),
+                c.fechaCreacion(), c.fechaActualizacion(), c.fechaBloqueoAcademico());
     }
 
     private static String lockedAssociationId(Caso caso) {

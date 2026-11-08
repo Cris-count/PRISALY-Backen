@@ -10,4 +10,7 @@ public interface CasoRepositoryPort {
     void insert(Caso caso);
 
     void update(Caso caso);
+
+    /** Internal optimistic update; precondition comes from the existing CasoUpdatePort read. */
+    void update(Caso caso, String expectedFingerprint);
 }
