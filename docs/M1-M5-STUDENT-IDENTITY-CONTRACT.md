@@ -13,7 +13,7 @@
 | `IdentityAccessPort` + personnel auth | **Implemented** |
 | `StudentAccessPort` + `AuthenticatedStudent` | **Published (compilable)** |
 | `DenyingStudentAccessService` (safe deny) | **Published** |
-| `POST /v1/acceso-estudiante/validar` | **501** while `prisaly.m1.student-access.enabled=false` (productivo); harness prep exists behind the flag |
+| `POST /v1/acceso-estudiante/validar` | **501** in every configuration (in-memory harness removed in DC-M1-POSTCIERRE-02) |
 | Real student session / cookie / OTP delivery | **Blocked** (sin SMTP, sin V011, denying sigue en `StudentAccessPort`) |
 | Runtime `Usuario` → `Estudiante` mapping | **Blocked by DD-02** |
 
@@ -50,8 +50,7 @@ HTTP status mapping is a **presentation** concern:
 | --- | --- |
 | No authenticated identity | **401** |
 | Authenticated (e.g. personnel) but not a student context | **403** (presentation maps domain denial) |
-| `POST /acceso-estudiante/validar` with student-access disabled (default) | **501** (`ESTUDIANTE_ACCESS_PENDING_CONTRACT`) |
-| `POST /acceso-estudiante/validar` when explicitly enabled (harness only) | **200** / **401** as validation result |
+| `POST /acceso-estudiante/validar` (any configuration) | **501** (`ESTUDIANTE_ACCESS_PENDING_CONTRACT`) |
 
 Domain code `STUDENT_IDENTITY_UNAVAILABLE` is **not** a global HTTP rule in `IdentityExceptionHandler`.
 
@@ -59,7 +58,7 @@ Domain code `STUDENT_IDENTITY_UNAVAILABLE` is **not** a global HTTP rule in `Ide
 
 ## 2. DD-02 (still required for real student auth)
 
-Productive DD-02 stays off: `prisaly.m1.student-access.enabled=false`, `/validar` returns **501**, `DenyingStudentAccessService` remains `StudentAccessPort`, SMTP worker off. M1 defines `StudentAccessDeliveryPort`; M7 provides an in-memory prep outbox (not `NotificacionPort`). App wires `StudentAccessCodeIssuanceService` explicitly; that bean does not activate student auth. Flyway V011 and session cookies remain blocked.
+Productive DD-02 stays off: `prisaly.m1.student-access.enabled=false`, `/validar` returns **501**, `DenyingStudentAccessService` remains `StudentAccessPort`, SMTP worker off. M1 defines `StudentAccessDeliveryPort`; M7 provides an in-memory prep outbox (not `NotificacionPort`); no M1 issuer is wired yet. Alternative A (own account, activation and password) is the proposed design; V011/V012 remain candidates outside productive Flyway and session cookies stay behind the disabled flag.
 
 ---
 

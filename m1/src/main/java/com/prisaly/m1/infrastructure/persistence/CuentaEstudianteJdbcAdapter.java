@@ -117,15 +117,22 @@ public class CuentaEstudianteJdbcAdapter implements CuentaEstudiantePort {
     @Transactional
     public boolean consumirYActivar(UUID challengeId, String passwordHash, OffsetDateTime cuando) {
         Timestamp marca = Timestamp.from(cuando.toInstant());
+        // Only an account that never completed activation (no password yet) can be activated:
+        // a deactivated account keeps its hash and must not be re-enabled by a new code.
         int consumidas = jdbc.update(
                 """
-                UPDATE "ActivacionCuentaEstudiante"
+                UPDATE "ActivacionCuentaEstudiante" a
                 SET "fechaConsumo" = ?
-                WHERE "challengeId" = ?
-                  AND "fechaConsumo" IS NULL
-                  AND "fechaRevocacion" IS NULL
-                  AND "fechaExpiracion" > ?
-                  AND "intentosFallidos" < 5
+                WHERE a."challengeId" = ?
+                  AND a."fechaConsumo" IS NULL
+                  AND a."fechaRevocacion" IS NULL
+                  AND a."fechaExpiracion" > ?
+                  AND a."intentosFallidos" < 5
+                  AND EXISTS (
+                    SELECT 1 FROM "Usuario" u
+                    WHERE u."idUsuario" = a."idUsuario"
+                      AND u."passwordHash" IS NULL
+                      AND upper(u."estado") <> 'ACTIVO')
                 """,
                 marca,
                 challengeId,
@@ -139,6 +146,7 @@ public class CuentaEstudianteJdbcAdapter implements CuentaEstudiantePort {
                 SET "passwordHash" = ?, "estado" = 'Activo', "fechaActualizacion" = ?
                 WHERE u."idUsuario" = (
                   SELECT a."idUsuario" FROM "ActivacionCuentaEstudiante" a WHERE a."challengeId" = ?)
+                  AND u."passwordHash" IS NULL
                   AND upper(u."estado") <> 'ACTIVO'
                 """,
                 passwordHash,

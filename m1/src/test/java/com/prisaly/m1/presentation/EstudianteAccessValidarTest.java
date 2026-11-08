@@ -1,108 +1,57 @@
 package com.prisaly.m1.presentation;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.prisaly.m1.application.service.StudentAccessValidationService;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
+import java.lang.reflect.Constructor;
+import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 /**
- * HTTP proof for {@code POST /v1/acceso-estudiante/validar}.
- * Productive default remains disabled (501); enabled path exercises validation only in harness.
+ * {@code POST /v1/acceso-estudiante/validar} after DC-M1-POSTCIERRE-02: no in-memory challenge
+ * remains, so the route cannot validate a code nor disclose an identity in any configuration.
  */
 class EstudianteAccessValidarTest {
 
-    private static final String CHALLENGE_ID = "challenge-dd02-40pct";
-    private static final String CODIGO = "12345678";
-    private static final UUID USER_ID = UUID.fromString("11111111-1111-1111-1111-111111111111");
-    private static final UUID STUDENT_ID = UUID.fromString("22222222-2222-2222-2222-222222222222");
-
-    private StudentAccessValidationService validationService;
-
-    @BeforeEach
-    void setUp() {
-        validationService = new StudentAccessValidationService();
-    }
+    private final MockMvc mockMvc = MockMvcBuilders
+            .standaloneSetup(new EstudianteAccessController())
+            .setControllerAdvice(new IdentityExceptionHandler())
+            .build();
 
     @Test
-    void validar_whenDisabled_returns501() throws Exception {
-        MockMvc mockMvc = mockMvc(false);
-
+    void validar_conCuerpoValido_responde501SinIdentidadNiCookie() throws Exception {
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"challengeId":"challenge-dd02-40pct","codigo":"12345678"}
+                                {"challengeId":"challenge-dd02","codigo":"12345678"}
                                 """))
                 .andExpect(status().isNotImplemented())
-                .andExpect(jsonPath("$.code")
-                        .value(EstudianteAccessController.CODE_ESTUDIANTE_ACCESS_PENDING));
-    }
-
-    @Test
-    void validar_whenEnabled_withRegisteredChallenge_returnsValidatedStudentIdentity() throws Exception {
-        validationService.registerChallenge(CHALLENGE_ID, CODIGO, USER_ID, STUDENT_ID);
-        MockMvc mockMvc = mockMvc(true);
-
-        mockMvc.perform(post("/v1/acceso-estudiante/validar")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"challengeId":"challenge-dd02-40pct","codigo":"12345678"}
-                                """))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value(USER_ID.toString()))
-                .andExpect(jsonPath("$.studentId").value(STUDENT_ID.toString()))
-                .andExpect(jsonPath("$.challengeId").value(CHALLENGE_ID))
-                .andExpect(jsonPath("$.estado").value(StudentAccessValidationService.ESTADO_VALIDADO))
+                .andExpect(jsonPath("$.code").value(EstudianteAccessController.CODE_ESTUDIANTE_ACCESS_PENDING))
+                .andExpect(jsonPath("$.userId").doesNotExist())
+                .andExpect(jsonPath("$.studentId").doesNotExist())
                 .andExpect(header().doesNotExist("Set-Cookie"));
     }
 
     @Test
-    void validar_whenEnabled_withUnknownChallenge_deniesAccess() throws Exception {
-        MockMvc mockMvc = mockMvc(true);
-
+    void validar_conCuerpoInvalido_responde400() throws Exception {
         mockMvc.perform(post("/v1/acceso-estudiante/validar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"challengeId":"missing","codigo":"12345678"}
+                                {"challengeId":"challenge-dd02","codigo":"123"}
                                 """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code")
-                        .value(StudentAccessValidationService.CODE_STUDENT_ACCESS_DENIED));
+                .andExpect(status().isBadRequest());
     }
 
+    // The controller cannot be wired to any code store or to the student-access flag.
     @Test
-    void validar_whenEnabled_consumesChallenge_secondCallIsDenied() throws Exception {
-        validationService.registerChallenge(CHALLENGE_ID, CODIGO, USER_ID, STUDENT_ID);
-        MockMvc mockMvc = mockMvc(true);
-
-        mockMvc.perform(post("/v1/acceso-estudiante/validar")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"challengeId":"challenge-dd02-40pct","codigo":"12345678"}
-                                """))
-                .andExpect(status().isOk());
-
-        mockMvc.perform(post("/v1/acceso-estudiante/validar")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {"challengeId":"challenge-dd02-40pct","codigo":"12345678"}
-                                """))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.code")
-                        .value(StudentAccessValidationService.CODE_STUDENT_ACCESS_DENIED));
-    }
-
-    private MockMvc mockMvc(boolean studentAccessEnabled) {
-        return MockMvcBuilders
-                .standaloneSetup(new EstudianteAccessController(validationService, studentAccessEnabled))
-                .setControllerAdvice(new IdentityExceptionHandler())
-                .build();
+    void elControladorNoDependeDeNingunAlmacenDeRetosNiDelFlag() {
+        Constructor<?>[] constructors = EstudianteAccessController.class.getConstructors();
+        assertFalse(Arrays.stream(constructors).anyMatch(constructor -> constructor.getParameterCount() > 0));
     }
 }
