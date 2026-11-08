@@ -208,27 +208,108 @@ class CuentaEstudiantePostgreSqlIT {
                 "INSERT INTO \"Estudiante\" (\"idEstudiante\", \"idUsuario\") VALUES (?, ?)", UUID.randomUUID(), usuario));
     }
 
-    // V011 has two independent FKs: the database accepts an activation whose student belongs to
-    // another user. The service must still deny it (defense in depth while the constraint is missing).
+    // V011 alone has two independent FKs and accepted a student of another user (reproduced in
+    // DC-M1-CIERRE-02). The V012 candidate rejects cross links for activations and sessions.
     @Test
-    void unaActivacionConVinculoCruzadoSeAceptaEnBdPeroElServicioLaDeniega() {
+    void v012RechazaVinculosCruzadosEnActivacionesYSesiones() {
         UUID victima = insertar("victima.pg@prisaly.test");
         UUID atacante = insertar("atacante.pg@prisaly.test");
-        UUID estudianteVictima = jdbc.queryForObject(
-                "SELECT \"idEstudiante\" FROM \"Estudiante\" WHERE \"idUsuario\" = ?", UUID.class, victima);
-        UUID challenge = UUID.randomUUID();
-        String codigo = "24681357";
-        jdbc.update("""
+        UUID estudianteVictima = estudiante(victima);
+
+        DataIntegrityViolationException activacion = assertThrows(DataIntegrityViolationException.class, () -> jdbc.update("""
                 INSERT INTO "ActivacionCuentaEstudiante" ("idActivacion", "idUsuario", "idEstudiante", "challengeId",
                   "codigoHmac", "fechaExpiracion")
                 VALUES (?, ?, ?, ?, ?, now() + interval '10 minutes')
-                """, UUID.randomUUID(), atacante, estudianteVictima, challenge,
-                FirmasEstudiante.hmac(CLAVE.valor(), challenge + ":" + codigo));
+                """, UUID.randomUUID(), atacante, estudianteVictima, UUID.randomUUID(), new byte[] {1}));
+        assertTrue(activacion.getMessage().contains("DD02-VINCULO-INCOHERENTE"));
 
-        assertThrows(IdentityDomainException.class,
-                () -> activacionTransaccional.activar(challenge, codigo, "contrasena-segura"));
-        assertEquals("Inactivo", estado(atacante));
-        assertEquals("Inactivo", estado(victima));
+        jdbc.update("UPDATE \"Usuario\" SET \"estado\" = 'Activo' WHERE \"idUsuario\" = ?", atacante);
+        DataIntegrityViolationException sesion = assertThrows(DataIntegrityViolationException.class, () -> insertarSesion(
+                atacante, estudianteVictima));
+        assertTrue(sesion.getMessage().contains("DD02-VINCULO-INCOHERENTE"));
+    }
+
+    @Test
+    void v012NoAbreSesionesDeCuentasInactivasNiCambiaElVinculoEnUso() {
+        UUID usuario = insertar("vinculo.pg@prisaly.test");
+        UUID estudiante = estudiante(usuario);
+        DataIntegrityViolationException inactiva = assertThrows(DataIntegrityViolationException.class,
+                () -> insertarSesion(usuario, estudiante));
+        assertTrue(inactiva.getMessage().contains("DD02-CUENTA-INACTIVA"));
+
+        activacionTransaccional.emitir(usuario);
+        UUID otro = insertarUsuarioSinEstudiante("otro.pg@prisaly.test");
+        DataIntegrityViolationException enUso = assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+                "UPDATE \"Estudiante\" SET \"idUsuario\" = ? WHERE \"idEstudiante\" = ?", otro, estudiante));
+        assertTrue(enUso.getMessage().contains("DD02-VINCULO-EN-USO"));
+    }
+
+    @Test
+    void v012DejaUnSoloCodigoAbiertoAunqueSeEmitaEnParalelo() throws Exception {
+        UUID usuario = insertar("emision.pg@prisaly.test");
+        CountDownLatch salida = new CountDownLatch(1);
+        ExecutorService hilos = Executors.newFixedThreadPool(2);
+        try {
+            List<Future<Boolean>> resultados = new ArrayList<>();
+            for (int i = 0; i < 2; i++) {
+                resultados.add(hilos.submit(() -> {
+                    salida.await();
+                    try {
+                        activacionTransaccional.emitir(usuario);
+                        return true;
+                    } catch (DataIntegrityViolationException carrera) {
+                        return false;
+                    }
+                }));
+            }
+            salida.countDown();
+            for (Future<Boolean> resultado : resultados) {
+                resultado.get(30, TimeUnit.SECONDS);
+            }
+        } finally {
+            hilos.shutdownNow();
+        }
+        assertEquals(1, jdbc.queryForObject("""
+                SELECT count(*) FROM "ActivacionCuentaEstudiante"
+                WHERE "idUsuario" = ? AND "fechaConsumo" IS NULL AND "fechaRevocacion" IS NULL
+                """, Integer.class, usuario));
+        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update("""
+                UPDATE "ActivacionCuentaEstudiante" SET "fechaConsumo" = now(), "fechaRevocacion" = now()
+                WHERE "idUsuario" = ?
+                """, usuario));
+    }
+
+    @Test
+    void laSesionCaducaPorInactividadYElUsoLaMantieneViva() {
+        UUID usuario = insertar("inactividad.pg@prisaly.test");
+        var emitido = activacionTransaccional.emitir(usuario);
+        activacionTransaccional.activar(emitido.challengeId(), emitido.codigo(), "contrasena-segura");
+        Instant base = Instant.now();
+        String token = new AutenticacionEstudianteService(cuentas, encoder, CLAVE, Clock.fixed(base, ZoneOffset.UTC))
+                .autenticar("inactividad.pg@prisaly.test", "contrasena-segura").token();
+
+        assertEquals(usuario, accesoEn(token, base.plus(Duration.ofMinutes(20))).requireCurrentStudent().userId());
+        // 25 min after the last use: still inside the 30 min window.
+        assertEquals(usuario, accesoEn(token, base.plus(Duration.ofMinutes(45))).requireCurrentStudent().userId());
+        // 35 min idle: rejected, and the rejection does not refresh the session.
+        assertThrows(IdentityDomainException.class, () -> accesoEn(token, base.plus(Duration.ofMinutes(80))).requireCurrentStudent());
+        assertThrows(IdentityDomainException.class, () -> accesoEn(token, base.plus(Duration.ofMinutes(81))).requireCurrentStudent());
+    }
+
+    private SessionStudentAccessService accesoEn(String token, Instant instante) {
+        return new SessionStudentAccessService(cuentas, () -> Optional.of(token), CLAVE, Clock.fixed(instante, ZoneOffset.UTC));
+    }
+
+    private void insertarSesion(UUID usuario, UUID estudiante) {
+        jdbc.update("""
+                INSERT INTO "SesionEstudiante" ("idSesionEstudiante", "idUsuario", "idEstudiante", "sesionTokenHmac",
+                  "fechaExpiracion", "fechaUltimaActividad")
+                VALUES (?, ?, ?, ?, now() + interval '1 hour', now())
+                """, UUID.randomUUID(), usuario, estudiante, UUID.randomUUID().toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    private UUID estudiante(UUID usuario) {
+        return jdbc.queryForObject("SELECT \"idEstudiante\" FROM \"Estudiante\" WHERE \"idUsuario\" = ?", UUID.class, usuario);
     }
 
     @Test
@@ -266,6 +347,14 @@ class CuentaEstudiantePostgreSqlIT {
     }
 
     private UUID insertar(String correo) {
+        UUID usuario = insertarUsuarioSinEstudiante(correo);
+        jdbc.update(
+                "INSERT INTO \"Estudiante\" (\"idEstudiante\", \"idUsuario\") VALUES (?, ?)",
+                UUID.randomUUID(), usuario);
+        return usuario;
+    }
+
+    private UUID insertarUsuarioSinEstudiante(String correo) {
         Integer rol = jdbc.queryForObject(
                 "INSERT INTO \"Rol\" (\"nombre\", \"descripcion\") VALUES (?, ?) RETURNING \"idRol\"",
                 Integer.class,
@@ -279,14 +368,11 @@ class CuentaEstudiantePostgreSqlIT {
                 VALUES (?, ?, ?, ?, 'Inactivo')
                 """,
                 usuario, rol, correo, correo);
-        jdbc.update(
-                "INSERT INTO \"Estudiante\" (\"idEstudiante\", \"idUsuario\") VALUES (?, ?)",
-                UUID.randomUUID(), usuario);
         return usuario;
     }
 
-    // V011 lives outside the productive Flyway location until DD-02 is ratified;
-    // this IT applies BD-005.2 plus the pending DD-02 migration explicitly.
+    // V011/V012 live outside the productive Flyway location until DD-02 is ratified;
+    // this IT applies BD-005.2 plus the pending DD-02 candidates explicitly.
     static String flyway() {
         Path cwd = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
         for (Path resources : List.of(
@@ -295,6 +381,7 @@ class CuentaEstudiantePostgreSqlIT {
             Path canonica = resources.resolve("migration");
             Path pendiente = resources.resolve("dd02-propuesta");
             if (Files.exists(pendiente.resolve("V011__acceso_estudiante_cuenta.sql"))
+                    && Files.exists(pendiente.resolve("V012__dd02_integridad_vinculo.sql"))
                     && Files.exists(canonica.resolve("V001__bd0052_estructura.sql"))) {
                 return "filesystem:" + canonica + ",filesystem:" + pendiente;
             }

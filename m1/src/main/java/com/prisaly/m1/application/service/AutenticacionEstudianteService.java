@@ -7,6 +7,7 @@ import com.prisaly.m1.application.port.CuentaEstudiantePort.VinculoEstudiante;
 import com.prisaly.m1.domain.rule.IdentityDomainException;
 import com.prisaly.m1.domain.student.ClaveHmacEstudiante;
 import com.prisaly.m1.domain.student.FirmasEstudiante;
+import com.prisaly.m1.domain.student.PoliticaSesionEstudiante;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
@@ -24,7 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "true")
 public class AutenticacionEstudianteService {
 
-    public static final Duration VIGENCIA_SESION = Duration.ofHours(8);
+    public static final Duration VIGENCIA_SESION = PoliticaSesionEstudiante.VIGENCIA_MAXIMA;
 
     private final CuentaEstudiantePort cuentas;
     private final PasswordEncoder passwordEncoder;
