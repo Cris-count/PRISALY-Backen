@@ -3,6 +3,22 @@ package com.prisaly.m1.infrastructure;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.prisaly.m1.application.service.IdentityAccessService;
+import com.prisaly.m1.domain.student.FirmasEstudiante;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import com.prisaly.m1.application.port.CuentaEstudiantePort;
 import com.prisaly.m1.application.service.ActivacionCuentaEstudianteService;
@@ -24,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +53,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 @SpringBootTest(classes = CuentaEstudiantePostgreSqlIT.App.class)
 @Testcontainers
 class CuentaEstudiantePostgreSqlIT {
+
+    private static final ClaveHmacEstudiante CLAVE =
+            new ClaveHmacEstudiante("clave-hmac-prueba".getBytes(StandardCharsets.UTF_8));
 
     @Container
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16.15");
@@ -59,6 +79,9 @@ class CuentaEstudiantePostgreSqlIT {
 
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private ActivacionCuentaEstudianteService activacionTransaccional;
 
     @Test
     void laIdentidadPersistidaSeRevocaYNoCruzaEstudiantes() {
@@ -96,11 +119,158 @@ class CuentaEstudiantePostgreSqlIT {
         assertThrows(IdentityDomainException.class, () -> acceso.requireCurrentStudent());
     }
 
+    // Uses the Spring-managed (transactional) service: a denied activation must not roll back
+    // the failed-attempt counter, otherwise the 5-attempt limit is never reached.
+    @Test
+    void losIntentosFallidosPersistenYBloqueanElCodigoCorrecto() {
+        UUID usuario = insertar("bruta.pg@prisaly.test");
+        var emitido = activacionTransaccional.emitir(usuario);
+        String erroneo = emitido.codigo().equals("00000000") ? "11111111" : "00000000";
+
+        for (int intento = 0; intento < ActivacionCuentaEstudianteService.INTENTOS_MAXIMOS; intento++) {
+            assertThrows(IdentityDomainException.class,
+                    () -> activacionTransaccional.activar(emitido.challengeId(), erroneo, "contrasena-segura"));
+        }
+
+        assertEquals(
+                ActivacionCuentaEstudianteService.INTENTOS_MAXIMOS,
+                jdbc.queryForObject(
+                        "SELECT \"intentosFallidos\" FROM \"ActivacionCuentaEstudiante\" WHERE \"challengeId\" = ?",
+                        Integer.class,
+                        emitido.challengeId()));
+        assertThrows(IdentityDomainException.class,
+                () -> activacionTransaccional.activar(
+                        emitido.challengeId(), emitido.codigo(), "contrasena-segura"));
+        assertEquals("Inactivo", jdbc.queryForObject(
+                "SELECT \"estado\" FROM \"Usuario\" WHERE \"idUsuario\" = ?", String.class, usuario));
+    }
+
+    @Test
+    void laActivacionVencidaOReutilizadaNoActivaLaCuenta() {
+        UUID vencida = insertar("vencida.pg@prisaly.test");
+        Instant base = Instant.now();
+        var emisor = new ActivacionCuentaEstudianteService(cuentas, encoder, CLAVE, Clock.fixed(base, ZoneOffset.UTC));
+        var tarde = new ActivacionCuentaEstudianteService(cuentas, encoder, CLAVE,
+                Clock.fixed(base.plus(ActivacionCuentaEstudianteService.VIGENCIA).plusSeconds(1), ZoneOffset.UTC));
+        var emitido = emisor.emitir(vencida);
+        assertThrows(IdentityDomainException.class,
+                () -> tarde.activar(emitido.challengeId(), emitido.codigo(), "contrasena-segura"));
+        assertEquals("Inactivo", estado(vencida));
+
+        UUID reutilizada = insertar("reuso.pg@prisaly.test");
+        var codigo = activacionTransaccional.emitir(reutilizada);
+        activacionTransaccional.activar(codigo.challengeId(), codigo.codigo(), "contrasena-segura");
+        String hash = passwordHash(reutilizada);
+        assertThrows(IdentityDomainException.class,
+                () -> activacionTransaccional.activar(codigo.challengeId(), codigo.codigo(), "otra-contrasena-larga"));
+        assertEquals(hash, passwordHash(reutilizada), "a consumed code must not reset the password");
+    }
+
+    @Test
+    void dosActivacionesConcurrentesDelMismoCodigoTienenUnSoloGanador() throws Exception {
+        UUID usuario = insertar("concurrente.pg@prisaly.test");
+        var emitido = activacionTransaccional.emitir(usuario);
+        CountDownLatch salida = new CountDownLatch(1);
+        ExecutorService hilos = Executors.newFixedThreadPool(2);
+        try {
+            List<Future<Boolean>> resultados = new ArrayList<>();
+            for (String contrasena : List.of("contrasena-hilo-uno", "contrasena-hilo-dos")) {
+                Callable<Boolean> intento = () -> {
+                    salida.await();
+                    try {
+                        activacionTransaccional.activar(emitido.challengeId(), emitido.codigo(), contrasena);
+                        return true;
+                    } catch (IdentityDomainException | IllegalStateException denegado) {
+                        return false;
+                    }
+                };
+                resultados.add(hilos.submit(intento));
+            }
+            salida.countDown();
+            int ganadores = 0;
+            for (Future<Boolean> resultado : resultados) {
+                ganadores += resultado.get(30, TimeUnit.SECONDS) ? 1 : 0;
+            }
+            assertEquals(1, ganadores);
+        } finally {
+            hilos.shutdownNow();
+        }
+        assertEquals("Activo", estado(usuario));
+        assertEquals(1, jdbc.queryForObject(
+                "SELECT count(*) FROM \"ActivacionCuentaEstudiante\" WHERE \"idUsuario\" = ? AND \"fechaConsumo\" IS NOT NULL",
+                Integer.class, usuario));
+    }
+
+    @Test
+    void bd0052ImpideUnaSegundaVinculacionDelMismoUsuario() {
+        UUID usuario = insertar("duplicado.pg@prisaly.test");
+        assertThrows(DataIntegrityViolationException.class, () -> jdbc.update(
+                "INSERT INTO \"Estudiante\" (\"idEstudiante\", \"idUsuario\") VALUES (?, ?)", UUID.randomUUID(), usuario));
+    }
+
+    // V011 has two independent FKs: the database accepts an activation whose student belongs to
+    // another user. The service must still deny it (defense in depth while the constraint is missing).
+    @Test
+    void unaActivacionConVinculoCruzadoSeAceptaEnBdPeroElServicioLaDeniega() {
+        UUID victima = insertar("victima.pg@prisaly.test");
+        UUID atacante = insertar("atacante.pg@prisaly.test");
+        UUID estudianteVictima = jdbc.queryForObject(
+                "SELECT \"idEstudiante\" FROM \"Estudiante\" WHERE \"idUsuario\" = ?", UUID.class, victima);
+        UUID challenge = UUID.randomUUID();
+        String codigo = "24681357";
+        jdbc.update("""
+                INSERT INTO "ActivacionCuentaEstudiante" ("idActivacion", "idUsuario", "idEstudiante", "challengeId",
+                  "codigoHmac", "fechaExpiracion")
+                VALUES (?, ?, ?, ?, ?, now() + interval '10 minutes')
+                """, UUID.randomUUID(), atacante, estudianteVictima, challenge,
+                FirmasEstudiante.hmac(CLAVE.valor(), challenge + ":" + codigo));
+
+        assertThrows(IdentityDomainException.class,
+                () -> activacionTransaccional.activar(challenge, codigo, "contrasena-segura"));
+        assertEquals("Inactivo", estado(atacante));
+        assertEquals("Inactivo", estado(victima));
+    }
+
+    @Test
+    void desactivarLaCuentaInvalidaSuSesionYUnTokenDesconocidoNoEsIdentidad() {
+        UUID usuario = insertar("desactivada.pg@prisaly.test");
+        var autenticacion = new AutenticacionEstudianteService(cuentas, encoder, CLAVE);
+        AtomicReference<String> token = new AtomicReference<>();
+        var acceso = new SessionStudentAccessService(cuentas, () -> Optional.ofNullable(token.get()), CLAVE);
+        var emitido = activacionTransaccional.emitir(usuario);
+        activacionTransaccional.activar(emitido.challengeId(), emitido.codigo(), "contrasena-segura");
+        token.set(autenticacion.autenticar("desactivada.pg@prisaly.test", "contrasena-segura").token());
+        assertEquals(usuario, acceso.requireCurrentStudent().userId());
+
+        jdbc.update("UPDATE \"Usuario\" SET \"estado\" = 'Inactivo' WHERE \"idUsuario\" = ?", usuario);
+        IdentityDomainException inactiva = assertThrows(IdentityDomainException.class, acceso::requireCurrentStudent);
+        assertEquals(IdentityAccessService.CODE_USER_INACTIVE, inactiva.code());
+        assertThrows(IdentityDomainException.class,
+                () -> autenticacion.autenticar("desactivada.pg@prisaly.test", "contrasena-segura"));
+
+        token.set("token-que-el-servidor-nunca-emitio");
+        assertThrows(IdentityDomainException.class, acceso::requireCurrentStudent);
+        token.set(null);
+        assertThrows(IdentityDomainException.class, acceso::requireCurrentStudent);
+    }
+
+    private String estado(UUID usuario) {
+        return jdbc.queryForObject("SELECT \"estado\" FROM \"Usuario\" WHERE \"idUsuario\" = ?", String.class, usuario);
+    }
+
+    private String passwordHash(UUID usuario) {
+        String hash = jdbc.queryForObject(
+                "SELECT \"passwordHash\" FROM \"Usuario\" WHERE \"idUsuario\" = ?", String.class, usuario);
+        assertTrue(hash != null && !hash.isBlank());
+        return hash;
+    }
+
     private UUID insertar(String correo) {
         Integer rol = jdbc.queryForObject(
                 "INSERT INTO \"Rol\" (\"nombre\", \"descripcion\") VALUES (?, ?) RETURNING \"idRol\"",
                 Integer.class,
-                "Rol-" + correo,
+                // Rol.nombre is varchar(30) in BD-005.2.
+                "Rol-" + UUID.randomUUID().toString().substring(0, 8),
                 "Prueba");
         UUID usuario = UUID.randomUUID();
         jdbc.update(
@@ -115,21 +285,37 @@ class CuentaEstudiantePostgreSqlIT {
         return usuario;
     }
 
+    // V011 lives outside the productive Flyway location until DD-02 is ratified;
+    // this IT applies BD-005.2 plus the pending DD-02 migration explicitly.
     static String flyway() {
         Path cwd = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        for (Path candidate : List.of(
-                cwd.resolve("app/src/main/resources/db/migration"),
-                cwd.resolve("../app/src/main/resources/db/migration").normalize())) {
-            if (Files.exists(candidate.resolve("V011__acceso_estudiante_cuenta.sql"))) {
-                return "filesystem:" + candidate;
+        for (Path resources : List.of(
+                cwd.resolve("app/src/main/resources/db"),
+                cwd.resolve("../app/src/main/resources/db").normalize())) {
+            Path canonica = resources.resolve("migration");
+            Path pendiente = resources.resolve("dd02-propuesta");
+            if (Files.exists(pendiente.resolve("V011__acceso_estudiante_cuenta.sql"))
+                    && Files.exists(canonica.resolve("V001__bd0052_estructura.sql"))) {
+                return "filesystem:" + canonica + ",filesystem:" + pendiente;
             }
         }
-        throw new IllegalStateException("No se encontró V011 desde " + cwd);
+        throw new IllegalStateException("No se encontró V011 en db/dd02-propuesta desde " + cwd);
     }
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @Import({CuentaEstudianteJdbcAdapter.class, PasswordHashConfig.class})
     static class App {
+
+        @Bean
+        ClaveHmacEstudiante claveHmacEstudiante() {
+            return CLAVE;
+        }
+
+        @Bean
+        ActivacionCuentaEstudianteService activacionCuentaEstudianteService(
+                CuentaEstudiantePort cuentas, PasswordEncoder encoder, ClaveHmacEstudiante clave) {
+            return new ActivacionCuentaEstudianteService(cuentas, encoder, clave);
+        }
     }
 }

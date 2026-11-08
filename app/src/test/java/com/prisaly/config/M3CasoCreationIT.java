@@ -15,6 +15,7 @@ import com.prisaly.m3.domain.builder.CasoBuilder;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.application.service.CasoApplicationService;
 import com.prisaly.m3.presentation.CasoCreationController;
+import com.prisaly.m3.presentation.CasoGestionController;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -226,8 +227,13 @@ class M3CasoCreationIT {
         assertEquals(1, rest.size());
         assertEquals(Set.of("/v1/casos"), rest.getFirst().getKey().getPatternValues());
         assertEquals(Set.of(RequestMethod.POST), rest.getFirst().getKey().getMethodsCondition().getMethods());
-        assertTrue(mappings.getHandlerMethods().keySet().stream()
-                .noneMatch(mapping -> mapping.getPatternValues().contains("/v1/casos/{idCaso}")));
+        // Since PR #58 the item route exists, owned only by M3's CasoGestionController (GET/PATCH).
+        var item = mappings.getHandlerMethods().entrySet().stream()
+                .filter(entry -> entry.getKey().getPatternValues().contains("/v1/casos/{idCaso}")).toList();
+        assertTrue(item.stream().allMatch(entry -> entry.getValue().getBeanType() == CasoGestionController.class));
+        assertEquals(Set.of(RequestMethod.GET, RequestMethod.PATCH), item.stream()
+                .flatMap(entry -> entry.getKey().getMethodsCondition().getMethods().stream())
+                .collect(java.util.stream.Collectors.toSet()));
         assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
     }
 
