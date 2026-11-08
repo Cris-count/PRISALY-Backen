@@ -50,9 +50,10 @@ class CasoDocenteConsultaServiceTest {
         assertThrows(CasoAuthenticationException.class, () -> service.consultar(id.toString()));
         assertThrows(CasoAuthenticationException.class,
                 () -> new CasoDocenteConsultaService(null, auth, repository).consultar(id.toString()));
-        when(identity.currentUserId()).thenThrow(new IllegalStateException("private identity"));
-        var error = assertThrows(CasoAuthenticationException.class, () -> service.consultar(id.toString()));
-        assertNull(error.getCause());
+        var failure = new IllegalStateException("private identity");
+        when(identity.currentUserId()).thenThrow(failure);
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", assertThrows(CasoDomainException.class,
+                () -> service.consultar(id.toString())).code());
         verifyNoInteractions(auth, repository);
     }
 
@@ -64,17 +65,36 @@ class CasoDocenteConsultaServiceTest {
     }
 
     @Test
-    void rejectedUnavailableNullAndFailedEligibilityNeverRead() {
+    void deniedEligibilityNeverReads() {
         when(identity.currentUserId()).thenReturn(owner);
-        for (Decision decision : new Decision[] {Decision.DENEGADO, Decision.NO_DISPONIBLE, null}) {
+        for (Decision decision : new Decision[] {Decision.DENEGADO}) {
             when(auth.verificarAcceso(owner, id)).thenReturn(decision);
             denied(() -> service.consultar(id.toString()));
         }
         when(auth.verificarAcceso(owner, id)).thenThrow(new IllegalStateException("private policy"));
         var error = assertThrows(CasoDomainException.class, () -> service.consultar(id.toString()));
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", error.code());
         assertNull(error.getCause());
         assertFalse(error.toString().contains("private policy"));
         verifyNoInteractions(repository);
+    }
+
+    @Test
+    void unavailableOrNullDecisionNeverGrantsAccessOrLeaksContent() {
+        when(identity.currentUserId()).thenReturn(owner);
+        for (Decision decision : new Decision[] {Decision.NO_DISPONIBLE, null}) {
+            when(auth.verificarAcceso(owner, id)).thenReturn(decision);
+            assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", assertThrows(CasoDomainException.class,
+                    () -> service.consultar(id.toString())).code());
+        }
+        verifyNoInteractions(repository);
+        eligible();
+        when(repository.findById(id.toString())).thenReturn(Optional.of(caso(id, owner, CasoEstado.BORRADOR)));
+        for (Decision decision : new Decision[] {Decision.NO_DISPONIBLE, null}) {
+            when(auth.verificarVisibilidad(owner, id, CasoEstado.BORRADOR, true)).thenReturn(decision);
+            assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", assertThrows(CasoDomainException.class,
+                    () -> service.consultar(id.toString())).code());
+        }
     }
 
     @Test
@@ -114,7 +134,7 @@ class CasoDocenteConsultaServiceTest {
         eligible();
         for (CasoEstado state : CasoEstado.values()) {
             when(repository.findById(id.toString())).thenReturn(Optional.of(caso(id, owner, state)));
-            for (Decision decision : new Decision[] {Decision.DENEGADO, Decision.NO_DISPONIBLE, null}) {
+            for (Decision decision : new Decision[] {Decision.DENEGADO}) {
                 when(auth.verificarVisibilidad(owner, id, state, true)).thenReturn(decision);
                 denied(() -> service.consultar(id.toString()));
             }
@@ -128,6 +148,7 @@ class CasoDocenteConsultaServiceTest {
         when(auth.verificarVisibilidad(owner, id, CasoEstado.BORRADOR, true))
                 .thenThrow(new IllegalStateException("private visibility"));
         var error = assertThrows(CasoDomainException.class, () -> service.consultar(id.toString()));
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", error.code());
         assertNull(error.getCause());
         assertFalse(error.toString().contains("private visibility"));
     }

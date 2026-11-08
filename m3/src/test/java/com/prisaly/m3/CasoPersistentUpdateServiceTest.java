@@ -47,20 +47,22 @@ class CasoPersistentUpdateServiceTest {
     @Test
     void missingOrFailedIdentityNeverTouchesAuthorizationOrPersistence() {
         assertThrows(CasoAuthenticationException.class, () -> service.update(id, fingerprint, caso(owner, false)));
-        when(identity.currentUserId()).thenThrow(new IllegalStateException("private identity"));
-        var error = assertThrows(CasoAuthenticationException.class, () -> service.update(id, fingerprint, caso(owner, false)));
-        assertNull(error.getCause());
+        var failure = new IllegalStateException("private identity");
+        when(identity.currentUserId()).thenThrow(failure);
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", assertThrows(CasoDomainException.class,
+                () -> service.update(id, fingerprint, caso(owner, false))).code());
         verifyNoInteractions(auth, repository);
     }
 
     @Test
-    void missingDeniedOrFailedAuthorizationNeverTouchesRepository() {
+    void missingDeniedOrTechnicalAuthorizationNeverTouchesRepository() {
         when(identity.currentUserId()).thenReturn(owner);
         assertThrows(CasoDomainException.class, () -> service.update(id, fingerprint, caso(owner, false)));
         assertThrows(CasoDomainException.class, () -> new CasoPersistentUpdateService(identity, null, repository)
                 .update(id, fingerprint, caso(owner, false)));
         when(auth.canModifyCase(owner.toString(), id.toString())).thenThrow(new IllegalStateException("private policy"));
         var error = assertThrows(CasoDomainException.class, () -> service.update(id, fingerprint, caso(owner, false)));
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", error.code());
         assertNull(error.getCause());
         assertFalse(error.toString().contains("private policy"));
         verifyNoInteractions(repository);

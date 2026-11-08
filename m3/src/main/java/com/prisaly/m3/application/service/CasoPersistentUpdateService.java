@@ -37,11 +37,16 @@ public final class CasoPersistentUpdateService {
         Objects.requireNonNull(fingerprint, "fingerprint");
         UUID user;
         try { user = identity == null ? null : identity.currentUserId(); }
-        catch (RuntimeException failure) { throw new CasoAuthenticationException(); }
+        catch (CasoAuthenticationException | CasoDomainException classified) { throw classified; }
+        catch (RuntimeException technicalFailure) { throw unavailable(); }
         if (user == null) { throw new CasoAuthenticationException(); }
         boolean allowed;
         try { allowed = authorization != null && authorization.canModifyCase(user.toString(), caseId.toString()); }
-        catch (RuntimeException failure) { throw denied(); }
+        catch (CasoDomainException classified) {
+            if (CasoApplicationService.CODE_FORBIDDEN.equals(classified.code())) { throw denied(); }
+            throw unavailable();
+        }
+        catch (RuntimeException technicalFailure) { throw unavailable(); }
         if (!allowed) { throw denied(); }
         var stored = repository.findById(caseId.toString()).orElseThrow(
                 () -> new CasoDomainException("CASE_NOT_FOUND", "Case does not exist"));
@@ -54,6 +59,10 @@ public final class CasoPersistentUpdateService {
             throw new IllegalArgumentException("Replacement must preserve case identity and owner");
         }
         repository.update(replacement, expected);
+    }
+
+    private static CasoDomainException unavailable() {
+        return new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
     }
 
     private static CasoDomainException denied() {
