@@ -58,11 +58,9 @@ public final class CasoDocenteConsultaService {
             java.util.function.Function<T, Caso> aggregate) {
         UUID id = canonicalId(idCaso);
         UUID usuario;
-        try {
-            usuario = identidad == null ? null : identidad.currentUserId();
-        } catch (RuntimeException failure) {
-            throw new CasoAuthenticationException();
-        }
+        try { usuario = identidad == null ? null : identidad.currentUserId(); }
+        catch (CasoAuthenticationException | CasoDomainException classified) { throw classified; }
+        catch (RuntimeException technicalFailure) { throw unavailable(); }
         if (usuario == null) { throw new CasoAuthenticationException(); }
         if (autorizacion == null) { throw denied(); }
         requireAuthorized(() -> autorizacion.verificarAcceso(usuario, id));
@@ -91,8 +89,17 @@ public final class CasoDocenteConsultaService {
     private static void requireAuthorized(Supplier<Decision> verification) {
         Decision decision;
         try { decision = verification.get(); }
-        catch (RuntimeException failure) { throw denied(); }
-        if (decision != Decision.AUTORIZADO) { throw denied(); }
+        catch (CasoDomainException classified) {
+            if ("FORBIDDEN".equals(classified.code()) || ACCESO_DENEGADO.equals(classified.code())) { throw denied(); }
+            throw unavailable();
+        }
+        catch (RuntimeException technicalFailure) { throw unavailable(); }
+        if (decision == Decision.DENEGADO) { throw denied(); }
+        if (decision != Decision.AUTORIZADO) { throw unavailable(); }
+    }
+
+    private static CasoDomainException unavailable() {
+        return new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
     }
 
     private static CasoDomainException denied() {

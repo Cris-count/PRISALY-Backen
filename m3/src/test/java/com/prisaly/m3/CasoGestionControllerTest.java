@@ -84,7 +84,7 @@ class CasoGestionControllerTest {
         verifyNoInteractions(repository);
         when(read.verificarAcceso(owner, id)).thenReturn(AutorizacionConsultaCasoPort.Decision.AUTORIZADO);
         when(read.verificarVisibilidad(owner, id, CasoEstado.BORRADOR, true))
-                .thenReturn(AutorizacionConsultaCasoPort.Decision.NO_DISPONIBLE);
+                .thenReturn(AutorizacionConsultaCasoPort.Decision.DENEGADO);
         mvc.perform(get(path())).andExpect(status().isForbidden()).andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Original"))));
     }
     @Test void technicalFailureIsSanitized() throws Exception {
@@ -92,6 +92,73 @@ class CasoGestionControllerTest {
         mvc.perform(get(path())).andExpect(status().isInternalServerError())
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))));
     }
+
+    @Test void technicalIdentityFailureIs500ForBothRoutesWithoutReadingOrWriting() throws Exception {
+        when(identity.currentUserId()).thenThrow(new IllegalArgumentException("secret institutional backend"));
+        mvc.perform(get(path())).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("CASE_OPERATION_FAILED"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))));
+        mvc.perform(patch(path()).contentType("application/json").content("{}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("CASE_OPERATION_FAILED"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))));
+        verifyNoInteractions(read, write, repository);
+    }
+
+    @Test void institutionalIdentityDenialRemains403ForBothRoutesWithoutPersistence() throws Exception {
+        when(identity.currentUserId()).thenThrow(new CasoDomainException("FORBIDDEN", "secret inactive account"));
+        mvc.perform(get(path())).andExpect(status().isForbidden())
+                .andExpect(header().doesNotExist("ETag"));
+        mvc.perform(patch(path()).contentType("application/json").content("{}"))
+                .andExpect(status().isForbidden());
+        verifyNoInteractions(read, write, repository);
+    }
+    @Test void unavailableReadAuthorizationIs500WithoutReadingOrWriting() throws Exception {
+        for (var decision : new AutorizacionConsultaCasoPort.Decision[] {
+                AutorizacionConsultaCasoPort.Decision.NO_DISPONIBLE, null}) {
+            when(read.verificarAcceso(owner, id)).thenReturn(decision);
+            assertSanitizedFailure(get(path()));
+        }
+        when(read.verificarAcceso(owner, id)).thenThrow(new IllegalArgumentException("secret policy"));
+        assertSanitizedFailure(get(path()));
+        verifyNoInteractions(repository);
+    }
+
+    @Test void unavailableVisibilityCannotReturnCaseOrEtag() throws Exception {
+        when(read.verificarVisibilidad(owner, id, CasoEstado.BORRADOR, true))
+                .thenReturn(AutorizacionConsultaCasoPort.Decision.NO_DISPONIBLE);
+        assertSanitizedFailure(get(path()));
+        when(read.verificarVisibilidad(owner, id, CasoEstado.BORRADOR, true))
+                .thenThrow(new IllegalArgumentException("secret visibility"));
+        assertSanitizedFailure(get(path()));
+        verify(repository, never()).update(any(), anyString());
+    }
+
+    @Test void technicalWriteAuthorizationIs500BeforePersistenceAndPreconditions() throws Exception {
+        when(write.canModifyCase(owner.toString(), id.toString()))
+                .thenThrow(new IllegalArgumentException("secret write policy"));
+        assertSanitizedFailure(patch(path()).contentType("application/json").content("{}"));
+        verifyNoInteractions(repository);
+    }
+
+    @Test void explicitWriteDenialRemains403BeforePersistence() throws Exception {
+        when(write.canModifyCase(owner.toString(), id.toString()))
+                .thenThrow(new CasoDomainException("FORBIDDEN", "secret denial"));
+        mvc.perform(patch(path()).contentType("application/json").content("{}"))
+                .andExpect(status().isForbidden())
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))));
+        verifyNoInteractions(repository);
+    }
+
+    private void assertSanitizedFailure(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request)
+            throws Exception {
+        mvc.perform(request).andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.code").value("CASE_OPERATION_FAILED"))
+                .andExpect(header().doesNotExist("ETag"))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("secret"))))
+                .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Original"))));
+    }
+
     @Test void patchPreservesAllOmittedAndProtectedValuesAndForwardsPrecondition() throws Exception {
         mvc.perform(patch(path()).contentType("application/json").header("X-Test-Fingerprint", fingerprint)
                 .content("{\"titulo\":\"Nuevo\",\"historia\":null}"))
