@@ -114,6 +114,20 @@ class ComposicionM3LecturaInstitucionalIT {
     }
 
     @Test
+    void unTokenRevocadoPorCierreDeSesionDejaDeLeer() throws Exception {
+        String token = docente("revocado.res03@prisaly.test", true);
+        UUID caso = crearCaso(token, "Caso antes del cierre");
+        assertEquals(200, get("/v1/casos/" + caso, token).statusCode());
+
+        HttpResponse<String> cierre = http.send(HttpRequest.newBuilder(uri("/v1/personal/cerrar-sesion"))
+                .header("Authorization", "Bearer " + token)
+                .POST(HttpRequest.BodyPublishers.noBody())
+                .build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(204, cierre.statusCode());
+        assertEquals(401, get("/v1/casos/" + caso, token).statusCode());
+    }
+
+    @Test
     void patchSigueDenegadoYNoEscribe() throws Exception {
         String token = docente("patch.res02@prisaly.test", true);
         UUID caso = crearCaso(token, "Sin edicion");
