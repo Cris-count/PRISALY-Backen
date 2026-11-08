@@ -84,7 +84,7 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
         var filas = jdbc.query("""
                 SELECT i."idParticipacion", p."idConvocatoria"
                 FROM public."Intento" i
-                LEFT JOIN public."Participacion" p ON p."idParticipacion" = i."idParticipacion"
+                JOIN public."Participacion" p ON p."idParticipacion" = i."idParticipacion"
                 WHERE i."idIntento" = ?
                 """, (rs, row) -> new VinculoParticipacion(
                         rs.getObject(1, UUID.class), rs.getObject(2, UUID.class)), id);

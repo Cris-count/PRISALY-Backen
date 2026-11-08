@@ -11,5 +11,6 @@ public record ReferenciaPregunta(String valor) {
 
     public ReferenciaPregunta {
         ValidacionRespuesta.requerirTexto(valor, "La referencia de la pregunta");
+        valor = ValidacionRespuesta.canonica(valor);
     }
 }

@@ -11,5 +11,6 @@ public record ValorRespuesta(String valor) {
 
     public ValorRespuesta {
         ValidacionRespuesta.requerirTexto(valor, "El valor de la respuesta");
+        valor = ValidacionRespuesta.canonica(valor);
     }
 }
