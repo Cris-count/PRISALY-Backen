@@ -1,0 +1,48 @@
+name: Backend integral audit 2026-11-08 (temporary)
+on:
+  pull_request:
+    branches: [develop]
+    types: [opened, reopened, synchronize]
+    paths:
+      - .github/workflows/backend-integral-audit.yml
+      - .github/scripts/backend_integral_audit.py
+permissions:
+  contents: read
+jobs:
+  audit:
+    if: github.head_ref == 'audit/backend-integral-20261108'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: audit
+          persist-credentials: false
+      - uses: actions/checkout@v4
+        with:
+          ref: 63eceb448e6c37596ce8115080f1cdda174538a9
+          path: candidate
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+          cache-dependency-path: candidate/**/pom.xml
+      - name: Run full reactor and canonical integration selection
+        working-directory: candidate
+        env:
+          TESTCONTAINERS_REUSE_ENABLE: 'false'
+        run: python3 ../audit/.github/scripts/backend_integral_audit.py run "$RUNNER_TEMP/backend-integral"
+      - name: Sanitize and summarize every module
+        if: always()
+        working-directory: candidate
+        run: python3 ../audit/.github/scripts/backend_integral_audit.py collect "$RUNNER_TEMP/backend-integral"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-integral-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/backend-integral/public
+          retention-days: 14
+          if-no-files-found: error
