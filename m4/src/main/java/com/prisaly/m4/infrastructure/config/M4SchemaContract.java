@@ -57,12 +57,12 @@ public final class M4SchemaContract {
     // No OIDs, row data, owners, installation times or current sequence values enter the fingerprint.
     public static List<String> estructura(JdbcTemplate jdbc) {
         return jdbc.queryForList("""
-                SELECT 'relation|'||c.relname||'|'||c.relkind||'|'||c.relrowsecurity||'|'||c.relforcerowsecurity AS definition
+                SELECT 'relation|'||c.relname||'|'||c.relkind::text||'|'||c.relrowsecurity||'|'||c.relforcerowsecurity AS definition
                 FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
                 WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname<>'flyway_schema_history'
                 UNION ALL
                 SELECT 'column|'||c.relname||'|'||a.attnum||'|'||a.attname||'|'||format_type(a.atttypid,a.atttypmod)
-                    ||'|'||a.attnotnull||'|'||a.attidentity||'|'||a.attgenerated||'|'||coalesce(pg_get_expr(d.adbin,d.adrelid),'')
+                    ||'|'||a.attnotnull||'|'||a.attidentity::text||'|'||a.attgenerated::text||'|'||coalesce(pg_get_expr(d.adbin,d.adrelid),'')
                 FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
                 LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum
                 WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname<>'flyway_schema_history'
@@ -76,7 +76,7 @@ public final class M4SchemaContract {
                 FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid JOIN pg_namespace n ON n.oid=c.relnamespace
                 WHERE n.nspname='public' AND c.relname<>'flyway_schema_history'
                 UNION ALL
-                SELECT 'trigger|'||c.relname||'|'||t.tgname||'|'||t.tgenabled||'|'||pg_get_triggerdef(t.oid,false)
+                SELECT 'trigger|'||c.relname||'|'||t.tgname||'|'||t.tgenabled::text||'|'||pg_get_triggerdef(t.oid,false)
                 FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
                 WHERE n.nspname='public' AND NOT t.tgisinternal AND c.relname<>'flyway_schema_history'
                 UNION ALL
@@ -88,7 +88,7 @@ public final class M4SchemaContract {
                 FROM pg_sequence s JOIN pg_class c ON c.oid=s.seqrelid JOIN pg_namespace n ON n.oid=c.relnamespace
                 WHERE n.nspname='public'
                 UNION ALL
-                SELECT 'policy|'||c.relname||'|'||p.polname||'|'||p.polcmd||'|'||p.polpermissive||'|'
+                SELECT 'policy|'||c.relname||'|'||p.polname||'|'||p.polcmd::text||'|'||p.polpermissive||'|'
                     ||coalesce(pg_get_expr(p.polqual,p.polrelid),'')||'|'||coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'')
                 FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace
                 WHERE n.nspname='public'

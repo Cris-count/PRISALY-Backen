@@ -35,3 +35,8 @@ references = pathlib.Path("app/target/m4-schema-canonical")
 if references.exists():
     shutil.copytree(references, out / "references", dirs_exist_ok=True)
 (out / "summary.json").write_text(json.dumps({"sha": os.environ.get("CANDIDATE_SHA"), "suites": suites}, indent=2) + "\n", encoding="utf-8")
+expected = os.environ.get("EXPECTED_SUITE")
+if not any(s["suite"] == expected and s["tests"] > 0 for s in suites):
+    sys.exit("Missing required PostgreSQL suite")
+if any(s["failures"] or s["errors"] or s["skipped"] for s in suites):
+    sys.exit("Campaign reports contain failures, errors or omissions")
