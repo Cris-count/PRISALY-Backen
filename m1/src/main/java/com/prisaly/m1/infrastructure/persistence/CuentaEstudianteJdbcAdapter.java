@@ -1,6 +1,7 @@
 package com.prisaly.m1.infrastructure.persistence;
 
 import com.prisaly.m1.application.port.CuentaEstudiantePort;
+import com.prisaly.m1.domain.student.PoliticaSesionEstudiante;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -10,6 +11,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
@@ -154,32 +156,43 @@ public class CuentaEstudianteJdbcAdapter implements CuentaEstudiantePort {
                 """
                 INSERT INTO "SesionEstudiante" (
                   "idSesionEstudiante", "idUsuario", "idEstudiante", "sesionTokenHmac",
-                  "fechaCreacion", "fechaExpiracion")
-                VALUES (?, ?, ?, ?, ?, ?)
+                  "fechaCreacion", "fechaExpiracion", "fechaUltimaActividad")
+                VALUES (?, ?, ?, ?, ?, ?, ?)
                 """,
                 sesion.idSesion(),
                 sesion.userId(),
                 sesion.studentId(),
                 sesion.tokenHmac(),
                 Timestamp.from(sesion.creada().toInstant()),
-                Timestamp.from(sesion.expira().toInstant()));
+                Timestamp.from(sesion.expira().toInstant()),
+                Timestamp.from(sesion.creada().toInstant()));
     }
 
+    // Validates and records activity in one statement (no check-then-act race). Runs in its own
+    // transaction so callers inside read-only transactions can still resolve the identity.
     @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Optional<SesionGuardada> sesionVigente(byte[] tokenHmac, OffsetDateTime ahora) {
+        Timestamp marca = Timestamp.from(ahora.toInstant());
+        Timestamp actividadMinima = Timestamp.from(
+                ahora.minus(PoliticaSesionEstudiante.INACTIVIDAD_MAXIMA).toInstant());
         return jdbc.query(
                 """
-                SELECT "idUsuario", "idEstudiante"
-                FROM "SesionEstudiante"
+                UPDATE "SesionEstudiante"
+                SET "fechaUltimaActividad" = GREATEST("fechaUltimaActividad", ?)
                 WHERE "sesionTokenHmac" = ?
                   AND "fechaRevocacion" IS NULL
                   AND "fechaExpiracion" > ?
+                  AND "fechaUltimaActividad" > ?
+                RETURNING "idUsuario", "idEstudiante"
                 """,
                 (rs, row) -> new SesionGuardada(
                         rs.getObject("idUsuario", UUID.class),
                         rs.getObject("idEstudiante", UUID.class)),
+                marca,
                 tokenHmac,
-                Timestamp.from(ahora.toInstant())).stream().findFirst();
+                marca,
+                actividadMinima).stream().findFirst();
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.prisaly.m1.application.support;
 
 import com.prisaly.m1.application.port.CuentaEstudiantePort;
+import com.prisaly.m1.domain.student.PoliticaSesionEstudiante;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Map;
@@ -17,6 +18,7 @@ public final class CuentaEstudianteMemoria implements CuentaEstudiantePort {
     private final Map<String, SesionGuardada> sesiones = new ConcurrentHashMap<>();
     private final Map<String, OffsetDateTime> expiracionSesion = new ConcurrentHashMap<>();
     private final Map<String, OffsetDateTime> revocadas = new ConcurrentHashMap<>();
+    private final Map<String, OffsetDateTime> ultimaActividad = new ConcurrentHashMap<>();
     public boolean fallarLectura;
 
     public void vincular(UUID userId, UUID studentId, String correo, boolean activa, String passwordHash) {
@@ -100,8 +102,10 @@ public final class CuentaEstudianteMemoria implements CuentaEstudiantePort {
         String clave = clave(sesion.tokenHmac());
         sesiones.put(clave, new SesionGuardada(sesion.userId(), sesion.studentId()));
         expiracionSesion.put(clave, sesion.expira());
+        ultimaActividad.put(clave, sesion.creada());
     }
 
+    // Mirrors the JDBC adapter: expiry, revocation and inactivity, recording activity on success.
     @Override
     public Optional<SesionGuardada> sesionVigente(byte[] tokenHmac, OffsetDateTime ahora) {
         exigir();
@@ -112,6 +116,14 @@ public final class CuentaEstudianteMemoria implements CuentaEstudiantePort {
         OffsetDateTime expira = expiracionSesion.get(clave);
         if (expira != null && !expira.isAfter(ahora)) {
             return Optional.empty();
+        }
+        OffsetDateTime actividad = ultimaActividad.get(clave);
+        if (actividad != null
+                && !actividad.isAfter(ahora.minus(PoliticaSesionEstudiante.INACTIVIDAD_MAXIMA))) {
+            return Optional.empty();
+        }
+        if (actividad != null && ahora.isAfter(actividad)) {
+            ultimaActividad.put(clave, ahora);
         }
         return Optional.ofNullable(sesiones.get(clave));
     }

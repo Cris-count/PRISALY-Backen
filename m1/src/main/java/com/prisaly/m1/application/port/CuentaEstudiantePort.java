@@ -26,6 +26,10 @@ public interface CuentaEstudiantePort {
 
     void abrirSesion(SesionNueva sesion);
 
+    /**
+     * Session usable at {@code ahora}: not revoked, not expired and active within
+     * {@code PoliticaSesionEstudiante.INACTIVIDAD_MAXIMA}. A successful lookup records activity.
+     */
     Optional<SesionGuardada> sesionVigente(byte[] tokenHmac, OffsetDateTime ahora);
 
     void revocarSesion(byte[] tokenHmac, OffsetDateTime cuando);
