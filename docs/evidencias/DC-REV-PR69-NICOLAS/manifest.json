@@ -1,0 +1,31 @@
+{
+  "reviewedSha": "b97ba887629b6229fdd9676877e31049be4c3461",
+  "prHead": "37741db4910d23e38d5eeca67a957f7e2ad6ea9f",
+  "runnerSha": "b7b36bbb27f81a00597306731a0f97bea4ef5b68",
+  "run": "https://github.com/Cris-count/PRISALY-Backen/actions/runs/42527556523",
+  "artifactId": 13635363909,
+  "artifactName": "pr69-m4-42527556523-1",
+  "originalArchiveSha256": "f3230c9925c9ea0c6f68aa63746a3919ae8acf5044b2efe08c3a9fe572c6ebe9",
+  "note": "Sanitized XML/log copies, trailing whitespace normalized. Original ZIP digest retained.",
+  "files": {
+    ".gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "app-TEST-com.prisaly.config.HistorialM4M5IT.xml": "87ec80da5f97756cc2a3d53ecabcf2e687ca1ca4dfd023f75b419ddb7b8e3b96",
+    "app-TEST-com.prisaly.config.ParticipacionesPortWiringIT.xml": "654ad290d6786aac4c3505716be0e0bd79c35f3eadad9a1c5d0a86be9b6d2649",
+    "archivos-revisados.json": "2c549f5424024bb2d006adf41f20a50e50871ee7e3b4938916238b8e43026ac4",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4CoordinacionInicioTest.xml": "8fbcc058c5e413099a7ce14b981e901c14e9fd1c1264a7a0909698dff8517208",
+    "m5-TEST-com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest.xml": "09b23747a41da0b56a2337111ed2093c7218a74f3c48eff2617bdee476085696",
+    "m5-TEST-com.prisaly.m5.domain.respuesta.ValorRespuestaContratoTest.xml": "cf4c238b6db0f0f5b895e0e695c2a84babe72ea272a08f9b8986ce76e64846a4",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.ConcurrenciaLectorM5M6ReservaD06IT.xml": "77ea4d974d43e1d3e7eecd4a8623663a0348921293a3c8613848bdf069ffbfc1",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT.xml": "08dff763dec742c6d53fd4a7bec35ef07e95de979b33f561c42289222092346e",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.FallosTecnicosM5IT.xml": "0448b18ab96481b2d8d56936df6258ecdaf28cabb4cb8ac0d2b9c2309410d621",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest.xml": "9e6e56ee52a0351ede9f0a232b6eb45441a9eafe0628e237f0985b636da46718",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.RevisionMacro02PersistenciaIT.xml": "ee5abed7ad645d922c408111ffbb2ba9aa94e40b0ff1469418ebc17c4dfeced2",
+    "m5-TEST-com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT.xml": "e8d0c3addfb3f238059bae4e5e79bc630dd0b5b71df379f21b4b70b790369df5",
+    "m5-TEST-com.prisaly.m5.presentation.ErroresTecnicosM5Test.xml": "aa3603c2e1e11441177771c0a7b0be8f9d44d275b95b7f81acf91c14bf2b321a",
+    "m5-TEST-com.prisaly.m5.presentation.RespuestaHttpErroresTecnicosTest.xml": "dbaeedc6d6c2b700b7f2f3fb811010d4ee4187bfe82d5f9b68c0843f6453c93b",
+    "m6-TEST-com.prisaly.m6.application.integration.ModelosLimitesEInmutabilidadTest.xml": "54d27821a480fbc40467e9a300baaf3f3de0ecf946c34299c39da226c6a390c4",
+    "maven.txt": "91505f4ac09e75d438a8fd9cd055a0b165d6bd465033758d3407f38b31da3ac0",
+    "product-sha.txt": "51b5d9ad09879427efd6f24c3c0bbf8fab221351cfe804be4367f131ee5db0ea",
+    "summary.json": "9b6b390f16d42e28591e4aa51e636cb73da5fd1f993302d51c66e1284d95e080"
+  }
+}

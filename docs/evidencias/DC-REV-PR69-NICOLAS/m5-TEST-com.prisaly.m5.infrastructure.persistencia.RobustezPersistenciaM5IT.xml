@@ -1,0 +1,76 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT" time="2.284" tests="2" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="unaPreguntaEnMayusculasNoEludeElControlDeRevision" classname="com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT" time="0.026">
+    <system-out>2026-11-08T21:56:02.103Z  INFO 2829 --- [           main] tc.postgres:16.15                        : Creating container for image: postgres:16.15
+2026-11-08T21:56:02.134Z  INFO 2829 --- [           main] tc.postgres:16.15                        : Container postgres:16.15 is starting: 30901154f4887dcb3dcfb12f608536a1f51314345085cf2a2952e7736c3cd685
+2026-11-08T21:56:03.396Z  INFO 2829 --- [           main] tc.postgres:16.15                        : Container postgres:16.15 started in PT1.292794057S
+2026-11-08T21:56:03.396Z  INFO 2829 --- [           main] tc.postgres:16.15                        : Container is started (JDBC URL: [JDBC REDACTED]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-08T21:56:03.410Z  INFO 2829 --- [           main] c.p.m.i.p.RobustezPersistenciaM5IT       : Starting RobustezPersistenciaM5IT using Java 21.0.13 with PID 2829 (started by runner in /home/runner/work/PRISALY-Backen/PRISALY-Backen/candidate/m5)
+2026-11-08T21:56:03.411Z  INFO 2829 --- [           main] c.p.m.i.p.RobustezPersistenciaM5IT       : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T21:56:03.465Z  INFO 2829 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T21:56:03.475Z  INFO 2829 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 9 ms. Found 2 JPA repository interfaces.
+2026-11-08T21:56:03.543Z  INFO 2829 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Starting...
+2026-11-08T21:56:03.568Z  INFO 2829 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-3 - Added connection org.postgresql.jdbc.PgConnection@35c7c803
+2026-11-08T21:56:03.569Z  INFO 2829 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-3 - Start completed.
+2026-11-08T21:56:03.570Z  INFO 2829 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T21:56:03.581Z  INFO 2829 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T21:56:03.582Z  INFO 2829 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-11-08T21:56:03.589Z  INFO 2829 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T21:56:03.605Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T21:56:03.612Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T21:56:03.613Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.675Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T21:56:03.675Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.689Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T21:56:03.690Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.700Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T21:56:03.701Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.710Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T21:56:03.713Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.722Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T21:56:03.722Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.729Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T21:56:03.729Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.738Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T21:56:03.739Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.743Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T21:56:03.744Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:03.749Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.094s)
+2026-11-08T21:56:03.761Z  INFO 2829 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T21:56:03.772Z  INFO 2829 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T21:56:03.777Z  INFO 2829 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [[JDBC REDACTED]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T21:56:03.807Z  INFO 2829 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T21:56:03.817Z  INFO 2829 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T21:56:03.852Z  WARN 2829 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-08T21:56:03.890Z  WARN 2829 --- [           main] .s.a.UserDetailsServiceAutoConfiguration :
+
+Using generated security password: [REDACTED]
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-11-08T21:56:03.895Z  INFO 2829 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-11-08T21:56:03.928Z  INFO 2829 --- [           main] c.p.m.i.p.RobustezPersistenciaM5IT       : Started RobustezPersistenciaM5IT in 0.529 seconds (process running for 23.647)
+</system-out>
+  </testcase>
+  <testcase name="vinculoDeIntentoHuerfanoEsAusenteYNoNullPointer" classname="com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT" time="0.011" />
+</testsuite>

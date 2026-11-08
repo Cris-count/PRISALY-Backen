@@ -1,0 +1,13 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m4.infrastructure.M4CoordinacionInicioTest" time="1.12" tests="4" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="aislamientoDeInstantaneaNoSeAceptaComoLecturaFresca" classname="com.prisaly.m4.infrastructure.M4CoordinacionInicioTest" time="0.132">
+    <system-err>Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+</system-err>
+  </testcase>
+  <testcase name="sinTransaccionNoConsultaNiAutoriza" classname="com.prisaly.m4.infrastructure.M4CoordinacionInicioTest" time="0.002" />
+  <testcase name="soloLecturaNoConsultaNiAutoriza" classname="com.prisaly.m4.infrastructure.M4CoordinacionInicioTest" time="0.002" />
+  <testcase name="falloSqlConservaCausaSinAutorizar" classname="com.prisaly.m4.infrastructure.M4CoordinacionInicioTest" time="0.004" />
+</testsuite>

@@ -1,0 +1,135 @@
+{
+  "sha": "b97ba887629b6229fdd9676877e31049be4c3461",
+  "suites": [
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4CoordinacionInicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.respuesta.ValorRespuestaContratoTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.ErroresTecnicosM5Test",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.RespuestaHttpErroresTecnicosTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RevisionMacro02PersistenciaIT",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.FallosTecnicosM5IT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ConcurrenciaLectorM5M6ReservaD06IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.integration.ModelosLimitesEInmutabilidadTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.HistorialM4M5IT",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.ParticipacionesPortWiringIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "required_suites_missing": [],
+  "product_sha_file": "b97ba887629b6229fdd9676877e31049be4c3461",
+  "unit_tests": 21,
+  "postgres_tests": 38
+}
