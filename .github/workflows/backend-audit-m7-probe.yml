@@ -1,0 +1,48 @@
+name: Backend audit M7 causal probe
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches: [develop]
+    paths:
+      - .github/workflows/backend-audit-m7-probe.yml
+      - qa/backend-integral-audit/probes/inject_m7_probe.py
+permissions:
+  contents: read
+jobs:
+  probe:
+    if: github.head_ref == 'audit/backend-integral-20261108'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: audit
+      - uses: actions/checkout@v4
+        with:
+          ref: 63eceb448e6c37596ce8115080f1cdda174538a9
+          path: candidate
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Reproduce configuration retry exhaustion on pinned production
+        working-directory: candidate
+        shell: bash
+        run: |
+          test "$(git rev-parse HEAD)" = 63eceb448e6c37596ce8115080f1cdda174538a9
+          python3 ../audit/qa/backend-integral-audit/probes/inject_m7_probe.py
+          mkdir -p "$RUNNER_TEMP/m7-probe/public"
+          sh ./mvnw -B -pl m7 -am -Pdocker-it verify -Dtest=__NoUnitTests__ -Dsurefire.failIfNoSpecifiedTests=false '-Dit.test=M7EnvioWorkerPostgreSqlIT#auditoriaConfiguracionAgotaEntregaSinFalloDelDestinatario' -Dfailsafe.failIfNoSpecifiedTests=false > "$RUNNER_TEMP/m7-probe/maven-raw.log" 2>&1
+      - name: Sanitize evidence
+        if: always()
+        working-directory: candidate
+        shell: bash
+        run: |
+          python3 ../audit/.github/scripts/backend_integral_audit.py collect "$RUNNER_TEMP/m7-probe" || true
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-m7-causal-${{ github.run_id }}
+          path: ${{ runner.temp }}/m7-probe/public
+          retention-days: 14
