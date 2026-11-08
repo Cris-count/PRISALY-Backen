@@ -1,6 +1,7 @@
 package com.prisaly.m3.presentation;
 
 import com.prisaly.m3.application.port.CasoCurrentUserPort;
+import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.application.service.CasoApplicationService;
 import com.prisaly.m3.presentation.dto.CrearCasoRequest;
 import com.prisaly.m3.presentation.dto.CrearCasoResponse;
@@ -25,7 +26,8 @@ public final class CasoCreationController {
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CrearCasoResponse> create(@RequestBody String body) {
-        var owner = Objects.requireNonNull(identity.currentUserId());
+        var owner = identity.currentUserId();
+        if (owner == null) { throw new CasoAuthenticationException(); }
         var request = CrearCasoRequest.fromJson(body);
         var draft = Objects.requireNonNull(service.createDraft(owner.toString(), request.toBuilder(owner)));
         // The application use case has committed before returning; no reread is performed.
