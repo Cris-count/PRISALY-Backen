@@ -120,6 +120,35 @@ class PrepararContextoEvaluacionServiceTest {
     }
 
     @Test
+    void rubricAssociationsReferenceOnlyThisRubricAndItsCaseQuestionsOnce() {
+        ready();
+        UUID rubricId = UUID.randomUUID();
+        var valid = new RubricaPregunta(UUID.randomUUID(), rubricId, QUESTION, new BigDecimal("1.00"), null);
+        // Association of another rubric, foreign question, same question twice (rubric-case: see PrepararEvaluacionProtegidaTest).
+        for (var rubric : List.of(
+                new Rubrica(rubricId, CASE, "Rubric", null, null, null, null,
+                        Set.of(new RubricaPregunta(UUID.randomUUID(), UUID.randomUUID(), QUESTION, BigDecimal.ONE, null))),
+                new Rubrica(rubricId, CASE, "Rubric", null, null, null, null,
+                        Set.of(new RubricaPregunta(UUID.randomUUID(), rubricId, UUID.randomUUID(), BigDecimal.ONE, null))),
+                new Rubrica(rubricId, CASE, "Rubric", null, null, null, null, Set.of(valid,
+                        new RubricaPregunta(UUID.randomUUID(), rubricId, QUESTION, new BigDecimal("2.00"), null))))) {
+            when(contexts.findByCasoId(CASE, "sensitive-fixture")).thenReturn(Optional.of(withRubric(rubric)));
+            code(Codigo.REFERENCIAS_INCONSISTENTES, () -> service.preparar(ATTEMPT));
+        }
+        // A partial rubric is structure, not a completeness policy (DD-03 pending).
+        var partial = withRubric(new Rubrica(rubricId, CASE, "Rubric", null, null, null, null, Set.of()));
+        when(contexts.findByCasoId(CASE, "sensitive-fixture")).thenReturn(Optional.of(partial));
+        assertSame(partial, service.preparar(ATTEMPT).contextoAcademico());
+    }
+
+    private static ContextoAcademico withRubric(Rubrica rubric) {
+        var base = context(CASE, QUESTION, OPTION);
+        return new ContextoAcademico(base.idCaso(), base.idDocente(), base.nombre(), base.historia(),
+                base.desarrolloSituacional(), base.tiempoEstimadoSegundos(), base.estado(), base.activo(),
+                base.fechaCreacion(), base.fechaActualizacion(), base.fechaBloqueoAcademico(), base.escenarios(), rubric);
+    }
+
+    @Test
     void emptyAnswersAndOptionalRubricDoNotCreateCompletenessPolicies() {
         when(attempts.findById(ATTEMPT)).thenReturn(Optional.of(attempt(ATTEMPT, EstadoIntento.FINALIZADO, List.of())));
         when(issuer.solicitarCapacidad(ATTEMPT, CASE)).thenReturn("fixture");
