@@ -5,7 +5,8 @@ import com.prisaly.m5.application.ParticipacionAplicacionException;
 import com.prisaly.m5.domain.ParticipacionDominioException;
 import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DataAccessException;
+import org.springframework.transaction.TransactionException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -29,7 +30,8 @@ public class ManejadorErroresM5 {
         ParticipacionDominioException.class,
         ParticipacionAplicacionException.class,
         PersistenciaIntentoException.class,
-        DataIntegrityViolationException.class
+        DataAccessException.class,
+        TransactionException.class
     })
     public ResponseEntity<ErrorResponse> manejar(RuntimeException error) {
         TraductorErroresM5.ErrorHttp traducido =
