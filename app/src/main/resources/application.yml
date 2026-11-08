@@ -27,6 +27,13 @@ prisaly:
   m1:
     student-access:
       enabled: false
+  m3:
+    # Institutional read policy for GET /v1/casos/{id} (DC-M3-RES-02). Pending ratification by
+    # Dirección Central: permission and visible states stay blank, so every read is denied.
+    lectura:
+      permiso: ""
+      estados-visibles: ""
+      requiere-activo: true
   m4:
     consulta-bd0052:
       enabled: true
