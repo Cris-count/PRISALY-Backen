@@ -1,0 +1,27 @@
+{
+  "testedSha": "e78a9d96c54911f68d12ad6ba61d430578b281c6",
+  "baseSha": "cf57327ea4e7d6fde22c716db5b4ea5a34da3546",
+  "run": "https://github.com/Cris-count/PRISALY-Backen/actions/runs/42508822192",
+  "artifactId": 13628502868,
+  "referenceRun": "https://github.com/Cris-count/PRISALY-Backen/actions/runs/42508629781",
+  "referenceSha": "db423d7f644cbee01d180874f7670431815ae9ff",
+  "archiveSha256": "c30563419f022a185a1f52e55c153aff91f1438bf6e4afc4b5b71aa5c369a8ab",
+  "note": "Downloaded sanitized XML/log text, whitespace normalized in persistent copies. First-attempt failure kept separately; never counted as passed.",
+  "files": {
+    ".gitattributes": "a79691a93b46e49ce460c26ef22afcc03d6eca1e63bf2edbc20e96159510f6c9",
+    "app-TEST-com.prisaly.config.M4SchemaContratoPostgreSqlIT.xml": "34137557b25b7809020a8bc9fec4ecdaf9c0324c0047110345122430d0f9e442",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4CoordinacionInicioTest.xml": "08ae4b5a094050901fbab8b6dcbf6b3c0d6184b07a98b4332cba7b3fc847642b",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4MigrationResourcesTest.xml": "7849d1803127605bb84845eb793aaaab457192ab008bdb260935d72a4021cc0e",
+    "m4-TEST-com.prisaly.m4.infrastructure.M4SchemaContractTest.xml": "36237298ca782d5b1e06b7d18c227bb97fc9f07e95139f10c181420e8ede8bcc",
+    "maven.txt": "548484a0dd78cbae23d4e769223944c1c3f30bde0b628de7782378e108153de2",
+    "primer-intento/summary.json": "cad67b1ad9e47387aae8211d7081164e4ddf7957199cb05657cdc55459d0b6eb",
+    "primer-intento/TEST-M4SchemaReferenceIT.xml": "46e6381ef0707587804a1b5a982d410c35dec5e3c2e8134cd2bbb73b44cdd08d",
+    "referencias/bd0052-dd02-v012-history.txt": "5cbcfad7c8331590268db72aa710aa989b7b05cc770ac9c359d49756e1fb6956",
+    "referencias/bd0052-dd02-v012-structure.txt": "fbd4f5ecbd8e79588f173e324a10b5397dd8972626029a86cb8e7a6a46031c63",
+    "referencias/bd0052-dd02-v012.properties": "6c4af5db95b907fb0b8c4937f69a838f3ba1447d00f57f94075d2e63f811aec1",
+    "referencias/bd0052-v009-history.txt": "e60b31f2ff11c879ae5eedcf65d6c53b982c983ec1e99d22c8aabdf7f2b2114d",
+    "referencias/bd0052-v009-structure.txt": "525b5ff43cef73941030ae46f1ba536e7eb895836eee4eabd9b06b66a908ceb0",
+    "referencias/bd0052-v009.properties": "4596725c4ddd21aebb537637ac836ee323544815090edf933247edebd9e4ca4f",
+    "summary.json": "06d1441fcc72cb465b2d9a33d5a6573c1039a989dace6e9636a6061aa90de0fd"
+  }
+}

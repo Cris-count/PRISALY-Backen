@@ -1,0 +1,162 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.config.M4SchemaReferenceIT" time="15.038" tests="1" errors="1" skipped="0" failures="0" flakes="0">
+  <testcase name="exportaReferenciasDesdeSqlCanonicoSinTargetNiRepair" classname="com.prisaly.config.M4SchemaReferenceIT" time="1.048">
+    <error message="StatementCallback; bad SQL grammar [SELECT 'relation|'||c.relname||'|'||c.relkind||'|'||c.relrowsecurity||'|'||c.relforcerowsecurity AS definition&#10;FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname&lt;&gt;'flyway_schema_history'&#10;UNION ALL&#10;SELECT 'column|'||c.relname||'|'||a.attnum||'|'||a.attname||'|'||format_type(a.atttypid,a.atttypmod)&#10;    ||'|'||a.attnotnull||'|'||a.attidentity||'|'||a.attgenerated||'|'||coalesce(pg_get_expr(d.adbin,d.adrelid),'')&#10;FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum&#10;WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname&lt;&gt;'flyway_schema_history'&#10;    AND a.attnum&gt;0 AND NOT a.attisdropped&#10;UNION ALL&#10;SELECT 'constraint|'||c.relname||'|'||k.conname||'|'||k.convalidated||'|'||pg_get_constraintdef(k.oid,false)&#10;FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public' AND c.relname&lt;&gt;'flyway_schema_history'&#10;UNION ALL&#10;SELECT 'index|'||c.relname||'|'||i.indisvalid||'|'||i.indisready||'|'||pg_get_indexdef(i.indexrelid)&#10;FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public' AND c.relname&lt;&gt;'flyway_schema_history'&#10;UNION ALL&#10;SELECT 'trigger|'||c.relname||'|'||t.tgname||'|'||t.tgenabled||'|'||pg_get_triggerdef(t.oid,false)&#10;FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public' AND NOT t.tgisinternal AND c.relname&lt;&gt;'flyway_schema_history'&#10;UNION ALL&#10;SELECT 'function|'||p.proname||'|'||pg_get_function_identity_arguments(p.oid)||'|'||pg_get_functiondef(p.oid)&#10;FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prokind IN ('f','p')&#10;UNION ALL&#10;SELECT 'sequence|'||c.relname||'|'||format_type(s.seqtypid,null)||'|'||s.seqstart||'|'||s.seqincrement&#10;    ||'|'||s.seqmax||'|'||s.seqmin||'|'||s.seqcache||'|'||s.seqcycle&#10;FROM pg_sequence s JOIN pg_class c ON c.oid=s.seqrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public'&#10;UNION ALL&#10;SELECT 'policy|'||c.relname||'|'||p.polname||'|'||p.polcmd||'|'||p.polpermissive||'|'&#10;    ||coalesce(pg_get_expr(p.polqual,p.polrelid),'')||'|'||coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'')&#10;FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace&#10;WHERE n.nspname='public'&#10;]" type="org.springframework.jdbc.BadSqlGrammarException">org.springframework.jdbc.BadSqlGrammarException:
+StatementCallback; bad SQL grammar [SELECT 'relation|'||c.relname||'|'||c.relkind||'|'||c.relrowsecurity||'|'||c.relforcerowsecurity AS definition
+FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname&lt;&gt;'flyway_schema_history'
+UNION ALL
+SELECT 'column|'||c.relname||'|'||a.attnum||'|'||a.attname||'|'||format_type(a.atttypid,a.atttypmod)
+    ||'|'||a.attnotnull||'|'||a.attidentity||'|'||a.attgenerated||'|'||coalesce(pg_get_expr(d.adbin,d.adrelid),'')
+FROM pg_attribute a JOIN pg_class c ON c.oid=a.attrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+LEFT JOIN pg_attrdef d ON d.adrelid=c.oid AND d.adnum=a.attnum
+WHERE n.nspname='public' AND c.relkind IN ('r','p','v','m','f') AND c.relname&lt;&gt;'flyway_schema_history'
+    AND a.attnum&gt;0 AND NOT a.attisdropped
+UNION ALL
+SELECT 'constraint|'||c.relname||'|'||k.conname||'|'||k.convalidated||'|'||pg_get_constraintdef(k.oid,false)
+FROM pg_constraint k JOIN pg_class c ON c.oid=k.conrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public' AND c.relname&lt;&gt;'flyway_schema_history'
+UNION ALL
+SELECT 'index|'||c.relname||'|'||i.indisvalid||'|'||i.indisready||'|'||pg_get_indexdef(i.indexrelid)
+FROM pg_index i JOIN pg_class c ON c.oid=i.indrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public' AND c.relname&lt;&gt;'flyway_schema_history'
+UNION ALL
+SELECT 'trigger|'||c.relname||'|'||t.tgname||'|'||t.tgenabled||'|'||pg_get_triggerdef(t.oid,false)
+FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public' AND NOT t.tgisinternal AND c.relname&lt;&gt;'flyway_schema_history'
+UNION ALL
+SELECT 'function|'||p.proname||'|'||pg_get_function_identity_arguments(p.oid)||'|'||pg_get_functiondef(p.oid)
+FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.prokind IN ('f','p')
+UNION ALL
+SELECT 'sequence|'||c.relname||'|'||format_type(s.seqtypid,null)||'|'||s.seqstart||'|'||s.seqincrement
+    ||'|'||s.seqmax||'|'||s.seqmin||'|'||s.seqcache||'|'||s.seqcycle
+FROM pg_sequence s JOIN pg_class c ON c.oid=s.seqrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public'
+UNION ALL
+SELECT 'policy|'||c.relname||'|'||p.polname||'|'||p.polcmd||'|'||p.polpermissive||'|'
+    ||coalesce(pg_get_expr(p.polqual,p.polrelid),'')||'|'||coalesce(pg_get_expr(p.polwithcheck,p.polrelid),'')
+FROM pg_policy p JOIN pg_class c ON c.oid=p.polrelid JOIN pg_namespace n ON n.oid=c.relnamespace
+WHERE n.nspname='public'
+]
+	at org.springframework.jdbc.support.SQLStateSQLExceptionTranslator.doTranslate(SQLStateSQLExceptionTranslator.java:134)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:102)
+	at org.springframework.jdbc.support.AbstractFallbackSQLExceptionTranslator.translate(AbstractFallbackSQLExceptionTranslator.java:111)
+	at org.springframework.jdbc.core.JdbcTemplate.translateException(JdbcTemplate.java:1549)
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:427)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:491)
+	at org.springframework.jdbc.core.JdbcTemplate.query(JdbcTemplate.java:501)
+	at org.springframework.jdbc.core.JdbcTemplate.queryForList(JdbcTemplate.java:544)
+	at com.prisaly.m4.infrastructure.config.M4SchemaContract.estructura(M4SchemaContract.java:59)
+	at com.prisaly.config.M4SchemaReferenceIT.exportaReferenciasDesdeSqlCanonicoSinTargetNiRepair(M4SchemaReferenceIT.java:21)
+Caused by: org.postgresql.util.PSQLException: ERROR: operator is not unique: text || "char"
+  Hint: Could not choose a best candidate operator. You might need to add explicit type casts.
+  Position: 35
+	at org.postgresql.core.v3.QueryExecutorImpl.receiveErrorResponse(QueryExecutorImpl.java:2993)
+	at org.postgresql.core.v3.QueryExecutorImpl.processResults(QueryExecutorImpl.java:2656)
+	at org.postgresql.core.v3.QueryExecutorImpl.execute(QueryExecutorImpl.java:446)
+	at org.postgresql.jdbc.PgStatement.executeInternal(PgStatement.java:533)
+	at org.postgresql.jdbc.PgStatement.execute(PgStatement.java:449)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:371)
+	at org.postgresql.jdbc.PgStatement.executeCachedSql(PgStatement.java:356)
+	at org.postgresql.jdbc.PgStatement.executeWithFlags(PgStatement.java:332)
+	at org.postgresql.jdbc.PgStatement.executeQuery(PgStatement.java:282)
+	at org.springframework.jdbc.core.JdbcTemplate$1QueryStatementCallback.doInStatement(JdbcTemplate.java:478)
+	at org.springframework.jdbc.core.JdbcTemplate.execute(JdbcTemplate.java:412)
+	... 5 more
+</error>
+    <system-out>18:08:37.199 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+18:08:37.204 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+18:08:37.236 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+18:08:37.818 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+18:08:37.826 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+18:08:37.840 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 15982 MB
+18:08:37.865 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling docker image: testcontainers/ryuk:0.14.0. Please be patient; this may take some time but only needs to be done once.
+18:08:38.679 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Starting to pull image
+18:08:38.695 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+18:08:39.102 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  1 pending,  1 downloaded,  0 extracted, (242 KB/? MB)
+18:08:39.111 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  1 pending,  1 downloaded,  1 extracted, (242 KB/? MB)
+18:08:39.162 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  1 extracted, (2 MB/2 MB)
+18:08:40.461 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  2 extracted, (2 MB/2 MB)
+18:08:40.468 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pull complete. 2 layers, pulled in 1s (downloaded 2 MB at 2 MB/s)
+18:08:40.468 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Image testcontainers/ryuk:0.14.0 pull took PT2.602755746S
+18:08:40.494 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+18:08:40.581 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: ebe0504fccaf8f0fdcea466d54e2ca6157f0ee90d0b96d4f3da573d4360389bc
+18:08:40.953 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.459188849S
+18:08:40.957 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+18:08:40.957 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+18:08:40.958 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+18:08:40.960 [main] INFO tc.postgres:16.15 -- Pulling docker image: postgres:16.15. Please be patient; this may take some time but only needs to be done once.
+18:08:41.658 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Starting to pull image
+18:08:41.659 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+18:08:42.057 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 13 pending,  1 downloaded,  0 extracted, (1 KB/? MB)
+18:08:42.199 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 12 pending,  2 downloaded,  0 extracted, (3 MB/? MB)
+18:08:42.252 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 11 pending,  3 downloaded,  0 extracted, (13 MB/? MB)
+18:08:42.350 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 10 pending,  4 downloaded,  0 extracted, (14 MB/? MB)
+18:08:42.536 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  9 pending,  5 downloaded,  0 extracted, (14 MB/? MB)
+18:08:42.547 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  8 pending,  6 downloaded,  0 extracted, (19 MB/? MB)
+18:08:42.549 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  7 pending,  7 downloaded,  0 extracted, (19 MB/? MB)
+18:08:42.755 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  6 pending,  8 downloaded,  0 extracted, (32 MB/? MB)
+18:08:42.776 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  5 pending,  9 downloaded,  0 extracted, (32 MB/? MB)
+18:08:42.944 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  4 pending, 10 downloaded,  0 extracted, (55 MB/? MB)
+18:08:42.980 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  3 pending, 11 downloaded,  0 extracted, (55 MB/? MB)
+18:08:43.120 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  2 pending, 12 downloaded,  0 extracted, (144 MB/? MB)
+18:08:43.134 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  1 pending, 13 downloaded,  0 extracted, (144 MB/? MB)
+18:08:43.141 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  1 pending, 13 downloaded,  1 extracted, (144 MB/? MB)
+18:08:43.177 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  1 extracted, (144 MB/152 MB)
+18:08:44.553 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  2 extracted, (144 MB/152 MB)
+18:08:44.833 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  3 extracted, (147 MB/152 MB)
+18:08:44.891 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  4 extracted, (148 MB/152 MB)
+18:08:45.295 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  5 extracted, (151 MB/152 MB)
+18:08:45.374 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  6 extracted, (152 MB/152 MB)
+18:08:45.384 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  7 extracted, (152 MB/152 MB)
+18:08:45.394 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  8 extracted, (152 MB/152 MB)
+18:08:49.456 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  9 extracted, (152 MB/152 MB)
+18:08:49.476 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 10 extracted, (152 MB/152 MB)
+18:08:49.486 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 11 extracted, (152 MB/152 MB)
+18:08:49.499 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 12 extracted, (152 MB/152 MB)
+18:08:49.508 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 13 extracted, (152 MB/152 MB)
+18:08:49.515 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 14 extracted, (152 MB/152 MB)
+18:08:49.525 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pull complete. 14 layers, pulled in 7s (downloaded 152 MB at 21 MB/s)
+18:08:49.525 [main] INFO tc.postgres:16.15 -- Image postgres:16.15 pull took PT8.56445446S
+18:08:49.528 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+18:08:49.544 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: f3bd9a31bc6910d9a043ce963f11a17de9316b597344b46c4419ddaf9c01a9c4
+18:08:50.698 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.170616832S
+18:08:50.699 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: [JDBC REDACTED]
+18:08:51.147 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:08:51.195 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:08:51.196 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped pre-schema database level objects (execution time 00:00.000s)
+18:08:51.212 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.014s)
+18:08:51.221 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully cleaned schema "public" (execution time 00:00.008s)
+18:08:51.221 [main] INFO org.flywaydb.core.internal.command.clean.CleanExecutor -- Successfully dropped post-schema database level objects (execution time 00:00.000s)
+18:08:51.259 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:08:51.288 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Schema history table "public"."flyway_schema_history" does not exist yet
+18:08:51.291 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.019s)
+18:08:51.300 [main] INFO org.flywaydb.core.internal.schemahistory.JdbcTableSchemaHistory -- Creating Schema History table "public"."flyway_schema_history" ...
+18:08:51.346 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+18:08:51.391 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "001 - bd0052 estructura"
+18:08:51.396 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.478 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "002 - bd0052 restricciones"
+18:08:51.479 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.500 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "003 - bd0052 integridad"
+18:08:51.502 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.517 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "004 - bd0052 integridad intentos"
+18:08:51.518 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.528 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "005 - bd0052 cierre integridad"
+18:08:51.529 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.548 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+18:08:51.549 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.560 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+18:08:51.561 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.581 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+18:08:51.582 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.588 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Migrating schema "public" to version "009 - rf09 solo casos publicados"
+18:08:51.589 [main] WARN org.flywaydb.core.internal.sqlscript.DefaultSqlScriptExecutor -- DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+18:08:51.596 [main] INFO org.flywaydb.core.internal.command.DbMigrate -- Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.129s)
+18:08:51.610 [main] INFO org.flywaydb.core.FlywayExecutor -- Database: [JDBC REDACTED] (PostgreSQL 16.15)
+18:08:51.626 [main] INFO org.flywaydb.core.internal.command.DbValidate -- Successfully validated 9 migrations (execution time 00:00.007s)
+</system-out>
+  </testcase>
+</testsuite>
