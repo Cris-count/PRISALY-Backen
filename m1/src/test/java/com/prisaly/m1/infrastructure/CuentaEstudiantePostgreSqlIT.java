@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.domain.student.FirmasEstudiante;
+import com.prisaly.m1.domain.student.PoliticaSesionEstudiante;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
@@ -294,6 +295,42 @@ class CuentaEstudiantePostgreSqlIT {
         // 35 min idle: rejected, and the rejection does not refresh the session.
         assertThrows(IdentityDomainException.class, () -> accesoEn(token, base.plus(Duration.ofMinutes(80))).requireCurrentStudent());
         assertThrows(IdentityDomainException.class, () -> accesoEn(token, base.plus(Duration.ofMinutes(81))).requireCurrentStudent());
+    }
+
+    // Alternative A: an account that already completed activation and was later deactivated must
+    // not be re-activated (nor have its password replaced) by a new activation code.
+    @Test
+    void unaCuentaActivadaYDadaDeBajaNoSeReactivaConUnCodigoNuevo() {
+        UUID usuario = insertar("baja.pg@prisaly.test");
+        var primero = activacionTransaccional.emitir(usuario);
+        activacionTransaccional.activar(primero.challengeId(), primero.codigo(), "contrasena-original");
+        String hashOriginal = passwordHash(usuario);
+        jdbc.update("UPDATE \"Usuario\" SET \"estado\" = 'Inactivo' WHERE \"idUsuario\" = ?", usuario);
+
+        var segundo = activacionTransaccional.emitir(usuario);
+        assertThrows(IdentityDomainException.class,
+                () -> activacionTransaccional.activar(segundo.challengeId(), segundo.codigo(), "contrasena-nueva-ajena"));
+        assertEquals("Inactivo", estado(usuario));
+        assertEquals(hashOriginal, passwordHash(usuario));
+    }
+
+    @Test
+    void laSesionCaducaALasOchoHorasAunqueSeUseSinPausa() {
+        UUID usuario = insertar("ochohoras.pg@prisaly.test");
+        var emitido = activacionTransaccional.emitir(usuario);
+        activacionTransaccional.activar(emitido.challengeId(), emitido.codigo(), "contrasena-segura");
+        Instant base = Instant.now();
+        String token = new AutenticacionEstudianteService(cuentas, encoder, CLAVE, Clock.fixed(base, ZoneOffset.UTC))
+                .autenticar("ochohoras.pg@prisaly.test", "contrasena-segura").token();
+
+        Duration paso = Duration.ofMinutes(20);
+        Instant instante = base.plus(paso);
+        while (instante.isBefore(base.plus(PoliticaSesionEstudiante.VIGENCIA_MAXIMA))) {
+            assertEquals(usuario, accesoEn(token, instante).requireCurrentStudent().userId());
+            instante = instante.plus(paso);
+        }
+        assertThrows(IdentityDomainException.class,
+                () -> accesoEn(token, base.plus(PoliticaSesionEstudiante.VIGENCIA_MAXIMA)).requireCurrentStudent());
     }
 
     private SessionStudentAccessService accesoEn(String token, Instant instante) {

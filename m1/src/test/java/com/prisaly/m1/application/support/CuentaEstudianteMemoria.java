@@ -84,7 +84,10 @@ public final class CuentaEstudianteMemoria implements CuentaEstudiantePort {
             return false;
         }
         VinculoEstudiante vinculo = vinculos.get(actual.userId());
-        if (vinculo == null || vinculo.cuentaActiva()) {
+        // Mirrors the JDBC adapter: only accounts without a password yet can be activated.
+        boolean conContrasena = correos.values().stream()
+                .anyMatch(credencial -> credencial.userId().equals(actual.userId()) && credencial.passwordHash() != null);
+        if (vinculo == null || vinculo.cuentaActiva() || conContrasena) {
             return false;
         }
         activaciones.put(challengeId, new ActivacionGuardada(
