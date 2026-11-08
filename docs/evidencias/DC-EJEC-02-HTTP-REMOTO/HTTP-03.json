@@ -1,0 +1,39 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/personal/autenticar",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "correo": "unknown@prisaly.invalid",
+      "password": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 401,
+    "body": {
+      "code": "AUTH_FAILED",
+      "message": "Authentication failed"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-03",
+    "method": "POST",
+    "path": "/v1/personal/autenticar",
+    "expectedStatus": 401,
+    "expectedCode": "AUTH_FAILED",
+    "precondition": "Usuario desconocido",
+    "module": "M1/APP",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 401,
+    "status": "passed",
+    "evidence": "HTTP-03.json",
+    "failures": []
+  }
+}

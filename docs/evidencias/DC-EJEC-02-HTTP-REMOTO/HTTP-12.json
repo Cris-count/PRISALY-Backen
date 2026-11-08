@@ -1,0 +1,41 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/casos",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "idCaso": "9126826c-4e20-4b26-9edb-1017051cc98b",
+      "titulo": "Borrador aceptación HTTP",
+      "tiempoEstimadoSegundos": 60
+    }
+  },
+  "response": {
+    "status": 403,
+    "body": {
+      "code": "FORBIDDEN",
+      "message": "Case creation is not authorized"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-12",
+    "method": "POST",
+    "path": "/v1/casos",
+    "expectedStatus": 403,
+    "expectedCode": "FORBIDDEN",
+    "precondition": "Personal sin CREAR_CASO",
+    "module": "M3",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 403,
+    "status": "passed",
+    "evidence": "HTTP-12.json",
+    "failures": []
+  }
+}

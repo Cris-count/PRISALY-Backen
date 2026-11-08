@@ -1,0 +1,41 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "GET",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": [
+      {
+        "id": "6a96fde7-e252-4d96-8fdc-f4e58e7e07c4",
+        "sesionId": "d60522e7-af6c-45e9-a1ae-6dbcd8de20f7",
+        "estudianteId": "22222222-2222-2222-2222-222222222201",
+        "convocadoEn": "2026-11-08T16:02:15.442233Z",
+        "estadoAutorizacion": "Autorizado",
+        "fechaRetiro": null
+      }
+    ]
+  },
+  "assertions": {
+    "id": "HTTP-25",
+    "method": "GET",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "expectedStatus": 200,
+    "expectedCode": null,
+    "precondition": "Docente propietario",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 200,
+    "status": "passed",
+    "evidence": "HTTP-25.json",
+    "failures": []
+  }
+}

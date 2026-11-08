@@ -1,0 +1,43 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "[REDACTED]"
+    },
+    "body": {
+      "estudianteId": "22222222-2222-2222-2222-222222222201"
+    }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "id": "6a96fde7-e252-4d96-8fdc-f4e58e7e07c4",
+      "sesionId": "d60522e7-af6c-45e9-a1ae-6dbcd8de20f7",
+      "estudianteId": "22222222-2222-2222-2222-222222222201",
+      "convocadoEn": "2026-11-08T16:02:15.442233394Z",
+      "estadoAutorizacion": "Autorizado",
+      "fechaRetiro": null
+    }
+  },
+  "assertions": {
+    "id": "HTTP-24",
+    "method": "POST",
+    "path": "/m4/sesiones/d60522e7-af6c-45e9-a1ae-6dbcd8de20f7/convocatorias",
+    "expectedStatus": 201,
+    "expectedCode": null,
+    "precondition": "Estudiante fixture existente",
+    "module": "M4",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 201,
+    "status": "passed",
+    "evidence": "HTTP-24.json",
+    "failures": []
+  }
+}

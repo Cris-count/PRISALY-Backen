@@ -1,0 +1,48 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "POST",
+    "path": "/v1/personal/autenticar",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json"
+    },
+    "body": {
+      "correo": "other.qa@prisaly.invalid",
+      "password": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "accessToken": "[REDACTED]",
+      "tokenType": "[REDACTED]",
+      "userId": "11111111-1111-1111-1111-111111111104",
+      "correo": "other.qa@prisaly.invalid",
+      "nombre": "Otro docente QA",
+      "rol": "DocenteBruno",
+      "permisos": [
+        "GESTIONAR_SESION",
+        "CREAR_CASO"
+      ],
+      "authPrototype": "TD-M1-AUTH-PROVISIONAL"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-10",
+    "method": "POST",
+    "path": "/v1/personal/autenticar",
+    "expectedStatus": 200,
+    "expectedCode": null,
+    "precondition": "Otro docente fixture",
+    "module": "M1/APP",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 200,
+    "status": "passed",
+    "evidence": "HTTP-10.json",
+    "failures": []
+  }
+}

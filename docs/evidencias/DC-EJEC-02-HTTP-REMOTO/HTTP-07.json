@@ -1,0 +1,44 @@
+{
+  "sha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "expectedSha": "bc8e378bd6dd50a3b1484b06c268932ba5607dd3",
+  "request": {
+    "method": "GET",
+    "path": "/v1/personal/me",
+    "headers": {
+      "Accept": "application/json",
+      "Authorization": "[REDACTED]"
+    }
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "accessToken": "[REDACTED]",
+      "tokenType": "[REDACTED]",
+      "userId": "11111111-1111-1111-1111-111111111101",
+      "correo": "docente.bruno@prisaly.local",
+      "nombre": "Docente Bruno Con Permiso",
+      "rol": "DocenteBruno",
+      "permisos": [
+        "GESTIONAR_SESION",
+        "CREAR_CASO"
+      ],
+      "authPrototype": "TD-M1-AUTH-PROVISIONAL"
+    }
+  },
+  "assertions": {
+    "id": "HTTP-07",
+    "method": "GET",
+    "path": "/v1/personal/me",
+    "expectedStatus": 200,
+    "expectedCode": null,
+    "precondition": "Bearer [REDACTED] por login HTTP",
+    "module": "M1/APP",
+    "rf": null,
+    "cu": null,
+    "mandatory": true,
+    "actualStatus": 200,
+    "status": "passed",
+    "evidence": "HTTP-07.json",
+    "failures": []
+  }
+}
