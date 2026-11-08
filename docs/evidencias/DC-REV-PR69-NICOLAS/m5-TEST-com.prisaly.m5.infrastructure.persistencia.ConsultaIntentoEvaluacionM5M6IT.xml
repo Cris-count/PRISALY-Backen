@@ -1,0 +1,143 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT" time="18.728" tests="3" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="autorizacionInstitucionalNoSustituyeTitularidadPersistida" classname="com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT" time="0.385">
+    <system-out>21:55:41.114 [main] INFO org.testcontainers.images.PullPolicy -- Image pull policy will be performed by: DefaultPullPolicy()
+21:55:41.116 [main] INFO org.testcontainers.utility.ImageNameSubstitutor -- Image name substitution will be performed by: DefaultImageNameSubstitutor (composite of 'ConfigurationFileImageNameSubstitutor' and 'PrefixingImageNameSubstitutor')
+21:55:41.137 [main] INFO org.testcontainers.DockerClientFactory -- Testcontainers version: 2.0.5
+21:55:41.623 [main] INFO org.testcontainers.dockerclient.DockerClientProviderStrategy -- Found Docker environment with local Unix socket (unix:///var/run/docker.sock)
+21:55:41.629 [main] INFO org.testcontainers.DockerClientFactory -- Docker host IP address is localhost
+21:55:41.645 [main] INFO org.testcontainers.DockerClientFactory -- Connected to docker:
+  Server Version: 28.0.4
+  API Version: 1.48
+  Operating System: Ubuntu 24.04.5 LTS
+  Total Memory: 15983 MB
+21:55:41.673 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling docker image: testcontainers/ryuk:0.14.0. Please be patient; this may take some time but only needs to be done once.
+21:55:42.672 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Starting to pull image
+21:55:42.685 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+21:55:43.183 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  1 pending,  1 downloaded,  0 extracted, (242 KB/? MB)
+21:55:43.191 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  1 pending,  1 downloaded,  1 extracted, (242 KB/? MB)
+21:55:43.207 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  1 extracted, (2 MB/2 MB)
+21:55:44.166 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pulling image layers:  0 pending,  2 downloaded,  2 extracted, (2 MB/2 MB)
+21:55:44.171 [docker-java-stream-379213951] INFO tc.testcontainers/ryuk:0.14.0 -- Pull complete. 2 layers, pulled in 1s (downloaded 2 MB at 2 MB/s)
+21:55:44.171 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Image testcontainers/ryuk:0.14.0 pull took PT2.497550807S
+21:55:44.192 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Creating container for image: testcontainers/ryuk:0.14.0
+21:55:44.255 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 is starting: 9830c18280e98a47f55040dd5214e452dd50948aedc659378c79c4887fdc67d9
+21:55:44.803 [main] INFO tc.testcontainers/ryuk:0.14.0 -- Container testcontainers/ryuk:0.14.0 started in PT0.611012621S
+21:55:44.807 [main] INFO org.testcontainers.utility.RyukResourceReaper -- Ryuk started - will monitor and terminate Testcontainers containers on JVM exit
+21:55:44.807 [main] INFO org.testcontainers.DockerClientFactory -- Checking the system...
+21:55:44.807 [main] INFO org.testcontainers.DockerClientFactory -- ✔︎ Docker server version should be at least 1.6.0
+21:55:44.810 [main] INFO tc.postgres:16.15 -- Pulling docker image: postgres:16.15. Please be patient; this may take some time but only needs to be done once.
+21:55:45.668 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Starting to pull image
+21:55:45.668 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending,  0 downloaded,  0 extracted, (0 bytes/0 bytes)
+21:55:46.149 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 13 pending,  1 downloaded,  0 extracted, (1 KB/? MB)
+21:55:46.214 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 12 pending,  2 downloaded,  0 extracted, (367 KB/? MB)
+21:55:46.266 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 11 pending,  3 downloaded,  0 extracted, (367 KB/? MB)
+21:55:46.421 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers: 10 pending,  4 downloaded,  0 extracted, (399 KB/? MB)
+21:55:46.514 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  9 pending,  5 downloaded,  0 extracted, (8 MB/? MB)
+21:55:46.534 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  8 pending,  6 downloaded,  0 extracted, (8 MB/? MB)
+21:55:46.657 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  7 pending,  7 downloaded,  0 extracted, (12 MB/? MB)
+21:55:46.740 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  6 pending,  8 downloaded,  0 extracted, (22 MB/? MB)
+21:55:46.888 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  5 pending,  9 downloaded,  0 extracted, (25 MB/? MB)
+21:55:46.965 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  4 pending, 10 downloaded,  0 extracted, (59 MB/? MB)
+21:55:47.096 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  3 pending, 11 downloaded,  0 extracted, (97 MB/? MB)
+21:55:47.121 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  2 pending, 12 downloaded,  0 extracted, (97 MB/? MB)
+21:55:47.150 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  2 pending, 12 downloaded,  1 extracted, (98 MB/? MB)
+21:55:47.198 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  1 pending, 13 downloaded,  1 extracted, (98 MB/? MB)
+21:55:47.328 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  1 extracted, (98 MB/152 MB)
+21:55:48.386 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  2 extracted, (98 MB/152 MB)
+21:55:48.637 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  3 extracted, (104 MB/152 MB)
+21:55:48.831 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  4 extracted, (105 MB/152 MB)
+21:55:49.303 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  5 extracted, (113 MB/152 MB)
+21:55:49.365 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  6 extracted, (114 MB/152 MB)
+21:55:49.372 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  7 extracted, (114 MB/152 MB)
+21:55:49.380 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  8 extracted, (114 MB/152 MB)
+21:55:53.106 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded,  9 extracted, (152 MB/152 MB)
+21:55:53.116 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 10 extracted, (152 MB/152 MB)
+21:55:53.129 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 11 extracted, (152 MB/152 MB)
+21:55:53.177 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 12 extracted, (152 MB/152 MB)
+21:55:53.184 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 13 extracted, (152 MB/152 MB)
+21:55:53.192 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pulling image layers:  0 pending, 14 downloaded, 14 extracted, (152 MB/152 MB)
+21:55:53.198 [docker-java-stream--403990878] INFO tc.postgres:16.15 -- Pull complete. 14 layers, pulled in 7s (downloaded 152 MB at 21 MB/s)
+21:55:53.198 [main] INFO tc.postgres:16.15 -- Image postgres:16.15 pull took PT8.387988548S
+21:55:53.200 [main] INFO tc.postgres:16.15 -- Creating container for image: postgres:16.15
+21:55:53.211 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 is starting: 352e75d5d3ddcd4473776eaf7991008dda953eed753479466cdbaae7ddcb72ed
+21:55:54.597 [main] INFO tc.postgres:16.15 -- Container postgres:16.15 started in PT1.397198933S
+21:55:54.598 [main] INFO tc.postgres:16.15 -- Container is started (JDBC URL: [JDBC REDACTED]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-08T21:55:54.827Z  INFO 2829 --- [           main] .p.m.i.p.ConsultaIntentoEvaluacionM5M6IT : Starting ConsultaIntentoEvaluacionM5M6IT using Java 21.0.13 with PID 2829 (started by runner in /home/runner/work/PRISALY-Backen/PRISALY-Backen/candidate/m5)
+2026-11-08T21:55:54.828Z  INFO 2829 --- [           main] .p.m.i.p.ConsultaIntentoEvaluacionM5M6IT : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T21:55:55.192Z  INFO 2829 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T21:55:55.244Z  INFO 2829 --- [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 46 ms. Found 2 JPA repository interfaces.
+2026-11-08T21:55:55.797Z  INFO 2829 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-08T21:55:55.940Z  INFO 2829 --- [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@7ae0a26
+2026-11-08T21:55:55.941Z  INFO 2829 --- [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-11-08T21:55:55.958Z  INFO 2829 --- [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T21:55:55.999Z  INFO 2829 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T21:55:56.002Z  INFO 2829 --- [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.012s)
+2026-11-08T21:55:56.012Z  INFO 2829 --- [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T21:55:56.053Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T21:55:56.089Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T21:55:56.094Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.161Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T21:55:56.162Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.189Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T21:55:56.190Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.211Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T21:55:56.213Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.229Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T21:55:56.230Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.245Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T21:55:56.246Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.266Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T21:55:56.267Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.286Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T21:55:56.287Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.294Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T21:55:56.297Z  WARN 2829 --- [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:55:56.306Z  INFO 2829 --- [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.125s)
+2026-11-08T21:55:56.401Z  INFO 2829 --- [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T21:55:56.455Z  INFO 2829 --- [           main] org.hibernate.orm.core                   : HHH000001: Hibernate ORM core version 7.4.13.Final
+2026-11-08T21:55:56.789Z  INFO 2829 --- [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T21:55:56.851Z  INFO 2829 --- [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [[JDBC REDACTED]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T21:55:57.337Z  INFO 2829 --- [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T21:55:57.366Z  INFO 2829 --- [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T21:55:57.425Z  INFO 2829 --- [           main] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-08T21:55:58.084Z  WARN 2829 --- [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-11-08T21:55:58.314Z  WARN 2829 --- [           main] .s.a.UserDetailsServiceAutoConfiguration :
+
+Using generated security password: [REDACTED]
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-11-08T21:55:58.345Z  INFO 2829 --- [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-11-08T21:55:58.546Z  INFO 2829 --- [           main] .p.m.i.p.ConsultaIntentoEvaluacionM5M6IT : Started ConsultaIntentoEvaluacionM5M6IT in 3.922 seconds (process running for 18.265)
+</system-out>
+    <system-err>Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/runner/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+</system-err>
+  </testcase>
+  <testcase name="entregaFinalizadoConParticipacionCasoYRespuestaReales" classname="com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT" time="0.189" />
+  <testcase name="conservaEnCursoYNoInventaIntentosAusentes" classname="com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT" time="0.011" />
+</testsuite>

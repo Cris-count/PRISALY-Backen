@@ -1,0 +1,4 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest" time="0.072" tests="2" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="dosFilasParaLaMismaPreguntaSonFalloDePersistencia" classname="com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest" time="0.036" />
+  <testcase name="revisionNoPositivaEsFalloDePersistencia" classname="com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest" time="0.002" />
+</testsuite>

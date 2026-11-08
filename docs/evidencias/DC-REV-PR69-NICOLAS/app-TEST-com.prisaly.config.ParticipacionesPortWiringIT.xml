@@ -1,0 +1,71 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-failsafe-plugin/xsd/failsafe-test-report.xsd" version="3.0.2" name="com.prisaly.config.ParticipacionesPortWiringIT" time="2.558" tests="1" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="onlyM5ProviderIsRegisteredAndContextUsesSesionRepositoryAdapter" classname="com.prisaly.config.ParticipacionesPortWiringIT" time="0.003">
+    <system-out>2026-11-08T21:56:25.377Z  INFO 4164 --- [prisaly-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.prisaly.config.ParticipacionesPortWiringIT]: ParticipacionesPortWiringIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-08T21:56:25.379Z  INFO 4164 --- [prisaly-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.prisaly.PrisalyApplication for test class com.prisaly.config.ParticipacionesPortWiringIT
+2026-11-08T21:56:25.379Z  INFO 4164 --- [prisaly-backend] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.prisaly.config.ParticipacionesPortWiringIT]: ParticipacionesPortWiringIT does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-08T21:56:25.380Z  INFO 4164 --- [prisaly-backend] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.prisaly.PrisalyApplication for test class com.prisaly.config.ParticipacionesPortWiringIT
+2026-11-08T21:56:25.381Z  INFO 4164 --- [prisaly-backend] [           main] tc.postgres:16.15                        : Creating container for image: postgres:16.15
+2026-11-08T21:56:25.409Z  INFO 4164 --- [prisaly-backend] [           main] tc.postgres:16.15                        : Container postgres:16.15 is starting: 9f010886957d1d53524d8dee44b5aabb90696a3dbfd79074f96946458c93e651
+2026-11-08T21:56:26.699Z  INFO 4164 --- [prisaly-backend] [           main] tc.postgres:16.15                        : Container postgres:16.15 started in PT1.318037698S
+2026-11-08T21:56:26.699Z  INFO 4164 --- [prisaly-backend] [           main] tc.postgres:16.15                        : Container is started (JDBC URL: [JDBC REDACTED]
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v4.1.2)
+
+2026-11-08T21:56:26.725Z  INFO 4164 --- [prisaly-backend] [           main] c.p.config.ParticipacionesPortWiringIT   : Starting ParticipacionesPortWiringIT using Java 21.0.13 with PID 4164 (started by runner in /home/runner/work/PRISALY-Backen/PRISALY-Backen/candidate/app)
+2026-11-08T21:56:26.725Z  INFO 4164 --- [prisaly-backend] [           main] c.p.config.ParticipacionesPortWiringIT   : No active profile set, falling back to 1 default profile: "default"
+2026-11-08T21:56:26.873Z  INFO 4164 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-11-08T21:56:26.892Z  INFO 4164 --- [prisaly-backend] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 17 ms. Found 11 JPA repository interfaces.
+2026-11-08T21:56:26.958Z  INFO 4164 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-08T21:56:26.970Z  INFO 4164 --- [prisaly-backend] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection org.postgresql.jdbc.PgConnection@7f815bea
+2026-11-08T21:56:26.970Z  INFO 4164 --- [prisaly-backend] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+2026-11-08T21:56:26.971Z  INFO 4164 --- [prisaly-backend] [           main] org.flywaydb.core.FlywayExecutor         : Database: [JDBC REDACTED] (PostgreSQL 16.15)
+2026-11-08T21:56:26.983Z  INFO 4164 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Schema history table "public"."flyway_schema_history" does not exist yet
+2026-11-08T21:56:26.983Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbValidate     : Successfully validated 9 migrations (execution time 00:00.004s)
+2026-11-08T21:56:26.989Z  INFO 4164 --- [prisaly-backend] [           main] o.f.c.i.s.JdbcTableSchemaHistory         : Creating Schema History table "public"."flyway_schema_history" ...
+2026-11-08T21:56:27.017Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Current version of schema "public": &lt;&lt; Empty Schema &gt;&gt;
+2026-11-08T21:56:27.023Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "001 - bd0052 estructura"
+2026-11-08T21:56:27.024Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.075Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "002 - bd0052 restricciones"
+2026-11-08T21:56:27.076Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.092Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "003 - bd0052 integridad"
+2026-11-08T21:56:27.094Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.106Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "004 - bd0052 integridad intentos"
+2026-11-08T21:56:27.107Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.118Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "005 - bd0052 cierre integridad"
+2026-11-08T21:56:27.119Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.128Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "006 - bd0052 proteccion relaciones"
+2026-11-08T21:56:27.129Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.139Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "007 - fase3 politicas aprobadas"
+2026-11-08T21:56:27.140Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.154Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "008 - bloqueo caso al reasignar sesion"
+2026-11-08T21:56:27.155Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.159Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Migrating schema "public" to version "009 - rf09 solo casos publicados"
+2026-11-08T21:56:27.160Z  WARN 4164 --- [prisaly-backend] [           main] o.f.c.i.s.DefaultSqlScriptExecutor       : DB: there is already a transaction in progress (SQL State: 25001 - Error Code: 0)
+2026-11-08T21:56:27.163Z  INFO 4164 --- [prisaly-backend] [           main] o.f.core.internal.command.DbMigrate      : Successfully applied 9 migrations to schema "public", now at version v009 (execution time 00:00.089s)
+2026-11-08T21:56:27.179Z  INFO 4164 --- [prisaly-backend] [           main] org.hibernate.orm.jpa                    : HHH008540: Processing PersistenceUnitInfo [name: default]
+2026-11-08T21:56:27.199Z  INFO 4164 --- [prisaly-backend] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-11-08T21:56:27.204Z  INFO 4164 --- [prisaly-backend] [           main] org.hibernate.orm.connections.pooling    : HHH10001005: Database info:
+	Database JDBC URL [[JDBC REDACTED]
+	Database driver: PostgreSQL JDBC Driver
+	Database dialect: PostgreSQLDialect
+	Database version: 16.15
+	Default catalog/schema: test/public
+	Autocommit mode: undefined/unknown
+	Isolation level: READ_COMMITTED [default READ_COMMITTED]
+	JDBC fetch size: none
+	Pool: DataSourceConnectionProvider
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2026-11-08T21:56:27.312Z  INFO 4164 --- [prisaly-backend] [           main] org.hibernate.orm.core                   : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2026-11-08T21:56:27.328Z  INFO 4164 --- [prisaly-backend] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-08T21:56:27.554Z  INFO 4164 --- [prisaly-backend] [           main] c.p.config.ParticipacionesPortWiringIT   : Started ParticipacionesPortWiringIT in 0.85 seconds (process running for 13.212)
+</system-out>
+  </testcase>
+</testsuite>

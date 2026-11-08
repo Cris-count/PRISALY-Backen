@@ -1,0 +1,105 @@
+{
+  "pull": 69,
+  "merge": "b97ba887629b6229fdd9676877e31049be4c3461",
+  "head": "37741db4910d23e38d5eeca67a957f7e2ad6ea9f",
+  "base": "3f97e7e22aac18f655461b882dfd9a5f0f2195d6",
+  "headAndMergeTreesIdentical": true,
+  "files": [
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/domain/respuesta/ReferenciaPregunta.java",
+      "kind": "production",
+      "before": "3ec22028643f07242d72ea68d7a289757d437eab",
+      "after": "0faf943d210deb2c6a08fa2217b737453c9b33fd"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/domain/respuesta/ValidacionRespuesta.java",
+      "kind": "production",
+      "before": "7298f09da043846c1e0a6f161960ac22219ff146",
+      "after": "dc48c8c6345b41807f39119ac880f7799242f720"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/domain/respuesta/ValorRespuesta.java",
+      "kind": "production",
+      "before": "2acad03d0cac76e7caa61b5a59ebd4cdbed3a49b",
+      "after": "c48ce8a4606177552ae520c90d73e4598ad5e85b"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/infrastructure/persistencia/MapeoIntento.java",
+      "kind": "production",
+      "before": "8b55c3bcb27aab0db7274435e3374d36025a34e5",
+      "after": "a008acb2c82e0ca4c4aaf4879643f14c60629d70"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/infrastructure/persistencia/RepositorioIntentosJpa.java",
+      "kind": "production",
+      "before": "e5b6880884471fa13db1358633775ee3daf16ddd",
+      "after": "2e9737ae66eb9f089ca17eb4d97e3adc22d70b50"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/presentation/ManejadorErroresM5.java",
+      "kind": "production",
+      "before": "7ae1a49ac38b985aac3d713e9da67168c3fee529",
+      "after": "1f9dcf2a79d08701ea702f4313ca7ddeca6b2ed0"
+    },
+    {
+      "file": "m5/src/main/java/com/prisaly/m5/presentation/TraductorErroresM5.java",
+      "kind": "production",
+      "before": "07500f9709d8f44d7a843e2f057effebab98f56e",
+      "after": "6f9c5ac85ca0fd6bcc93c55fbb9c2dc15f33d15b"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/domain/respuesta/ReferenciasCanonicasTest.java",
+      "kind": "test",
+      "before": null,
+      "after": "a0e1005e1dae6694fc662b4ad72a99acd5188d7d"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/domain/respuesta/ValorRespuestaContratoTest.java",
+      "kind": "test",
+      "before": null,
+      "after": "b0c62887f93793a2455c07b55f01f936c61698e0"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/infrastructure/persistencia/FallosTecnicosM5IT.java",
+      "kind": "test",
+      "before": null,
+      "after": "ca48c69ccf4cf34d138ec325d283da783177b2e8"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/infrastructure/persistencia/MapeoIntentoFilasCorruptasTest.java",
+      "kind": "test",
+      "before": null,
+      "after": "767b48b1bd756f3ca675399dfb52da5fcb027cae"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/infrastructure/persistencia/RevisionMacro02PersistenciaIT.java",
+      "kind": "test",
+      "before": null,
+      "after": "670cbc95c0fd3e8a1ce19814059c3a9b96aba512"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/infrastructure/persistencia/RobustezPersistenciaM5IT.java",
+      "kind": "test",
+      "before": null,
+      "after": "96038fe6318257b94df87a78e0aeb48f25daebc7"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/presentation/ErroresTecnicosM5Test.java",
+      "kind": "test",
+      "before": null,
+      "after": "82f38c28d6840a17d87747174819b16732f99148"
+    },
+    {
+      "file": "m5/src/test/java/com/prisaly/m5/presentation/RespuestaHttpErroresTecnicosTest.java",
+      "kind": "test",
+      "before": null,
+      "after": "75c94f3b9fd662584300b90a7f675e6141b11488"
+    },
+    {
+      "file": "m6/src/test/java/com/prisaly/m6/application/integration/ModelosLimitesEInmutabilidadTest.java",
+      "kind": "test",
+      "before": null,
+      "after": "3116b3fd4c6e9f85da733262fd3450091d5fd32f"
+    }
+  ]
+}

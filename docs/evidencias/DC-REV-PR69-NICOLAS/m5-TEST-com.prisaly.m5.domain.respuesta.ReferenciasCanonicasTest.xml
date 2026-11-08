@@ -1,0 +1,5 @@
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest" time="0.009" tests="3" errors="0" skipped="0" failures="0" flakes="0">
+  <testcase name="elMismoUuidEnMayusculasEsLaMismaReferencia" classname="com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest" time="0.004" />
+  <testcase name="elAgregadoDetectaElDuplicadoAunqueCambieLaCaja" classname="com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest" time="0.002" />
+  <testcase name="losValoresOpacosNoSeAlteran" classname="com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest" time="0.001" />
+</testsuite>
