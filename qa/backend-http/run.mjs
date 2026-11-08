@@ -105,7 +105,7 @@ export async function main(args = process.argv.slice(2)) {
     const result=spawnSync(command,argv,{cwd:ROOT,env:{...env,...extraEnv},input,
       encoding:'utf8',timeout,maxBuffer:32*1024*1024,windowsHide:true});
     return {ok:!result.error&&result.status===0,code:result.status,
-      text:(result.stdout||'')+(result.stderr||''),error:result.error?.code};
+      stdout:result.stdout||'', text:(result.stdout||'')+(result.stderr||''),error:result.error?.code};
   }
   function required(commandName,argv,options) {
     const result=command(commandName,argv,options);
@@ -167,7 +167,7 @@ export async function main(args = process.argv.slice(2)) {
           '-e','POSTGRES_PASSWORD','-e','POSTGRES_USER=qa_http','-e','POSTGRES_DB=qa_http','postgres:16.15'],
           {extraEnv:{POSTGRES_PASSWORD:dbPassword},timeout:180000});
         if(!started.ok) {log('docker-start.log',started.text);throw new Blocked('No se pudo iniciar PostgreSQL 16.15 efímero');}
-        containerId=started.text.trim();
+        containerId=started.stdout.trim();
         if(!/^[a-f0-9]{64}$/.test(containerId)) throw new Blocked('Docker no devolvió ID inequívoco');
         const inspect=JSON.parse(required('docker',['inspect',containerId]))[0];
         if(!ownsContainer(inspect,containerId,name,runId)) throw new Blocked('No se acredita propiedad del contenedor');
