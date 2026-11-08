@@ -1,6 +1,7 @@
 package com.prisaly.m1.presentation;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,7 +59,8 @@ class EstudianteAccessValidarTest {
                 .andExpect(jsonPath("$.userId").value(USER_ID.toString()))
                 .andExpect(jsonPath("$.studentId").value(STUDENT_ID.toString()))
                 .andExpect(jsonPath("$.challengeId").value(CHALLENGE_ID))
-                .andExpect(jsonPath("$.estado").value(StudentAccessValidationService.ESTADO_VALIDADO));
+                .andExpect(jsonPath("$.estado").value(StudentAccessValidationService.ESTADO_VALIDADO))
+                .andExpect(header().doesNotExist("Set-Cookie"));
     }
 
     @Test

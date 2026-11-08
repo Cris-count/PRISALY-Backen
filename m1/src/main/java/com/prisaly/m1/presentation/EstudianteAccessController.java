@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  * ARQ-008.3 student access validation endpoint (DD-02).
  * Productive path stays 501 while {@code prisaly.m1.student-access.enabled=false}.
  * {@code StudentAccessPort} remains {@code DenyingStudentAccessService} until activation.
+ * This route never creates a student session, even when the flag is on.
  */
 @RestController
 @RequestMapping("/v1/acceso-estudiante")
