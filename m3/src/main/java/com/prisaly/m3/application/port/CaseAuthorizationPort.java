@@ -11,4 +11,9 @@ public interface CaseAuthorizationPort {
     boolean canModifyCase(String userId, String caseId);
 
     boolean canPublishCase(String userId, String caseId);
+
+    /** PD-02: independent from publication; denied unless a provider grants it explicitly. */
+    default boolean canArchiveCase(String userId, String caseId) {
+        return false;
+    }
 }

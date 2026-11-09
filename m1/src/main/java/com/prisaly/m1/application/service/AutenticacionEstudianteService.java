@@ -4,7 +4,7 @@ import com.prisaly.m1.application.port.CuentaEstudiantePort;
 import com.prisaly.m1.application.port.CuentaEstudiantePort.CredencialEstudiante;
 import com.prisaly.m1.application.port.CuentaEstudiantePort.SesionNueva;
 import com.prisaly.m1.application.port.CuentaEstudiantePort.VinculoEstudiante;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.domain.student.ClaveHmacEstudiante;
 import com.prisaly.m1.domain.student.FirmasEstudiante;
 import com.prisaly.m1.domain.student.PoliticaSesionEstudiante;

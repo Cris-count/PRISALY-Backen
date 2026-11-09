@@ -1,6 +1,6 @@
 package com.prisaly.m6.application.port;
 
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 
 /**
  * M6-owned consumer contract, not an institutional permission catalogue.

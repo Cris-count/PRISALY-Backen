@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.evaluacion;
 
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -111,7 +112,7 @@ class EnsamblajeEvaluacionNoPublicadoTest {
         var fabrica = new FabricaConsultaIntentoEvaluacion(autorizacion, protegida, repositorio, identidad, programacion, tx);
         // Every request gets its own bound reader; there is no shared global instance to capture.
         assertThrows(NullPointerException.class, () -> fabrica.para(null));
-        var solicitud = new com.prisaly.m6.domain.strategy.SolicitudEvaluacion(java.util.UUID.randomUUID(),
+        var solicitud = new com.prisaly.m6.api.SolicitudEvaluacion(java.util.UUID.randomUUID(),
                 java.util.UUID.randomUUID());
         assertNotSame(fabrica.para(solicitud), fabrica.para(solicitud));
         assertEquals(0, Arrays.stream(FabricaConsultaIntentoEvaluacion.class.getMethods())

@@ -1,7 +1,7 @@
 package com.prisaly.m4.presentation.controller;
 
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.domain.rule.SesionOperacionNoPermitidaException;
 import com.prisaly.m4.presentation.dto.ErrorResponse;
 

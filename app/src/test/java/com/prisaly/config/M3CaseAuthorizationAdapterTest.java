@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import java.util.Set;
@@ -46,10 +46,35 @@ class M3CaseAuthorizationAdapterTest {
     }
 
     @Test
-    void modificationAndPublicationRemainDeniedWithoutConsultingOrInferringPermissions() {
-        assertFalse(adapter.canModifyCase(currentId.toString(), UUID.randomUUID().toString()));
-        assertFalse(adapter.canPublishCase(currentId.toString(), UUID.randomUUID().toString()));
-        verifyNoInteractions(identity);
+    void publicationAndArchivingFollowTheirOwnPermissionsWithoutDefaults() {
+        String caseId = UUID.randomUUID().toString();
+        assertFalse(adapter.canPublishCase(currentId.toString(), caseId));
+        assertFalse(adapter.canArchiveCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "PUBLICAR_CASO")).thenReturn(true);
+        assertTrue(adapter.canPublishCase(currentId.toString(), caseId));
+        assertFalse(adapter.canArchiveCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "PUBLICAR_CASO")).thenReturn(false);
+        when(identity.hasPermission(currentId, "ARCHIVAR_CASO")).thenReturn(true);
+        assertFalse(adapter.canPublishCase(currentId.toString(), caseId));
+        assertTrue(adapter.canArchiveCase(currentId.toString(), caseId));
+        assertFalse(adapter.canPublishCase(UUID.randomUUID().toString(), caseId));
+    }
+
+    @Test
+    void modificationFollowsTheRealPermissionAndNeverImpersonates() {
+        doReturn(user("Activo")).when(identity).currentUser();
+        String caseId = UUID.randomUUID().toString();
+        when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(true);
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(true);
+        assertTrue(adapter.canModifyCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(false);
+        assertFalse(adapter.canModifyCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(true);
+        when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(false);
+        assertFalse(adapter.canModifyCase(currentId.toString(), caseId));
+        clearInvocations(identity);
+        assertFalse(adapter.canModifyCase(UUID.randomUUID().toString(), caseId));
+        verify(identity, never()).hasPermission(any(), any());
     }
 
     @Test

@@ -17,7 +17,7 @@ import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.Titularidad;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
 import com.prisaly.m5.infrastructure.persistencia.MapeoIntento;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 
 /**
  * Titularidad de un intento sobre el contrato público de M4.

@@ -17,7 +17,8 @@ public record SesionResponse(
         Instant creadoEn,
         Instant fechaInicioReal,
         Instant fechaFinReal,
-        int tiempoMaximoParticipacionSegundos) {
+        int tiempoMaximoParticipacionSegundos,
+        String lugarFisico) {
     public static SesionResponse from(SesionAcademica s) {
         return new SesionResponse(
                 s.getId(),
@@ -31,6 +32,7 @@ public record SesionResponse(
                 s.getCreadoEn(),
                 s.getFechaInicioReal(),
                 s.getFechaFinReal(),
-                s.getTiempoMaximoParticipacionSegundos());
+                s.getTiempoMaximoParticipacionSegundos(),
+                s.getLugarFisico());
     }
 }

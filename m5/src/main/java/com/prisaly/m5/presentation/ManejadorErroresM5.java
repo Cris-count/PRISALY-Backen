@@ -3,7 +3,7 @@ package com.prisaly.m5.presentation;
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
 import com.prisaly.m5.application.ParticipacionAplicacionException;
 import com.prisaly.m5.domain.ParticipacionDominioException;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.transaction.TransactionException;

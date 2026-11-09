@@ -1,5 +1,6 @@
 package com.prisaly.m4.infrastructure.adapter;
 
+import com.prisaly.m4.api.ConvocatoriasSesionPort;
 import com.prisaly.m4.application.port.ConvocatoriaRepository;
 import com.prisaly.m4.domain.model.Convocatoria;
 import com.prisaly.m4.infrastructure.persistence.EntityMapper;
@@ -13,7 +14,7 @@ import java.util.UUID;
 
 /** Adaptador de persistencia para convocatorias. */
 @Repository
-public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository {
+public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository, ConvocatoriasSesionPort {
 
     private final JpaConvocatoriaRepository jpa;
 
@@ -32,6 +33,11 @@ public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository {
     @Override
     public Optional<Convocatoria> buscarPorId(UUID id) {
         return jpa.findById(id).map(EntityMapper::toDomain);
+    }
+
+    @Override
+    public List<UUID> idsPorSesion(UUID sesionId) {
+        return listarPorSesion(sesionId).stream().map(Convocatoria::getId).toList();
     }
 
     @Override

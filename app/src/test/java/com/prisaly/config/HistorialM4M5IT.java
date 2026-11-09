@@ -10,7 +10,7 @@ import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.model.EstadoSesion;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.presentation.controller.M4ExceptionHandler;
 import com.prisaly.m5.application.ParticipacionFacade;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
@@ -26,7 +26,7 @@ import com.prisaly.m5.application.servicio.FinalizarIntentoServicio;
 import com.prisaly.m5.application.servicio.IniciarIntentoServicio;
 import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.infrastructure.FachadaParticipacionTransaccional;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import com.prisaly.m5.infrastructure.programacion.CoordinacionInicioDesdeM4;
 import com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5;
 

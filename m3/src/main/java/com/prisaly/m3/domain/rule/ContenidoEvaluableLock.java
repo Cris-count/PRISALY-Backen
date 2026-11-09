@@ -22,6 +22,7 @@ import java.util.UUID;
 public final class ContenidoEvaluableLock {
 
     public static final String CODE_EVALUABLE_CONTENT_LOCKED = "EVALUABLE_CONTENT_LOCKED";
+    public static final String CODE_CASE_NOT_EDITABLE = "CASE_NOT_EDITABLE";
     public static final String CODE_COPY_CASE_ID_EQUALS_SOURCE = "COPY_CASE_ID_EQUALS_SOURCE";
     public static final String CODE_COPY_METADATA_POLICY_PENDING = "COPY_METADATA_POLICY_PENDING";
 
@@ -58,6 +59,15 @@ public final class ContenidoEvaluableLock {
                             + " is locked after the first scheduled session");
         }
         CasoValidation.assertNotArchived(caso);
+    }
+
+    /** D7: only a draft accepts edits; locked and archived cases keep their specific codes. */
+    public static void assertDraftEditable(Caso caso) {
+        assertEditable(caso);
+        if (caso.estado() != CasoEstado.BORRADOR) {
+            throw new CasoDomainException(
+                    CODE_CASE_NOT_EDITABLE, "Only a draft case can be edited: " + caso.id());
+        }
     }
 
     public static Caso createIndependentCopy(Caso source, String newId) {

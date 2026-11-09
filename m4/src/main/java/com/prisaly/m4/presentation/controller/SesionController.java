@@ -1,7 +1,7 @@
 package com.prisaly.m4.presentation.controller;
 
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.presentation.dto.ActualizarSesionRequest;
 import com.prisaly.m4.presentation.dto.CambiarEstadoRequest;
 import com.prisaly.m4.presentation.dto.CrearSesionRequest;
@@ -59,7 +59,8 @@ public class SesionController {
                         request.mensajePersonalizado(),
                         request.fechaInicio(),
                         request.fechaFin(),
-                        request.tiempoMaximoParticipacionSegundos());
+                        request.tiempoMaximoParticipacionSegundos(),
+                        request.lugarFisico());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(SesionResponse.from(sesion));
     }
@@ -98,7 +99,8 @@ public class SesionController {
                 service.actualizarSesion(
                         service.resolverDocenteAutenticado(docenteId), sesionId,
                         request.titulo(), request.mensajePersonalizado(),
-                        request.fechaInicio(), request.fechaFin());
+                        request.fechaInicio(), request.fechaFin(),
+                        request.lugarFisico());
 
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }

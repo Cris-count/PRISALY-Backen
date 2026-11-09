@@ -1,5 +1,6 @@
 package com.prisaly.m4.domain.model;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.domain.rule.*;
 import com.prisaly.m4.domain.state.*;
 

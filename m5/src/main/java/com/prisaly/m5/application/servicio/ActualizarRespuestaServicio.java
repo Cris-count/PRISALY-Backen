@@ -36,6 +36,6 @@ public final class ActualizarRespuestaServicio {
         Intento intento = CargaIntento.cargar(repositorio, referencia);
         intento.actualizarRespuesta(pregunta, valor);
         repositorio.guardar(referencia, intento);
-        return ResumenIntento.de(referencia, intento);
+        return repositorio.resumir(referencia, intento);
     }
 }

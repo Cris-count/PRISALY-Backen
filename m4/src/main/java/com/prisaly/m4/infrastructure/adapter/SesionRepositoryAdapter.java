@@ -3,7 +3,7 @@ package com.prisaly.m4.infrastructure.adapter;
 import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.application.port.SesionRepository;
 import com.prisaly.m4.domain.model.SesionAcademica;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.persistence.EntityMapper;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;
 

@@ -1,5 +1,7 @@
 package com.prisaly.security;
 
+import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.domain.model.Permiso;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -11,7 +13,6 @@ import tools.jackson.databind.ObjectMapper;
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -119,7 +120,7 @@ class PersonalAuthSecurityIT {
     @Test
     void inactiveAccount_rejectsLoginWith401() throws Exception {
         identityCatalogService.createRole("DocenteInactive", "Docente");
-        UsuarioEntity user = identityCatalogService.registerUser(
+        Usuario user = identityCatalogService.registerUser(
                 "Inactive", "inactive.sec@prisaly.test", "Secret#1", "DocenteInactive");
         identityCatalogService.deactivateUser(user.getIdUsuario());
 
@@ -181,9 +182,9 @@ class PersonalAuthSecurityIT {
     @Test
     void revokedPermission_returns403() throws Exception {
         identityCatalogService.createRole("DocentePerm", "Docente");
-        UsuarioEntity user = identityCatalogService.registerUser(
+        Usuario user = identityCatalogService.registerUser(
                 "Perm", "perm.sec@prisaly.test", "Secret#1", "DocentePerm");
-        PermisoEntity permiso = identityCatalogService.createPermission(
+        Permiso permiso = identityCatalogService.createPermission(
                 PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
         identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
 

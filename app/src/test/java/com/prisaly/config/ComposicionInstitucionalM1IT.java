@@ -1,5 +1,7 @@
 package com.prisaly.config;
 
+import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.domain.model.Permiso;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -20,7 +22,6 @@ import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.port.AutorizacionConsultaCasoPort;
@@ -107,8 +108,8 @@ class ComposicionInstitucionalM1IT {
         assertSame(escrituraM3, unico(CasoCurrentUserPort.class));
         // DC-M3-RES-02: one institutional read provider, with the policy still pending (denies).
         assertInstanceOf(M3CaseReadAuthorizationAdapter.class, unico(AutorizacionConsultaCasoPort.class));
-        // No ratified HTTP concurrency transport: no provider may exist.
-        assertTrue(context.getBeansOfType(CasoPatchConcurrencyContract.class).isEmpty());
+        // D8: exactly one HTTP concurrency provider, the strong ETag codec.
+        assertInstanceOf(com.prisaly.m3.presentation.CasoStrongEtagContract.class, unico(CasoPatchConcurrencyContract.class));
         assertTrue(context.getBeansOfType(EstudianteSessionFilter.class).isEmpty());
     }
 
@@ -207,14 +208,14 @@ class ComposicionInstitucionalM1IT {
         if (!existentes.isEmpty()) {
             return existentes.get(0);
         }
-        PermisoEntity creado = catalog.createPermission(PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
+        Permiso creado = catalog.createPermission(PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
         return creado.getIdPermiso();
     }
 
     private String docenteConCrearCaso(String correo) throws Exception {
         String rol = "Rol" + Math.abs(correo.hashCode());
         catalog.createRole(rol, "Docente");
-        UsuarioEntity user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(user.getIdUsuario(), idPermisoCrearCaso(), null);
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)

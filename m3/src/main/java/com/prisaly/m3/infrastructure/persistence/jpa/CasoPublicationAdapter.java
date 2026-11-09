@@ -23,6 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** REQUIRED, state-only publication. Academic rubric completeness is deliberately unchanged. */
 public class CasoPublicationAdapter implements CasoPublicationPort {
+    public static final String CODE_CASE_NOT_PUBLISHED = "CASE_NOT_PUBLISHED";
     private final EntityManagerFactory emf;
     private final CaseAuthorizationPort authorization;
     private final TransactionTemplate transaction;
@@ -41,6 +42,67 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
 
     @Override
     public CasoUpdateResult publish(String userId, UUID caseId, String expectedFingerprint) {
+        return enTransaccionBloqueada("Publication", userId, caseId, expectedFingerprint, (connection, before) -> {
+            assertAuthorized(authorization, userId, caseId);
+            assertOwner(before, userId);
+            CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
+            assertSchedulingGuards(connection);
+            Caso published = validatePublication(before, expectedFingerprint);
+            try (var statement = connection.prepareStatement("""
+                    UPDATE public."Caso" SET "estado" = ?
+                    WHERE "idCaso" = ? AND "estado" = ? AND "fechaBloqueoAcademico" IS NULL
+                    """)) {
+                statement.setString(1, "Publicado");
+                statement.setObject(2, caseId);
+                statement.setString(3, "Borrador");
+                if (statement.executeUpdate() != 1) {
+                    throw new IllegalStateException("Publication must update exactly one draft");
+                }
+            }
+            var after = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, false));
+            Caso persisted = CasoPersistenceMapper.toDomain(after);
+            String fingerprint = CasoAggregateFingerprint.of(after);
+            if (!published.equals(persisted) || !persisted.isPublished() || fingerprint.equals(expectedFingerprint)) {
+                throw new IllegalStateException("Publication readback changed content or did not publish");
+            }
+            return new CasoUpdateResult(persisted, fingerprint);
+        });
+    }
+
+    @Override
+    public CasoUpdateResult archive(String userId, UUID caseId, String expectedFingerprint) {
+        return enTransaccionBloqueada("Archiving", userId, caseId, expectedFingerprint, (connection, before) -> {
+            assertArchiveAuthorized(authorization, userId, caseId);
+            assertOwner(before, userId);
+            if (!CasoAggregateFingerprint.of(before).equals(expectedFingerprint)) {
+                throw new CasoDomainException(CasoCommandUpdateAdapter.STALE_CASE, "Aggregate precondition is stale");
+            }
+            if ("Archivado".equals(before.caso().estado())) {
+                throw new CasoDomainException(CasoValidation.CODE_ARCHIVED_CASE_OPERATION_PENDING, "Case is already archived");
+            }
+            if (!"Publicado".equals(before.caso().estado())) {
+                throw new CasoDomainException(CODE_CASE_NOT_PUBLISHED, "Only a published case can be archived");
+            }
+            try (var statement = connection.prepareStatement("""
+                    UPDATE public."Caso" SET "estado" = 'Archivado' WHERE "idCaso" = ? AND "estado" = 'Publicado'
+                    """)) {
+                statement.setObject(1, caseId);
+                if (statement.executeUpdate() != 1) {
+                    throw new IllegalStateException("Archiving must update exactly one published case");
+                }
+            }
+            var after = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, false));
+            return new CasoUpdateResult(CasoPersistenceMapper.toDomain(after), CasoAggregateFingerprint.of(after));
+        });
+    }
+
+    @FunctionalInterface
+    private interface TransicionBloqueada {
+        CasoUpdateResult aplicar(Connection connection, CasoJpaAggregateSnapshot before) throws SQLException;
+    }
+
+    private CasoUpdateResult enTransaccionBloqueada(String operacion, String userId, UUID caseId,
+            String expectedFingerprint, TransicionBloqueada transicion) {
         if (userId == null || userId.isBlank()) {
             throw new IllegalArgumentException("userId is required");
         }
@@ -51,35 +113,23 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
             return em.unwrap(Session.class).doReturningWork(connection -> {
                 if (connection.getAutoCommit()
                         || connection.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED) {
-                    throw new IllegalStateException("Publication requires an effective READ COMMITTED transaction");
+                    throw new IllegalStateException(operacion + " requires an effective READ COMMITTED transaction");
                 }
                 var before = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, true));
-                assertAuthorized(authorization, userId, caseId);
-                assertOwner(before, userId);
-                CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
-                assertSchedulingGuards(connection);
-                Caso published = validatePublication(before, expectedFingerprint);
-                try (var statement = connection.prepareStatement("""
-                        UPDATE public."Caso" SET "estado" = ?
-                        WHERE "idCaso" = ? AND "estado" = ? AND "fechaBloqueoAcademico" IS NULL
-                        """)) {
-                    statement.setString(1, "Publicado");
-                    statement.setObject(2, caseId);
-                    statement.setString(3, "Borrador");
-                    if (statement.executeUpdate() != 1) {
-                        throw new IllegalStateException("Publication must update exactly one draft");
-                    }
-                }
-                var after = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, false));
-                Caso persisted = CasoPersistenceMapper.toDomain(after);
-                String fingerprint = CasoAggregateFingerprint.of(after);
-                if (!published.equals(persisted) || !persisted.isPublished()
-                        || fingerprint.equals(expectedFingerprint)) {
-                    throw new IllegalStateException("Publication readback changed content or did not publish");
-                }
-                return new CasoUpdateResult(persisted, fingerprint);
+                return transicion.aplicar(connection, before);
             });
         }));
+    }
+
+    private static void assertArchiveAuthorized(CaseAuthorizationPort authorization, String userId, UUID caseId) {
+        boolean allowed;
+        try { allowed = authorization.canArchiveCase(userId, caseId.toString()); }
+        catch (RuntimeException failure) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Archiving is not authorized");
+        }
+        if (!allowed) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Archiving is not authorized");
+        }
     }
 
     static CasoJpaAggregateSnapshot requireExisting(CasoJpaAggregateSnapshot snapshot) {

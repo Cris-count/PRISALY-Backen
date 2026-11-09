@@ -1,5 +1,6 @@
 package com.prisaly.m1.infrastructure.security;
 
+import com.prisaly.m1.application.port.CookieSesionEstudiante;
 import com.prisaly.m1.application.port.TokenSesionEstudianteActual;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -18,7 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "true")
 public class EstudianteSessionFilter extends OncePerRequestFilter {
 
-    public static final String COOKIE = "prisaly_estudiante";
+    public static final String COOKIE = CookieSesionEstudiante.NOMBRE;
 
     @Override
     protected void doFilterInternal(

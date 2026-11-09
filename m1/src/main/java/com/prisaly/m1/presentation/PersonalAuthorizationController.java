@@ -2,7 +2,7 @@ package com.prisaly.m1.presentation;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

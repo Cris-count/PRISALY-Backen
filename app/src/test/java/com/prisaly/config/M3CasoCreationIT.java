@@ -94,9 +94,8 @@ class M3CasoCreationIT {
         String password = UUID.randomUUID().toString(); // Ephemeral test credential, never evidence.
         catalog.createRole(role, "M3 REST integration fixture");
         owner = catalog.registerUser("Docente M3 REST", email, password, role).getIdUsuario();
-        var permission = permissions.findByCodigo("CREAR_CASO").orElseGet(() ->
-                catalog.createPermission("CREAR_CASO", "Crear caso", null));
-        permissionId = permission.getIdPermiso();
+        permissionId = permissions.findByCodigo("CREAR_CASO").map(com.prisaly.m1.infrastructure.persistence.PermisoEntity::getIdPermiso)
+                .orElseGet(() -> catalog.createPermission("CREAR_CASO", "Crear caso", null).getIdPermiso());
         catalog.assignPermission(owner, permissionId, null);
         var login = mvc.perform(post("/api/v1/personal/autenticar").contextPath("/api")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -114,9 +113,12 @@ class M3CasoCreationIT {
         assertSame(authorization, context.getBean(CasoCurrentUserPort.class));
         assertNotNull(context.getBean(com.prisaly.m3.application.service.CasoApplicationService.class));
         assertFalse(context.containsBean("caseAuthorizationFailClosed"));
-        assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
-        assertFalse(authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
-        assertFalse(authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
+        assertEquals(1, context.getBeansOfType(CasoPublicationPort.class).size());
+        // D6: the real permission is consulted, which requires an authenticated caller.
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
     }
 
     @Test
@@ -140,8 +142,10 @@ class M3CasoCreationIT {
         assertNull(stored.fechaBloqueoAcademico());
         assertTrue(stored.escenarios().isEmpty());
         assertNull(stored.rubrica());
-        assertFalse(authorization.canModifyCase(owner.toString(), id.toString()));
-        assertFalse(authorization.canPublishCase(owner.toString(), id.toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canModifyCase(owner.toString(), id.toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canPublishCase(owner.toString(), id.toString()));
     }
 
     @Test
@@ -234,7 +238,7 @@ class M3CasoCreationIT {
         assertEquals(Set.of(RequestMethod.GET, RequestMethod.PATCH), item.stream()
                 .flatMap(entry -> entry.getKey().getMethodsCondition().getMethods().stream())
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
+        assertEquals(1, context.getBeansOfType(CasoPublicationPort.class).size());
     }
 
     private int concurrentCreate(CyclicBarrier start, UUID id, String title) throws Exception {

@@ -11,7 +11,7 @@ import com.prisaly.m4.api.*;
 import com.prisaly.m4.application.port.CasoAcademicoPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.model.*;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadStubAdapter;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;
@@ -316,6 +316,23 @@ class SesionAcademicaPostgreSqlIT {
                                         }));
         assertEquals(caso, service.consultarSesion(s.getId()).getCasoId());
         assertNull(marca(destino));
+    }
+
+    @Test
+    void lugarFisicoSePersisteSeConservaYSeElimina() {
+        var s = service.crearSesion(docente, caso, "Espacio", "Mensaje", inicio, fin, 1800, " Aula 3 ");
+        assertEquals("Aula 3", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin);
+        assertEquals("Aula 3", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin, "Sala 9");
+        assertEquals("Sala 9", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin, "  ");
+        assertNull(lugarPersistido(s.getId()));
+    }
+
+    private String lugarPersistido(UUID sesion) {
+        return jdbc.queryForObject(
+                "SELECT \"lugarFisico\" FROM \"Sesion\" WHERE \"idSesion\"=?", String.class, sesion);
     }
 
     @Test
@@ -626,6 +643,29 @@ class SesionAcademicaPostgreSqlIT {
         assertEquals(
                 duracion,
                 service.consultarSesion(sesion.getId()).getTiempoMaximoParticipacionSegundos());
+        assertEquals(0, cantidad("Participacion"));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {30, 60, 120})
+    void f304ActualizacionConservaDuracionInferiorIgualOSuperior(int duracion) {
+        var sesion = service.crearSesion(docente, caso, "F3-04", null, inicio, fin, duracion);
+        service.actualizarSesion(docente, sesion.getId(), "Editada", "Mensaje",
+                inicio.plusSeconds(60), fin);
+        assertEquals(duracion,
+                service.consultarSesion(sesion.getId()).getTiempoMaximoParticipacionSegundos());
+        assertEquals(duracion, jdbc.queryForObject(
+                "SELECT \"tiempoMaximoParticipacionSegundos\" FROM \"Sesion\" WHERE \"idSesion\"=?",
+                Integer.class, sesion.getId()));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {Integer.MIN_VALUE, -1, 0})
+    void duracionNoPositivaNoCreaSesionNiParticipacion(int duracion) {
+        var error = assertThrows(ReglaNegocioException.class,
+                () -> service.crearSesion(docente, caso, "Inválida", null, inicio, fin, duracion));
+        assertEquals("M4-DURACION-INVALIDA", error.getCodigo());
+        assertEquals(0, cantidad("Sesion"));
         assertEquals(0, cantidad("Participacion"));
     }
 

@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;

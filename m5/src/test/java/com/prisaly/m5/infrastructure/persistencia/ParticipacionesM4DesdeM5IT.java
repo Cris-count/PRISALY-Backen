@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -8,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.application.port.SesionRepository;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.ConvocatoriaRepositoryAdapter;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;

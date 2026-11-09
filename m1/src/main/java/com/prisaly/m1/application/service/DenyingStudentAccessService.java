@@ -2,7 +2,7 @@ package com.prisaly.m1.application.service;
 
 import com.prisaly.m1.application.port.AuthenticatedStudent;
 import com.prisaly.m1.application.port.StudentAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 

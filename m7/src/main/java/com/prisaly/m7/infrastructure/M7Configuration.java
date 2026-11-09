@@ -55,9 +55,10 @@ public class M7Configuration {
             Environment environment) {
         String contenido = environment.getProperty(
                 "prisaly.m7.texto-convocatoria",
-                "Se ha registrado tu convocatoria a la sesión {sesionId}.");
+                "Has sido convocado a la sesión {nombreSesion} del caso {nombreCaso}. "
+                        + "Inicio: {inicioPrevisto} UTC. Fin: {finPrevisto} UTC. {mensajePersonalizado}");
         String asunto = environment.getProperty(
-                "prisaly.m7.asunto-convocatoria", "Convocatoria a sesión {sesionId}");
+                "prisaly.m7.asunto-convocatoria", "Convocatoria a sesión {nombreSesion}");
         return new NotificarConvocatoriaService(contexto, registroAviso, registroEnvio, contenido, asunto);
     }
 

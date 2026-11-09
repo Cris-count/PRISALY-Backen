@@ -6,7 +6,7 @@ import com.prisaly.m4.application.port.CasoAcademicoPort;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.port.ParticipacionesPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoM3Adapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadM1Adapter;

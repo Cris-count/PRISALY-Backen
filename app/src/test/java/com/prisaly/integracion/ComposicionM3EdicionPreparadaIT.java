@@ -1,5 +1,6 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,11 +10,8 @@ import com.prisaly.config.M3CaseAuthorizationAdapter;
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
-import com.prisaly.m3.presentation.CasoPatchConcurrencyContract;
-import com.prisaly.m3.presentation.CasoStrongEtagContract;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -41,9 +39,8 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * DC-M3-M1-RES-03 — PATCH readiness with a SIMULATED write policy (test-only {@code @Primary}
- * bean) and M3's own strong ETag codec registered only here. Production keeps
- * {@code canModifyCase == false} and registers no codec. Identity, ownership, M3 state rules,
- * the transactional fingerprint check and PostgreSQL 16.15 are real.
+ * bean) and the productive strong ETag codec. Identity, ownership, M3 state rules, the
+ * transactional fingerprint check and PostgreSQL 16.15 are real.
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
@@ -96,11 +93,6 @@ class ComposicionM3EdicionPreparadaIT {
                 }
             };
         }
-
-        @Bean
-        CasoPatchConcurrencyContract codecEtagDeM3() {
-            return new CasoStrongEtagContract();
-        }
     }
 
     @LocalServerPort
@@ -132,7 +124,7 @@ class ComposicionM3EdicionPreparadaIT {
 
         // The previous version is now stale: no second write.
         HttpResponse<String> obsoleta = patch(caso, token, etag, "{\"titulo\":\"Otra vez\"}");
-        assertEquals(409, obsoleta.statusCode());
+        assertEquals(412, obsoleta.statusCode());
         assertTrue(obsoleta.body().contains("STALE_CASE"), obsoleta.body());
         assertEquals("Editado", titulo(caso));
     }
@@ -145,7 +137,7 @@ class ComposicionM3EdicionPreparadaIT {
 
         for (String precondicion : new String[] {null, "W/" + etag, "*", etag + ", " + etag, "\"m3-v2:corto\""}) {
             HttpResponse<String> respuesta = patch(caso, token, precondicion, "{\"titulo\":\"Cambio\"}");
-            assertEquals(400, respuesta.statusCode(), "If-Match=" + precondicion);
+            assertEquals(precondicion == null ? 428 : 400, respuesta.statusCode(), "If-Match=" + precondicion);
         }
         assertEquals("Intacto", titulo(caso));
     }
@@ -176,6 +168,19 @@ class ComposicionM3EdicionPreparadaIT {
     }
 
     @Test
+    void unCasoPublicadoNoSeEditaAunqueLaVersionSeaVigente() throws Exception {
+        String token = docente("publicado.qb01@prisaly.test", true, true);
+        UUID caso = crearCaso(token, "Publicado");
+        jdbc.update("UPDATE \"Caso\" SET \"estado\" = 'Publicado' WHERE \"idCaso\" = ?", caso);
+        String etag = get(caso, token).headers().firstValue("ETag").orElseThrow();
+
+        HttpResponse<String> respuesta = patch(caso, token, etag, "{\"titulo\":\"Cambio\"}");
+        assertEquals(409, respuesta.statusCode(), respuesta.body());
+        assertTrue(respuesta.body().contains("CASE_NOT_EDITABLE"), respuesta.body());
+        assertEquals("Publicado", titulo(caso));
+    }
+
+    @Test
     void dosEdicionesConcurrentesConLaMismaVersionTienenUnSoloGanador() throws Exception {
         String token = docente("concurrente.res03@prisaly.test", true, true);
         UUID caso = crearCaso(token, "Inicial");
@@ -185,7 +190,7 @@ class ComposicionM3EdicionPreparadaIT {
         CompletableFuture<HttpResponse<String>> dos = patchAsync(caso, token, etag, "{\"titulo\":\"Dos\"}");
         Set<Integer> estados = List.of(uno.get(), dos.get()).stream()
                 .map(HttpResponse::statusCode).collect(Collectors.toSet());
-        assertEquals(Set.of(204, 409), estados);
+        assertEquals(Set.of(204, 412), estados);
         assertTrue(Set.of("Uno", "Dos").contains(titulo(caso)));
     }
 
@@ -232,7 +237,7 @@ class ComposicionM3EdicionPreparadaIT {
     private String docente(String correo, boolean lectura, boolean edicion) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        UsuarioEntity user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         if (lectura) {
             catalog.assignPermission(user.getIdUsuario(), idPermiso(LECTURA_FIXTURE), null);

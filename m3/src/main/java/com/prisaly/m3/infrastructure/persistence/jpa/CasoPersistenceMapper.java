@@ -1,5 +1,6 @@
 package com.prisaly.m3.infrastructure.persistence.jpa;
 
+import com.prisaly.m3.application.update.RubricaDefinicionCodec;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m3.domain.model.Escenario;
@@ -51,7 +52,8 @@ final class CasoPersistenceMapper {
         }
         Rubrica rubrica = caso.rubrica();
         if (rubrica != null) {
-            if (!rubrica.hasExplicitStructure() || !rubrica.criterios().isEmpty()) {
+            if (!rubrica.hasExplicitStructure() || (!rubrica.criterios().isEmpty()
+                    && !rubrica.criterios().equals(RubricaDefinicionCodec.leer(rubrica.definicionEvaluacion())))) {
                 throw new IllegalArgumentException("Legacy CriterioRubrica has no approved SQL equivalence");
             }
             RubricaStructureValidation.assertBelongsToCase(caso.id(), caso.escenarios(), rubrica);
@@ -86,7 +88,7 @@ final class CasoPersistenceMapper {
                                 p.textoAyuda(), p.estadoEdicion(), p.visible(), p.orden(),
                                 p.fechaCreacion(), p.fechaActualizacion())).toList())).toList();
         var r = snapshot.rubrica();
-        Rubrica rubrica = r == null ? null : new Rubrica(r.idRubrica().toString(), List.of(),
+        Rubrica rubrica = r == null ? null : new Rubrica(r.idRubrica().toString(), RubricaDefinicionCodec.leer(r.definicionEvaluacion()),
                 r.idCaso().toString(), r.nombre(), r.descripcion(), r.puntajeTotal(),
                 r.definicionEvaluacion(), r.fechaCreacion(), snapshot.rubricaPreguntas().stream()
                         .map(a -> new RubricaPregunta(a.idRubricaPregunta().toString(), a.idRubrica().toString(),

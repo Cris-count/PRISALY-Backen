@@ -1,5 +1,6 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,14 +9,13 @@ import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
 import com.prisaly.m1.infrastructure.persistence.PermisoRepository;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.IdentidadM1Adapter;
 import com.prisaly.m7.application.ProcesarEnviosPendientesService;
 import com.prisaly.m7.domain.EstadoEnvioCorreo;
@@ -92,7 +92,7 @@ class DocenteConvocatoriaM1M7IT {
     private UUID docenteId;
     private UUID estudianteId;
     private UUID casoId;
-    private PermisoEntity permisoGestionarSesion;
+    private Integer permisoGestionarSesion;
 
     @BeforeEach
     void setUp() {
@@ -100,18 +100,17 @@ class DocenteConvocatoriaM1M7IT {
         String suffix = UUID.randomUUID().toString().substring(0, 8);
         String roleName = "DocenteEstab-" + suffix;
         identityCatalogService.createRole(roleName, "Docente estabilización");
-        UsuarioEntity docente = identityCatalogService.registerUser(
+        Usuario docente = identityCatalogService.registerUser(
                 "Docente Estab",
                 "docente.estab." + suffix + "@prisaly.test",
                 "Secret#Estab1",
                 roleName);
         docenteId = docente.getIdUsuario();
-        permisoGestionarSesion = permisoRepository
-                .findByCodigo(PERMISO_GESTIONAR_SESION)
+        permisoGestionarSesion = permisoRepository.findByCodigo(PERMISO_GESTIONAR_SESION).map(PermisoEntity::getIdPermiso)
                 .orElseGet(() -> identityCatalogService.createPermission(
-                        PERMISO_GESTIONAR_SESION, "Gestionar sesión", null));
+                        PERMISO_GESTIONAR_SESION, "Gestionar sesión", null).getIdPermiso());
         identityCatalogService.assignPermission(
-                docenteId, permisoGestionarSesion.getIdPermiso(), null);
+                docenteId, permisoGestionarSesion, null);
 
         UUID usuarioEstudiante = identityCatalogService
                 .registerUser(
@@ -189,7 +188,7 @@ class DocenteConvocatoriaM1M7IT {
     @Test
     void docenteSinPermiso_noCreaSesionNiNotifica() {
         identityCatalogService.disablePermissionAssignment(
-                docenteId, permisoGestionarSesion.getIdPermiso());
+                docenteId, permisoGestionarSesion);
         Instant inicio = Instant.now().plusSeconds(86_400);
         int sesionesAntes = count("Sesion");
         int avisosAntes = count("Aviso");

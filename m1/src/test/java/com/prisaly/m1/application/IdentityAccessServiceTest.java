@@ -1,5 +1,8 @@
 package com.prisaly.m1.application;
 
+import com.prisaly.m1.domain.model.Rol;
+import com.prisaly.m1.domain.model.Usuario;
+import java.util.Set;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,13 +12,9 @@ import static org.mockito.Mockito.when;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.service.IdentityAccessService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.RolEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioPermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioPermisoRepository;
-import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.application.port.AsignacionPermisoRepositorioPort;
+import com.prisaly.m1.application.port.UsuarioRepositorioPort;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -35,9 +34,9 @@ class IdentityAccessServiceTest {
     private static final String PERMISO_GESTIONAR_SESION = "GESTIONAR_SESION";
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositorioPort usuarioRepository;
     @Mock
-    private UsuarioPermisoRepository usuarioPermisoRepository;
+    private AsignacionPermisoRepositorioPort usuarioPermisoRepository;
 
     private IdentityAccessService service;
 
@@ -55,7 +54,7 @@ class IdentityAccessServiceTest {
     @Test
     void requireUser_inactive_throwsForbiddenCode() {
         UUID userId = UUID.randomUUID();
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario(userId, "Inactivo")));
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.of(usuario(userId, "Inactivo")));
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
@@ -67,7 +66,7 @@ class IdentityAccessServiceTest {
     @Test
     void requireUser_unknown_throwsNotFound() {
         UUID userId = UUID.randomUUID();
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.empty());
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.empty());
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
@@ -100,8 +99,8 @@ class IdentityAccessServiceTest {
     @Test
     void currentUser_withUuidPrincipal_returnsPersistedIdentity() {
         UUID userId = UUID.randomUUID();
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
-        when(usuarioPermisoRepository.findByIdUsuarioAndHabilitadoTrue(userId)).thenReturn(List.of());
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
+        when(usuarioPermisoRepository.codigosHabilitados(userId)).thenReturn(Set.of());
         SecurityContextHolder.getContext().setAuthentication(
                 new UsernamePasswordAuthenticationToken(userId, null, List.of()));
 
@@ -114,12 +113,8 @@ class IdentityAccessServiceTest {
     @Test
     void hasPermission_gestionarSesion_respectsEnabledAssignmentsOnly() {
         UUID userId = UUID.randomUUID();
-        PermisoEntity permiso = new PermisoEntity(PERMISO_GESTIONAR_SESION, "Gestionar sesión", null);
-        UsuarioPermisoEntity assignment = mock(UsuarioPermisoEntity.class);
-        when(assignment.getPermiso()).thenReturn(permiso);
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
-        when(usuarioPermisoRepository.findByIdUsuarioAndHabilitadoTrue(userId))
-                .thenReturn(List.of(assignment));
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
+        when(usuarioPermisoRepository.codigosHabilitados(userId)).thenReturn(Set.of(PERMISO_GESTIONAR_SESION));
 
         assertTrue(service.hasPermission(userId, PERMISO_GESTIONAR_SESION));
         assertFalse(service.hasPermission(userId, "CREAR_CASO"));
@@ -129,8 +124,8 @@ class IdentityAccessServiceTest {
     @Test
     void hasPermission_withoutAssignment_returnsFalse() {
         UUID userId = UUID.randomUUID();
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
-        when(usuarioPermisoRepository.findByIdUsuarioAndHabilitadoTrue(userId)).thenReturn(List.of());
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
+        when(usuarioPermisoRepository.codigosHabilitados(userId)).thenReturn(Set.of());
 
         assertFalse(service.hasPermission(userId, PERMISO_GESTIONAR_SESION));
     }
@@ -138,16 +133,15 @@ class IdentityAccessServiceTest {
     @Test
     void hasRole_matchesRoleNameIgnoreCase() {
         UUID userId = UUID.randomUUID();
-        when(usuarioRepository.findById(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
-        when(usuarioPermisoRepository.findByIdUsuarioAndHabilitadoTrue(userId)).thenReturn(List.of());
+        when(usuarioRepository.buscarPorId(userId)).thenReturn(Optional.of(usuario(userId, "Activo")));
+        when(usuarioPermisoRepository.codigosHabilitados(userId)).thenReturn(Set.of());
 
         assertTrue(service.hasRole(userId, "docente"));
         assertFalse(service.hasRole(userId, "Administrador"));
     }
 
-    private static UsuarioEntity usuario(UUID userId, String estado) {
-        RolEntity rol = new RolEntity("Docente", "Docente");
-        return new UsuarioEntity(
-                userId, rol, "Ana", "ana@prisaly.test", "hash", estado, OffsetDateTime.now());
+    private static Usuario usuario(UUID userId, String estado) {
+        Rol rol = new Rol(1, "Docente", "Docente");
+        return new Usuario(userId, rol, "Ana", "ana@prisaly.test", "hash", estado, OffsetDateTime.now(), null);
     }
 }

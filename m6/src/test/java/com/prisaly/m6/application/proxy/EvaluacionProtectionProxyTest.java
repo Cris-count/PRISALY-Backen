@@ -7,7 +7,7 @@ import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso;
 import com.prisaly.m6.application.port.EvaluacionCasoUso;
 import com.prisaly.m6.domain.strategy.ResultadoEvaluacion;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;

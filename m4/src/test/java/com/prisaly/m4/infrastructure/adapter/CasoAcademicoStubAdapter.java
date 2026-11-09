@@ -1,5 +1,6 @@
 package com.prisaly.m4.infrastructure.adapter;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -52,7 +53,7 @@ public class CasoAcademicoStubAdapter implements CasoAcademicoPort {
     public void solicitarBloqueoAcademico(UUID casoId) {
         bloqueosSolicitados.add(casoId);
         if (bloqueosFallidos.contains(casoId)) {
-            throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+            throw new com.prisaly.m4.api.ReglaNegocioException(
                     "M4-BLOQUEO-ACADEMICO-NO-CONFIRMADO", "Fallo de bloqueo simulado para probar rollback");
         }
         log.info("[M3-STUB] Solicitud de bloqueo F3-03 para caso {} registrada", casoId);

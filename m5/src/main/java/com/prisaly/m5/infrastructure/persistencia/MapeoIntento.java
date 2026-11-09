@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

@@ -16,7 +16,6 @@ public final class ObservadorRegistroAviso implements ObservadorConvocatoria {
 
     @Override
     public void actualizar(ConvocatoriaNotificable evento) {
-        registro.registrar(new AvisoConvocatoria(evento,
-                texto.replace("{sesionId}", evento.sesionId().toString())));
+        registro.registrar(new AvisoConvocatoria(evento, PlantillaConvocatoria.componer(texto, evento)));
     }
 }

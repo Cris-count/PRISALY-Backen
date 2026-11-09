@@ -78,9 +78,10 @@ class CasoPersistenceAdapterIT {
             public boolean canPublishCase(String user, String caso) { return false; }
         };
         return org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
-                new com.prisaly.m3.presentation.CasoGestionController(() -> teacher, repository,
-                        java.util.Optional.of(policy), java.util.Optional.of(write),
-                        java.util.Optional.of(transport), java.util.Optional.ofNullable(versioned)))
+                new com.prisaly.m3.presentation.CasoGestionController(
+                        new com.prisaly.m3.application.service.CasoDocenteConsultaService(() -> teacher, policy, repository, versioned),
+                        new com.prisaly.m3.application.service.CasoPersistentUpdateService(() -> teacher, write, repository),
+                        java.util.Optional.of(transport)))
                 .setControllerAdvice(new com.prisaly.m3.presentation.CasoGestionExceptionHandler()).build();
     }
 
@@ -127,7 +128,7 @@ class CasoPersistenceAdapterIT {
         assertFalse(changedEtag.equals(hiddenChangeEtag));
         assertEquals(after.caso().titulo(), repository.findById(id.toString()).orElseThrow().titulo());
         mvc.perform(patchEtag(id, changedEtag, "{\"titulo\":\"Stale\"}"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isPreconditionFailed());
         assertEquals(hiddenChangeEtag, getEtag(mvc, id));
     }
 
@@ -152,7 +153,7 @@ class CasoPersistenceAdapterIT {
             var statuses = new ArrayList<Integer>();
             for (var result : results) { statuses.add(result.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
             statuses.sort(Integer::compareTo);
-            assertEquals(List.of(204, 409), statuses);
+            assertEquals(List.of(204, 412), statuses);
             assertTrue(Set.of("ETag writer A", "ETag writer B")
                     .contains(repository.findById(id.toString()).orElseThrow().titulo()));
         } finally {
@@ -237,7 +238,7 @@ class CasoPersistenceAdapterIT {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.titulo").value("Guardado por HTTP"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.*").value(org.hamcrest.Matchers.hasSize(4)));
         mvc.perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"Obsoleto\"}"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isPreconditionFailed());
         assertEquals(after, updateReader().findById(id).orElseThrow());
     }
 
@@ -261,7 +262,7 @@ class CasoPersistenceAdapterIT {
             var statuses = new ArrayList<Integer>();
             for (var task : tasks) { statuses.add(task.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
             statuses.sort(Integer::compareTo);
-            assertEquals(List.of(204, 409), statuses);
+            assertEquals(List.of(204, 412), statuses);
             var after = updateReader().findById(id).orElseThrow();
             assertTrue(Set.of("HTTP writer A", "HTTP writer B").contains(after.caso().titulo()));
             assertEquals(before.caso().escenarios(), after.caso().escenarios());
@@ -1181,9 +1182,14 @@ class CasoPersistenceAdapterIT {
     void identityAwarePublicationStillRejectsStructuralCompletenessWithoutWriting() {
         Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
         var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
-        var service = new com.prisaly.m3.application.service.CasoPersistentPublicationService(publication(true), () -> teacher);
+        var permitir = new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
+            public boolean canModifyCase(String user, String caso) { return false; }
+            public boolean canPublishCase(String user, String caso) { return true; }
+        };
+        var service = new com.prisaly.m3.application.service.CasoTransicionService(() -> teacher, permitir, publication(true));
         List<Integer> counts = academicRowCounts();
-        assertPublicationCode("INCOMPLETE_RUBRIC", () -> service.publish(UUID.fromString(before.caso().id()), before.fingerprint()));
+        assertPublicationCode("INCOMPLETE_RUBRIC", () -> service.publicar(UUID.fromString(before.caso().id()), before::fingerprint));
         assertEquals(before, updateReader().findById(UUID.fromString(before.caso().id())).orElseThrow());
         assertEquals(counts, academicRowCounts());
     }

@@ -1,4 +1,4 @@
-package com.prisaly.m5.infrastructure.persistencia;
+package com.prisaly.m5.application;
 
 /**
  * El estado de un intento no puede traducirse entre el dominio y BD-005.2:

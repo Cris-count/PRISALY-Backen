@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.prisaly.m5.infrastructure.persistencia.MapeoIntento.FilaIntento;

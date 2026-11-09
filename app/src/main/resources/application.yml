@@ -24,6 +24,12 @@ server:
     context-path: /api
 
 prisaly:
+  auditoria:
+    # PD-01: persistent permission audit. The operating environment must back up this directory
+    # and restrict access to it.
+    permisos:
+      directorio: ${PRISALY_AUDITORIA_DIR:logs/auditoria}
+      retencion-dias: ${PRISALY_AUDITORIA_RETENCION_DIAS:365}
   m1:
     student-access:
       enabled: false

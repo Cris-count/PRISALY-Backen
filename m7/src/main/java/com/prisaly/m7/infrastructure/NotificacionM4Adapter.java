@@ -1,7 +1,7 @@
 package com.prisaly.m7.infrastructure;
 
 import com.prisaly.m4.application.port.NotificacionPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m7.application.NotificarConvocatoriaCommand;
 import com.prisaly.m7.application.NotificarConvocatoriaService;
 import java.util.Objects;

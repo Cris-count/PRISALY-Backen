@@ -5,7 +5,7 @@ import static org.mockito.Mockito.*;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
 import com.prisaly.m3.application.port.CasoPublicationPort;
-import com.prisaly.m3.application.service.CasoPersistentPublicationService;
+import com.prisaly.m3.application.service.CasoTransicionService;
 import com.prisaly.m3.application.update.CasoUpdateResult;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.infrastructure.persistence.jpa.CasoJpaAggregateSnapshot.*;
@@ -20,6 +20,7 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 
 class CasoPublicationContractTest {
     private static final UUID ID = UUID.randomUUID();
+    private static final UUID USER = UUID.randomUUID();
     private static final Instant DATE = Instant.parse("2026-01-01T00:00:00Z");
 
     @Test
@@ -136,9 +137,11 @@ class CasoPublicationContractTest {
         var port = mock(CasoPublicationPort.class);
         var source = snapshot("Borrador", null, true, true);
         var result = new CasoUpdateResult(CasoPersistenceMapper.toDomain(source), CasoAggregateFingerprint.of(source));
-        when(port.publish("user", ID, result.fingerprint())).thenReturn(result);
-        assertSame(result, new CasoPersistentPublicationService(port).publish("user", ID, result.fingerprint()));
-        verify(port).publish("user", ID, result.fingerprint());
+        var authorization = mock(CaseAuthorizationPort.class);
+        when(authorization.canPublishCase(USER.toString(), ID.toString())).thenReturn(true);
+        when(port.publish(USER.toString(), ID, result.fingerprint())).thenReturn(result);
+        assertSame(result, new CasoTransicionService(() -> USER, authorization, port).publicar(ID, result::fingerprint));
+        verify(port).publish(USER.toString(), ID, result.fingerprint());
         verifyNoMoreInteractions(port);
     }
 
@@ -165,20 +168,21 @@ class CasoPublicationContractTest {
     @Test
     void publicationWithoutTrustedIdentityNeverCallsThePort() {
         var port = mock(CasoPublicationPort.class);
-        var service = new CasoPersistentPublicationService(port);
+        var service = new CasoTransicionService(null, mock(CaseAuthorizationPort.class), port);
         assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
-                () -> service.publish(ID, "m3-v2:" + "0".repeat(64)));
+                () -> service.publicar(ID, () -> "m3-v2:" + "0".repeat(64)));
         verifyNoInteractions(port);
     }
 
     @Test
     void failingIdentityIsSanitizedBeforeCallingPublication() {
         var port = mock(CasoPublicationPort.class);
-        var service = new CasoPersistentPublicationService(port, () -> {
+        var service = new CasoTransicionService(() -> {
             throw new IllegalStateException("private identity diagnostic");
-        });
-        var error = assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
-                () -> service.publish(ID, "m3-v2:" + "0".repeat(64)));
+        }, mock(CaseAuthorizationPort.class), port);
+        var error = assertThrows(CasoDomainException.class,
+                () -> service.publicar(ID, () -> "m3-v2:" + "0".repeat(64)));
+        assertEquals("CASE_AUTHORIZATION_UNAVAILABLE", error.code());
         assertNull(error.getCause());
         assertFalse(error.toString().contains("private identity diagnostic"));
         verifyNoInteractions(port);
@@ -191,7 +195,9 @@ class CasoPublicationContractTest {
         var result = new CasoUpdateResult(CasoPersistenceMapper.toDomain(source), CasoAggregateFingerprint.of(source));
         UUID user = source.caso().idDocente();
         when(port.publish(user.toString(), ID, result.fingerprint())).thenReturn(result);
-        assertSame(result, new CasoPersistentPublicationService(port, () -> user).publish(ID, result.fingerprint()));
+        var authorization = mock(CaseAuthorizationPort.class);
+        when(authorization.canPublishCase(user.toString(), ID.toString())).thenReturn(true);
+        assertSame(result, new CasoTransicionService(() -> user, authorization, port).publicar(ID, result::fingerprint));
         verify(port).publish(user.toString(), ID, result.fingerprint());
         verifyNoMoreInteractions(port);
     }

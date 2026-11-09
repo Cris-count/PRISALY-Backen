@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import org.junit.jupiter.api.Test;
 
 class DenyingStudentAccessServiceTest {

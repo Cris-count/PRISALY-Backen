@@ -15,7 +15,7 @@ import com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4;
 import com.prisaly.m6.application.integration.IntentoEvaluacion;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso;
 import com.prisaly.m6.application.port.ConsultaIntentoEvaluacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

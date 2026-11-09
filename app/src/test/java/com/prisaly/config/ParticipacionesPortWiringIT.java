@@ -8,7 +8,7 @@ import com.prisaly.m4.application.port.ParticipacionesPort;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;
 import com.prisaly.m1.application.port.StudentAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import com.prisaly.m4.application.port.SesionRepository;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;

@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.ConvocatoriaRepositoryAdapter;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m4.infrastructure.persistence.ConvocatoriaEntity;
@@ -187,6 +187,28 @@ class M7ConvocatoriaPostgreSqlIT {
         assertEquals(
                 convocatoria.getId(),
                 jdbc.queryForObject("SELECT \"idConvocatoria\" FROM \"EnvioCorreo\"", UUID.class));
+    }
+
+    @Test
+    void avisoYCorreoIncluyenCasoSesionFechasYMensaje() {
+        jdbc.update("UPDATE \"Sesion\" SET \"mensajePersonalizado\"='Traer documento' WHERE \"idSesion\"=?", sesion);
+        service.convocarEstudiante(docente, sesion, estudiante);
+        String aviso = jdbc.queryForObject("SELECT \"contenido\" FROM \"Aviso\"", String.class);
+        String correo = jdbc.queryForObject("SELECT \"contenido\" FROM \"EnvioCorreo\"", String.class);
+        String asunto = jdbc.queryForObject("SELECT \"asunto\" FROM \"EnvioCorreo\"", String.class);
+        for (String dato : new String[] {"Espacio test", "Caso test", "Traer documento", "UTC"}) {
+            assertTrue(aviso.contains(dato), aviso);
+        }
+        assertTrue(aviso.matches(".*\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} UTC.*"), aviso);
+        assertEquals(aviso, correo);
+        assertTrue(asunto.contains("Espacio test"), asunto);
+    }
+
+    @Test
+    void sinMensajePersonalizadoElAvisoNoContieneNull() {
+        service.convocarEstudiante(docente, sesion, estudiante);
+        String aviso = jdbc.queryForObject("SELECT \"contenido\" FROM \"Aviso\"", String.class);
+        assertFalse(aviso.contains("null"), aviso);
     }
 
     @Test

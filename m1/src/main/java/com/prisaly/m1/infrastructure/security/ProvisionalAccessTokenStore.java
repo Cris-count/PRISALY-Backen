@@ -1,5 +1,6 @@
 package com.prisaly.m1.infrastructure.security;
 
+import com.prisaly.m1.application.port.EmisorTokenAccesoPort;
 import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Instant;
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Component;
  * TD-M1-AUTH-PROVISIONAL: in-memory opaque tokens. Lost on JVM restart.
  */
 @Component
-public class ProvisionalAccessTokenStore {
+public class ProvisionalAccessTokenStore implements EmisorTokenAccesoPort {
 
     public static final long DEFAULT_TTL_SECONDS = 8L * 60L * 60L;
     public static final int DEFAULT_CAPACITY = 10_000;
@@ -51,6 +52,7 @@ public class ProvisionalAccessTokenStore {
         this.capacity = capacity;
     }
 
+    @Override
     public synchronized String issue(UUID userId) {
         Objects.requireNonNull(userId, "userId");
         purgeExpired();
@@ -78,6 +80,7 @@ public class ProvisionalAccessTokenStore {
         return Optional.of(record.userId());
     }
 
+    @Override
     public synchronized void revoke(String token) {
         tokensByValue.remove(token);
     }

@@ -9,13 +9,36 @@ permissions:
 
 jobs:
   verify:
+    # The v27 campaign already runs this same reactor before its HTTP checks.
+    if: ${{ !startsWith(github.head_ref, 'integration/cierre-backend-v27') }}
     runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PRISALY_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      TESTCONTAINERS_REUSE_ENABLE: 'false'
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "21"
           cache: maven
-      - name: Verify without Docker
-        run: sh ./mvnw -B -pl app -am clean verify
+      - name: Check Docker and PostgreSQL 16.15 image
+        run: |
+          docker info
+          docker pull postgres:16.15
+      - name: Verify reactor with docker-it
+        run: python3 .github/scripts/integration_validation.py run "$RUNNER_TEMP/backend-ci"
+      - name: Collect sanitized Maven results and reject omitted suites
+        if: always()
+        run: python3 .github/scripts/integration_validation.py collect "$RUNNER_TEMP/backend-ci"
+      - name: Preserve sanitized verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-ci-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/backend-ci/public
+          retention-days: 14
+          if-no-files-found: error

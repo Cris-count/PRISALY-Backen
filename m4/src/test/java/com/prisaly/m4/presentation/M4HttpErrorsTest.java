@@ -6,7 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.presentation.controller.ConvocatoriaController;
 import com.prisaly.m4.presentation.controller.M4ExceptionHandler;
 import com.prisaly.m4.presentation.controller.SesionController;
@@ -282,7 +282,7 @@ class M4HttpErrorsTest {
                         "M4-PROVEEDOR-NO-DISPONIBLE",
                         "No se pudo verificar el historial académico de M5");
         error.initCause(new IllegalStateException("SELECT detalle_SQL_interno"));
-        when(service.actualizarSesion(any(), any(), any(), any(), any(), any())).thenThrow(error);
+        when(service.actualizarSesion(any(), any(), any(), any(), any(), any(), any())).thenThrow(error);
         mvc.perform(
                         put(ROOT + "/" + SESION)
                                 .contentType(MediaType.APPLICATION_JSON)

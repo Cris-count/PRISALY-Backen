@@ -2,7 +2,7 @@ package com.prisaly.m1.presentation;
 
 import com.prisaly.m1.application.service.ActivacionCuentaEstudianteService;
 import com.prisaly.m1.application.service.AutenticacionEstudianteService;
-import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
+import com.prisaly.m1.application.port.CookieSesionEstudiante;
 import com.prisaly.m1.presentation.dto.ActivarCuentaEstudianteRequest;
 import com.prisaly.m1.presentation.dto.AutenticarEstudianteRequest;
 import com.prisaly.m1.presentation.dto.ErrorResponse;
@@ -93,7 +93,7 @@ public class EstudianteCuentaController {
     }
 
     private static ResponseCookie cookie(String token, boolean secure, boolean borrar) {
-        return ResponseCookie.from(EstudianteSessionFilter.COOKIE, token)
+        return ResponseCookie.from(CookieSesionEstudiante.NOMBRE, token)
                 .httpOnly(true)
                 .secure(secure)
                 .path("/api")
@@ -108,7 +108,7 @@ public class EstudianteCuentaController {
             return null;
         }
         for (Cookie cookie : cookies) {
-            if (EstudianteSessionFilter.COOKIE.equals(cookie.getName())) {
+            if (CookieSesionEstudiante.NOMBRE.equals(cookie.getName())) {
                 return cookie.getValue();
             }
         }

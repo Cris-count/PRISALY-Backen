@@ -24,7 +24,7 @@ import com.prisaly.m6.application.port.SolicitudCapacidadContextoAcademicoPort;
 import com.prisaly.m6.application.service.PrepararContextoEvaluacionService;
 import com.prisaly.m6.application.service.PrepararEvaluacionProtegida;
 import com.prisaly.m6.domain.model.Calificacion;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.util.ArrayList;

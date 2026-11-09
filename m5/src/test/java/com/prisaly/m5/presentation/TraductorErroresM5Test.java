@@ -18,7 +18,7 @@ import com.prisaly.m5.domain.intento.RespuestaNoRegistradaException;
 import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.DatoRespuestaInvalidoException;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

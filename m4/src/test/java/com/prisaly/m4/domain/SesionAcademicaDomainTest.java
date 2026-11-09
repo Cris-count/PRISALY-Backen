@@ -1,5 +1,6 @@
 package com.prisaly.m4.domain;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.prisaly.m4.domain.model.*;

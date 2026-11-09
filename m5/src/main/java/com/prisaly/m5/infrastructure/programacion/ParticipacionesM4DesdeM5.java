@@ -1,9 +1,8 @@
 package com.prisaly.m5.infrastructure.programacion;
 
-import com.prisaly.m4.application.port.ConvocatoriaRepository;
+import com.prisaly.m4.api.ConvocatoriasSesionPort;
 import com.prisaly.m4.application.port.ParticipacionesPort;
-import com.prisaly.m4.domain.model.Convocatoria;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m5.api.HistorialParticipacionPort;
 
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>Las convocatorias de la sesión se piden a M4 por su puerto {@link
- *       ConvocatoriaRepository#listarPorSesion}, que M4 documenta como usado por M5. M5 no lee la
+ *       ConvocatoriasSesionPort#idsPorSesion}, su contrato publicado. M5 no lee la
  *       tabla {@code "Convocatoria"}.
  *   <li>La existencia de participaciones se resuelve en la tabla de M5 {@code "Participacion"}. Un
  *       Intento exige una Participacion (FK), así que cubre "participaciones o intentos".
@@ -38,11 +37,11 @@ import java.util.UUID;
 @Component
 public class ParticipacionesM4DesdeM5 implements ParticipacionesPort {
 
-    private final ConvocatoriaRepository convocatorias;
+    private final ConvocatoriasSesionPort convocatorias;
     private final HistorialParticipacionPort historial;
 
     public ParticipacionesM4DesdeM5(
-            ConvocatoriaRepository convocatorias, HistorialParticipacionPort historial) {
+            ConvocatoriasSesionPort convocatorias, HistorialParticipacionPort historial) {
         this.convocatorias = Objects.requireNonNull(convocatorias, "convocatorias");
         this.historial = Objects.requireNonNull(historial, "historial");
     }
@@ -58,14 +57,12 @@ public class ParticipacionesM4DesdeM5 implements ParticipacionesPort {
                     "Historial M4–M5 requiere una transacción de escritura");
         }
         try {
-            List<Convocatoria> deLaSesion = convocatorias.listarPorSesion(sesionId);
-            if (deLaSesion == null
-                    || deLaSesion.stream().anyMatch(c -> c == null || c.getId() == null)) {
+            List<UUID> deLaSesion = convocatorias.idsPorSesion(sesionId);
+            if (deLaSesion == null || deLaSesion.stream().anyMatch(Objects::isNull)) {
                 throw new IllegalStateException(
                         "M4 devolvió convocatorias incompletas para la sesión");
             }
-            return historial.existeParticipacion(
-                    deLaSesion.stream().map(Convocatoria::getId).toList());
+            return historial.existeParticipacion(deLaSesion);
         } catch (RuntimeException causa) {
             var error =
                     new ReglaNegocioException(
