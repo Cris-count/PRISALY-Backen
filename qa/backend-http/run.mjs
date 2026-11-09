@@ -1,6 +1,6 @@
 import {spawnSync, spawn} from 'node:child_process';
 import {createHash, randomUUID, randomBytes} from 'node:crypto';
-import {mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync} from 'node:fs';
+import {mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync} from 'node:fs';
 import {dirname, resolve, relative, join} from 'node:path';
 import {fileURLToPath, pathToFileURL} from 'node:url';
 import net from 'node:net';
@@ -82,12 +82,13 @@ export const SCENARIOS = [
 
 class Blocked extends Error {}
 export async function main(args = process.argv.slice(2)) {
-  const opts = {sha:BASE_SHA, preflight:false, buildOnly:false};
+  const opts = {sha:BASE_SHA, preflight:false, buildOnly:false, postman:false};
   for(let i=0;i<args.length;i++) {
     if(args[i] === '--expected-sha' && /^[a-f0-9]{40}$/.test(args[i+1] || '')) opts.sha=args[++i];
     else if(args[i] === '--preflight-only') opts.preflight=true;
     else if(args[i] === '--build-only') opts.buildOnly=true;
-    else throw new Error('Uso: node qa/backend-http/run.mjs [--expected-sha SHA40] [--preflight-only | --build-only]');
+    else if(args[i] === '--postman') opts.postman=true;
+    else throw new Error('Uso: node qa/backend-http/run.mjs [--expected-sha SHA40] [--preflight-only | --build-only] [--postman]');
   }
   if(opts.preflight && opts.buildOnly) throw new Error('Elegir solo un modo');
   const runId=randomUUID(), name=`prisaly-http-${runId}`;
@@ -295,7 +296,34 @@ export async function main(args = process.argv.slice(2)) {
           await check('HTTP-16','/m4/sesiones',{...sessionBody,titulo:'Sin permiso'},'noperm');
         }
         blockRemaining('Dependencia HTTP previa fallida; no se fabrican tokens ni IDs');
-        report.status=report.scenarios.every(s=>s.status==='passed')?'passed':'failed';
+        if (opts.postman) {
+          const privateDir=join(ROOT,'qa/integration/evidence');mkdirSync(privateDir,{recursive:true});
+          const environment=join(privateDir,`newman-env-${runId}.json`), resultFile=join(privateDir,`newman-raw-${runId}.json`);
+          const values={baseUrl:report.baseUrl,personnelEmail:'docente.bruno@prisaly.local',personnelPassword:PUBLIC_PASSWORD,
+            personnelNoPermEmail:'sinperm.bruno@prisaly.local',personnelNoPermPassword:PUBLIC_PASSWORD,
+            inactiveEmail:'inactive.bruno@prisaly.local',inactivePassword:PUBLIC_PASSWORD,unknownEmail:'unknown@prisaly.invalid'};
+          // baseUrl is taken from the same owned APP; never accept an external service target.
+          values.baseUrl=base;
+          try {
+            json(environment,{values:Object.entries(values).map(([key,value])=>({key,value,enabled:true}))});
+            const result=command('newman',['run','postman/PRISALY-Integrante-1.postman_collection.json',
+              '--folder','00-verificacion-sistema','--folder','01-m1-autenticacion','--folder','02-m1-identidad-permisos',
+              '--environment',environment,'--reporters','json','--reporter-json-export',resultFile],{timeout:180000});
+            const raw=existsSync(resultFile)?JSON.parse(readFileSync(resultFile,'utf8')):null;
+            const executions=(raw?.run?.executions||[]).map(e=>({name:e.item?.name,method:e.request?.method,
+              status:e.response?.code??null,assertions:(e.assertions||[]).map(a=>({name:a.assertion,failed:!!a.error,skipped:!!a.skipped}))}));
+            const assertions=executions.flatMap(e=>e.assertions);
+            report.postman={collection:'postman/PRISALY-Integrante-1.postman_collection.json',exitCode:result.code,
+              requests:executions.length,assertions:assertions.length,failures:raw?.run?.failures?.length??null,
+              passed:result.ok&&executions.length===13&&executions.every(e=>e.status!==null)
+                &&assertions.length>0&&assertions.every(a=>!a.failed&&!a.skipped)&&raw?.run?.failures?.length===0,
+              executions};
+            log('postman-summary.json',JSON.stringify(report.postman,null,2));
+          } finally {
+            for(const file of [environment,resultFile]) if(existsSync(file)) unlinkSync(file);
+          }
+        }
+        report.status=report.scenarios.every(s=>s.status==='passed')&&(!opts.postman||report.postman?.passed)?'passed':'failed';
         report.exitCode=report.status==='passed'?0:1;
       }
     }
