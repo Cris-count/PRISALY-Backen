@@ -12,13 +12,13 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-@DisplayName("Verificación de conexión a PostgreSQL 16 en Docker (Fase 1)")
+@DisplayName("Verificación de conexión a PostgreSQL 16.15 en Docker")
 class PostgreSqlDockerSmokeTest {
 
     @Test
-    @DisplayName("Debe conectarse a un contenedor PostgreSQL 16 en Docker y ejecutar consultas")
+    @DisplayName("Debe conectarse a PostgreSQL 16.15 en Docker y ejecutar consultas")
     void testPostgreSqlConnection() throws Exception {
-        try (var postgres = new PostgreSQLContainer("postgres:16-alpine")) {
+        try (var postgres = new PostgreSQLContainer("postgres:16.15")) {
             postgres.start();
 
             assertTrue(postgres.isRunning(), "El contenedor de PostgreSQL debe estar en ejecución");
@@ -32,8 +32,7 @@ class PostgreSqlDockerSmokeTest {
                 int versionNum = rs.getInt(1);
                 int one = rs.getInt(2);
 
-                assertTrue(versionNum >= 160000 && versionNum < 170000, 
-                        "La versión de PostgreSQL debe ser 16.x (actual: " + versionNum + ")");
+                assertEquals(160015, versionNum, "La versión canónica de PostgreSQL debe ser 16.15");
                 assertEquals(1, one);
             }
         }

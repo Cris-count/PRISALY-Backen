@@ -629,6 +629,29 @@ class SesionAcademicaPostgreSqlIT {
         assertEquals(0, cantidad("Participacion"));
     }
 
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {30, 60, 120})
+    void f304ActualizacionConservaDuracionInferiorIgualOSuperior(int duracion) {
+        var sesion = service.crearSesion(docente, caso, "F3-04", null, inicio, fin, duracion);
+        service.actualizarSesion(docente, sesion.getId(), "Editada", "Mensaje",
+                inicio.plusSeconds(60), fin);
+        assertEquals(duracion,
+                service.consultarSesion(sesion.getId()).getTiempoMaximoParticipacionSegundos());
+        assertEquals(duracion, jdbc.queryForObject(
+                "SELECT \"tiempoMaximoParticipacionSegundos\" FROM \"Sesion\" WHERE \"idSesion\"=?",
+                Integer.class, sesion.getId()));
+    }
+
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(ints = {Integer.MIN_VALUE, -1, 0})
+    void duracionNoPositivaNoCreaSesionNiParticipacion(int duracion) {
+        var error = assertThrows(ReglaNegocioException.class,
+                () -> service.crearSesion(docente, caso, "Inválida", null, inicio, fin, duracion));
+        assertEquals("M4-DURACION-INVALIDA", error.getCodigo());
+        assertEquals(0, cantidad("Sesion"));
+        assertEquals(0, cantidad("Participacion"));
+    }
+
     @Test
     void fkDeConvocatoriaSeValidaAntesDeInvocarNotificacion() {
         var sesion = crear();

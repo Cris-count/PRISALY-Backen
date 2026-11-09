@@ -134,7 +134,9 @@ class RepositorioIntentosJpaIT {
     @Test
     @DisplayName("persiste y recupera una respuesta con revisión 1")
     void persisteYRecuperaRespuesta() {
-        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        var registrado = fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        assertTrue(registrado.tiempos().isPresent());
+        assertEquals(fachada.consultarIntento(cadena.intento()), registrado);
 
         assertEquals(
                 List.of(new Respuesta(cadena.pregunta1(), cadena.opcion1a())),
@@ -150,7 +152,9 @@ class RepositorioIntentosJpaIT {
                 + " revisión")
     void actualizacionIncrementaRevision() {
         fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
-        fachada.actualizarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1b());
+        var actualizado = fachada.actualizarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1b());
+        assertTrue(actualizado.tiempos().isPresent());
+        assertEquals(fachada.consultarIntento(cadena.intento()), actualizado);
 
         Map<String, Object> fila = filaRespuesta(cadena.pregunta1().valor());
         assertEquals(UUID.fromString(cadena.opcion1b().valor()), fila.get("idOpcionSeleccionada"));

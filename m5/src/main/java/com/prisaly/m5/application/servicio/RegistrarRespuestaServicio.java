@@ -61,6 +61,6 @@ public final class RegistrarRespuestaServicio {
         Intento intento = CargaIntento.cargar(repositorio, referencia);
         intento.registrarRespuesta(pregunta, valor);
         repositorio.guardar(referencia, intento);
-        return ResumenIntento.de(referencia, intento);
+        return repositorio.resumir(referencia, intento);
     }
 }
