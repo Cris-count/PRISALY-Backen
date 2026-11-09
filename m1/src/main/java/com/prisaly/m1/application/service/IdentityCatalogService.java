@@ -41,12 +41,16 @@ public class IdentityCatalogService {
     public static final String CODE_ACTOR_INVALID = "PERMISSION_ACTOR_INVALID";
     public static final String CODE_ACTOR_NOT_ADMIN = "PERMISSION_ACTOR_NOT_ADMIN";
     public static final String CODE_STUDENT_NOT_ALLOWED = "PERMISSION_NOT_ALLOWED_FOR_STUDENT";
+    public static final String CODE_SELF_ASSIGNMENT = "PERMISSION_SELF_ASSIGNMENT_NOT_ALLOWED";
     public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
     /** Dedicated logger: identifiers and codes only, never credentials, tokens or personal data. */
     public static final String LOGGER_AUDITORIA = "prisaly.auditoria.permisos";
 
-    /** PD-01: controlled, individually assigned permissions that students never receive. */
-    private static final Set<String> PERMISOS_CONTROLADOS = Set.of("CONSULTAR_CASO", "MODIFICAR_CASO");
+    /** PD-01 and its F6 extension: individually assigned permissions that students never receive. */
+    private static final Set<String> PERMISOS_CONTROLADOS =
+            Set.of("CONSULTAR_CASO", "MODIFICAR_CASO", "PUBLICAR_CASO", "ARCHIVAR_CASO");
+    /** F6: assigning and executing stay separate, so an administrator cannot self-assign these. */
+    private static final Set<String> PERMISOS_OPERATIVOS = Set.of("PUBLICAR_CASO", "ARCHIVAR_CASO");
     private static final Logger auditoria = LoggerFactory.getLogger(LOGGER_AUDITORIA);
 
     private final RolRepository rolRepository;
@@ -142,6 +146,9 @@ public class IdentityCatalogService {
         String codigo = codigoPermiso(idPermiso);
         if (PERMISOS_CONTROLADOS.contains(codigo)) {
             exigirAdministrador(idAdministradorAsignador);
+            if (PERMISOS_OPERATIVOS.contains(codigo) && idUsuario.equals(idAdministradorAsignador)) {
+                throw new IdentityDomainException(CODE_SELF_ASSIGNMENT, "Assigning and executing must stay separate");
+            }
             if (usuarioRepository.esCuentaEstudiante(idUsuario)) {
                 throw new IdentityDomainException(CODE_STUDENT_NOT_ALLOWED, "Students cannot receive this permission");
             }

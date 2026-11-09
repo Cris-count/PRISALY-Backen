@@ -245,7 +245,7 @@ class CasoPublicacionHttpIT {
         catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin);
         catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin);
-        for (String p : extra) { catalog.assignPermission(u.getIdUsuario(), permiso(p), null); }
+        for (String p : extra) { catalog.assignPermission(u.getIdUsuario(), permiso(p), admin); }
         return new Cuenta(u.getIdUsuario(), login(correo));
     }
     private String login(String correo) throws Exception {

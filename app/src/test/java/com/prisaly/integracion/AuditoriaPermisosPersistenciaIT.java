@@ -16,6 +16,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.logging.LoggingInitializationContext;
@@ -140,6 +142,65 @@ class AuditoriaPermisosPersistenciaIT {
         var politica = assertInstanceOf(TimeBasedRollingPolicy.class, appender.getRollingPolicy());
         assertEquals(30, politica.getMaxHistory());
         assertTrue(politica.getFileNamePattern().endsWith("auditoria-permisos.%d{yyyy-MM-dd}.log.gz"), politica.getFileNamePattern());
+    }
+
+    private Integer permisoPorCodigo(String codigo) {
+        return jdbc.queryForObject("SELECT \"idPermiso\" FROM \"Permiso\" WHERE \"codigo\"=?", Integer.class, codigo);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PUBLICAR_CASO", "ARCHIVAR_CASO"})
+    void f6AsignacionYRevocacionPersistenConTodosLosCampos(String codigo) throws Exception {
+        UUID docente = docente();
+        Integer permiso = permisoPorCodigo(codigo);
+        catalog.assignPermission(docente, permiso, admin);
+        catalog.disablePermissionAssignment(docente, permiso, admin);
+        assertEquals(false, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, docente, permiso));
+        String base = "usuario=" + docente + " permiso=" + codigo + " administrador=" + admin + " fecha=";
+        String texto = registro();
+        assertTrue(texto.lines().anyMatch(l -> l.contains("accion=ASIGNAR " + base) && l.endsWith("resultado=EXITOSO")), texto);
+        assertTrue(texto.lines().anyMatch(l -> l.contains("accion=REVOCAR " + base) && l.endsWith("resultado=EXITOSO")), texto);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PUBLICAR_CASO", "ARCHIVAR_CASO"})
+    void f6ActorNuloNoAutorizadoEInactivoSeRechazanYRegistran(String codigo) throws Exception {
+        UUID docente = docente(), noAdmin = docente(), inactivo = cuenta(IdentityCatalogService.ROL_ADMINISTRADOR);
+        catalog.deactivateUser(inactivo);
+        Integer permiso = permisoPorCodigo(codigo);
+        rechazo(IdentityCatalogService.CODE_ACTOR_REQUIRED, () -> catalog.assignPermission(docente, permiso, null));
+        rechazo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN, () -> catalog.assignPermission(docente, permiso, noAdmin));
+        rechazo(IdentityCatalogService.CODE_ACTOR_INVALID, () -> catalog.assignPermission(docente, permiso, inactivo));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, docente));
+        catalog.assignPermission(docente, permiso, admin);
+        rechazo(IdentityCatalogService.CODE_ACTOR_REQUIRED, () -> catalog.disablePermissionAssignment(docente, permiso));
+        rechazo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN, () -> catalog.disablePermissionAssignment(docente, permiso, noAdmin));
+        assertEquals(true, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, docente, permiso));
+        assertTrue(registro().lines().anyMatch(l -> l.contains("usuario=" + docente) && l.contains("permiso=" + codigo)
+                && l.endsWith("resultado=RECHAZADO:" + IdentityCatalogService.CODE_ACTOR_REQUIRED)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PUBLICAR_CASO", "ARCHIVAR_CASO"})
+    void f6EstudianteNoRecibeElPermiso(String codigo) throws Exception {
+        UUID estudiante = docente();
+        jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", UUID.randomUUID(), estudiante);
+        rechazo(IdentityCatalogService.CODE_STUDENT_NOT_ALLOWED, () -> catalog.assignPermission(estudiante, permisoPorCodigo(codigo), admin));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, estudiante));
+        assertTrue(registro().lines().anyMatch(l -> l.contains("usuario=" + estudiante) && l.endsWith("resultado=RECHAZADO:" + IdentityCatalogService.CODE_STUDENT_NOT_ALLOWED)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"PUBLICAR_CASO", "ARCHIVAR_CASO"})
+    void f6AsignarYEjecutarSeMantienenSeparados(String codigo) throws Exception {
+        rechazo(IdentityCatalogService.CODE_SELF_ASSIGNMENT, () -> catalog.assignPermission(admin, permisoPorCodigo(codigo), admin));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, admin));
+    }
+
+    @Test void laInicializacionNoConcedePermisosAlAdministrador() throws Exception {
+        jdbc.execute(Files.readString(Path.of("../docs/provision/pd01-inicializacion.sql")));
+        assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM \"Permiso\" WHERE \"codigo\" IN ('CONSULTAR_CASO','MODIFICAR_CASO','PUBLICAR_CASO','ARCHIVAR_CASO')", Integer.class));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, admin));
     }
 
     @Test void laInicializacionEsIdempotenteYElRolQuedaVerificado() throws Exception {
