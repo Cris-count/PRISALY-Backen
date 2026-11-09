@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 public interface ReclamoEnvioPort {
+    /** Stable persisted classification; no credentials belong in this diagnostic. */
+    String ERROR_CONFIGURACION = "CONFIGURACION: ";
 
     /**
      * Claims up to {@code lote} Pendiente rows whose next-retry is due, using SKIP LOCKED.

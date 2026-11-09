@@ -1,0 +1,49 @@
+name: DC-INTEGRACION-TOTAL-01 PostgreSQL HTTP
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [develop]
+permissions:
+  contents: read
+concurrency:
+  group: integration-backend-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  acceptance:
+    if: startsWith(github.head_ref, 'integration/cierre-backend-v27')
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      PRISALY_CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      TESTCONTAINERS_REUSE_ENABLE: 'false'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.15.0'
+      - name: Candidate reactor and PostgreSQL 16.15
+        run: python3 .github/scripts/integration_validation.py run "$RUNNER_TEMP/integration-maven"
+      - name: Collect sanitized Maven evidence
+        if: always()
+        run: python3 .github/scripts/integration_validation.py collect "$RUNNER_TEMP/integration-maven"
+      - name: Install pinned Postman collection runner
+        run: npm install --global newman@6.2.1
+      - name: HTTP campaign and existing Postman collection
+        run: node qa/backend-http/run.mjs --expected-sha "$PRISALY_CANDIDATE_SHA" --postman
+      - name: Upload sanitized acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-backend-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/integration-maven/public
+            qa/backend-http/evidence
+          retention-days: 14

@@ -93,7 +93,8 @@ public class ProcesarEnviosPendientesService {
         if (rechazo.clase() == ClaseErrorCorreo.CONFIGURACION) {
             Duration espera = politica.esperaTrasIntento(envio.numeroIntentos());
             boolean guardado = reclamo.registrarFallo(
-                    envio.idEnvio(), leaseHeld, EstadoEnvioCorreo.PENDIENTE, error, espera);
+                    envio.idEnvio(), leaseHeld, EstadoEnvioCorreo.PENDIENTE,
+                    ReclamoEnvioPort.ERROR_CONFIGURACION + error, espera);
             log.atError()
                     .setMessage("SMTP configuration failure; recipient not marked Fallido")
                     .addKeyValue("idEnvio", envio.idEnvio())

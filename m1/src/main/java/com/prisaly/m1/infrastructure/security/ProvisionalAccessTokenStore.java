@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +19,13 @@ import org.springframework.stereotype.Component;
 public class ProvisionalAccessTokenStore {
 
     public static final long DEFAULT_TTL_SECONDS = 8L * 60L * 60L;
+    public static final int DEFAULT_CAPACITY = 10_000;
 
     private final SecureRandom secureRandom;
     private final Map<String, TokenRecord> tokensByValue;
     private final long ttlSeconds;
     private final Clock clock;
+    private final int capacity;
 
     @Autowired
     public ProvisionalAccessTokenStore() {
@@ -32,16 +34,29 @@ public class ProvisionalAccessTokenStore {
 
     // The clock makes expiry verifiable; production uses the system clock and the 8 h TTL.
     public ProvisionalAccessTokenStore(Clock clock, long ttlSeconds) {
+        this(clock, ttlSeconds, DEFAULT_CAPACITY);
+    }
+
+    public ProvisionalAccessTokenStore(Clock clock, long ttlSeconds, int capacity) {
         if (ttlSeconds <= 0) {
             throw new IllegalArgumentException("Token TTL must be positive");
         }
         this.secureRandom = new SecureRandom();
-        this.tokensByValue = new ConcurrentHashMap<>();
+        if (capacity < 1) {
+            throw new IllegalArgumentException("Token capacity must be positive");
+        }
+        this.tokensByValue = new HashMap<>();
         this.ttlSeconds = ttlSeconds;
         this.clock = Objects.requireNonNull(clock, "clock");
+        this.capacity = capacity;
     }
 
-    public String issue(UUID userId) {
+    public synchronized String issue(UUID userId) {
+        Objects.requireNonNull(userId, "userId");
+        purgeExpired();
+        if (tokensByValue.size() >= capacity) {
+            throw new CapacityExceededException();
+        }
         byte[] bytes = new byte[32];
         secureRandom.nextBytes(bytes);
         String token = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
@@ -50,7 +65,8 @@ public class ProvisionalAccessTokenStore {
         return token;
     }
 
-    public Optional<UUID> resolveActiveUserId(String token) {
+    public synchronized Optional<UUID> resolveActiveUserId(String token) {
+        purgeExpired();
         TokenRecord record = tokensByValue.get(token);
         if (record == null) {
             return Optional.empty();
@@ -62,10 +78,22 @@ public class ProvisionalAccessTokenStore {
         return Optional.of(record.userId());
     }
 
-    public void revoke(String token) {
+    public synchronized void revoke(String token) {
         tokensByValue.remove(token);
     }
 
+    /** Explicit maintenance entry point; issuance and lookup also reclaim abandoned tokens. */
+    public synchronized int purgeExpired() {
+        Instant now = clock.instant();
+        int before = tokensByValue.size();
+        tokensByValue.values().removeIf(record -> !now.isBefore(record.expiresAt()));
+        return before - tokensByValue.size();
+    }
+
     private record TokenRecord(UUID userId, Instant expiresAt) {
+    }
+
+    public static final class CapacityExceededException extends RuntimeException {
+        public CapacityExceededException() { super("Provisional token capacity reached"); }
     }
 }

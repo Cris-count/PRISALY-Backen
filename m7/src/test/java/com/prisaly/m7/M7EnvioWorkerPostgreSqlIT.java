@@ -228,6 +228,39 @@ class M7EnvioWorkerPostgreSqlIT {
     }
 
     @Test
+    void configuracionNoAgotaLaEntregaYRecuperaSmtpOperativo() {
+        service.convocarEstudiante(docente, sesion, estudiante);
+        ProveedorCorreoPort configuracion = (r, d, a, c) -> new ResultadoEnvioSmtp.Rechazado(
+                ClaseErrorCorreo.CONFIGURACION, "535", "Authentication failed");
+        for (int i = 1; i <= 7; i++) {
+            jdbc.update("UPDATE \"EnvioCorreo\" SET \"proximoReintento\" = NULL");
+            assertEquals(1, worker(configuracion).procesarLote());
+            assertEquals(EstadoEnvioCorreo.PENDIENTE,
+                    jdbc.queryForObject("SELECT \"estadoEnvio\" FROM \"EnvioCorreo\"", String.class));
+            assertEquals(i, jdbc.queryForObject("SELECT \"numeroIntentos\" FROM \"EnvioCorreo\"", Integer.class));
+        }
+        jdbc.update("UPDATE \"EnvioCorreo\" SET \"proximoReintento\" = NULL");
+        assertEquals(1, worker(smtpReal).procesarLote());
+        assertEquals(EstadoEnvioCorreo.ENVIADO,
+                jdbc.queryForObject("SELECT \"estadoEnvio\" FROM \"EnvioCorreo\"", String.class));
+        assertEquals(1, greenMail.getReceivedMessages().length);
+    }
+
+    @Test
+    void leaseAbandonadoTrasConfiguracionConservaLimiteYNoAdmiteResultadoObsoleto() {
+        service.convocarEstudiante(docente, sesion, estudiante);
+        jdbc.update("UPDATE \"EnvioCorreo\" SET \"numeroIntentos\"=5, \"ultimoError\"=?",
+                ReclamoEnvioPort.ERROR_CONFIGURACION + "535");
+        var claimed = tx().execute(s -> reclamo.reclamar(1, Duration.ofSeconds(30), 5)).getFirst();
+        jdbc.update("UPDATE \"EnvioCorreo\" SET \"proximoReintento\"=now()-interval '1 second'");
+        assertEquals(0, worker(smtpReal).procesarLote());
+        assertEquals(EstadoEnvioCorreo.FALLIDO,
+                jdbc.queryForObject("SELECT \"estadoEnvio\" FROM \"EnvioCorreo\"", String.class));
+        assertFalse(reclamo.registrarAceptacion(claimed.idEnvio(),
+                new ReclamoEnvioPort.InstantLease(claimed.leaseHasta(), claimed.numeroIntentos()), "obsolete"));
+    }
+
+    @Test
     void dosWorkersConcurrentesNoDuplicanEnvioSmtp() throws Exception {
         service.convocarEstudiante(docente, sesion, estudiante);
         AtomicInteger envios = new AtomicInteger();

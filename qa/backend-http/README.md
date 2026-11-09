@@ -16,6 +16,8 @@ node qa/backend-http/run.mjs
 $LASTEXITCODE
 ```
 
+DC-INTEGRACION-TOTAL-01 añade `--postman` como comprobación adicional opcional, sin cambiar los 32 escenarios. Requiere Newman 6.2.1 en PATH. Ejecuta las carpetas `00-verificacion-sistema`, `01-m1-autenticacion` y `02-m1-identidad-permisos` de la colección existente `PRISALY-Integrante-1`, sobre la misma APP/base efímeras. Exige 13 respuestas reales, aserciones sin fallo/omisión y código cero. El resumen guarda solo nombres, métodos, estados y resultados de aserciones; no exporta cuerpos, tokens ni variables. El entorno y el reporte privados temporales se eliminan. No acredita las carpetas no seleccionadas.
+
 El candidato predeterminado es `bc8e378bd6dd50a3b1484b06c268932ba5607dd3`.
 Se verifican HEAD/rama y que el árbol de fuentes productivas y configuración Maven
 coincida con ese candidato. Solo se permiten cambios locales de QA; por eso un

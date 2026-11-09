@@ -46,7 +46,9 @@ public final class PoliticaReintentos {
         if (numeroIntentos < 1) {
             throw new IllegalArgumentException("numeroIntentos must be >= 1");
         }
-        long minutos = Math.min(1L << (numeroIntentos - 1), topeMinutos);
+        // Configuration failures may keep an item pending beyond the ordinary retry budget.
+        // Saturate before shifting: Java masks large shift distances and 1L << 63 is negative.
+        long minutos = numeroIntentos >= 64 ? topeMinutos : Math.min(1L << (numeroIntentos - 1), topeMinutos);
         return Duration.ofMinutes(minutos);
     }
 

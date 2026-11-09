@@ -2,6 +2,9 @@ package com.prisaly.config;
 
 import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
 import com.prisaly.m1.infrastructure.security.ProvisionalBearerAuthenticationFilter;
+import com.prisaly.m1.application.port.StudentAccessPort;
+import jakarta.servlet.http.HttpServletRequest;
+import java.net.URI;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -13,6 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,21 +32,36 @@ public class HttpApiConfig {
     private final List<String> allowedOrigins;
     private final ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter;
     private final EstudianteSessionFilter estudianteSessionFilter;
+    private final StudentAccessPort studentAccess;
 
     public HttpApiConfig(
             @Value("${prisaly.cors.allowed-origins}") String allowedOrigins,
             ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter,
-            ObjectProvider<EstudianteSessionFilter> estudianteSessionFilter) {
+            ObjectProvider<EstudianteSessionFilter> estudianteSessionFilter,
+            ObjectProvider<StudentAccessPort> studentAccess) {
         this.allowedOrigins = Arrays.stream(allowedOrigins.split(","))
                 .map(String::trim)
                 .filter(origin -> !origin.isEmpty())
                 .toList();
         this.provisionalBearerAuthenticationFilter = provisionalBearerAuthenticationFilter;
         this.estudianteSessionFilter = estudianteSessionFilter.getIfAvailable();
+        this.studentAccess = studentAccess.getIfAvailable();
+        if (this.estudianteSessionFilter != null) {
+            for (String origin : this.allowedOrigins) {
+                URI uri = URI.create(origin);
+                if (!("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()))
+                        || uri.getHost() == null || uri.getUserInfo() != null
+                        || uri.getQuery() != null || uri.getFragment() != null
+                        || (uri.getPath() != null && !uri.getPath().isEmpty())) {
+                    throw new IllegalArgumentException("Student CORS requires explicit HTTP origins");
+                }
+            }
+        }
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http.addFilterBefore(provisionalBearerAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         if (estudianteSessionFilter != null) {
             http.addFilterBefore(estudianteSessionFilter, ProvisionalBearerAuthenticationFilter.class);
         }
@@ -64,21 +83,37 @@ public class HttpApiConfig {
                             response.getWriter().write(
                                     "{\"code\":\"FORBIDDEN\",\"message\":\"Access denied\"}");
                         }))
-                .authorizeHttpRequests(auth -> auth
+                .authorizeHttpRequests(auth -> {
+                    auth.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
+                            .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+                    if (estudianteSessionFilter != null) {
+                        auth.requestMatchers("/v1/estudiantes/**").access((identity, context) -> {
+                            if (!safeMethod(context.getRequest()) && !trustedOrigin(context.getRequest())) {
+                                return new AuthorizationDecision(false);
+                            }
+                            try {
+                                if (studentAccess == null || studentAccess.requireCurrentStudent() == null) {
+                                    throw new org.springframework.security.authentication.InsufficientAuthenticationException("Student authentication required");
+                                }
+                                return new AuthorizationDecision(true);
+                            } catch (com.prisaly.m1.domain.rule.IdentityDomainException denied) {
+                                throw new org.springframework.security.authentication.InsufficientAuthenticationException("Student authentication required");
+                            }
+                        });
+                        auth.requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/**")
+                                .access((identity, context) -> new AuthorizationDecision(trustedOrigin(context.getRequest())));
+                    }
+                    auth
                         // The container's internal error dispatch must render the original failure
                         // (e.g. 500); securing it turned infrastructure errors into 401.
-                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/personal/autenticar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/validar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/activar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/autenticar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/cerrar-sesion").permitAll()
-                        .anyRequest().authenticated())
-                .addFilterBefore(
-                        provisionalBearerAuthenticationFilter,
-                        UsernamePasswordAuthenticationFilter.class)
+                        .anyRequest().authenticated();
+                })
                 .build();
     }
 
@@ -92,7 +127,28 @@ public class HttpApiConfig {
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "If-Match"));
         configuration.setExposedHeaders(List.of("ETag"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        if (estudianteSessionFilter != null) {
+            CorsConfiguration student = new CorsConfiguration(configuration);
+            student.setAllowCredentials(true);
+            source.registerCorsConfiguration("/v1/estudiantes/**", student);
+            source.registerCorsConfiguration("/v1/acceso-estudiante/**", student);
+        }
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private static boolean safeMethod(HttpServletRequest request) {
+        return List.of("GET", "HEAD", "OPTIONS").contains(request.getMethod());
+    }
+
+    /** Browser CSRF boundary for cookie operations. No identity comes from Origin. */
+    private boolean trustedOrigin(HttpServletRequest request) {
+        String origin = request.getHeader("Origin");
+        if (origin == null || "null".equals(origin)) return false;
+        String requestOrigin = request.getScheme() + "://" + request.getServerName();
+        int port = request.getServerPort();
+        if (!("http".equals(request.getScheme()) && port == 80)
+                && !("https".equals(request.getScheme()) && port == 443)) requestOrigin += ":" + port;
+        return allowedOrigins.contains(origin) || requestOrigin.equals(origin);
     }
 }

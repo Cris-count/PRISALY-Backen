@@ -1,0 +1,1388 @@
+{
+  "sha": "eb35f004b1261a57488162c631e08da1f4a744b4",
+  "execution": {
+    "sha": "eb35f004b1261a57488162c631e08da1f4a744b4",
+    "maven_exit": 0
+  },
+  "totals": {
+    "tests": 1207,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "passed": 1207
+  },
+  "missing_integration_suites": [],
+  "deliberately_excluded": [
+    "Bd0052BaselineIT#diagnosticoV010CreaDosTablasParalelasYEludeTriggerOficial"
+  ],
+  "suites": [
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.application.ProveedorAccesoEstudianteTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStoreTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.application.PersonnelAuthenticationServiceTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.infrastructure.security.EstudianteSessionFilterTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.ArquitecturaAccesoEstudianteTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.infrastructure.security.CredentialExposureTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.application.IdentityAccessServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.presentation.EstudianteAccessValidarTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.application.DenyingStudentAccessServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.presentation.EstudianteCuentaControllerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "surefire",
+      "suite": "com.prisaly.m1.application.CuentaEstudianteServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m1.infrastructure.IdentityPersistenceIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m1",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m1.infrastructure.CuentaEstudiantePostgreSqlIT",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.RubricaStructureTest",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.presentation.CasoCreationIdentityTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoPersistentUpdateServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoMetadataTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerMapperTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.ContenidoAcademicoMetadataTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoDocenteConsultaServiceTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.presentation.CasoCreationSqlErrorsTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoGestionControllerTest",
+      "tests": 35,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.CasoPersistenceMapperIntegrityTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoEtagControllerTest",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.CasoUpdateContractTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizerTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReaderTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.presentation.CrearCasoRequestTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.CasoPublicationContractTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "surefire",
+      "suite": "com.prisaly.m3.CasoApplicationServiceTest",
+      "tests": 29,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoCommandUpdateIT",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoJpaAggregateTransactionIT",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoCommandConcurrencyIT",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.PostgreSqlDockerIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoJpaReadIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoCommandAddContentIT",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProducerReadIT",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoJpaAggregateReadIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.EvaluableContentJpaReadIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.RubricaJpaReadIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m3",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m3.infrastructure.CasoPersistenceAdapterIT",
+      "tests": 47,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.domain.SesionAcademicaDomainTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4ProviderSecurityTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.presentation.M4HttpErrorsTest",
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.ContratosM4AdaptersTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4MigrationResourcesTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4CoordinacionInicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4EstabilizacionAdaptersTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionAutenticadaTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.application.SesionAcademicaServiceTest",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionConfigurationTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.infrastructure.M4SchemaContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "surefire",
+      "suite": "com.prisaly.m4.application.AutorizacionM4ServiceTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m4.infrastructure.PostgreSqlDockerSmokeTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m4.infrastructure.SesionAcademicaPostgreSqlIT",
+      "tests": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m4.infrastructure.ProgramacionParticipacionPostgreSqlIT",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m4.infrastructure.M4M1ContratosPostgreSqlIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m4",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m4.infrastructure.Bd0052BaselineIT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.respuesta.ReferenciasCanonicasTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.acceso.AccesoProtegidoInicioTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.respuesta.ValorRespuestaContratoTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.acceso.AccesoProtegidoParticipacionTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.intento.IntentoTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.servicio.RegistrarRespuestaServicioTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.ProgramacionM4ErroresHttpTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.ErroresTecnicosM5Test",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.programacion.TitularidadConvocatoriaDesdeM4Test",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.intento.IntentoActualizacionRespuestasTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.acceso.ControlAccesoIntentosTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.provisional.SolicitudRespuestaProvisionalValidacionTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.TraductorErroresInicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.TraductorErroresM5Test",
+      "tests": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.identidad.IdentidadEstudianteDesdeM1Test",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.evaluacion.ConsultaIntentoEvaluacionDesdeM5Test",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.CoordinacionInicioTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.programacion.TitularidadSesionDesdeM4Test",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.ParticipacionFacadeTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RepositorioParticipacionesJdbcTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.servicio.FinalizarIntentoServicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.servicio.IniciarIntentoServicioTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.rest.IntentosEstudianteM5MvcTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.servicio.ActualizarRespuestaServicioTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.ManejadorErroresM5Test",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.RespuestaHttpErroresTecnicosTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.servicio.ConsultarIntentoServicioTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.programacion.ParticipacionesM4DesdeM5Test",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.acceso.AccesoProtegidoSesionTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.intento.IntentoRespuestasTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.MapeoIntentoTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4Test",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.ConfiguracionParticipacionTest",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.provisional.IntentoVistaProvisionalTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.application.ResumenIntentoTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.identidad.SesionEstudianteTitularidadTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.evaluacion.EnsamblajeEvaluacionNoPublicadoTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.rest.IntentosM5ControladorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.presentation.rest.IntentosM5DtoTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.intento.EstadoIntentoTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.domain.respuesta.RespuestaTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.ArquitecturaAccesoProtegidoTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "surefire",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.MapeoIntentoFilasCorruptasTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.InicioIntentoIT",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RevisionMacro02PersistenciaIT",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.FallosTecnicosM5IT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.AccesoEstudianteM4M5IT",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ParticipacionesM4DesdeM5IT",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ConcurrenciaLectorM5M6ReservaD06IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RepositorioIntentosJpaIT",
+      "tests": 28,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.RobustezPersistenciaM5IT",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ConsultaIntentoEvaluacionM5M6IT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m5",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m5.infrastructure.persistencia.ComposicionEvaluacionM5M6IT",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.domain.model.CalificacionTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.service.PrepararContextoEvaluacionServiceTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.service.PrepararEvaluacionProtegidaTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.domain.strategy.EstrategiaEvaluacionTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.domain.model.RetroalimentacionGeneralTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.proxy.EvaluacionProtectionProxyTest",
+      "tests": 8,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.integration.ModelosLimitesEInmutabilidadTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "surefire",
+      "suite": "com.prisaly.m6.application.integration.ContratosConsumidoresTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m6.infrastructure.RetroalimentacionGeneralJpaReadIT",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m6",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m6.infrastructure.CalificacionJpaReadIT",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.PoliticaReintentosTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.M7WorkerDisabledTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.StudentAccessDeliveryM1M7Test",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.M7ObserverTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.ClasificacionErrorCorreoTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.ProcesarEnviosPendientesServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "surefire",
+      "suite": "com.prisaly.m7.M4FallbackSinM7Test",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m7.M7EnvioWorkerPostgreSqlIT",
+      "tests": 13,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "m7",
+      "phase": "failsafe",
+      "suite": "com.prisaly.m7.M7ConvocatoriaPostgreSqlIT",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.M3CaseAuthorizationAdapterTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.MapeoContextoAcademicoM3Test",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.StudentHttpSecurityTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.PrisalyApplicationTests",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.M3CasoCreationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.M6EvaluacionAuthorizationAdapterTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.config.M3CaseReadAuthorizationAdapterTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "surefire",
+      "suite": "com.prisaly.security.M1HttpSecurityContractTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.security.PersonalAuthSecurityIT",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.security.EstudianteIntentosM5SecurityIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.M4SchemaReferenceIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.security.StudentSessionControlledHttpIT",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.HistorialM4M5IT",
+      "tests": 23,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.M4SchemaContratoPostgreSqlIT",
+      "tests": 15,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.ComposicionM3LecturaInstitucionalIT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.ComposicionInstitucionalM1IT",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.integracion.ComposicionM3EdicionPreparadaIT",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.notificaciones.NotificacionPortWiringIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.M3CasoCreationIT",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.integracion.DocenteConvocatoriaM1M7IT",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.ParticipacionesPortWiringIT",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "module": "app",
+      "phase": "failsafe",
+      "suite": "com.prisaly.config.ContextoAcademicoM3M6IT",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ]
+}
