@@ -12,9 +12,9 @@ import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.application.service.PersonnelAuthenticationService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.application.port.UsuarioRepositorioPort;
 import com.prisaly.m1.presentation.IdentityExceptionHandler;
 import com.prisaly.m1.presentation.dto.ErrorResponse;
 import jakarta.servlet.FilterChain;
@@ -47,7 +47,7 @@ class CredentialExposureTest {
     @Mock
     private IdentityAccessService identityAccessService;
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositorioPort usuarioRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -98,8 +98,8 @@ class CredentialExposureTest {
         ResponseEntity<ErrorResponse> error = new IdentityExceptionHandler().handleDomain(
                 new IdentityDomainException("AUTH_FAILED", "Authentication failed"));
 
-        UsuarioEntity usuario = org.mockito.Mockito.mock(UsuarioEntity.class);
-        when(usuarioRepository.findByCorreoIgnoreCase("ana.sec@prisaly.test")).thenReturn(Optional.of(usuario));
+        Usuario usuario = org.mockito.Mockito.mock(Usuario.class);
+        when(usuarioRepository.buscarPorCorreo("ana.sec@prisaly.test")).thenReturn(Optional.of(usuario));
         when(usuario.getPasswordHash()).thenReturn("hash");
         when(passwordEncoder.matches(PASSWORD, "hash")).thenReturn(false);
         PersonnelAuthenticationService service = new PersonnelAuthenticationService(

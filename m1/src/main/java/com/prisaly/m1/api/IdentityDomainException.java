@@ -1,4 +1,4 @@
-package com.prisaly.m1.domain.rule;
+package com.prisaly.m1.api;
 
 public final class IdentityDomainException extends RuntimeException {
 

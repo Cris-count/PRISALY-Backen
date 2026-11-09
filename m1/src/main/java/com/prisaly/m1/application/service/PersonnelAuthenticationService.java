@@ -1,10 +1,10 @@
 package com.prisaly.m1.application.service;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
-import com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStore;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.application.port.EmisorTokenAccesoPort;
+import com.prisaly.m1.application.port.UsuarioRepositorioPort;
+import com.prisaly.m1.domain.model.Usuario;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,16 +16,16 @@ public class PersonnelAuthenticationService {
     public static final String CODE_DUPLICATE_EMAIL = IdentityCatalogService.CODE_DUPLICATE_EMAIL;
     public static final String CODE_ROLE_NOT_FOUND = IdentityCatalogService.CODE_ROLE_NOT_FOUND;
 
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRepositorioPort usuarioRepository;
     private final PasswordEncoder passwordEncoder;
-    private final ProvisionalAccessTokenStore tokenStore;
+    private final EmisorTokenAccesoPort tokenStore;
     private final IdentityAccessService identityAccessService;
     private final IdentityCatalogService identityCatalogService;
 
     public PersonnelAuthenticationService(
-            UsuarioRepository usuarioRepository,
+            UsuarioRepositorioPort usuarioRepository,
             PasswordEncoder passwordEncoder,
-            ProvisionalAccessTokenStore tokenStore,
+            EmisorTokenAccesoPort tokenStore,
             IdentityAccessService identityAccessService,
             IdentityCatalogService identityCatalogService) {
         this.usuarioRepository = usuarioRepository;
@@ -38,7 +38,7 @@ public class PersonnelAuthenticationService {
     @Transactional(readOnly = true)
     public AuthResult authenticate(String email, String rawPassword) {
         String normalizedEmail = IdentityCatalogService.normalizeEmail(email);
-        UsuarioEntity usuario = usuarioRepository.findByCorreoIgnoreCase(normalizedEmail).orElse(null);
+        Usuario usuario = usuarioRepository.buscarPorCorreo(normalizedEmail).orElse(null);
         if (usuario == null || usuario.getPasswordHash() == null
                 || !passwordEncoder.matches(rawPassword, usuario.getPasswordHash())
                 || !usuario.isActive()) {
@@ -59,7 +59,7 @@ public class PersonnelAuthenticationService {
             String correo,
             String rawPassword,
             String roleName) {
-        UsuarioEntity created = identityCatalogService.registerUser(nombre, correo, rawPassword, roleName);
+        Usuario created = identityCatalogService.registerUser(nombre, correo, rawPassword, roleName);
         return identityAccessService.requireUser(created.getIdUsuario());
     }
 

@@ -1,5 +1,6 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.*;
 
 import ch.qos.logback.classic.Logger;
@@ -7,7 +8,6 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
 import com.prisaly.PrisalyApplication;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.service.CasoTransicionService;
 import java.net.URI;
@@ -241,7 +241,7 @@ class CasoPublicacionHttpIT {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
         String correo = UUID.randomUUID() + "@prisaly.test";
-        UsuarioEntity u = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario u = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin);
         catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin);

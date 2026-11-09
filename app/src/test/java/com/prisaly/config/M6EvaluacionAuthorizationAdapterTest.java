@@ -16,7 +16,7 @@ import ch.qos.logback.core.read.ListAppender;
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.application.service.IdentityAccessService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m3.api.ContextoAcademicoConsultaPort;
 import com.prisaly.m3.application.port.AutorizacionContextoAcademicoPort;
 import com.prisaly.m3.infrastructure.persistence.jpa.ContextoAcademicoProtectedReader;

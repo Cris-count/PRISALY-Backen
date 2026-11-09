@@ -11,10 +11,10 @@ import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.application.service.PersonnelAuthenticationService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.RolEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.application.port.UsuarioRepositorioPort;
+import com.prisaly.m1.domain.model.Rol;
+import com.prisaly.m1.domain.model.Usuario;
 import com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStore;
 import java.time.OffsetDateTime;
 import java.util.Optional;
@@ -31,7 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 class PersonnelAuthenticationServiceTest {
 
     @Mock
-    private UsuarioRepository usuarioRepository;
+    private UsuarioRepositorioPort usuarioRepository;
     @Mock
     private PasswordEncoder passwordEncoder;
     @Mock
@@ -56,10 +56,10 @@ class PersonnelAuthenticationServiceTest {
     @Test
     void m1T01_validCredentials_authenticate() {
         UUID userId = UUID.randomUUID();
-        RolEntity rol = new RolEntity("Docente", "Docente");
-        UsuarioEntity usuario = new UsuarioEntity(
-                userId, rol, "Ana", "ana@prisaly.test", "hash", "Activo", OffsetDateTime.now());
-        when(usuarioRepository.findByCorreoIgnoreCase("ana@prisaly.test")).thenReturn(Optional.of(usuario));
+        Rol rol = new Rol(1, "Docente", "Docente");
+        Usuario usuario = new Usuario(
+                userId, rol, "Ana", "ana@prisaly.test", "hash", "Activo", OffsetDateTime.now(), null);
+        when(usuarioRepository.buscarPorCorreo("ana@prisaly.test")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("secret", "hash")).thenReturn(true);
         when(identityAccessService.requireUser(userId))
                 .thenReturn(new AuthenticatedUser(
@@ -74,10 +74,10 @@ class PersonnelAuthenticationServiceTest {
     @Test
     void m1T02_wrongPassword_rejectsSafely() {
         UUID userId = UUID.randomUUID();
-        RolEntity rol = new RolEntity("Docente", "Docente");
-        UsuarioEntity usuario = new UsuarioEntity(
-                userId, rol, "Ana", "ana@prisaly.test", "hash", "Activo", OffsetDateTime.now());
-        when(usuarioRepository.findByCorreoIgnoreCase("ana@prisaly.test")).thenReturn(Optional.of(usuario));
+        Rol rol = new Rol(1, "Docente", "Docente");
+        Usuario usuario = new Usuario(
+                userId, rol, "Ana", "ana@prisaly.test", "hash", "Activo", OffsetDateTime.now(), null);
+        when(usuarioRepository.buscarPorCorreo("ana@prisaly.test")).thenReturn(Optional.of(usuario));
         when(passwordEncoder.matches("bad", "hash")).thenReturn(false);
 
         IdentityDomainException error = assertThrows(
@@ -89,7 +89,7 @@ class PersonnelAuthenticationServiceTest {
 
     @Test
     void m1T03_unknownUser_sameFailureCode() {
-        when(usuarioRepository.findByCorreoIgnoreCase(anyString())).thenReturn(Optional.empty());
+        when(usuarioRepository.buscarPorCorreo(anyString())).thenReturn(Optional.empty());
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
@@ -117,6 +117,6 @@ class PersonnelAuthenticationServiceTest {
         String token = tokenStore.issue(userId);
         service.logout(token);
         assertEquals(Optional.empty(), tokenStore.resolveActiveUserId(token));
-        verify(usuarioRepository, org.mockito.Mockito.never()).save(any());
+        verify(usuarioRepository, org.mockito.Mockito.never()).registrar(any());
     }
 }

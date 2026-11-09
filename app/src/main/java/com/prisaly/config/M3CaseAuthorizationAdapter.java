@@ -2,7 +2,8 @@ package com.prisaly.config;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.api.PermisosCaso;
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
 import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.application.port.CasoCurrentUserPort;
@@ -45,8 +46,8 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
         try {
             // PD-01: editing needs both independent permissions. Ownership and state are enforced
             // by the M3 use case against the stored aggregate.
-            return identity.hasPermission(current.userId(), "MODIFICAR_CASO")
-                    && identity.hasPermission(current.userId(), "CONSULTAR_CASO");
+            return identity.hasPermission(current.userId(), PermisosCaso.MODIFICAR_CASO)
+                    && identity.hasPermission(current.userId(), PermisosCaso.CONSULTAR_CASO);
         } catch (IdentityDomainException ex) {
             throw translate(ex);
         }
@@ -54,12 +55,12 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
 
     @Override
     public boolean canPublishCase(String userId, String caseId) {
-        return tienePermiso(userId, "PUBLICAR_CASO");
+        return tienePermiso(userId, PermisosCaso.PUBLICAR_CASO);
     }
 
     @Override
     public boolean canArchiveCase(String userId, String caseId) {
-        return tienePermiso(userId, "ARCHIVAR_CASO");
+        return tienePermiso(userId, PermisosCaso.ARCHIVAR_CASO);
     }
 
     /** PD-02: no default grants; ownership and state are enforced by the M3 transition. */

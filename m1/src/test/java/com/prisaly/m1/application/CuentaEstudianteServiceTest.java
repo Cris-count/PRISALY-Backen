@@ -17,7 +17,7 @@ import com.prisaly.m1.application.service.ActivacionCuentaEstudianteService;
 import com.prisaly.m1.application.service.AutenticacionEstudianteService;
 import com.prisaly.m1.application.service.SessionStudentAccessService;
 import com.prisaly.m1.application.support.CuentaEstudianteMemoria;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.domain.student.ClaveHmacEstudiante;
 import com.prisaly.m1.domain.student.FirmasEstudiante;
 import com.prisaly.m1.infrastructure.security.PasswordHashConfig;

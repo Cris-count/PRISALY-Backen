@@ -1,5 +1,6 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.*;
 
 import ch.qos.logback.classic.LoggerContext;
@@ -8,8 +9,7 @@ import ch.qos.logback.core.rolling.TimeBasedRollingPolicy;
 import com.prisaly.PrisalyApplication;
 import com.prisaly.config.VerificadorRolAdministrador;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
+import com.prisaly.m1.api.IdentityDomainException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -70,7 +70,7 @@ class AuditoriaPermisosPersistenciaIT {
     }
 
     private UUID cuenta(String rol) {
-        UsuarioEntity u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        Usuario u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
         return u.getIdUsuario();
     }
     private UUID docente() {

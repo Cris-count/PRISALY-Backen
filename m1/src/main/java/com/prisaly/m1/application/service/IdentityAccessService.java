@@ -2,12 +2,10 @@ package com.prisaly.m1.application.service;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioPermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioPermisoRepository;
-import com.prisaly.m1.infrastructure.persistence.UsuarioRepository;
-import java.util.LinkedHashSet;
+import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.application.port.AsignacionPermisoRepositorioPort;
+import com.prisaly.m1.application.port.UsuarioRepositorioPort;
+import com.prisaly.m1.domain.model.Usuario;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
@@ -22,12 +20,12 @@ public class IdentityAccessService implements IdentityAccessPort {
     public static final String CODE_USER_NOT_FOUND = "USER_NOT_FOUND";
     public static final String CODE_USER_INACTIVE = "USER_INACTIVE";
 
-    private final UsuarioRepository usuarioRepository;
-    private final UsuarioPermisoRepository usuarioPermisoRepository;
+    private final UsuarioRepositorioPort usuarioRepository;
+    private final AsignacionPermisoRepositorioPort usuarioPermisoRepository;
 
     public IdentityAccessService(
-            UsuarioRepository usuarioRepository,
-            UsuarioPermisoRepository usuarioPermisoRepository) {
+            UsuarioRepositorioPort usuarioRepository,
+            AsignacionPermisoRepositorioPort usuarioPermisoRepository) {
         this.usuarioRepository = usuarioRepository;
         this.usuarioPermisoRepository = usuarioPermisoRepository;
     }
@@ -49,7 +47,7 @@ public class IdentityAccessService implements IdentityAccessPort {
     @Override
     @Transactional(readOnly = true)
     public AuthenticatedUser requireUser(UUID userId) {
-        UsuarioEntity usuario = usuarioRepository.findById(userId)
+        Usuario usuario = usuarioRepository.buscarPorId(userId)
                 .orElseThrow(() -> new IdentityDomainException(CODE_USER_NOT_FOUND, "User not found"));
         if (!usuario.isActive()) {
             throw new IdentityDomainException(CODE_USER_INACTIVE, "User account is inactive");
@@ -71,14 +69,8 @@ public class IdentityAccessService implements IdentityAccessPort {
         return user.roleName().equalsIgnoreCase(roleName);
     }
 
-    private AuthenticatedUser toAuthenticatedUser(UsuarioEntity usuario) {
-        Set<String> permissions = new LinkedHashSet<>();
-        for (UsuarioPermisoEntity assignment
-                : usuarioPermisoRepository.findByIdUsuarioAndHabilitadoTrue(usuario.getIdUsuario())) {
-            if (assignment.getPermiso() != null) {
-                permissions.add(assignment.getPermiso().getCodigo());
-            }
-        }
+    private AuthenticatedUser toAuthenticatedUser(Usuario usuario) {
+        Set<String> permissions = usuarioPermisoRepository.codigosHabilitados(usuario.getIdUsuario());
         return new AuthenticatedUser(
                 usuario.getIdUsuario(),
                 usuario.getCorreo(),

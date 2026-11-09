@@ -1,12 +1,16 @@
 package com.prisaly.m1.infrastructure;
 
+import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.domain.model.Rol;
+import com.prisaly.m1.domain.model.Permiso;
+import com.prisaly.m1.domain.model.AsignacionPermiso;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
 import com.prisaly.m1.infrastructure.persistence.PermisoRepository;
 import com.prisaly.m1.infrastructure.persistence.RolEntity;
@@ -89,7 +93,8 @@ class IdentityPersistenceIT {
 
     private Integer permisoFixture(String codigo) {
         return permisoRepository.findByCodigo(codigo)
-                .orElseGet(() -> identityCatalogService.createPermission(codigo, codigo, null)).getIdPermiso();
+                .map(PermisoEntity::getIdPermiso)
+                .orElseGet(() -> identityCatalogService.createPermission(codigo, codigo, null).getIdPermiso());
     }
 
     private void assertCodigo(String esperado, org.junit.jupiter.api.function.Executable accion) {
@@ -149,7 +154,7 @@ class IdentityPersistenceIT {
     @Test
     void persistsUsuarioWithSinglePrincipalRoleAndUniqueEmail() {
         identityCatalogService.createRole("Docente", "Docente academico");
-        UsuarioEntity usuario = identityCatalogService.registerUser(
+        Usuario usuario = identityCatalogService.registerUser(
                 "Ana Docente",
                 "Ana.Docente@prisaly.test",
                 "Secret#123",
@@ -165,7 +170,7 @@ class IdentityPersistenceIT {
     @Test
     void storesPasswordAsBcryptAndMatches() {
         identityCatalogService.createRole("Administrador", "Admin");
-        UsuarioEntity usuario = identityCatalogService.registerUser(
+        Usuario usuario = identityCatalogService.registerUser(
                 "Admin User",
                 "admin@prisaly.test",
                 "PlainPassword!",
@@ -192,21 +197,21 @@ class IdentityPersistenceIT {
 
     @Test
     void persistsPermisoAndUsuarioPermisoCompositeKey() {
-        RolEntity adminRole = identityCatalogService.createRole("AdminPerm", "Admin");
-        PermisoEntity permiso = identityCatalogService.createPermission(
+        Rol adminRole = identityCatalogService.createRole("AdminPerm", "Admin");
+        Permiso permiso = identityCatalogService.createPermission(
                 "CREAR_CASO", "Crear caso", "Alta de caso clinico");
-        UsuarioEntity admin = identityCatalogService.registerUser(
+        Usuario admin = identityCatalogService.registerUser(
                 "Admin Asignador",
                 "asignador@prisaly.test",
                 "Secret#1",
                 "AdminPerm");
-        UsuarioEntity docente = identityCatalogService.registerUser(
+        Usuario docente = identityCatalogService.registerUser(
                 "Docente Perm",
                 "docente.perm@prisaly.test",
                 "Secret#1",
                 "AdminPerm");
 
-        UsuarioPermisoEntity assignment = identityCatalogService.assignPermission(
+        AsignacionPermiso assignment = identityCatalogService.assignPermission(
                 docente.getIdUsuario(),
                 permiso.getIdPermiso(),
                 admin.getIdUsuario());
@@ -226,9 +231,9 @@ class IdentityPersistenceIT {
     @Test
     void rejectsDuplicateUsuarioPermisoAssignment() {
         identityCatalogService.createRole("RolAsig", "Rol");
-        PermisoEntity permiso = identityCatalogService.createPermission(
+        Permiso permiso = identityCatalogService.createPermission(
                 "EDITAR_CASO", "Editar caso", null);
-        UsuarioEntity user = identityCatalogService.registerUser(
+        Usuario user = identityCatalogService.registerUser(
                 "User Asig", "user.asig@prisaly.test", "Secret#1", "RolAsig");
 
         identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
@@ -244,9 +249,9 @@ class IdentityPersistenceIT {
     @Test
     void disablePermissionAssignmentIsTransactional() {
         identityCatalogService.createRole("RolDisable", "Rol");
-        PermisoEntity permiso = identityCatalogService.createPermission(
+        Permiso permiso = identityCatalogService.createPermission(
                 "VER_REPORTE", "Ver reporte", "Consulta");
-        UsuarioEntity user = identityCatalogService.registerUser(
+        Usuario user = identityCatalogService.registerUser(
                 "User Disable", "user.disable@prisaly.test", "Secret#1", "RolDisable");
         identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
 
@@ -280,7 +285,10 @@ class IdentityPersistenceIT {
     @EnableAutoConfiguration
     @EnableJpaRepositories(basePackages = "com.prisaly.m1.infrastructure.persistence")
     @EntityScan(basePackages = "com.prisaly.m1.infrastructure.persistence")
-    @Import({IdentityCatalogService.class, PasswordHashConfig.class})
+    @Import({IdentityCatalogService.class, PasswordHashConfig.class,
+            com.prisaly.m1.application.service.GestionPermisosService.class,
+            com.prisaly.m1.infrastructure.persistence.IdentidadJpaAdapter.class,
+            com.prisaly.m1.infrastructure.security.AuditoriaPermisosLog.class})
     static class PersistenceTestApp {
     }
 }

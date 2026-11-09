@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component;
 
 import com.prisaly.m1.application.port.AuthenticatedStudent;
 import com.prisaly.m1.application.port.StudentAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 

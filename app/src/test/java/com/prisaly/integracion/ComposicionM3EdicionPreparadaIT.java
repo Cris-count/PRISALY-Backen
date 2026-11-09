@@ -1,5 +1,6 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,7 +10,6 @@ import com.prisaly.config.M3CaseAuthorizationAdapter;
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
 import java.net.URI;
@@ -237,7 +237,7 @@ class ComposicionM3EdicionPreparadaIT {
     private String docente(String correo, boolean lectura, boolean edicion) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        UsuarioEntity user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         if (lectura) {
             catalog.assignPermission(user.getIdUsuario(), idPermiso(LECTURA_FIXTURE), null);

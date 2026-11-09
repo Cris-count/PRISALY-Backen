@@ -5,7 +5,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.prisaly.m1.application.port.StudentAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m4.api.ContextoProgramacion;
 import com.prisaly.m4.api.ProgramacionAutenticadaPort;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;

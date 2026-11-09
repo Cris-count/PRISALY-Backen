@@ -1,10 +1,10 @@
 package com.prisaly.integracion;
 
+import com.prisaly.m1.domain.model.Usuario;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.prisaly.PrisalyApplication;
 import com.prisaly.m1.application.service.IdentityCatalogService;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
 import com.prisaly.m3.domain.rule.CasoDomainException;
@@ -205,7 +205,7 @@ class CasoRubricaHttpIT {
     private Cuenta docente(boolean consultar, boolean modificar) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        UsuarioEntity u = catalog.registerUser("Docente", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        Usuario u = catalog.registerUser("Docente", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
         catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         if (consultar) { catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin); }
         if (modificar) { catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin); }

@@ -6,7 +6,7 @@ import com.prisaly.m1.application.port.CuentaEstudiantePort.SesionGuardada;
 import com.prisaly.m1.application.port.CuentaEstudiantePort.VinculoEstudiante;
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.application.port.TokenSesionEstudianteActual;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.domain.student.ClaveHmacEstudiante;
 import com.prisaly.m1.domain.student.FirmasEstudiante;
 import java.time.Clock;

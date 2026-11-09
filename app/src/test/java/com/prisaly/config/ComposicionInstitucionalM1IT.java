@@ -1,5 +1,7 @@
 package com.prisaly.config;
 
+import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.domain.model.Permiso;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -20,7 +22,6 @@ import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m1.application.service.IdentityAccessService;
 import com.prisaly.m1.application.service.IdentityCatalogService;
 import com.prisaly.m1.infrastructure.persistence.PermisoEntity;
-import com.prisaly.m1.infrastructure.persistence.UsuarioEntity;
 import com.prisaly.m1.infrastructure.security.EstudianteSessionFilter;
 import com.prisaly.m1.presentation.PersonalAuthorizationController;
 import com.prisaly.m3.application.port.AutorizacionConsultaCasoPort;
@@ -207,14 +208,14 @@ class ComposicionInstitucionalM1IT {
         if (!existentes.isEmpty()) {
             return existentes.get(0);
         }
-        PermisoEntity creado = catalog.createPermission(PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
+        Permiso creado = catalog.createPermission(PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
         return creado.getIdPermiso();
     }
 
     private String docenteConCrearCaso(String correo) throws Exception {
         String rol = "Rol" + Math.abs(correo.hashCode());
         catalog.createRole(rol, "Docente");
-        UsuarioEntity user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(user.getIdUsuario(), idPermisoCrearCaso(), null);
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)

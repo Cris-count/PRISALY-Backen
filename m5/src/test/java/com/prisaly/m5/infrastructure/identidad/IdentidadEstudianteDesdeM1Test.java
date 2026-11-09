@@ -21,7 +21,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import com.prisaly.m1.application.port.AuthenticatedStudent;
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException;

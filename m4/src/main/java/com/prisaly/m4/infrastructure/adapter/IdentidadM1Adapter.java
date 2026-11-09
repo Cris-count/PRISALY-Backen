@@ -4,7 +4,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.domain.rule.ReglaNegocioException;
 

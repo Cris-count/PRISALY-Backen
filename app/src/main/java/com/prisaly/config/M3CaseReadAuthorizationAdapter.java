@@ -2,7 +2,7 @@ package com.prisaly.config;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m3.application.port.AutorizacionConsultaCasoPort;
 import com.prisaly.m3.domain.model.CasoEstado;
 import java.util.Objects;

@@ -2,7 +2,7 @@ package com.prisaly.security;
 
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
-import com.prisaly.m1.domain.rule.IdentityDomainException;
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.presentation.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -20,7 +20,7 @@ import com.prisaly.m4.application.service.SesionAcademicaService;
 @EnableAutoConfiguration
 @EntityScan(basePackageClasses = UsuarioEntity.class)
 @EnableJpaRepositories(basePackageClasses = UsuarioRepository.class)
-@Import(IdentityAccessService.class)
+@Import({IdentityAccessService.class, com.prisaly.m1.infrastructure.persistence.IdentidadJpaAdapter.class})
 public class M1ContractsTestConfiguration {
     @Bean SesionRepository sesiones() { return mock(SesionRepository.class); }
     @Bean ConvocatoriaRepository convocatorias() { return mock(ConvocatoriaRepository.class); }

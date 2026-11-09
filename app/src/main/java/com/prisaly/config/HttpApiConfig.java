@@ -96,7 +96,7 @@ public class HttpApiConfig {
                                     throw new org.springframework.security.authentication.InsufficientAuthenticationException("Student authentication required");
                                 }
                                 return new AuthorizationDecision(true);
-                            } catch (com.prisaly.m1.domain.rule.IdentityDomainException denied) {
+                            } catch (com.prisaly.m1.api.IdentityDomainException denied) {
                                 throw new org.springframework.security.authentication.InsufficientAuthenticationException("Student authentication required");
                             }
                         });

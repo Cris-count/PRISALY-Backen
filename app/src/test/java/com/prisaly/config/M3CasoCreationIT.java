@@ -94,9 +94,8 @@ class M3CasoCreationIT {
         String password = UUID.randomUUID().toString(); // Ephemeral test credential, never evidence.
         catalog.createRole(role, "M3 REST integration fixture");
         owner = catalog.registerUser("Docente M3 REST", email, password, role).getIdUsuario();
-        var permission = permissions.findByCodigo("CREAR_CASO").orElseGet(() ->
-                catalog.createPermission("CREAR_CASO", "Crear caso", null));
-        permissionId = permission.getIdPermiso();
+        permissionId = permissions.findByCodigo("CREAR_CASO").map(com.prisaly.m1.infrastructure.persistence.PermisoEntity::getIdPermiso)
+                .orElseGet(() -> catalog.createPermission("CREAR_CASO", "Crear caso", null).getIdPermiso());
         catalog.assignPermission(owner, permissionId, null);
         var login = mvc.perform(post("/api/v1/personal/autenticar").contextPath("/api")
                 .contentType(MediaType.APPLICATION_JSON)
