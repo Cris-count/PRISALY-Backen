@@ -27,6 +27,7 @@ import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
@@ -36,6 +37,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 
 @SpringBootTest(classes = IdentityPersistenceIT.PersistenceTestApp.class)
 @Testcontainers
+@org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
 class IdentityPersistenceIT {
 
     @Container
@@ -66,6 +68,71 @@ class IdentityPersistenceIT {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
+
+    private UUID usuarioFixture() {
+        String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
+        identityCatalogService.createRole(rol, "Fixture");
+        return identityCatalogService.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol)
+                .getIdUsuario();
+    }
+
+    private Integer permisoFixture(String codigo) {
+        return permisoRepository.findByCodigo(codigo)
+                .orElseGet(() -> identityCatalogService.createPermission(codigo, codigo, null)).getIdPermiso();
+    }
+
+    private void assertCodigo(String esperado, org.junit.jupiter.api.function.Executable accion) {
+        assertEquals(esperado, assertThrows(IdentityDomainException.class, accion).code());
+    }
+
+    @Test
+    void permisoControladoExigeActorExistenteYActivo() {
+        UUID usuario = usuarioFixture(), actor = usuarioFixture();
+        Integer permiso = permisoFixture("CONSULTAR_CASO");
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.assignPermission(usuario, permiso, null));
+        assertCodigo(IdentityCatalogService.CODE_USER_NOT_FOUND,
+                () -> identityCatalogService.assignPermission(usuario, permiso, UUID.randomUUID()));
+        identityCatalogService.deactivateUser(actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_INVALID,
+                () -> identityCatalogService.assignPermission(usuario, permiso, actor));
+    }
+
+    @Test
+    void permisosControladosNuncaSeAsignanACuentaEstudiante() {
+        UUID estudiante = usuarioFixture(), actor = usuarioFixture();
+        jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", UUID.randomUUID(), estudiante);
+        for (String codigo : new String[] {"CONSULTAR_CASO", "MODIFICAR_CASO"}) {
+            assertCodigo(IdentityCatalogService.CODE_STUDENT_NOT_ALLOWED,
+                    () -> identityCatalogService.assignPermission(estudiante, permisoFixture(codigo), actor));
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, estudiante));
+    }
+
+    @Test
+    void asignacionYRevocacionQuedanAuditadasConActor(CapturedOutput salida) {
+        UUID usuario = usuarioFixture(), actor = usuarioFixture();
+        Integer permiso = permisoFixture("MODIFICAR_CASO");
+        identityCatalogService.assignPermission(usuario, permiso, actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.disablePermissionAssignment(usuario, permiso));
+        identityCatalogService.disablePermissionAssignment(usuario, permiso, actor);
+        assertEquals(false, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
+        String base = " usuario=" + usuario + " permiso=MODIFICAR_CASO actor=" + actor + " fecha=";
+        assertTrue(salida.getOut().contains("AUDITORIA_PERMISO accion=ASIGNAR" + base), salida.getOut());
+        assertTrue(salida.getOut().contains("AUDITORIA_PERMISO accion=REVOCAR" + base), salida.getOut());
+    }
+
+    @Test
+    void permisoNoControladoConservaElComportamientoAnterior() {
+        UUID usuario = usuarioFixture();
+        Integer permiso = permisoFixture("CREAR_CASO");
+        identityCatalogService.assignPermission(usuario, permiso, null);
+        identityCatalogService.disablePermissionAssignment(usuario, permiso);
+    }
 
     @Test
     void persistsUsuarioWithSinglePrincipalRoleAndUniqueEmail() {

@@ -43,8 +43,10 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
             return false;
         }
         try {
-            // Ownership is enforced by the M3 use case against the stored aggregate.
-            return identity.hasPermission(current.userId(), "MODIFICAR_CASO");
+            // PD-01: editing needs both independent permissions. Ownership and state are enforced
+            // by the M3 use case against the stored aggregate.
+            return identity.hasPermission(current.userId(), "MODIFICAR_CASO")
+                    && identity.hasPermission(current.userId(), "CONSULTAR_CASO");
         } catch (IdentityDomainException ex) {
             throw translate(ex);
         }

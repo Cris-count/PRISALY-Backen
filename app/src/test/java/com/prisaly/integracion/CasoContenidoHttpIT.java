@@ -26,13 +26,13 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Content API over the productive composition: real M1 MODIFICAR_CASO, real ownership, the
- * productive strong ETag codec and PostgreSQL 16.15. Only the read permission is a fixture,
- * because PD-01 is still undecided.
+ * productive strong ETag codec and PostgreSQL 16.15. The read policy is set here because its
+ * productive activation (F4) is not yet authorized.
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class CasoContenidoHttpIT {
-    private static final String LECTURA = "PERMISO_LECTURA_FIXTURE";
+    private static final String LECTURA = "CONSULTAR_CASO";
 
     @Container
     static PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16.15");
@@ -159,8 +159,9 @@ class CasoContenidoHttpIT {
         catalog.createRole(rol, "Docente");
         UsuarioEntity user = catalog.registerUser("Docente", correo, "Secret#1", rol);
         catalog.assignPermission(user.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
-        catalog.assignPermission(user.getIdUsuario(), permiso(LECTURA), null);
-        if (modificar) { catalog.assignPermission(user.getIdUsuario(), permiso("MODIFICAR_CASO"), null); }
+        UUID asignador = catalog.registerUser("Asignador", "asignador." + correo, "Secret#1", rol).getIdUsuario();
+        catalog.assignPermission(user.getIdUsuario(), permiso(LECTURA), asignador);
+        if (modificar) { catalog.assignPermission(user.getIdUsuario(), permiso("MODIFICAR_CASO"), asignador); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}")).build(),
                 HttpResponse.BodyHandlers.ofString());

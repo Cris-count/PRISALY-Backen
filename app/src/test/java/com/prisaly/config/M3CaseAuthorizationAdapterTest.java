@@ -56,7 +56,11 @@ class M3CaseAuthorizationAdapterTest {
         doReturn(user("Activo")).when(identity).currentUser();
         String caseId = UUID.randomUUID().toString();
         when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(true);
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(true);
         assertTrue(adapter.canModifyCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(false);
+        assertFalse(adapter.canModifyCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "CONSULTAR_CASO")).thenReturn(true);
         when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(false);
         assertFalse(adapter.canModifyCase(currentId.toString(), caseId));
         clearInvocations(identity);
