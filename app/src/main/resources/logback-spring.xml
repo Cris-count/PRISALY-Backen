@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <springProperty name="AUDITORIA_DIR" source="prisaly.auditoria.permisos.directorio" defaultValue="logs/auditoria"/>
+    <springProperty name="AUDITORIA_DIAS" source="prisaly.auditoria.permisos.retencion-dias" defaultValue="365"/>
+
+    <!-- PD-01: persistent permission audit with daily rotation. Kept out of the general console. -->
+    <appender name="AUDITORIA_PERMISOS" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${AUDITORIA_DIR}/auditoria-permisos.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${AUDITORIA_DIR}/auditoria-permisos.%d{yyyy-MM-dd}.log.gz</fileNamePattern>
+            <maxHistory>${AUDITORIA_DIAS}</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <logger name="prisaly.auditoria.permisos" level="INFO" additivity="false">
+        <appender-ref ref="AUDITORIA_PERMISOS"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+</configuration>

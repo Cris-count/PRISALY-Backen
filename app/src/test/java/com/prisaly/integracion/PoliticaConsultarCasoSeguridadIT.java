@@ -55,7 +55,9 @@ class PoliticaConsultarCasoSeguridadIT {
     record Cuenta(UUID id, String token) { }
 
     @BeforeEach void responsable() {
-        actor = usuario().getIdUsuario();
+        if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
+        actor = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+                IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
     @Test void conPermisoYPropietarioResponde200CuatroCamposYEtagFuerte() throws Exception {

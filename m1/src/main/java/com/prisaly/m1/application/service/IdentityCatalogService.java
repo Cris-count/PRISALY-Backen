@@ -20,6 +20,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 /**
  * M1 identity catalog persistence: Rol, Permiso, Usuario, UsuarioPermiso.
@@ -37,11 +39,15 @@ public class IdentityCatalogService {
     public static final String CODE_PERMISSION_NOT_FOUND = "PERMISSION_NOT_FOUND";
     public static final String CODE_ACTOR_REQUIRED = "PERMISSION_ACTOR_REQUIRED";
     public static final String CODE_ACTOR_INVALID = "PERMISSION_ACTOR_INVALID";
+    public static final String CODE_ACTOR_NOT_ADMIN = "PERMISSION_ACTOR_NOT_ADMIN";
     public static final String CODE_STUDENT_NOT_ALLOWED = "PERMISSION_NOT_ALLOWED_FOR_STUDENT";
+    public static final String ROL_ADMINISTRADOR = "ADMINISTRADOR";
+    /** Dedicated logger: identifiers and codes only, never credentials, tokens or personal data. */
+    public static final String LOGGER_AUDITORIA = "prisaly.auditoria.permisos";
 
     /** PD-01: controlled, individually assigned permissions that students never receive. */
     private static final Set<String> PERMISOS_CONTROLADOS = Set.of("CONSULTAR_CASO", "MODIFICAR_CASO");
-    private static final Logger log = LoggerFactory.getLogger(IdentityCatalogService.class);
+    private static final Logger auditoria = LoggerFactory.getLogger(LOGGER_AUDITORIA);
 
     private final RolRepository rolRepository;
     private final PermisoRepository permisoRepository;
@@ -118,6 +124,15 @@ public class IdentityCatalogService {
             UUID idUsuario,
             Integer idPermiso,
             UUID idAdministradorAsignador) {
+        try {
+            return asignar(idUsuario, idPermiso, idAdministradorAsignador);
+        } catch (IdentityDomainException rechazo) {
+            auditar("ASIGNAR", idUsuario, etiquetaPermiso(idPermiso), idAdministradorAsignador, rechazado(rechazo));
+            throw rechazo;
+        }
+    }
+
+    private UsuarioPermisoEntity asignar(UUID idUsuario, Integer idPermiso, UUID idAdministradorAsignador) {
         if (!usuarioRepository.existsById(idUsuario)) {
             throw new IdentityDomainException(CODE_USER_NOT_FOUND, "User not found");
         }
@@ -126,7 +141,7 @@ public class IdentityCatalogService {
         }
         String codigo = codigoPermiso(idPermiso);
         if (PERMISOS_CONTROLADOS.contains(codigo)) {
-            exigirActorActivo(idAdministradorAsignador);
+            exigirAdministrador(idAdministradorAsignador);
             if (usuarioRepository.esCuentaEstudiante(idUsuario)) {
                 throw new IdentityDomainException(CODE_STUDENT_NOT_ALLOWED, "Students cannot receive this permission");
             }
@@ -145,7 +160,7 @@ public class IdentityCatalogService {
                 OffsetDateTime.now());
         try {
             UsuarioPermisoEntity saved = usuarioPermisoRepository.saveAndFlush(assignment);
-            auditar("ASIGNAR", idUsuario, codigo, idAdministradorAsignador);
+            auditarAlConfirmar("ASIGNAR", idUsuario, codigo, idAdministradorAsignador);
             return saved;
         } catch (DataIntegrityViolationException ex) {
             throw new IdentityDomainException(CODE_DUPLICATE_ASSIGNMENT, "Permission already assigned");
@@ -158,8 +173,16 @@ public class IdentityCatalogService {
                 .orElseThrow(() -> new IdentityDomainException(CODE_PERMISSION_NOT_FOUND, "Permission not found"));
     }
 
-    /** Which administrative role may act is pending: no such role exists in the catalog yet. */
-    private void exigirActorActivo(UUID actor) {
+    private String etiquetaPermiso(Integer idPermiso) {
+        return permisoRepository.findById(idPermiso).map(PermisoEntity::getCodigo).orElse("id:" + idPermiso);
+    }
+
+    private static String rechazado(IdentityDomainException rechazo) {
+        return "RECHAZADO:" + rechazo.code();
+    }
+
+    /** PD-01: only an active account with the ADMINISTRADOR role may assign or revoke. */
+    private void exigirAdministrador(UUID actor) {
         if (actor == null) {
             throw new IdentityDomainException(CODE_ACTOR_REQUIRED, "A responsible actor is required");
         }
@@ -168,11 +191,34 @@ public class IdentityCatalogService {
         if (!usuario.isActive()) {
             throw new IdentityDomainException(CODE_ACTOR_INVALID, "The responsible actor is not active");
         }
+        if (!ROL_ADMINISTRADOR.equals(usuario.getRol().getNombre())) {
+            throw new IdentityDomainException(CODE_ACTOR_NOT_ADMIN, "The responsible actor is not an administrator");
+        }
     }
 
-    private static void auditar(String accion, UUID usuario, String permiso, UUID actor) {
-        log.info("AUDITORIA_PERMISO accion={} usuario={} permiso={} actor={} fecha={}",
-                accion, usuario, permiso, actor, Instant.now());
+    /** Whether this environment has the administrative role initialized. */
+    @Transactional(readOnly = true)
+    public boolean existeRolAdministrador() {
+        return rolRepository.findByNombre(ROL_ADMINISTRADOR).isPresent();
+    }
+
+    /** Success is recorded only once the change is durable. */
+    private static void auditarAlConfirmar(String accion, UUID usuario, String permiso, UUID actor) {
+        if (!TransactionSynchronizationManager.isSynchronizationActive()) {
+            auditar(accion, usuario, permiso, actor, "EXITOSO");
+            return;
+        }
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                auditar(accion, usuario, permiso, actor, "EXITOSO");
+            }
+        });
+    }
+
+    private static void auditar(String accion, UUID usuario, String permiso, UUID actor, String resultado) {
+        auditoria.info("AUDITORIA_PERMISO accion={} usuario={} permiso={} administrador={} fecha={} resultado={}",
+                accion, usuario, permiso, actor, Instant.now(), resultado);
     }
 
     @Transactional
@@ -183,9 +229,18 @@ public class IdentityCatalogService {
     /** Controlled permissions require the responsible actor, recorded in the audit log. */
     @Transactional
     public void disablePermissionAssignment(UUID idUsuario, Integer idPermiso, UUID idActor) {
+        try {
+            revocar(idUsuario, idPermiso, idActor);
+        } catch (IdentityDomainException rechazo) {
+            auditar("REVOCAR", idUsuario, etiquetaPermiso(idPermiso), idActor, rechazado(rechazo));
+            throw rechazo;
+        }
+    }
+
+    private void revocar(UUID idUsuario, Integer idPermiso, UUID idActor) {
         String codigo = codigoPermiso(idPermiso);
         if (PERMISOS_CONTROLADOS.contains(codigo)) {
-            exigirActorActivo(idActor);
+            exigirAdministrador(idActor);
         }
         UsuarioPermisoEntity assignment = usuarioPermisoRepository
                 .findByIdUsuarioAndIdPermiso(idUsuario, idPermiso)
@@ -193,7 +248,7 @@ public class IdentityCatalogService {
                         CODE_PERMISSION_NOT_FOUND, "Permission assignment not found"));
         assignment.setHabilitado(false);
         usuarioPermisoRepository.saveAndFlush(assignment);
-        auditar("REVOCAR", idUsuario, codigo, idActor);
+        auditarAlConfirmar("REVOCAR", idUsuario, codigo, idActor);
     }
 
     @Transactional

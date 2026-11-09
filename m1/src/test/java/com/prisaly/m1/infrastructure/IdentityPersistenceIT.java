@@ -79,6 +79,14 @@ class IdentityPersistenceIT {
                 .getIdUsuario();
     }
 
+    private UUID administradorFixture() {
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return identityCatalogService.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+                IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+    }
+
     private Integer permisoFixture(String codigo) {
         return permisoRepository.findByCodigo(codigo)
                 .orElseGet(() -> identityCatalogService.createPermission(codigo, codigo, null)).getIdPermiso();
@@ -89,13 +97,15 @@ class IdentityPersistenceIT {
     }
 
     @Test
-    void permisoControladoExigeActorExistenteYActivo() {
-        UUID usuario = usuarioFixture(), actor = usuarioFixture();
+    void permisoControladoExigeActorExistenteActivoYAdministrador() {
+        UUID usuario = usuarioFixture(), actor = administradorFixture(), noAdmin = usuarioFixture();
         Integer permiso = permisoFixture("CONSULTAR_CASO");
         assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
                 () -> identityCatalogService.assignPermission(usuario, permiso, null));
         assertCodigo(IdentityCatalogService.CODE_USER_NOT_FOUND,
                 () -> identityCatalogService.assignPermission(usuario, permiso, UUID.randomUUID()));
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN,
+                () -> identityCatalogService.assignPermission(usuario, permiso, noAdmin));
         identityCatalogService.deactivateUser(actor);
         assertCodigo(IdentityCatalogService.CODE_ACTOR_INVALID,
                 () -> identityCatalogService.assignPermission(usuario, permiso, actor));
@@ -103,7 +113,7 @@ class IdentityPersistenceIT {
 
     @Test
     void permisosControladosNuncaSeAsignanACuentaEstudiante() {
-        UUID estudiante = usuarioFixture(), actor = usuarioFixture();
+        UUID estudiante = usuarioFixture(), actor = administradorFixture();
         jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", UUID.randomUUID(), estudiante);
         for (String codigo : new String[] {"CONSULTAR_CASO", "MODIFICAR_CASO"}) {
             assertCodigo(IdentityCatalogService.CODE_STUDENT_NOT_ALLOWED,
@@ -114,16 +124,18 @@ class IdentityPersistenceIT {
 
     @Test
     void asignacionYRevocacionQuedanAuditadasConActor(CapturedOutput salida) {
-        UUID usuario = usuarioFixture(), actor = usuarioFixture();
+        UUID usuario = usuarioFixture(), actor = administradorFixture();
         Integer permiso = permisoFixture("MODIFICAR_CASO");
         identityCatalogService.assignPermission(usuario, permiso, actor);
         assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
                 () -> identityCatalogService.disablePermissionAssignment(usuario, permiso));
         identityCatalogService.disablePermissionAssignment(usuario, permiso, actor);
         assertEquals(false, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
-        String base = " usuario=" + usuario + " permiso=MODIFICAR_CASO actor=" + actor + " fecha=";
+        String base = " usuario=" + usuario + " permiso=MODIFICAR_CASO administrador=" + actor + " fecha=";
         assertTrue(salida.getOut().contains("AUDITORIA_PERMISO accion=ASIGNAR" + base), salida.getOut());
         assertTrue(salida.getOut().contains("AUDITORIA_PERMISO accion=REVOCAR" + base), salida.getOut());
+        assertTrue(salida.getOut().contains("resultado=EXITOSO"), salida.getOut());
+        assertTrue(salida.getOut().contains("resultado=RECHAZADO:" + IdentityCatalogService.CODE_ACTOR_REQUIRED), salida.getOut());
     }
 
     @Test
