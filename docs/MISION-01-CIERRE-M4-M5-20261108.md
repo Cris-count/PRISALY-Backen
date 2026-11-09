@@ -47,13 +47,13 @@ La corrección cierra una inconsistencia funcional interna; no completa por sí 
 
 ## Ejecución y límites
 
-Todos los comandos usan Maven Wrapper existente, Java 21, modo offline y `-Dmaven.repo.local=C:/Users/Heiner/.m2/repository`. No se descargaron dependencias ni se modificó la caché para reparar avisos. El intento inicial sin ruta explícita de caché no resolvía el parent; la ejecución restringida con ruta explícita falló al leer un JAR. Al ejecutar fuera del entorno restringido, la compilación y las regresiones pudieron ejecutarse. Los avisos de un POM Maven Resolver local no se interpretan como defectos de PRISALY.
+Todos los comandos usan Maven Wrapper existente, Java 21, modo offline y `-Dmaven.repo.local=%USERPROFILE%/.m2/repository`. No se descargaron dependencias ni se modificó la caché para reparar avisos. El intento inicial sin ruta explícita de caché no resolvía el parent; la ejecución restringida con ruta explícita falló al leer un JAR. Al ejecutar fuera del entorno restringido, la compilación y las regresiones pudieron ejecutarse. Los avisos de un POM Maven Resolver local no se interpretan como defectos de PRISALY.
 
 Evidencias: carpeta hermana EVIDENCIAS-CONSOLIDACION-INICIAL-20261108, archivos mision01-*.log. La evidencia previa de 801 pruebas es histórica; abajo se registra la ejecución de esta misión por separado.
 
 ### Unitarias/MVC actuales
 
-Comando: `.\mvnw.cmd -o -B -Dmaven.repo.local=C:/Users/Heiner/.m2/repository -pl app -am test`.
+Comando: `.\mvnw.cmd -o -B -Dmaven.repo.local=%USERPROFILE%/.m2/repository -pl app -am test`.
 
 Resultado: BUILD SUCCESS, 803 pruebas, 0 fallos, 0 errores, 0 omitidas. Desglose: M1 38; M3 229; M4 119; M6 52; M5 293; M7 25; app 47. Incluye 2 regresiones nuevas aprobadas. Log: mision01-unitarias-despues.log; resumen: mision01-unitarias-resumen.json.
 
@@ -61,13 +61,13 @@ Reproducción antes del parche: selección `-Dtest=RespuestasTiemposPersistidosT
 
 ### PostgreSQL y composición actual
 
-Comando principal: `.\mvnw.cmd -o -B -Dmaven.repo.local=C:/Users/Heiner/.m2/repository -pl app -am -Pdocker-it -Dtest=RespuestasTiemposPersistidosTest -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ParticipacionesM4DesdeM5IT,InicioIntentoIT,RepositorioIntentosJpaIT,HistorialM4M5IT,ProgramacionParticipacionPostgreSqlIT,ConcurrenciaLectorM5M6ReservaD06IT -Dfailsafe.failIfNoSpecifiedTests=false verify`.
+Comando principal: `.\mvnw.cmd -o -B -Dmaven.repo.local=%USERPROFILE%/.m2/repository -pl app -am -Pdocker-it -Dtest=RespuestasTiemposPersistidosTest -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ParticipacionesM4DesdeM5IT,InicioIntentoIT,RepositorioIntentosJpaIT,HistorialM4M5IT,ProgramacionParticipacionPostgreSqlIT,ConcurrenciaLectorM5M6ReservaD06IT -Dfailsafe.failIfNoSpecifiedTests=false verify`.
 
 BUILD SUCCESS. Resultados ejecutados: ParticipacionesM4DesdeM5IT 8/8; InicioIntentoIT 15/15; RepositorioIntentosJpaIT 28/28; ConcurrenciaLectorM5M6ReservaD06IT 3/3; HistorialM4M5IT (app real) 23/23. Total: 77 IT aprobadas, sin fallos ni errores. Las 2 regresiones unitarias también se repitieron y pasaron. Log: mision01-integracion.log. Este comando inicialmente omitió los 8 casos de ProgramacionParticipacionPostgreSqlIT por faltar m4.baseline.migrations; se ejecutan aparte abajo (la ejecución habilitada descubre 22 casos).
 
 Las suites arrancan PostgreSQLContainer postgres:16.15 con conexión efímera y cierre automático. Los TRUNCATE/clean y las migraciones de los fixtures se limitaron a esos contenedores. No se usó compose, conexión externa, base compartida ni configuración estudiantil productiva. HistorialM4M5IT confirma proveedor único, composición de app, reservas D-06, dos inicios concurrentes sin duplicados, rollback sin huérfanos, espera/timeout y recuperación, edición contra inicio, historial retirado y error SQL→503 sin falsa ausencia.
 
-Comando complementario M4: `.\mvnw.cmd -o -B -Dmaven.repo.local=C:/Users/Heiner/.m2/repository -pl m4 -am -Pdocker-it -Dtest=M4CoordinacionInicioTest -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ProgramacionParticipacionPostgreSqlIT -Dfailsafe.failIfNoSpecifiedTests=false -Dm4.baseline.migrations=C:/Users/Heiner/Desktop/PRISALY-ENTREGA/PRISALY-Backen/app/src/main/resources/db/migration verify`.
+Comando complementario M4: `.\mvnw.cmd -o -B -Dmaven.repo.local=%USERPROFILE%/.m2/repository -pl m4 -am -Pdocker-it -Dtest=M4CoordinacionInicioTest -Dsurefire.failIfNoSpecifiedTests=false -Dit.test=ProgramacionParticipacionPostgreSqlIT -Dfailsafe.failIfNoSpecifiedTests=false -Dm4.baseline.migrations=%USERPROFILE%/Desktop/PRISALY-ENTREGA/PRISALY-Backen/app/src/main/resources/db/migration verify`.
 
 Resultado: BUILD SUCCESS, ProgramacionParticipacionPostgreSqlIT 22/22, 0 fallos/errores/omitidas; M4CoordinacionInicioTest 4/4 repetidas y aprobadas. Log: mision01-integracion-m4.log. Total final de IT distintas: **99 aprobadas** (22 M4 + 54 M5 + 23 app). La omisión inicial de 8 quedó resuelta; no se cuentan omitidas como aprobadas ni se suman repeticiones como casos nuevos. No se ejecutó la totalidad de IT de otros módulos.
 

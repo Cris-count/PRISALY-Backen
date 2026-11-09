@@ -4,7 +4,7 @@ Fecha: 8 de noviembre de 2026, America/Bogota. Ejecutor de esta sesión: Codex. 
 
 ## Identificación y respaldo
 
-Repositorio: C:/Users/Heiner/Desktop/PRISALY-ENTREGA/PRISALY-Backen.
+Repositorio: %USERPROFILE%/Desktop/PRISALY-ENTREGA/PRISALY-Backen.
 Rama inicial/final: trabajo/consolidacion-inicial-20261108.
 SHA inicial/final: 62080fc20ebb2c9b3cd57cd4eb82963c2d3b6231. No se crearon commits; los cambios locales no están representados por ese SHA. No hubo push, PR, merge, reescritura ni modificación de develop. No se cambió configuración de autoría.
 
@@ -18,7 +18,7 @@ Había nueve archivos locales provenientes de M01-01 y Misión 03: dos servicios
 
 Se ejecutó el reactor completo, incluyendo compilación, testCompile, unitarias/MVC y Failsafe docker-it, con Java 21.0.2, Maven Wrapper existente y caché Maven local. Se usó -fae para continuar módulos independientes ante un eventual fallo; no fue necesario corregir fallos del producto.
 
-Comando reproducible: backend-verificacion-argumentos.json contiene todos los argumentos exactos. Se invocó mvnw.cmd con -o -B -fae -Dmaven.repo.local=C:/Users/Heiner/.m2/repository -Pdocker-it verify, selección de todas las clases IT/ITCase/PostgreSqlDockerSmokeTest inventariadas, -Dfailsafe.failIfNoSpecifiedTests=false y m4.baseline.migrations absoluto a app/src/main/resources/db/migration.
+Comando reproducible: backend-verificacion-argumentos.json contiene todos los argumentos exactos. Se invocó mvnw.cmd con -o -B -fae -Dmaven.repo.local=%USERPROFILE%/.m2/repository -Pdocker-it verify, selección de todas las clases IT/ITCase/PostgreSqlDockerSmokeTest inventariadas, -Dfailsafe.failIfNoSpecifiedTests=false y m4.baseline.migrations absoluto a app/src/main/resources/db/migration.
 
 Se conservó la única exclusión deliberada del verificador CI existente: Bd0052BaselineIT#diagnosticoV010CreaDosTablasParalelasYEludeTriggerOficial, diagnóstico histórico fuera del runtime canónico. Se ejecutaron los otros tres métodos canónicos de esa clase. Las suites de guarda de esquema siguen probando el rechazo de V010; no se borró ni alteró migración alguna. La selección exige las 46 suites de integración; todas están presentes, sin omisiones.
 
