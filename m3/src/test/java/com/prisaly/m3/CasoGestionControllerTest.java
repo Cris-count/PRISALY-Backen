@@ -27,7 +27,10 @@ class CasoGestionControllerTest {
 
     MockMvc mvc(Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
             Optional<CasoPatchConcurrencyContract> contract) {
-        return MockMvcBuilders.standaloneSetup(new CasoGestionController(identity, repository, readPolicy, writePolicy, contract))
+        return MockMvcBuilders.standaloneSetup(new CasoGestionController(
+                new com.prisaly.m3.application.service.CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository),
+                new com.prisaly.m3.application.service.CasoPersistentUpdateService(identity, writePolicy.orElse(null), repository),
+                contract))
                 .setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     @BeforeEach void setup() {
@@ -242,7 +245,8 @@ class CasoGestionControllerTest {
     @Test void springRegistersBothRoutesWithoutOptionalPolicyProvidersAndDeniesAccess() throws Exception {
         try (var context = new org.springframework.web.context.support.AnnotationConfigWebApplicationContext()) {
             context.setServletContext(new org.springframework.mock.web.MockServletContext());
-            context.register(WebConfig.class, CasoGestionController.class, CasoGestionExceptionHandler.class);
+            context.register(WebConfig.class, com.prisaly.m3.infrastructure.config.M3AplicacionConfig.class,
+                    CasoGestionController.class, CasoGestionExceptionHandler.class);
             context.refresh();
             var realMvc = MockMvcBuilders.webAppContextSetup(context).build();
             realMvc.perform(get(path())).andExpect(status().isForbidden());

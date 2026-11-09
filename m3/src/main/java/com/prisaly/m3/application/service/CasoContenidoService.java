@@ -1,7 +1,6 @@
 package com.prisaly.m3.application.service;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
-import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.application.port.CasoCurrentUserPort;
 import com.prisaly.m3.application.port.CasoUpdatePort;
 import com.prisaly.m3.application.update.CasoUpdateCommand;
@@ -21,6 +20,7 @@ import java.util.function.Supplier;
 public final class CasoContenidoService {
     public static final String CODE_CONTENT_CONFLICT = "CONTENT_CONFLICT";
     private static final String SQL_UNIQUE_VIOLATION = "23505";
+    private static final String DENEGADO = "Case modification denied";
 
     private final CasoCurrentUserPort identity;
     private final CaseAuthorizationPort authorization;
@@ -37,20 +37,10 @@ public final class CasoContenidoService {
         Objects.requireNonNull(caseId, "caseId");
         Objects.requireNonNull(fingerprint, "fingerprint");
         Objects.requireNonNull(command, "command");
-        UUID user;
-        try { user = identity == null ? null : identity.currentUserId(); }
-        catch (CasoAuthenticationException | CasoDomainException classified) { throw classified; }
-        catch (RuntimeException technicalFailure) { throw unavailable(); }
-        if (user == null) { throw new CasoAuthenticationException(); }
-        boolean allowed;
-        try { allowed = authorization != null && authorization.canModifyCase(user.toString(), caseId.toString()); }
-        catch (CasoDomainException classified) {
-            if (CasoApplicationService.CODE_FORBIDDEN.equals(classified.code())) { throw denied(); }
-            throw unavailable();
-        }
-        catch (RuntimeException technicalFailure) { throw unavailable(); }
-        if (!allowed) { throw denied(); }
-        if (updates == null) { throw unavailable(); }
+        UUID user = VerificacionCaso.usuarioActual(identity);
+        VerificacionCaso.exigir(() -> authorization != null && authorization.canModifyCase(user.toString(), caseId.toString()),
+                DENEGADO);
+        if (updates == null) { throw VerificacionCaso.noDisponible(); }
         var stored = updates.findById(caseId).orElseThrow(
                 () -> new CasoDomainException("CASE_NOT_FOUND", "Case does not exist")).caso();
         if (!user.toString().equalsIgnoreCase(stored.docenteId())) { throw denied(); }
@@ -76,11 +66,7 @@ public final class CasoContenidoService {
         return false;
     }
 
-    private static CasoDomainException unavailable() {
-        return new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
-    }
-
     private static CasoDomainException denied() {
-        return new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Case modification denied");
+        return VerificacionCaso.denegado(DENEGADO);
     }
 }

@@ -1,7 +1,6 @@
 package com.prisaly.m3.application.service;
 
 import com.prisaly.m3.application.port.CaseAuthorizationPort;
-import com.prisaly.m3.application.port.CasoAuthenticationException;
 import com.prisaly.m3.application.port.CasoCurrentUserPort;
 import com.prisaly.m3.application.port.CasoPublicationPort;
 import com.prisaly.m3.application.update.CasoUpdateResult;
@@ -48,12 +47,10 @@ public final class CasoTransicionService {
     private CasoUpdateResult ejecutar(String accion, UUID caso, Supplier<String> fingerprint,
             BiPredicate<String, String> permitido, Transicion transicion) {
         Objects.requireNonNull(caso, "caso");
-        UUID user = usuarioActual();
+        UUID user = VerificacionCaso.usuarioActual(identity);
         try {
-            if (!autorizado(permitido, user, caso)) {
-                throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Case transition denied");
-            }
-            if (publication == null) { throw new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Transition unavailable"); }
+            VerificacionCaso.exigir(() -> permitido.test(user.toString(), caso.toString()), "Case transition denied");
+            if (publication == null) { throw VerificacionCaso.noDisponible(); }
             CasoUpdateResult resultado = transicion.aplicar(user.toString(), fingerprint.get());
             auditar(accion, caso, user, "EXITOSO");
             return resultado;
@@ -63,28 +60,6 @@ public final class CasoTransicionService {
         } catch (RuntimeException fallo) {
             auditar(accion, caso, user, "FALLO");
             throw fallo;
-        }
-    }
-
-    private UUID usuarioActual() {
-        UUID user;
-        try { user = identity == null ? null : identity.currentUserId(); }
-        catch (CasoAuthenticationException | CasoDomainException classified) { throw classified; }
-        catch (RuntimeException technicalFailure) {
-            throw new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
-        }
-        if (user == null) { throw new CasoAuthenticationException(); }
-        return user;
-    }
-
-    private static boolean autorizado(BiPredicate<String, String> permitido, UUID user, UUID caso) {
-        try { return permitido.test(user.toString(), caso.toString()); }
-        catch (CasoDomainException classified) {
-            if (CasoApplicationService.CODE_FORBIDDEN.equals(classified.code())) { return false; }
-            throw new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
-        }
-        catch (RuntimeException technicalFailure) {
-            throw new CasoDomainException("CASE_AUTHORIZATION_UNAVAILABLE", "Institutional verification unavailable");
         }
     }
 

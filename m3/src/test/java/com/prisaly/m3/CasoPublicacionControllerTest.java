@@ -42,7 +42,8 @@ class CasoPublicacionControllerTest {
         mvc = mvc(Optional.of(port), Optional.of(new CasoStrongEtagContract()));
     }
     MockMvc mvc(Optional<CasoPublicationPort> p, Optional<CasoPatchConcurrencyContract> c) {
-        return MockMvcBuilders.standaloneSetup(new CasoPublicacionController(Optional.of(identity), Optional.of(auth), p, c))
+        return MockMvcBuilders.standaloneSetup(new CasoPublicacionController(
+                new com.prisaly.m3.application.service.CasoTransicionService(identity, auth, p.orElse(null)), c))
                 .setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     CasoUpdateResult resultado(CasoEstado e) {

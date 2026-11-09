@@ -1,6 +1,5 @@
 package com.prisaly.m3.presentation;
 
-import com.prisaly.m3.application.port.*;
 import com.prisaly.m3.application.service.*;
 import com.prisaly.m3.presentation.dto.*;
 import java.util.Optional;
@@ -16,18 +15,10 @@ public final class CasoGestionController {
     private final CasoPersistentUpdateService update;
     private final CasoPatchConcurrencyContract concurrency;
 
-    public CasoGestionController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
-            Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
+    public CasoGestionController(CasoDocenteConsultaService read, CasoPersistentUpdateService update,
             Optional<CasoPatchConcurrencyContract> concurrency) {
-        this(identity, repository, readPolicy, writePolicy, concurrency, Optional.empty());
-    }
-
-    @org.springframework.beans.factory.annotation.Autowired
-    public CasoGestionController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
-            Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
-            Optional<CasoPatchConcurrencyContract> concurrency, Optional<CasoUpdatePort> versionedReader) {
-        read = new CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository, versionedReader.orElse(null));
-        update = new CasoPersistentUpdateService(identity, writePolicy.orElse(null), repository);
+        this.read = read;
+        this.update = update;
         this.concurrency = concurrency.orElse(null);
     }
 
@@ -45,8 +36,7 @@ public final class CasoGestionController {
     @PatchMapping(value = "/{idCaso}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> patch(@PathVariable("idCaso") String value,
             @RequestHeader HttpHeaders headers, @RequestBody String body) {
-        UUID id = UUID.fromString(value);
-        if (!id.toString().equalsIgnoreCase(value)) { throw new IllegalArgumentException("Invalid UUID"); }
+        UUID id = IdentificadorCanonico.uuid(value);
         // Decoding/precondition resolution occurs inside the protected application use case.
         update.updateFieldsAuthorized(id, () -> {
             if (concurrency == null) { throw new HttpContractUnavailable(); }

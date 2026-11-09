@@ -1,9 +1,5 @@
 package com.prisaly.m3.presentation;
 
-import com.prisaly.m3.application.port.AutorizacionConsultaCasoPort;
-import com.prisaly.m3.application.port.CasoCurrentUserPort;
-import com.prisaly.m3.application.port.CasoRepositoryPort;
-import com.prisaly.m3.application.port.CasoUpdatePort;
 import com.prisaly.m3.application.service.CasoDocenteConsultaService;
 import com.prisaly.m3.application.update.CasoUpdateResult;
 import com.prisaly.m3.domain.model.Caso;
@@ -35,10 +31,9 @@ public final class CasoContenidoConsultaController {
     private final CasoDocenteConsultaService read;
     private final CasoPatchConcurrencyContract concurrency;
 
-    public CasoContenidoConsultaController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
-            Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CasoUpdatePort> versionedReader,
+    public CasoContenidoConsultaController(CasoDocenteConsultaService read,
             Optional<CasoPatchConcurrencyContract> concurrency) {
-        read = new CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository, versionedReader.orElse(null));
+        this.read = read;
         this.concurrency = concurrency.orElse(null);
     }
 
@@ -55,21 +50,21 @@ public final class CasoContenidoConsultaController {
     @GetMapping("/escenarios/{idEscenario}")
     public ResponseEntity<CasoContenidoResponse.EscenarioContenido> escenario(@PathVariable("idCaso") String id,
             @PathVariable("idEscenario") String elemento) {
-        UUID buscado = uuid(elemento);
+        UUID buscado = IdentificadorCanonico.uuid(elemento);
         return responder(id, caso -> CasoContenidoResponse.EscenarioContenido.from(escenarioDe(caso, buscado)));
     }
 
     @GetMapping("/preguntas/{idPregunta}")
     public ResponseEntity<CasoContenidoResponse.PreguntaContenido> pregunta(@PathVariable("idCaso") String id,
             @PathVariable("idPregunta") String elemento) {
-        UUID buscado = uuid(elemento);
+        UUID buscado = IdentificadorCanonico.uuid(elemento);
         return responder(id, caso -> CasoContenidoResponse.PreguntaContenido.from(preguntaDe(caso, buscado)));
     }
 
     @GetMapping("/preguntas/{idPregunta}/opciones")
     public ResponseEntity<List<CasoContenidoResponse.OpcionContenido>> opciones(@PathVariable("idCaso") String id,
             @PathVariable("idPregunta") String elemento) {
-        UUID buscado = uuid(elemento);
+        UUID buscado = IdentificadorCanonico.uuid(elemento);
         return responder(id, caso -> CasoContenidoResponse.opcionesDe(preguntaDe(caso, buscado)));
     }
 
@@ -96,11 +91,5 @@ public final class CasoContenidoConsultaController {
 
     private static CasoDomainException ajeno() {
         return new CasoDomainException(ELEMENTO_AJENO, "Element does not belong to this case");
-    }
-
-    private static UUID uuid(String value) {
-        UUID id = UUID.fromString(value);
-        if (!id.toString().equalsIgnoreCase(value)) { throw new IllegalArgumentException("Invalid UUID"); }
-        return id;
     }
 }

@@ -1,10 +1,5 @@
 package com.prisaly.m3.presentation;
 
-import com.prisaly.m3.application.port.AutorizacionConsultaCasoPort;
-import com.prisaly.m3.application.port.CaseAuthorizationPort;
-import com.prisaly.m3.application.port.CasoCurrentUserPort;
-import com.prisaly.m3.application.port.CasoRepositoryPort;
-import com.prisaly.m3.application.port.CasoUpdatePort;
 import com.prisaly.m3.application.service.CasoContenidoService;
 import com.prisaly.m3.application.service.CasoDocenteConsultaService;
 import com.prisaly.m3.application.update.CasoUpdateResult;
@@ -33,11 +28,10 @@ public final class CasoRubricaController {
     private final CasoContenidoService write;
     private final CasoPatchConcurrencyContract concurrency;
 
-    public CasoRubricaController(CasoCurrentUserPort identity, CasoRepositoryPort repository,
-            Optional<AutorizacionConsultaCasoPort> readPolicy, Optional<CaseAuthorizationPort> writePolicy,
-            Optional<CasoUpdatePort> updates, Optional<CasoPatchConcurrencyContract> concurrency) {
-        read = new CasoDocenteConsultaService(identity, readPolicy.orElse(null), repository, updates.orElse(null));
-        write = new CasoContenidoService(identity, writePolicy.orElse(null), updates.orElse(null));
+    public CasoRubricaController(CasoDocenteConsultaService read, CasoContenidoService write,
+            Optional<CasoPatchConcurrencyContract> concurrency) {
+        this.read = read;
+        this.write = write;
         this.concurrency = concurrency.orElse(null);
     }
 
@@ -49,8 +43,7 @@ public final class CasoRubricaController {
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RubricaResponse> guardar(@PathVariable("idCaso") String value,
             @RequestHeader HttpHeaders headers, @RequestBody String body) {
-        UUID id = UUID.fromString(value);
-        if (!id.toString().equalsIgnoreCase(value)) { throw new IllegalArgumentException("Invalid UUID"); }
+        UUID id = IdentificadorCanonico.uuid(value);
         var contract = codec();
         return responder(contract, write.aplicar(id, () -> contract.expectedFingerprint(headers), () -> CasoRubricaDto.comando(body)));
     }

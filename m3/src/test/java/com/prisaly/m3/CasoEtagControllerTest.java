@@ -39,8 +39,10 @@ class CasoEtagControllerTest {
                 .thenReturn(AutorizacionConsultaCasoPort.Decision.AUTORIZADO);
         when(repository.findById(id.toString())).thenReturn(Optional.of(caso(owner, false)));
         when(versioned.findById(id)).thenReturn(Optional.of(new CasoUpdateResult(caso(owner, false), fingerprint)));
-        mvc = MockMvcBuilders.standaloneSetup(new CasoGestionController(identity, repository,
-                Optional.of(read), Optional.of(write), Optional.of(codec), Optional.of(versioned)))
+        mvc = MockMvcBuilders.standaloneSetup(new CasoGestionController(
+                new CasoDocenteConsultaService(identity, read, repository, versioned),
+                new com.prisaly.m3.application.service.CasoPersistentUpdateService(identity, write, repository),
+                Optional.of(codec)))
                 .setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     Caso caso(UUID teacher, boolean locked) {

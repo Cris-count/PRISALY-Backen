@@ -41,8 +41,8 @@ class CasoContenidoConsultaControllerTest {
         mvc = mvc(Optional.of(new CasoStrongEtagContract()));
     }
     MockMvc mvc(Optional<CasoPatchConcurrencyContract> codec) {
-        return MockMvcBuilders.standaloneSetup(new CasoContenidoConsultaController(identity, repository,
-                Optional.of(read), Optional.of(versioned), codec))
+        return MockMvcBuilders.standaloneSetup(new CasoContenidoConsultaController(
+                new com.prisaly.m3.application.service.CasoDocenteConsultaService(identity, read, repository, versioned), codec))
                 .setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     Caso caso(UUID teacher, CasoEstado state) {

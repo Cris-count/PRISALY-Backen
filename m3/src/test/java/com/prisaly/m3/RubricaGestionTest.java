@@ -44,8 +44,10 @@ class RubricaGestionTest {
         when(write.canModifyCase(owner.toString(), id.toString())).thenReturn(true);
         stored(owner, CasoEstado.BORRADOR, rubrica());
         when(updates.update(eq(id), eq(fingerprint), any())).thenReturn(new CasoUpdateResult(caso(owner, CasoEstado.BORRADOR, rubrica()), fingerprint));
-        mvc = MockMvcBuilders.standaloneSetup(new CasoRubricaController(identity, repository, Optional.of(read), Optional.of(write),
-                Optional.of(updates), Optional.of(new CasoStrongEtagContract()))).setControllerAdvice(new CasoGestionExceptionHandler()).build();
+        mvc = MockMvcBuilders.standaloneSetup(new CasoRubricaController(
+                new com.prisaly.m3.application.service.CasoDocenteConsultaService(identity, read, repository, updates),
+                new com.prisaly.m3.application.service.CasoContenidoService(identity, write, updates),
+                Optional.of(new CasoStrongEtagContract()))).setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     Rubrica rubrica() {
         var c = List.of(new CriterioRubrica("c1", "D", 3, new BigDecimal("0.40")));

@@ -36,8 +36,8 @@ class CasoContenidoControllerTest {
         when(write.canModifyCase(owner.toString(), id.toString())).thenReturn(true);
         stored(owner, CasoEstado.BORRADOR, false);
         when(updates.update(eq(id), eq(fingerprint), any())).thenReturn(new CasoUpdateResult(caso(owner, CasoEstado.BORRADOR, false), next));
-        mvc = MockMvcBuilders.standaloneSetup(new CasoContenidoController(Optional.of(identity), Optional.of(write),
-                Optional.of(updates), Optional.of(new CasoStrongEtagContract())))
+        mvc = MockMvcBuilders.standaloneSetup(new CasoContenidoController(new com.prisaly.m3.application.service.CasoContenidoService(identity, write, updates),
+                Optional.of(new CasoStrongEtagContract())))
                 .setControllerAdvice(new CasoGestionExceptionHandler()).build();
     }
     Caso caso(UUID teacher, CasoEstado state, boolean locked) {
@@ -136,8 +136,8 @@ class CasoContenidoControllerTest {
     }
 
     @Test void withoutCodecFailsClosed() throws Exception {
-        mvc = MockMvcBuilders.standaloneSetup(new CasoContenidoController(Optional.of(identity), Optional.of(write),
-                Optional.of(updates), Optional.empty())).setControllerAdvice(new CasoGestionExceptionHandler()).build();
+        mvc = MockMvcBuilders.standaloneSetup(new CasoContenidoController(new com.prisaly.m3.application.service.CasoContenidoService(identity, write, updates),
+                Optional.empty())).setControllerAdvice(new CasoGestionExceptionHandler()).build();
         send("/escenarios", escenario(), etag).andExpect(status().isServiceUnavailable());
         neverWrites();
     }

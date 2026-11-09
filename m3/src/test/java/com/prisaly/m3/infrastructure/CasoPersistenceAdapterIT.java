@@ -78,9 +78,10 @@ class CasoPersistenceAdapterIT {
             public boolean canPublishCase(String user, String caso) { return false; }
         };
         return org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(
-                new com.prisaly.m3.presentation.CasoGestionController(() -> teacher, repository,
-                        java.util.Optional.of(policy), java.util.Optional.of(write),
-                        java.util.Optional.of(transport), java.util.Optional.ofNullable(versioned)))
+                new com.prisaly.m3.presentation.CasoGestionController(
+                        new com.prisaly.m3.application.service.CasoDocenteConsultaService(() -> teacher, policy, repository, versioned),
+                        new com.prisaly.m3.application.service.CasoPersistentUpdateService(() -> teacher, write, repository),
+                        java.util.Optional.of(transport)))
                 .setControllerAdvice(new com.prisaly.m3.presentation.CasoGestionExceptionHandler()).build();
     }
 
@@ -1181,9 +1182,14 @@ class CasoPersistenceAdapterIT {
     void identityAwarePublicationStillRejectsStructuralCompletenessWithoutWriting() {
         Caso saved = creationService().createDraft("fixture", persistentDraftBuilder(teacher.toString(), JSON));
         var before = updateReader().findById(UUID.fromString(saved.id())).orElseThrow();
-        var service = new com.prisaly.m3.application.service.CasoPersistentPublicationService(publication(true), () -> teacher);
+        var permitir = new CaseAuthorizationPort() {
+            public boolean canCreateCase(String user, String owner) { return false; }
+            public boolean canModifyCase(String user, String caso) { return false; }
+            public boolean canPublishCase(String user, String caso) { return true; }
+        };
+        var service = new com.prisaly.m3.application.service.CasoTransicionService(() -> teacher, permitir, publication(true));
         List<Integer> counts = academicRowCounts();
-        assertPublicationCode("INCOMPLETE_RUBRIC", () -> service.publish(UUID.fromString(before.caso().id()), before.fingerprint()));
+        assertPublicationCode("INCOMPLETE_RUBRIC", () -> service.publicar(UUID.fromString(before.caso().id()), before::fingerprint));
         assertEquals(before, updateReader().findById(UUID.fromString(before.caso().id())).orElseThrow());
         assertEquals(counts, academicRowCounts());
     }

@@ -1,8 +1,5 @@
 package com.prisaly.m3.presentation;
 
-import com.prisaly.m3.application.port.CaseAuthorizationPort;
-import com.prisaly.m3.application.port.CasoCurrentUserPort;
-import com.prisaly.m3.application.port.CasoUpdatePort;
 import com.prisaly.m3.application.service.CasoContenidoService;
 import com.prisaly.m3.application.update.CasoUpdateCommand;
 import com.prisaly.m3.presentation.dto.CasoContenidoRequest;
@@ -31,9 +28,8 @@ public final class CasoContenidoController {
     private final CasoContenidoService service;
     private final CasoPatchConcurrencyContract concurrency;
 
-    public CasoContenidoController(Optional<CasoCurrentUserPort> identity, Optional<CaseAuthorizationPort> authorization,
-            Optional<CasoUpdatePort> updates, Optional<CasoPatchConcurrencyContract> concurrency) {
-        service = new CasoContenidoService(identity.orElse(null), authorization.orElse(null), updates.orElse(null));
+    public CasoContenidoController(CasoContenidoService service, Optional<CasoPatchConcurrencyContract> concurrency) {
+        this.service = service;
         this.concurrency = concurrency.orElse(null);
     }
 
@@ -47,7 +43,7 @@ public final class CasoContenidoController {
     public ResponseEntity<Map<String, String>> pregunta(@PathVariable("idCaso") String caso,
             @PathVariable("idEscenario") String escenario, @RequestHeader HttpHeaders headers,
             @RequestBody String body) {
-        UUID idEscenario = uuid(escenario);
+        UUID idEscenario = IdentificadorCanonico.uuid(escenario);
         return ejecutar(caso, headers, () -> CasoContenidoRequest.pregunta(idEscenario, body));
     }
 
@@ -55,13 +51,13 @@ public final class CasoContenidoController {
     public ResponseEntity<Map<String, String>> opcion(@PathVariable("idCaso") String caso,
             @PathVariable("idPregunta") String pregunta, @RequestHeader HttpHeaders headers,
             @RequestBody String body) {
-        UUID idPregunta = uuid(pregunta);
+        UUID idPregunta = IdentificadorCanonico.uuid(pregunta);
         return ejecutar(caso, headers, () -> CasoContenidoRequest.opcion(idPregunta, body));
     }
 
     private ResponseEntity<Map<String, String>> ejecutar(String caso, HttpHeaders headers,
             Supplier<CasoUpdateCommand> command) {
-        UUID id = uuid(caso);
+        UUID id = IdentificadorCanonico.uuid(caso);
         CasoUpdateCommand[] applied = new CasoUpdateCommand[1];
         var result = service.aplicar(id, () -> {
             if (concurrency == null) { throw new CasoGestionController.HttpContractUnavailable(); }
@@ -81,11 +77,5 @@ public final class CasoContenidoController {
             case CasoUpdateCommand.AgregarOpcionRespuestaCommand c -> c.idOpcion();
             default -> throw new IllegalStateException("Unsupported content command");
         };
-    }
-
-    private static UUID uuid(String value) {
-        UUID id = UUID.fromString(value);
-        if (!id.toString().equalsIgnoreCase(value)) { throw new IllegalArgumentException("Invalid UUID"); }
-        return id;
     }
 }
