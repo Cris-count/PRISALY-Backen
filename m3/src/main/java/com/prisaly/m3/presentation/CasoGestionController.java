@@ -60,4 +60,7 @@ public final class CasoGestionController {
     }
 
     public static final class HttpContractUnavailable extends RuntimeException { }
+
+    /** D9: the request carries no If-Match validator at all. */
+    public static final class IfMatchRequired extends RuntimeException { }
 }

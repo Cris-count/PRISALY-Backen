@@ -127,7 +127,7 @@ class CasoPersistenceAdapterIT {
         assertFalse(changedEtag.equals(hiddenChangeEtag));
         assertEquals(after.caso().titulo(), repository.findById(id.toString()).orElseThrow().titulo());
         mvc.perform(patchEtag(id, changedEtag, "{\"titulo\":\"Stale\"}"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isPreconditionFailed());
         assertEquals(hiddenChangeEtag, getEtag(mvc, id));
     }
 
@@ -152,7 +152,7 @@ class CasoPersistenceAdapterIT {
             var statuses = new ArrayList<Integer>();
             for (var result : results) { statuses.add(result.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
             statuses.sort(Integer::compareTo);
-            assertEquals(List.of(204, 409), statuses);
+            assertEquals(List.of(204, 412), statuses);
             assertTrue(Set.of("ETag writer A", "ETag writer B")
                     .contains(repository.findById(id.toString()).orElseThrow().titulo()));
         } finally {
@@ -237,7 +237,7 @@ class CasoPersistenceAdapterIT {
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.titulo").value("Guardado por HTTP"))
                 .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.*").value(org.hamcrest.Matchers.hasSize(4)));
         mvc.perform(patchHttp(id, before.fingerprint(), "{\"titulo\":\"Obsoleto\"}"))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isConflict());
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isPreconditionFailed());
         assertEquals(after, updateReader().findById(id).orElseThrow());
     }
 
@@ -261,7 +261,7 @@ class CasoPersistenceAdapterIT {
             var statuses = new ArrayList<Integer>();
             for (var task : tasks) { statuses.add(task.get(20, java.util.concurrent.TimeUnit.SECONDS)); }
             statuses.sort(Integer::compareTo);
-            assertEquals(List.of(204, 409), statuses);
+            assertEquals(List.of(204, 412), statuses);
             var after = updateReader().findById(id).orElseThrow();
             assertTrue(Set.of("HTTP writer A", "HTTP writer B").contains(after.caso().titulo()));
             assertEquals(before.caso().escenarios(), after.caso().escenarios());

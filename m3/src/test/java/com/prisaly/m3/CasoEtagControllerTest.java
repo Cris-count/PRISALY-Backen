@@ -69,7 +69,8 @@ class CasoEtagControllerTest {
 
     @Test void missingIfMatchAndTestOnlyHeaderAreRejected() throws Exception {
         mvc.perform(patch(path()).contentType("application/json").header("X-Test-Fingerprint", fingerprint)
-                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isBadRequest());
+                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isPreconditionRequired())
+                .andExpect(jsonPath("$.code").value("IF_MATCH_REQUIRED"));
         verify(repository, never()).update(any(), anyString());
     }
 
@@ -102,8 +103,34 @@ class CasoEtagControllerTest {
     @Test void staleIfMatchPreservesConflictContractAndNeverReportsSuccess() throws Exception {
         doThrow(new CasoDomainException("STALE_CASE", "private snapshot")).when(repository).update(any(), anyString());
         mvc.perform(patch(path()).contentType("application/json").header("If-Match", etag)
-                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isConflict())
+                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isPreconditionFailed())
+                .andExpect(jsonPath("$.code").value("STALE_CASE"))
                 .andExpect(header().doesNotExist("ETag"));
+    }
+
+    @Test void publishedCaseIsConflictEvenWithCurrentIfMatchAndNeverWrites() throws Exception {
+        when(repository.findById(id.toString())).thenReturn(Optional.of(new Caso(id.toString(), "Published",
+                owner.toString(), 300, CasoEstado.PUBLICADO, List.of(), null, false)));
+        mvc.perform(patch(path()).contentType("application/json").header("If-Match", etag)
+                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("CASE_NOT_EDITABLE"));
+        verify(repository, never()).update(any(), anyString());
+    }
+
+    @Test void publishedCaseWithoutIfMatchReportsStateBeforePrecondition() throws Exception {
+        when(repository.findById(id.toString())).thenReturn(Optional.of(new Caso(id.toString(), "Published",
+                owner.toString(), 300, CasoEstado.PUBLICADO, List.of(), null, false)));
+        mvc.perform(patch(path()).contentType("application/json")
+                .content("{\"titulo\":\"Changed\"}")).andExpect(status().isConflict());
+        verify(repository, never()).update(any(), anyString());
+    }
+
+    /** Documents the framework behaviour; D8 did not select a 304 contract. */
+    @Test void ifNoneMatchFollowsSpringConditionalGet() throws Exception {
+        mvc.perform(get(path()).header("If-None-Match", etag)).andExpect(status().isNotModified())
+                .andExpect(content().string(""));
+        mvc.perform(get(path()).header("If-None-Match", "\"m3-v2:" + "b".repeat(64) + "\""))
+                .andExpect(status().isOk()).andExpect(header().string("ETag", etag));
     }
 
     @Test void foreignOwnerNeverReceivesEtagOrWrites() throws Exception {

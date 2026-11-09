@@ -10,7 +10,7 @@ import com.prisaly.m3.domain.rule.CasoDomainException;
 import java.util.Objects;
 import java.util.UUID;
 
-/** DC-M3-REST-03: real M1 creation permission; other capabilities explicitly denied. */
+/** Real M1 creation and modification permissions (D6); publication stays explicitly denied. */
 public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, CasoCurrentUserPort {
     private final IdentityAccessPort identity;
 
@@ -37,7 +37,18 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
     }
 
     @Override
-    public boolean canModifyCase(String userId, String caseId) { return false; }
+    public boolean canModifyCase(String userId, String caseId) {
+        AuthenticatedUser current = currentUser();
+        if (!matches(current.userId(), userId)) {
+            return false;
+        }
+        try {
+            // Ownership is enforced by the M3 use case against the stored aggregate.
+            return identity.hasPermission(current.userId(), "MODIFICAR_CASO");
+        } catch (IdentityDomainException ex) {
+            throw translate(ex);
+        }
+    }
 
     @Override
     public boolean canPublishCase(String userId, String caseId) { return false; }

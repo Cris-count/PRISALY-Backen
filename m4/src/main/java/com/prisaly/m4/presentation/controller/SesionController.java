@@ -59,7 +59,8 @@ public class SesionController {
                         request.mensajePersonalizado(),
                         request.fechaInicio(),
                         request.fechaFin(),
-                        request.tiempoMaximoParticipacionSegundos());
+                        request.tiempoMaximoParticipacionSegundos(),
+                        request.lugarFisico());
 
         return ResponseEntity.status(HttpStatus.CREATED).body(SesionResponse.from(sesion));
     }
@@ -98,7 +99,8 @@ public class SesionController {
                 service.actualizarSesion(
                         service.resolverDocenteAutenticado(docenteId), sesionId,
                         request.titulo(), request.mensajePersonalizado(),
-                        request.fechaInicio(), request.fechaFin());
+                        request.fechaInicio(), request.fechaFin(),
+                        request.lugarFisico());
 
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }

@@ -120,6 +120,22 @@
                     </excludes>
                 </configuration>
             </plugin>
+            <!-- D23: cobertura transversal, incluidas las pruebas de composición de APP. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>informe-agregado</id>
+                        <phase>verify</phase>
+                        <goals><goal>report-aggregate</goal></goals>
+                        <configuration>
+                            <dataFileIncludes><dataFileInclude>target/jacoco-unido.exec</dataFileInclude></dataFileIncludes>
+                            <includeCurrentProject>true</includeCurrentProject>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 

@@ -282,7 +282,7 @@ class M4HttpErrorsTest {
                         "M4-PROVEEDOR-NO-DISPONIBLE",
                         "No se pudo verificar el historial académico de M5");
         error.initCause(new IllegalStateException("SELECT detalle_SQL_interno"));
-        when(service.actualizarSesion(any(), any(), any(), any(), any(), any())).thenThrow(error);
+        when(service.actualizarSesion(any(), any(), any(), any(), any(), any(), any())).thenThrow(error);
         mvc.perform(
                         put(ROOT + "/" + SESION)
                                 .contentType(MediaType.APPLICATION_JSON)

@@ -190,6 +190,28 @@ class M7ConvocatoriaPostgreSqlIT {
     }
 
     @Test
+    void avisoYCorreoIncluyenCasoSesionFechasYMensaje() {
+        jdbc.update("UPDATE \"Sesion\" SET \"mensajePersonalizado\"='Traer documento' WHERE \"idSesion\"=?", sesion);
+        service.convocarEstudiante(docente, sesion, estudiante);
+        String aviso = jdbc.queryForObject("SELECT \"contenido\" FROM \"Aviso\"", String.class);
+        String correo = jdbc.queryForObject("SELECT \"contenido\" FROM \"EnvioCorreo\"", String.class);
+        String asunto = jdbc.queryForObject("SELECT \"asunto\" FROM \"EnvioCorreo\"", String.class);
+        for (String dato : new String[] {"Espacio test", "Caso test", "Traer documento", "UTC"}) {
+            assertTrue(aviso.contains(dato), aviso);
+        }
+        assertTrue(aviso.matches(".*\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2} UTC.*"), aviso);
+        assertEquals(aviso, correo);
+        assertTrue(asunto.contains("Espacio test"), asunto);
+    }
+
+    @Test
+    void sinMensajePersonalizadoElAvisoNoContieneNull() {
+        service.convocarEstudiante(docente, sesion, estudiante);
+        String aviso = jdbc.queryForObject("SELECT \"contenido\" FROM \"Aviso\"", String.class);
+        assertFalse(aviso.contains("null"), aviso);
+    }
+
+    @Test
     void falloAlRegistrarAvisoRevierteConvocatoria() throws SQLException {
         jdbc.execute("ALTER TABLE \"Aviso\" ADD CONSTRAINT prueba_m4m7_fallo_aviso CHECK (false)");
         try {

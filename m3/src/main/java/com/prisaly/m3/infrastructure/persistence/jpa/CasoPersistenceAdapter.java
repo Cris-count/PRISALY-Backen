@@ -90,7 +90,7 @@ public class CasoPersistenceAdapter implements CasoRepositoryPort {
                 CasoCommandUpdateAdapter.validateExpected(before, expectedFingerprint, java.util.List.of());
                 var commands = CasoReplacementCommands.between(CasoPersistenceMapper.toDomain(before), caso);
                 CasoCommandUpdateAdapter.validateExpected(before, expectedFingerprint, commands);
-                ContenidoEvaluableLock.assertEditable(CasoPersistenceMapper.toDomain(before));
+                ContenidoEvaluableLock.assertDraftEditable(CasoPersistenceMapper.toDomain(before));
                 for (var command : commands) { CasoCommandUpdateAdapter.validateMembership(before, command); }
                 for (var command : commands) { CasoCommandUpdateAdapter.apply(connection, caseId, command); }
                 var after = CasoTransactionalSnapshotReader.read(connection, caseId, false);

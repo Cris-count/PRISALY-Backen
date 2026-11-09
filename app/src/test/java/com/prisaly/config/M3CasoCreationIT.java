@@ -115,7 +115,9 @@ class M3CasoCreationIT {
         assertNotNull(context.getBean(com.prisaly.m3.application.service.CasoApplicationService.class));
         assertFalse(context.containsBean("caseAuthorizationFailClosed"));
         assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
-        assertFalse(authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
+        // D6: the real permission is consulted, which requires an authenticated caller.
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
         assertFalse(authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
     }
 
@@ -140,7 +142,8 @@ class M3CasoCreationIT {
         assertNull(stored.fechaBloqueoAcademico());
         assertTrue(stored.escenarios().isEmpty());
         assertNull(stored.rubrica());
-        assertFalse(authorization.canModifyCase(owner.toString(), id.toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canModifyCase(owner.toString(), id.toString()));
         assertFalse(authorization.canPublishCase(owner.toString(), id.toString()));
     }
 

@@ -319,6 +319,23 @@ class SesionAcademicaPostgreSqlIT {
     }
 
     @Test
+    void lugarFisicoSePersisteSeConservaYSeElimina() {
+        var s = service.crearSesion(docente, caso, "Espacio", "Mensaje", inicio, fin, 1800, " Aula 3 ");
+        assertEquals("Aula 3", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin);
+        assertEquals("Aula 3", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin, "Sala 9");
+        assertEquals("Sala 9", lugarPersistido(s.getId()));
+        service.actualizarSesion(docente, s.getId(), "Nuevo", "Otro", inicio, fin, "  ");
+        assertNull(lugarPersistido(s.getId()));
+    }
+
+    private String lugarPersistido(UUID sesion) {
+        return jdbc.queryForObject(
+                "SELECT \"lugarFisico\" FROM \"Sesion\" WHERE \"idSesion\"=?", String.class, sesion);
+    }
+
+    @Test
     void actualizaSobreMismaFilaSinColumnaVersion() {
         var s = crear();
         var actualizado =

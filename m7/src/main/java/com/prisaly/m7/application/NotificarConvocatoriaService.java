@@ -2,6 +2,7 @@ package com.prisaly.m7.application;
 
 import com.prisaly.m7.domain.AvisoConvocatoria;
 import com.prisaly.m7.domain.EnvioCorreoConvocatoria;
+import com.prisaly.m7.domain.ConvocatoriaNotificable;
 import java.util.Objects;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,6 +39,8 @@ public class NotificarConvocatoriaService {
         this.plantillaAsunto = plantillaAsunto;
     }
 
+    private static final int LIMITE_ASUNTO = 255;
+
     @Transactional(propagation = Propagation.MANDATORY)
     public void ejecutar(NotificarConvocatoriaCommand command) {
         Objects.requireNonNull(command, "command");
@@ -50,9 +53,27 @@ public class NotificarConvocatoriaService {
                 || !command.estudianteId().equals(evento.estudianteId())) {
             throw new IllegalStateException("Contexto de convocatoria inconsistente");
         }
-        String contenido = plantillaContenido.replace("{sesionId}", evento.sesionId().toString());
-        String asunto = plantillaAsunto.replace("{sesionId}", evento.sesionId().toString());
+        String contenido = componer(plantillaContenido, evento).strip();
+        String asunto = limitar(componer(plantillaAsunto, evento).strip(), LIMITE_ASUNTO);
         registroAviso.registrar(new AvisoConvocatoria(evento, contenido));
         registroEnvio.encolar(new EnvioCorreoConvocatoria(evento, asunto, contenido));
+    }
+
+    private static String componer(String plantilla, ConvocatoriaNotificable evento) {
+        return plantilla
+                .replace("{sesionId}", evento.sesionId().toString())
+                .replace("{nombreCaso}", texto(evento.nombreCaso()))
+                .replace("{nombreSesion}", texto(evento.nombreSesion()))
+                .replace("{inicioPrevisto}", texto(evento.inicioPrevisto()))
+                .replace("{finPrevisto}", texto(evento.finPrevisto()))
+                .replace("{mensajePersonalizado}", texto(evento.mensajePersonalizado()));
+    }
+
+    private static String texto(String valor) {
+        return valor == null ? "" : valor;
+    }
+
+    private static String limitar(String valor, int maximo) {
+        return valor.length() <= maximo ? valor : valor.substring(0, maximo);
     }
 }

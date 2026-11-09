@@ -80,8 +80,8 @@ class ComposicionM3LecturaInstitucionalIT {
         assertEquals(caso.toString(), json.get("idCaso").asText());
         assertEquals(4, json.size());
         assertEquals("no-store", lectura.headers().firstValue("Cache-Control").orElseThrow());
-        // No ratified ETag transport: GET carries no ETag in the productive composition.
-        assertTrue(lectura.headers().firstValue("ETag").isEmpty());
+        // D8: the productive composition registers the strong codec, so GET carries the validator.
+        assertTrue(lectura.headers().firstValue("ETag").orElseThrow().matches("\"m3-v2:[0-9a-f]{64}\""));
     }
 
     @Test

@@ -54,7 +54,7 @@ public class CasoApplicationService {
 
     public Caso replaceEvaluableContent(String userId, Caso caso, Caso replacementDraft) {
         assertCanModify(userId, caso.id());
-        ContenidoEvaluableLock.assertEditable(caso);
+        ContenidoEvaluableLock.assertDraftEditable(caso);
         if (!caso.id().equals(replacementDraft.id())) {
             throw new CasoDomainException(
                     CODE_CASE_ID_MISMATCH,

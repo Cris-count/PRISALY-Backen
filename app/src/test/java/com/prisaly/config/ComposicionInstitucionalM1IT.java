@@ -107,8 +107,8 @@ class ComposicionInstitucionalM1IT {
         assertSame(escrituraM3, unico(CasoCurrentUserPort.class));
         // DC-M3-RES-02: one institutional read provider, with the policy still pending (denies).
         assertInstanceOf(M3CaseReadAuthorizationAdapter.class, unico(AutorizacionConsultaCasoPort.class));
-        // No ratified HTTP concurrency transport: no provider may exist.
-        assertTrue(context.getBeansOfType(CasoPatchConcurrencyContract.class).isEmpty());
+        // D8: exactly one HTTP concurrency provider, the strong ETag codec.
+        assertInstanceOf(com.prisaly.m3.presentation.CasoStrongEtagContract.class, unico(CasoPatchConcurrencyContract.class));
         assertTrue(context.getBeansOfType(EstudianteSessionFilter.class).isEmpty());
     }
 

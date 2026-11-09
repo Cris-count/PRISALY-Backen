@@ -4,8 +4,8 @@ import java.util.List;
 import org.springframework.http.HttpHeaders;
 
 /**
- * Candidate single strong ETag/If-Match codec. Deliberately NOT a Spring component.
- * No new status codes or wildcard/list semantics are enabled institutionally.
+ * Single strong ETag/If-Match codec, registered by APP. Absence maps to 428 (D9); malformed,
+ * weak, wildcard or repeated validators stay 400. No wildcard/list semantics are enabled.
  */
 public final class CasoStrongEtagContract implements CasoEtagConcurrencyContract {
     private static final String FINGERPRINT = "m3-v2:[0-9a-f]{64}";
@@ -21,7 +21,8 @@ public final class CasoStrongEtagContract implements CasoEtagConcurrencyContract
     @Override
     public String expectedFingerprint(HttpHeaders headers) {
         List<String> values = headers.get(HttpHeaders.IF_MATCH);
-        if (values == null || values.size() != 1) { throw invalid(); }
+        if (values == null || values.isEmpty()) { throw new CasoGestionController.IfMatchRequired(); }
+        if (values.size() != 1) { throw invalid(); }
         String value = values.getFirst();
         if (value == null) { throw invalid(); }
         // HTTP optional whitespace is SP / HTAB only, not arbitrary Unicode whitespace.

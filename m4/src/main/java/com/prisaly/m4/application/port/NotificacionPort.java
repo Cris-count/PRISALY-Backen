@@ -18,4 +18,14 @@ public interface NotificacionPort {
      * @param estudianteId  identificador del estudiante convocado
      */
     void notificarConvocatoria(UUID sesionId, UUID estudianteId);
+
+    /**
+     * QB-07 (preparación): aviso por cambio de programación. Aún sin llamador ni proveedor: rechaza
+     * para no simular entrega. {@code huellaCambio} identifica la nueva programación.
+     */
+    default void notificarCambioSesion(UUID sesionId, UUID estudianteId, String huellaCambio) {
+        throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+                "M4-PROVEEDOR-NO-DISPONIBLE",
+                "La notificación de cambios de sesión no está disponible");
+    }
 }

@@ -46,10 +46,22 @@ class M3CaseAuthorizationAdapterTest {
     }
 
     @Test
-    void modificationAndPublicationRemainDeniedWithoutConsultingOrInferringPermissions() {
-        assertFalse(adapter.canModifyCase(currentId.toString(), UUID.randomUUID().toString()));
+    void publicationRemainsDeniedWithoutConsultingOrInferringPermissions() {
         assertFalse(adapter.canPublishCase(currentId.toString(), UUID.randomUUID().toString()));
         verifyNoInteractions(identity);
+    }
+
+    @Test
+    void modificationFollowsTheRealPermissionAndNeverImpersonates() {
+        doReturn(user("Activo")).when(identity).currentUser();
+        String caseId = UUID.randomUUID().toString();
+        when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(true);
+        assertTrue(adapter.canModifyCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "MODIFICAR_CASO")).thenReturn(false);
+        assertFalse(adapter.canModifyCase(currentId.toString(), caseId));
+        clearInvocations(identity);
+        assertFalse(adapter.canModifyCase(UUID.randomUUID().toString(), caseId));
+        verify(identity, never()).hasPermission(any(), any());
     }
 
     @Test

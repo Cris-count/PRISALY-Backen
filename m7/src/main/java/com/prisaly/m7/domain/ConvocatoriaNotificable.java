@@ -12,7 +12,18 @@ public record ConvocatoriaNotificable(
         UUID sesionId,
         UUID estudianteId,
         UUID usuarioDestino,
-        String correoDestino) {
+        String correoDestino,
+        String nombreCaso,
+        String nombreSesion,
+        String inicioPrevisto,
+        String finPrevisto,
+        String mensajePersonalizado) {
+
+    /** Evento sin datos académicos de presentación. */
+    public ConvocatoriaNotificable(
+            UUID convocatoriaId, UUID sesionId, UUID estudianteId, UUID usuarioDestino, String correoDestino) {
+        this(convocatoriaId, sesionId, estudianteId, usuarioDestino, correoDestino, null, null, null, null, null);
+    }
 
     public ConvocatoriaNotificable {
         Objects.requireNonNull(convocatoriaId, "convocatoriaId");

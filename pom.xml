@@ -30,6 +30,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <jacoco.version>0.8.13</jacoco.version>
     </properties>
 
     <build>
@@ -59,5 +60,40 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <!-- D23: medición de cobertura, unitarias e integración, sin umbrales. -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <executions>
+                    <execution><id>agente-unitarias</id><goals><goal>prepare-agent</goal></goals></execution>
+                    <execution><id>agente-integracion</id><goals><goal>prepare-agent-integration</goal></goals></execution>
+                    <execution>
+                        <id>unir-datos</id>
+                        <phase>verify</phase>
+                        <goals><goal>merge</goal></goals>
+                        <configuration>
+                            <fileSets>
+                                <fileSet>
+                                    <directory>${project.build.directory}</directory>
+                                    <includes><include>jacoco.exec</include><include>jacoco-it.exec</include></includes>
+                                </fileSet>
+                            </fileSets>
+                            <destFile>${project.build.directory}/jacoco-unido.exec</destFile>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>informe-modulo</id>
+                        <phase>verify</phase>
+                        <goals><goal>report</goal></goals>
+                        <configuration>
+                            <dataFile>${project.build.directory}/jacoco-unido.exec</dataFile>
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-unido</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 </project>

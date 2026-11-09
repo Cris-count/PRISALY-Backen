@@ -52,7 +52,7 @@ public final class CasoPersistentUpdateService {
                 () -> new CasoDomainException("CASE_NOT_FOUND", "Case does not exist"));
         if (!caseId.toString().equalsIgnoreCase(stored.id())) { throw new IllegalStateException("Repository case mismatch"); }
         if (!user.toString().equalsIgnoreCase(stored.docenteId())) { throw denied(); }
-        ContenidoEvaluableLock.assertEditable(stored);
+        ContenidoEvaluableLock.assertDraftEditable(stored);
         String expected = fingerprint.get();
         Caso replacement = Objects.requireNonNull(fields.apply(stored));
         if (!stored.id().equals(replacement.id()) || !stored.docenteId().equals(replacement.docenteId())) {

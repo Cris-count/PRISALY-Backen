@@ -98,6 +98,19 @@ public class SesionAcademicaService {
             Instant fechaInicio,
             Instant fechaFin,
             int tiempoMaximoParticipacionSegundos) {
+        return crearSesion(docenteId, casoId, titulo, descripcion, fechaInicio, fechaFin,
+                tiempoMaximoParticipacionSegundos, null);
+    }
+
+    public SesionAcademica crearSesion(
+            UUID docenteId,
+            UUID casoId,
+            String titulo,
+            String descripcion,
+            Instant fechaInicio,
+            Instant fechaFin,
+            int tiempoMaximoParticipacionSegundos,
+            String lugarFisico) {
 
         // Identidad y permisos de M1 se comprueban antes de validar datos.
         verificarPermiso(docenteId);
@@ -112,6 +125,7 @@ public class SesionAcademicaService {
                         fechaInicio,
                         fechaFin,
                         tiempoMaximoParticipacionSegundos);
+        sesion.setLugarFisico(normalizarLugar(lugarFisico));
 
         sesionRepository.protegerProgramacion(casoId, docenteId);
 
@@ -174,6 +188,19 @@ public class SesionAcademicaService {
             String nuevaDescripcion,
             Instant nuevaFechaInicio,
             Instant nuevaFechaFin) {
+        return actualizarSesion(docenteId, sesionId, nuevoTitulo, nuevaDescripcion,
+                nuevaFechaInicio, nuevaFechaFin, null);
+    }
+
+    /** {@code nuevoLugarFisico} nulo conserva el valor; en blanco lo elimina. */
+    public SesionAcademica actualizarSesion(
+            UUID docenteId,
+            UUID sesionId,
+            String nuevoTitulo,
+            String nuevaDescripcion,
+            Instant nuevaFechaInicio,
+            Instant nuevaFechaFin,
+            String nuevoLugarFisico) {
         SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         // Proteger sesiones con participaciones vinculadas
@@ -192,8 +219,15 @@ public class SesionAcademicaService {
             throw new ReglaNegocioException("M4-SESION-DUPLICADA", "Ya existe esa programación");
         sesion.actualizarProgramacion(
                 nuevoTitulo, nuevaDescripcion, nuevaFechaInicio, nuevaFechaFin);
+        if (nuevoLugarFisico != null) {
+            sesion.setLugarFisico(normalizarLugar(nuevoLugarFisico));
+        }
 
         return sesionRepository.guardar(sesion);
+    }
+
+    private static String normalizarLugar(String lugar) {
+        return lugar == null || lugar.isBlank() ? null : lugar.strip();
     }
 
     // ─── CambiarCaso ──────────────────────────────────────────

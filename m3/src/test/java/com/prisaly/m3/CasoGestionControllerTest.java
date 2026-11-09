@@ -214,7 +214,7 @@ class CasoGestionControllerTest {
     @Test void staleFingerprintIsConflictAndTechnicalWriteFailureIsNotSuccess() throws Exception {
         doThrow(new CasoDomainException("STALE_CASE", "private detail")).when(repository).update(any(), anyString());
         mvc.perform(patch(path()).contentType("application/json").header("X-Test-Fingerprint", fingerprint)
-                .content("{\"titulo\":\"Nuevo\"}")).andExpect(status().isConflict());
+                .content("{\"titulo\":\"Nuevo\"}")).andExpect(status().isPreconditionFailed());
         doThrow(new IllegalStateException("secret sql")).when(repository).update(any(), anyString());
         mvc.perform(patch(path()).contentType("application/json").header("X-Test-Fingerprint", fingerprint)
                 .content("{\"titulo\":\"Nuevo\"}")).andExpect(status().isInternalServerError());
