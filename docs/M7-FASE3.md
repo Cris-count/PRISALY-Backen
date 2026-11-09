@@ -9,6 +9,8 @@ Rama: `feature/m7-notificaciones`. Decisiones D1–D11 ratificadas. Sin V010; V0
 3. Persiste el resultado **solo** si conserva el lease (`proximoReintento` + `numeroIntentos` coinciden).
 4. Estados: `Pendiente` → `Enviado` (aceptación SMTP) o `Fallido` (permanente / intentos agotados). Errores de configuración dejan `Pendiente` y alertan; no marcan el destinatario como `Fallido`.
 
+Corrección A04 (DC-INTEGRACION-TOTAL-01): `ultimoError` conserva la clasificación explícita `CONFIGURACION: ` al registrar ese resultado. La siguiente reserva puede reintentar aunque haya alcanzado cinco reclamos, sin reiniciar ni decrementar el contador. Si se recupera SMTP, se registra `Enviado`; un fallo permanente/transitorio agotado conserva el cierre habitual. Reservar limpia la clasificación anterior: un lease abandonado no hereda la excepción de configuración. El backoff conserva el tope de 60 minutos incluso en contadores grandes. Las filas históricas sin esa clasificación no se reinterpretan automáticamente.
+
 ## Activación
 
 Deshabilitado por defecto. Para habilitar:

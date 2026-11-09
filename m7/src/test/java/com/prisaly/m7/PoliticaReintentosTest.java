@@ -7,6 +7,13 @@ import java.time.Duration;
 import org.junit.jupiter.api.Test;
 
 class PoliticaReintentosTest {
+    @org.junit.jupiter.api.Test
+    void configuracionPersistenteNoDesbordaElBackoff() {
+        var policy = PoliticaReintentos.ratificada();
+        for (int attempt : new int[] {7, 63, 64, 65, Integer.MAX_VALUE}) {
+            org.junit.jupiter.api.Assertions.assertEquals(java.time.Duration.ofMinutes(60), policy.esperaTrasIntento(attempt));
+        }
+    }
 
     private final PoliticaReintentos politica = PoliticaReintentos.ratificada();
 

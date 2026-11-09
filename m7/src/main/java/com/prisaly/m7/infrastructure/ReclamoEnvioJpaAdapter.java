@@ -41,7 +41,7 @@ public class ReclamoEnvioJpaAdapter implements ReclamoEnvioPort {
         @SuppressWarnings("unchecked")
         List<Object[]> candidatos = em.createNativeQuery(
                         """
-                        SELECT e."idEnvioCorreo", e."numeroIntentos"
+                        SELECT e."idEnvioCorreo", e."numeroIntentos", e."ultimoError"
                         FROM "EnvioCorreo" e
                         WHERE e."estadoEnvio" = :pendiente
                           AND (e."proximoReintento" IS NULL OR e."proximoReintento" <= now())
@@ -62,7 +62,9 @@ public class ReclamoEnvioJpaAdapter implements ReclamoEnvioPort {
         for (Object[] candidato : candidatos) {
             UUID id = (UUID) candidato[0];
             int intentosActuales = ((Number) candidato[1]).intValue();
-            if (intentosActuales >= maxIntentos) {
+            boolean configuracion = candidato[2] instanceof String error
+                    && error.startsWith(ReclamoEnvioPort.ERROR_CONFIGURACION);
+            if (intentosActuales >= maxIntentos && !configuracion) {
                 em.createNativeQuery(
                                 """
                                 UPDATE "EnvioCorreo"
@@ -88,6 +90,7 @@ public class ReclamoEnvioJpaAdapter implements ReclamoEnvioPort {
                             UPDATE "EnvioCorreo"
                             SET "numeroIntentos" = "numeroIntentos" + 1,
                                 "fechaUltimoIntento" = now(),
+                                "ultimoError" = NULL,
                                 "proximoReintento" = now() + (:leaseSeconds * interval '1 second')
                             WHERE "idEnvioCorreo" = :id
                               AND "estadoEnvio" = :pendiente
