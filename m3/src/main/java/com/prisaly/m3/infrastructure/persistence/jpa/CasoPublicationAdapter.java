@@ -23,6 +23,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** REQUIRED, state-only publication. Academic rubric completeness is deliberately unchanged. */
 public class CasoPublicationAdapter implements CasoPublicationPort {
+    public static final String CODE_CASE_NOT_PUBLISHED = "CASE_NOT_PUBLISHED";
     private final EntityManagerFactory emf;
     private final CaseAuthorizationPort authorization;
     private final TransactionTemplate transaction;
@@ -80,6 +81,57 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
                 return new CasoUpdateResult(persisted, fingerprint);
             });
         }));
+    }
+
+    @Override
+    public CasoUpdateResult archive(String userId, UUID caseId, String expectedFingerprint) {
+        if (userId == null || userId.isBlank()) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        Objects.requireNonNull(caseId, "caseId");
+        CasoCommandUpdateAdapter.validateFingerprintVersion(expectedFingerprint);
+        return Objects.requireNonNull(transaction.execute(status -> {
+            var em = Objects.requireNonNull(EntityManagerFactoryUtils.getTransactionalEntityManager(emf));
+            return em.unwrap(Session.class).doReturningWork(connection -> {
+                if (connection.getAutoCommit()
+                        || connection.getTransactionIsolation() != Connection.TRANSACTION_READ_COMMITTED) {
+                    throw new IllegalStateException("Archiving requires an effective READ COMMITTED transaction");
+                }
+                var before = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, true));
+                assertArchiveAuthorized(authorization, userId, caseId);
+                assertOwner(before, userId);
+                if (!CasoAggregateFingerprint.of(before).equals(expectedFingerprint)) {
+                    throw new CasoDomainException(CasoCommandUpdateAdapter.STALE_CASE, "Aggregate precondition is stale");
+                }
+                if ("Archivado".equals(before.caso().estado())) {
+                    throw new CasoDomainException(CasoValidation.CODE_ARCHIVED_CASE_OPERATION_PENDING, "Case is already archived");
+                }
+                if (!"Publicado".equals(before.caso().estado())) {
+                    throw new CasoDomainException(CODE_CASE_NOT_PUBLISHED, "Only a published case can be archived");
+                }
+                try (var statement = connection.prepareStatement("""
+                        UPDATE public."Caso" SET "estado" = 'Archivado' WHERE "idCaso" = ? AND "estado" = 'Publicado'
+                        """)) {
+                    statement.setObject(1, caseId);
+                    if (statement.executeUpdate() != 1) {
+                        throw new IllegalStateException("Archiving must update exactly one published case");
+                    }
+                }
+                var after = requireExisting(CasoTransactionalSnapshotReader.read(connection, caseId, false));
+                return new CasoUpdateResult(CasoPersistenceMapper.toDomain(after), CasoAggregateFingerprint.of(after));
+            });
+        }));
+    }
+
+    private static void assertArchiveAuthorized(CaseAuthorizationPort authorization, String userId, UUID caseId) {
+        boolean allowed;
+        try { allowed = authorization.canArchiveCase(userId, caseId.toString()); }
+        catch (RuntimeException failure) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Archiving is not authorized");
+        }
+        if (!allowed) {
+            throw new CasoDomainException(CasoApplicationService.CODE_FORBIDDEN, "Archiving is not authorized");
+        }
     }
 
     static CasoJpaAggregateSnapshot requireExisting(CasoJpaAggregateSnapshot snapshot) {

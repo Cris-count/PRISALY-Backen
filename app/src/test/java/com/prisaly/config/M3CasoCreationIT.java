@@ -114,11 +114,12 @@ class M3CasoCreationIT {
         assertSame(authorization, context.getBean(CasoCurrentUserPort.class));
         assertNotNull(context.getBean(com.prisaly.m3.application.service.CasoApplicationService.class));
         assertFalse(context.containsBean("caseAuthorizationFailClosed"));
-        assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
+        assertEquals(1, context.getBeansOfType(CasoPublicationPort.class).size());
         // D6: the real permission is consulted, which requires an authenticated caller.
         assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
                 () -> authorization.canModifyCase(owner.toString(), UUID.randomUUID().toString()));
-        assertFalse(authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canPublishCase(owner.toString(), UUID.randomUUID().toString()));
     }
 
     @Test
@@ -144,7 +145,8 @@ class M3CasoCreationIT {
         assertNull(stored.rubrica());
         assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
                 () -> authorization.canModifyCase(owner.toString(), id.toString()));
-        assertFalse(authorization.canPublishCase(owner.toString(), id.toString()));
+        assertThrows(com.prisaly.m3.application.port.CasoAuthenticationException.class,
+                () -> authorization.canPublishCase(owner.toString(), id.toString()));
     }
 
     @Test
@@ -237,7 +239,7 @@ class M3CasoCreationIT {
         assertEquals(Set.of(RequestMethod.GET, RequestMethod.PATCH), item.stream()
                 .flatMap(entry -> entry.getKey().getMethodsCondition().getMethods().stream())
                 .collect(java.util.stream.Collectors.toSet()));
-        assertTrue(context.getBeansOfType(CasoPublicationPort.class).isEmpty());
+        assertEquals(1, context.getBeansOfType(CasoPublicationPort.class).size());
     }
 
     private int concurrentCreate(CyclicBarrier start, UUID id, String title) throws Exception {

@@ -7,7 +7,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
 @RestControllerAdvice(assignableTypes = {CasoGestionController.class, CasoContenidoController.class,
-        CasoContenidoConsultaController.class, CasoRubricaController.class})
+        CasoContenidoConsultaController.class, CasoRubricaController.class, CasoPublicacionController.class})
 public final class CasoGestionExceptionHandler {
     public record ErrorResponse(String code, String message) { }
     @ExceptionHandler(CasoAuthenticationException.class)
@@ -24,7 +24,8 @@ public final class CasoGestionExceptionHandler {
             case "FORBIDDEN", "CASE_READ_DENIED" -> error(403, "FORBIDDEN");
             case "CASE_NOT_FOUND", "CASE_READ_NOT_FOUND" -> error(404, "CASE_NOT_FOUND");
             case "ELEMENT_NOT_IN_CASE", "RUBRIC_NOT_FOUND" -> error(404, ex.code());
-            case "RUBRIC_SAVE_REQUIRES_DRAFT" -> error(409, ex.code());
+            case "RUBRIC_SAVE_REQUIRES_DRAFT", "ALREADY_PUBLISHED", "CASE_NOT_PUBLISHED", "CASE_INCOMPLETE",
+                    "INCOMPLETE_RUBRIC", "INCONSISTENT_OPTIONS", "INVALID_QUESTION" -> error(409, ex.code());
             case "SCENARIO_ID_IN_USE", "SCENARIO_ORDER_IN_USE", "QUESTION_ID_IN_USE", "QUESTION_ORDER_IN_USE",
                     "OPTION_ID_IN_USE", "CONTENT_CONFLICT" -> error(409, ex.code());
             case "STALE_CASE" -> error(412, ex.code());

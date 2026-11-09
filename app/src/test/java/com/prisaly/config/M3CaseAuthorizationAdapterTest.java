@@ -46,9 +46,18 @@ class M3CaseAuthorizationAdapterTest {
     }
 
     @Test
-    void publicationRemainsDeniedWithoutConsultingOrInferringPermissions() {
-        assertFalse(adapter.canPublishCase(currentId.toString(), UUID.randomUUID().toString()));
-        verifyNoInteractions(identity);
+    void publicationAndArchivingFollowTheirOwnPermissionsWithoutDefaults() {
+        String caseId = UUID.randomUUID().toString();
+        assertFalse(adapter.canPublishCase(currentId.toString(), caseId));
+        assertFalse(adapter.canArchiveCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "PUBLICAR_CASO")).thenReturn(true);
+        assertTrue(adapter.canPublishCase(currentId.toString(), caseId));
+        assertFalse(adapter.canArchiveCase(currentId.toString(), caseId));
+        when(identity.hasPermission(currentId, "PUBLICAR_CASO")).thenReturn(false);
+        when(identity.hasPermission(currentId, "ARCHIVAR_CASO")).thenReturn(true);
+        assertFalse(adapter.canPublishCase(currentId.toString(), caseId));
+        assertTrue(adapter.canArchiveCase(currentId.toString(), caseId));
+        assertFalse(adapter.canPublishCase(UUID.randomUUID().toString(), caseId));
     }
 
     @Test

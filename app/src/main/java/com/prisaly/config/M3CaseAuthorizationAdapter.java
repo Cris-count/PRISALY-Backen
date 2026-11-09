@@ -10,7 +10,7 @@ import com.prisaly.m3.domain.rule.CasoDomainException;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Real M1 creation and modification permissions (D6); publication stays explicitly denied. */
+/** Real M1 permissions for creation, modification (D6), publication and archiving (PD-02). */
 public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, CasoCurrentUserPort {
     private final IdentityAccessPort identity;
 
@@ -53,7 +53,27 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
     }
 
     @Override
-    public boolean canPublishCase(String userId, String caseId) { return false; }
+    public boolean canPublishCase(String userId, String caseId) {
+        return tienePermiso(userId, "PUBLICAR_CASO");
+    }
+
+    @Override
+    public boolean canArchiveCase(String userId, String caseId) {
+        return tienePermiso(userId, "ARCHIVAR_CASO");
+    }
+
+    /** PD-02: no default grants; ownership and state are enforced by the M3 transition. */
+    private boolean tienePermiso(String userId, String codigo) {
+        AuthenticatedUser current = currentUser();
+        if (!matches(current.userId(), userId)) {
+            return false;
+        }
+        try {
+            return identity.hasPermission(current.userId(), codigo);
+        } catch (IdentityDomainException ex) {
+            throw translate(ex);
+        }
+    }
 
     private AuthenticatedUser currentUser() {
         final AuthenticatedUser current;

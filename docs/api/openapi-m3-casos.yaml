@@ -16,6 +16,7 @@ tags:
   - name: Casos
   - name: Contenido
   - name: Rubrica
+  - name: Transiciones
 paths:
   /v1/casos:
     post:
@@ -265,6 +266,40 @@ paths:
         '409': { $ref: '#/components/responses/Error' }
         '412': { $ref: '#/components/responses/Error' }
         '428': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/publicar:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    post:
+      tags: [Transiciones]
+      summary: Borrador a Publicado. Requiere PUBLICAR_CASO y ser propietario, con rúbrica completa.
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      responses:
+        '200': { $ref: '#/components/responses/Transicion' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/archivar:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    post:
+      tags: [Transiciones]
+      summary: Publicado a Archivado. Requiere ARCHIVAR_CASO y ser propietario.
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      responses:
+        '200': { $ref: '#/components/responses/Transicion' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer }
@@ -283,6 +318,17 @@ components:
       description: ETag vigente. Si falta, 428; si es inválido, 400; si está obsoleto, 412.
       schema: { type: string }
   responses:
+    Transicion:
+      description: Estado nuevo; el ETag es el validador para la siguiente operación
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [idCaso, estado]
+            properties:
+              idCaso: { type: string, format: uuid }
+              estado: { $ref: '#/components/schemas/Estado' }
     Error:
       description: Error
       content:
