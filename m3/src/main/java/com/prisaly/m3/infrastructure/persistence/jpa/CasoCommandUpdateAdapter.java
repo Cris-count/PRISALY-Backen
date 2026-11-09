@@ -4,6 +4,7 @@ import com.prisaly.m3.application.port.CasoUpdatePort;
 import com.prisaly.m3.application.update.CasoUpdateCommand;
 import com.prisaly.m3.application.update.CasoUpdateCommand.*;
 import com.prisaly.m3.application.update.CasoUpdateResult;
+import com.prisaly.m3.application.update.RubricaDefinicionCodec;
 import com.prisaly.m3.domain.rule.CasoDomainException;
 import com.prisaly.m3.domain.rule.CasoValidation;
 import com.prisaly.m3.domain.rule.ContenidoEvaluableLock;
@@ -36,6 +37,7 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
     public static final String QUESTION_ORDER_IN_USE = "QUESTION_ORDER_IN_USE";
     public static final String OPTION_ADD_REQUIRES_DRAFT = "OPTION_ADD_REQUIRES_DRAFT";
     public static final String OPTION_ID_IN_USE = "OPTION_ID_IN_USE";
+    public static final String RUBRIC_SAVE_REQUIRES_DRAFT = "RUBRIC_SAVE_REQUIRES_DRAFT";
     private final EntityManagerFactory emf;
     private final CasoJpaAggregateReader reader;
     private final TransactionTemplate transaction;
@@ -116,6 +118,10 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
                 && !"Borrador".equals(snapshot.caso().estado())) {
             throw error(OPTION_ADD_REQUIRES_DRAFT, "Adding an option requires a draft case");
         }
+        if (commands.stream().anyMatch(GuardarRubricaCommand.class::isInstance)
+                && !"Borrador".equals(snapshot.caso().estado())) {
+            throw error(RUBRIC_SAVE_REQUIRES_DRAFT, "Saving a rubric requires a draft case");
+        }
     }
 
     static void assertOfficialContentGuards(Connection connection) throws SQLException {
@@ -178,6 +184,8 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
             case ActualizarEscenarioCommand c -> snapshot.escenarios().stream().anyMatch(e -> e.idEscenario().equals(c.idEscenario()));
             case ActualizarPreguntaCommand c -> snapshot.preguntas().stream().anyMatch(p -> p.idPregunta().equals(c.idPregunta()));
             case EliminarOpcionCommand c -> snapshot.opciones().stream().anyMatch(o -> o.idOpcion().equals(c.idOpcion()));
+            case GuardarRubricaCommand c -> c.preguntas().stream().allMatch(a ->
+                    snapshot.preguntas().stream().anyMatch(p -> p.idPregunta().equals(a.idPregunta())));
         };
         if (!belongs) { throw error(ELEMENT_NOT_IN_CASE, "Element does not exist in this case"); }
     }
@@ -258,11 +266,66 @@ public class CasoCommandUpdateAdapter implements CasoUpdatePort {
                         case TEXTO_AYUDA -> "textoAyuda";
                         case ORDEN -> "orden";
                     }, c.valor());
+            case GuardarRubricaCommand c -> guardarRubrica(connection, caseId, c);
             case EliminarOpcionCommand c -> {
                 try (var statement = connection.prepareStatement("DELETE FROM public.\"OpcionRespuesta\" WHERE \"idOpcion\" = ?")) {
                     statement.setObject(1, c.idOpcion());
                     if (statement.executeUpdate() != 1) { throw error(ELEMENT_NOT_IN_CASE, "Option is no longer present"); }
                 }
+            }
+        }
+    }
+
+    private static void guardarRubrica(Connection connection, UUID caseId, GuardarRubricaCommand c) throws SQLException {
+        UUID idRubrica = null;
+        try (var statement = connection.prepareStatement("SELECT \"idRubrica\" FROM public.\"Rubrica\" WHERE \"idCaso\" = ?")) {
+            statement.setObject(1, caseId);
+            try (var rows = statement.executeQuery()) {
+                if (rows.next()) { idRubrica = rows.getObject(1, UUID.class); }
+            }
+        }
+        boolean nueva = idRubrica == null;
+        if (nueva) { idRubrica = UUID.randomUUID(); }
+        String sql = nueva
+                ? "INSERT INTO public.\"Rubrica\" (\"nombre\", \"descripcion\", \"puntajeTotal\", \"definicionEvaluacion\", \"idRubrica\", \"idCaso\") VALUES (?, ?, ?, CAST(? AS jsonb), ?, ?)"
+                : "UPDATE public.\"Rubrica\" SET \"nombre\" = ?, \"descripcion\" = ?, \"puntajeTotal\" = ?, \"definicionEvaluacion\" = CAST(? AS jsonb) WHERE \"idRubrica\" = ?";
+        try (var statement = connection.prepareStatement(sql)) {
+            statement.setString(1, c.nombre());
+            statement.setString(2, c.descripcion());
+            statement.setBigDecimal(3, c.puntajeTotal());
+            statement.setString(4, RubricaDefinicionCodec.escribir(c.criterios()));
+            statement.setObject(5, idRubrica);
+            if (nueva) { statement.setObject(6, caseId); }
+            if (statement.executeUpdate() != 1) { throw new SQLException("Expected one rubric row"); }
+        }
+        var solicitadas = c.preguntas().stream().map(AsociacionRubrica::idPregunta).collect(java.util.stream.Collectors.toSet());
+        var existentes = new java.util.HashSet<UUID>();
+        try (var statement = connection.prepareStatement("SELECT \"idPregunta\" FROM public.\"RubricaPregunta\" WHERE \"idRubrica\" = ?")) {
+            statement.setObject(1, idRubrica);
+            try (var rows = statement.executeQuery()) {
+                while (rows.next()) { existentes.add(rows.getObject(1, UUID.class)); }
+            }
+        }
+        for (UUID retirada : existentes) {
+            if (solicitadas.contains(retirada)) { continue; }
+            try (var statement = connection.prepareStatement("DELETE FROM public.\"RubricaPregunta\" WHERE \"idRubrica\" = ? AND \"idPregunta\" = ?")) {
+                statement.setObject(1, idRubrica);
+                statement.setObject(2, retirada);
+                statement.executeUpdate();
+            }
+        }
+        for (AsociacionRubrica a : c.preguntas()) {
+            boolean existe = existentes.contains(a.idPregunta());
+            String asociacion = existe
+                    ? "UPDATE public.\"RubricaPregunta\" SET \"valorPregunta\" = ?, \"criterio\" = ? WHERE \"idRubrica\" = ? AND \"idPregunta\" = ?"
+                    : "INSERT INTO public.\"RubricaPregunta\" (\"valorPregunta\", \"criterio\", \"idRubrica\", \"idPregunta\", \"idRubricaPregunta\") VALUES (?, ?, ?, ?, ?)";
+            try (var statement = connection.prepareStatement(asociacion)) {
+                statement.setBigDecimal(1, a.valorPregunta());
+                statement.setString(2, a.criterio());
+                statement.setObject(3, idRubrica);
+                statement.setObject(4, a.idPregunta());
+                if (!existe) { statement.setObject(5, UUID.randomUUID()); }
+                statement.executeUpdate();
             }
         }
     }

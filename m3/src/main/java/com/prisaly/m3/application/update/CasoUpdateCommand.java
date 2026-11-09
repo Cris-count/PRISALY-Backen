@@ -1,5 +1,9 @@
 package com.prisaly.m3.application.update;
 
+import com.prisaly.m3.domain.model.CriterioRubrica;
+import com.prisaly.m3.domain.rule.RubricaStructureValidation;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -81,6 +85,31 @@ public sealed interface CasoUpdateCommand {
                 case ENUNCIADO -> requiredText(valor, Integer.MAX_VALUE);
                 case TEXTO_AYUDA -> optionalText(valor, Integer.MAX_VALUE);
                 case ORDEN -> positiveInteger(valor);
+            }
+        }
+    }
+
+    record AsociacionRubrica(UUID idPregunta, BigDecimal valorPregunta, String criterio) {
+        public AsociacionRubrica {
+            Objects.requireNonNull(idPregunta, "idPregunta");
+            RubricaStructureValidation.requirePositiveNumeric8_2(valorPregunta);
+        }
+    }
+
+    /** Creates or replaces the single rubric of the case. Empty criteria keep it incomplete. */
+    record GuardarRubricaCommand(String nombre, String descripcion, BigDecimal puntajeTotal,
+            List<CriterioRubrica> criterios, List<AsociacionRubrica> preguntas) implements CasoUpdateCommand {
+        public GuardarRubricaCommand {
+            requiredText(nombre, 150);
+            optionalText(descripcion, Integer.MAX_VALUE);
+            if (puntajeTotal != null) { RubricaStructureValidation.requirePositiveNumeric8_2(puntajeTotal); }
+            criterios = List.copyOf(criterios);
+            preguntas = List.copyOf(preguntas);
+            if (criterios.stream().map(CriterioRubrica::id).distinct().count() != criterios.size()) {
+                throw new IllegalArgumentException("Criteria identifiers must be unique");
+            }
+            if (preguntas.stream().map(AsociacionRubrica::idPregunta).distinct().count() != preguntas.size()) {
+                throw new IllegalArgumentException("A question can be associated only once");
             }
         }
     }

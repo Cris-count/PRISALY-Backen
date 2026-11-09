@@ -15,6 +15,7 @@ security:
 tags:
   - name: Casos
   - name: Contenido
+  - name: Rubrica
 paths:
   /v1/casos:
     post:
@@ -220,6 +221,50 @@ paths:
         '409': { $ref: '#/components/responses/Error' }
         '412': { $ref: '#/components/responses/Error' }
         '428': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/rubrica:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    get:
+      tags: [Rubrica]
+      summary: Consulta la rúbrica del caso. Requiere CONSULTAR_CASO y ser propietario.
+      responses:
+        '200':
+          description: Rúbrica
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rubrica' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    put:
+      tags: [Rubrica]
+      summary: Crea o reemplaza la rúbrica de un caso en Borrador
+      description: >
+        Requiere CONSULTAR_CASO, MODIFICAR_CASO y ser propietario. Puntajes, ponderaciones y valores
+        por pregunta se almacenan sin aplicar ninguna fórmula. Sin criterios, la rúbrica queda
+        incompleta y el caso no puede publicarse.
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/GuardarRubrica' }
+      responses:
+        '200':
+          description: Guardada; el ETag es el validador para la siguiente escritura
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Rubrica' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer }
@@ -253,6 +298,45 @@ components:
             required: [id]
             properties: { id: { type: string, format: uuid } }
   schemas:
+    Criterio:
+      type: object
+      required: [id, descripcion, puntaje]
+      additionalProperties: false
+      properties:
+        id: { type: string }
+        descripcion: { type: string }
+        puntaje: { type: integer, minimum: 1 }
+        ponderacion: { type: number, nullable: true, description: 'Dato almacenado; su uso depende de la fórmula M6 pendiente' }
+    AsociacionPregunta:
+      type: object
+      required: [idPregunta, valorPregunta]
+      additionalProperties: false
+      properties:
+        idPregunta: { type: string, format: uuid }
+        valorPregunta: { type: number, exclusiveMinimum: true, minimum: 0 }
+        criterio: { type: string, nullable: true }
+    GuardarRubrica:
+      type: object
+      required: [nombre]
+      additionalProperties: false
+      properties:
+        nombre: { type: string, maxLength: 150 }
+        descripcion: { type: string, nullable: true }
+        puntajeTotal: { type: number, nullable: true }
+        criterios:
+          type: array
+          items: { $ref: '#/components/schemas/Criterio' }
+        preguntas:
+          type: array
+          items: { $ref: '#/components/schemas/AsociacionPregunta' }
+    Rubrica:
+      allOf:
+        - $ref: '#/components/schemas/GuardarRubrica'
+        - type: object
+          required: [idRubrica, completa]
+          properties:
+            idRubrica: { type: string, format: uuid }
+            completa: { type: boolean }
     Error:
       type: object
       required: [code, message]
