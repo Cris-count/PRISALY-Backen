@@ -470,6 +470,58 @@
           ]
         },
         {
+          "name": "PM4-15 | Convocatoria duplicada",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}",
+                "convocatorias"
+              ]
+            },
+            "description": "PM4-15. Ejecutar inmediatamente después de PM4-05, antes de iniciar la sesión. Ejecución y resultado observados: pendientes de Postman.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estudianteId\": \"{{estudianteId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Código duplicado\", function () { pm.expect(body.code).to.eql(\"M4-CONVOCATORIA-DUPLICADA\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
           "name": "PM4-07 | Iniciar sesión",
           "request": {
             "method": "PATCH",
@@ -830,58 +882,6 @@
                   "pm.test(\"HTTP 410\", function () { pm.response.to.have.status(410); });",
                   "const body = pm.response.json();",
                   "pm.test(\"Código retirado\", function () { pm.expect(body.code).to.eql(\"M4-ACCESO-LEGADO-RETIRADO\"); });"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "PM4-15 | Convocatoria duplicada",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Accept",
-                "value": "application/json"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "m4",
-                "sesiones",
-                "{{sesionId}}",
-                "convocatorias"
-              ]
-            },
-            "description": "PM4-15. Ejecutar inmediatamente después de PM4-05, antes de iniciar la sesión. Ejecución y resultado observados: pendientes de Postman.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"estudianteId\": \"{{estudianteId}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"HTTP 409\", function () { pm.response.to.have.status(409); });",
-                  "const body = pm.response.json();",
-                  "pm.test(\"Código duplicado\", function () { pm.expect(body.code).to.eql(\"M4-CONVOCATORIA-DUPLICADA\"); });"
                 ]
               }
             }
