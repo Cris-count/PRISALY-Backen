@@ -31,6 +31,11 @@
       "archivo": "PRISALY_Patrones_Diseno_REVISION_ACADEMICA_CORREGIDA.docx",
       "sha256": "52dd0bf4e53f8b3c49cf402f742e57ab8795c2f2d39f136fc94bc24a25abd26c",
       "uso": "Referencia documental; ratificacion no inferida"
+    },
+    {
+      "archivo": "PRISALY_Ing de Sofyware II.pdf",
+      "sha256": "a9052c92697c4bc91025d1981e81e8df4ec4a78bfd223263fc8fab31635ed47f",
+      "uso": "Paginas 6 (RF-CU), 8 (catalogo CU), 12-14 (sintesis); referencia historica, no ratificacion de reglas pendientes"
     }
   ],
   "requisitos": [
@@ -39,13 +44,43 @@
       "nombre": "Autenticar estudiantes",
       "texto_v27": "Autenticar estudiantes. El estudiante debe ingresar con su correo electrónico institucional y el código de autorización de la convocatoria.",
       "cu_arq_documental": "ARQ-CU-03",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-01"
+      ],
       "modulo": "M1 (+M4/M5)",
       "estado": "Parcial",
       "clases": "ActivacionCuentaEstudianteService;AutenticacionEstudianteService;SessionStudentAccessService;DenyingStudentAccessService",
       "endpoint": "POST /api/v1/acceso-estudiante/validar (501); activar/autenticar/cerrar-sesion (candidatos tras flag)",
-      "pruebas_referencia": "CuentaEstudiantePostgreSqlIT;StudentSessionControlledHttpIT;StudentHttpSecurityTest",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CuentaEstudiantePostgreSqlIT",
+          "modulo": "m1",
+          "fase": "failsafe",
+          "cantidad": 12,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "StudentHttpSecurityTest",
+          "modulo": "app",
+          "fase": "surefire",
+          "cantidad": 3,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "StudentSessionControlledHttpIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 3,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "1338dcb;2858cc4",
       "cambio": "A01/A02/A03: recursos de autenticacion y transporte seguro; DD-02 no habilitada",
       "bloqueo": "DD-02 (alcance del código) no ratificada",
@@ -56,20 +91,72 @@
         "T": 50,
         "H": 0,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "CuentaEstudiantePostgreSqlIT;StudentSessionControlledHttpIT;StudentHttpSecurityTest",
+      "bloqueo_historico": "DD-02 (alcance del código) no ratificada"
     },
     {
       "rf": "RF-02",
       "nombre": "Controlar acceso por rol",
       "texto_v27": "Controlar acceso por rol. El sistema debe restringir funciones según rol (administrador, docente, estudiante) y permiso específico para crear casos.",
       "cu_arq_documental": "ARQ-CU-01..07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-03",
+        "CU-05",
+        "CU-11"
+      ],
       "modulo": "M1 + APP",
       "estado": "Parcial",
       "clases": "PersonnelAuthenticationService (BCrypt), ProvisionalAccessTokenStore (TTL 8 h), ProvisionalBearerAuthenticationFilter, HttpApiConfig, M3CaseAuthorizationAdapter (CREAR_CASO), IdentidadM1Adapter (GESTIONAR_SESION)",
       "endpoint": "POST /api/v1/personal/autenticar, POST /cerrar-sesion, GET /me, GET /autorizacion/crear-caso",
-      "pruebas_referencia": "M1HttpSecurityContractTest (6, pasa), IdentityPersistenceIT (6, PG, pasa); PersonalAuthSecurityIT (9) FALLA en HEAD: contexto sin StudentAccessPort",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "IdentityPersistenceIT",
+          "modulo": "m1",
+          "fase": "failsafe",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M1HttpSecurityContractTest",
+          "modulo": "app",
+          "fase": "surefire",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "PersonalAuthSecurityIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 9,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "ProvisionalAccessTokenStoreTest",
+          "modulo": "m1",
+          "fase": "surefire",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "StudentHttpSecurityTest",
+          "modulo": "app",
+          "fase": "surefire",
+          "cantidad": 3,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "1338dcb;2858cc4",
       "cambio": "A01/A02/A03: recursos de autenticacion y transporte seguro; DD-02 no habilitada",
       "bloqueo": "Token provisional en memoria (TD-M1-AUTH-PROVISIONAL); rol estudiante sin identidad",
@@ -80,20 +167,53 @@
         "T": 50,
         "H": 50,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "M1HttpSecurityContractTest (6, pasa), IdentityPersistenceIT (6, PG, pasa); PersonalAuthSecurityIT (9) FALLA en HEAD: contexto sin StudentAccessPort",
+      "bloqueo_historico": "Token provisional en memoria (TD-M1-AUTH-PROVISIONAL); rol estudiante sin identidad"
     },
     {
       "rf": "RF-03",
       "nombre": "Administrar docentes, roles y permisos",
       "texto_v27": "Administrar docentes, roles y permisos. El administrador debe crear los usuarios docentes y asignar sus roles y permisos.",
       "cu_arq_documental": "— (sin CU/CA, laguna ARQ-004)",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-02",
+        "CU-03"
+      ],
       "modulo": "M1",
       "estado": "Estructural",
       "clases": "IdentityCatalogService.createRole/createPermission/registerUser/assignPermission/deactivateUser",
       "endpoint": "Ninguno (propuesta ARQ-004 POST /api/v1/docentes no implementada)",
-      "pruebas_referencia": "Usado como fixture en M3CasoCreationIT, DocenteConvocatoriaM1M7IT, EstudianteIntentosM5SecurityIT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "DocenteConvocatoriaM1M7IT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 5,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "EstudianteIntentosM5SecurityIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M3CasoCreationIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 12,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Sin CA aprobado; sin endpoint de administración",
@@ -104,20 +224,53 @@
         "T": 50,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "Usado como fixture en M3CasoCreationIT, DocenteConvocatoriaM1M7IT, EstudianteIntentosM5SecurityIT",
+      "bloqueo_historico": "Sin CA aprobado; sin endpoint de administración"
     },
     {
       "rf": "RF-04",
       "nombre": "Asociar espacio académico y estudiantes",
       "texto_v27": "Asociar espacio académico y estudiantes. Al agendar un caso, el docente debe asociar el nombre del espacio académico y uno o varios estudiantes autorizados.",
       "cu_arq_documental": "ARQ-CU-02",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-11",
+        "CU-12"
+      ],
       "modulo": "M4",
       "estado": "Parcial",
       "clases": "SesionAcademicaService.crearSesion/convocarEstudiante, SesionAcademicaEntity.nombreEspacioAcademico, ConvocatoriaRepositoryAdapter",
       "endpoint": "POST /api/m4/sesiones; POST/GET /api/m4/sesiones/{id}/convocatorias",
-      "pruebas_referencia": "SesionAcademicaPostgreSqlIT (29, PG+HTTP), M4HttpErrorsTest (17), DocenteConvocatoriaM1M7IT (5)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "DocenteConvocatoriaM1M7IT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 5,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M4HttpErrorsTest",
+          "modulo": "m4",
+          "fase": "surefire",
+          "cantidad": 32,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "SesionAcademicaPostgreSqlIT",
+          "modulo": "m4",
+          "fase": "failsafe",
+          "cantidad": 32,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Estudiantes solo pueden existir por SQL (no hay alta de Estudiante)",
@@ -128,20 +281,53 @@
         "T": 75,
         "H": 50,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "SesionAcademicaPostgreSqlIT (29, PG+HTTP), M4HttpErrorsTest (17), DocenteConvocatoriaM1M7IT (5)",
+      "bloqueo_historico": "Estudiantes solo pueden existir por SQL (no hay alta de Estudiante)"
     },
     {
       "rf": "RF-05",
       "nombre": "Registrar estructura académica del caso",
       "texto_v27": "Registrar estructura académica del caso. El docente autorizado debe registrar nombre, desarrollo situacional, contexto o historia, lista de escenarios académicos y tiempo estimado de participación.",
       "cu_arq_documental": "ARQ-CU-01",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-05",
+        "CU-06"
+      ],
       "modulo": "M3",
       "estado": "Parcial",
       "clases": "CasoCreationController, CrearCasoRequest(idCaso,titulo,tiempoEstimadoSegundos,historia,desarrolloSituacional), CasoApplicationService.createDraft, CasoPersistenceAdapter",
       "endpoint": "POST /api/v1/casos (201, estado BORRADOR)",
-      "pruebas_referencia": "M3CasoCreationIT (12, PG+HTTP+concurrencia), M3CasoCreationTest (6), CasoPersistenceAdapterIT (25)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CasoPersistenceAdapterIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 47,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M3CasoCreationIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 12,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M3CasoCreationTest",
+          "modulo": "app",
+          "fase": "surefire",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Escenarios no expuestos por REST",
@@ -152,20 +338,53 @@
         "T": 75,
         "H": 50,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "M3CasoCreationIT (12, PG+HTTP+concurrencia), M3CasoCreationTest (6), CasoPersistenceAdapterIT (25)",
+      "bloqueo_historico": "Escenarios no expuestos por REST"
     },
     {
       "rf": "RF-06",
       "nombre": "Registrar contextos y preguntas por escenario",
       "texto_v27": "Registrar contextos y preguntas por escenario. Cada escenario académico debe contener un contexto situacional y una lista de preguntas con sus respuestas.",
       "cu_arq_documental": "ARQ-CU-01",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-06",
+        "CU-07"
+      ],
       "modulo": "M3",
       "estado": "Parcial",
       "clases": "Escenario, Pregunta, CasoCommandUpdateAdapter (alta progresiva), CasoValidation",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "CasoCommandAddContentIT (22, PG), CasoCommandUpdateIT (13), CasoCommandConcurrencyIT (7)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CasoCommandAddContentIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 22,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "CasoCommandConcurrencyIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 7,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "CasoCommandUpdateIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 13,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Sin REST para contenido",
@@ -176,20 +395,43 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "CasoCommandAddContentIT (22, PG), CasoCommandUpdateIT (13), CasoCommandConcurrencyIT (7)",
+      "bloqueo_historico": "Sin REST para contenido"
     },
     {
       "rf": "RF-07",
       "nombre": "Administrar preguntas y respuestas",
       "texto_v27": "Administar preguntas y respuestas. El docente debe agregar a cada escenario preguntas con opciones de respuesta e identificar cuáles son correctas o incorrectas.",
       "cu_arq_documental": "ARQ-CU-01",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-07"
+      ],
       "modulo": "M3",
       "estado": "Parcial",
       "clases": "Pregunta, OpcionRespuesta (clasificación correcta/incorrecta), CasoCommandUpdateAdapter",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "CasoCommandAddContentIT, CasoCommandUpdateIT, pruebas de dominio M3",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CasoCommandAddContentIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 22,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "CasoCommandUpdateIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 13,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Sin REST para contenido",
@@ -200,20 +442,24 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "CasoCommandAddContentIT, CasoCommandUpdateIT, pruebas de dominio M3",
+      "bloqueo_historico": "Sin REST para contenido"
     },
     {
       "rf": "RF-08",
       "nombre": "Justificar respuestas correctas e incorrectas",
       "texto_v27": "Justificar respuestas correctas e incorrectas. El docente debe asociar a cada opción la explicación de por qué es correcta o incorrecta.",
       "cu_arq_documental": "ARQ-CU-01",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-07"
+      ],
       "modulo": "M3",
       "estado": "Parcial",
       "clases": "OpcionRespuesta.explicacion, CasoValidation (CA-CASO-04)",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "Pruebas de validación de dominio M3 + ITs de contenido",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [],
+      "resultado": "Sin evidencia ejecutada suficiente para cerrar este RF; ver fuentes y brecha",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Sin REST para contenido",
@@ -224,23 +470,58 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "Pruebas de validación de dominio M3 + ITs de contenido",
+      "bloqueo_historico": "Sin REST para contenido"
     },
     {
       "rf": "RF-09",
       "nombre": "Validar estructura y rúbrica del caso",
       "texto_v27": "Validar estructura y rúbrica del caso. Todo caso nuevo queda en estado Borrador. El sistema debe validar que cumpla la estructura académica y tenga rúbrica asociada antes de pasarlo a Publicado; solo los casos publicados podrán agendarse. El docente podrá archivar un caso para que no se use en nuevas programaciones.",
       "cu_arq_documental": "ARQ-CU-01/02",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-05",
+        "CU-09",
+        "CU-10",
+        "CU-11"
+      ],
       "modulo": "M3 + M4 + BD",
       "estado": "Parcial",
       "clases": "CasoValidation, CasoPublication, CasoPersistentPublicationService/CasoPublicationAdapter (no ensamblados en APP), CasoAcademicoBd0052Adapter, V009",
       "endpoint": "Ninguno para publicar/archivar",
-      "pruebas_referencia": "CasoPublicationContractTest, ProgramacionParticipacionPostgreSqlIT, Bd0052BaselineIT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "Bd0052BaselineIT",
+          "modulo": "m4",
+          "fase": "failsafe",
+          "cantidad": 3,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "CasoPublicationContractTest",
+          "modulo": "m3",
+          "fase": "surefire",
+          "cantidad": 14,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "ProgramacionParticipacionPostgreSqlIT",
+          "modulo": "m4",
+          "fase": "failsafe",
+          "cantidad": 22,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
-      "bloqueo": "Publicación no registrada como bean (PR #27); archivar sin operación",
+      "bloqueo": "Politica de publicacion/archivo y completitud de rubrica legacy frente a persistencia sin equivalencia ratificada",
       "evidencia_historica": "Restricción 'solo publicados se agendan' activa en BD y M4; pero ningún flujo productivo publica o archiva: un caso Publicado solo puede obtenerse por SQL.",
       "puntuaciones_historicas": {
         "I": 50,
@@ -248,20 +529,52 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "CasoPublicationContractTest, ProgramacionParticipacionPostgreSqlIT, Bd0052BaselineIT",
+      "bloqueo_historico": "Publicación no registrada como bean (PR #27); archivar sin operación"
     },
     {
       "rf": "RF-10",
       "nombre": "Responder y modificar respuestas",
       "texto_v27": "Responder y modificar respuestas. El estudiante debe consultar los contextos académicos, responder las preguntas y volver entre ellas para cambiar sus selecciones hasta finalizar su participación.",
       "cu_arq_documental": "ARQ-CU-04",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-15"
+      ],
       "modulo": "M5",
       "estado": "Implementado y bloqueado",
       "clases": "ActualizarRespuestaServicio, RegistrarRespuestaServicio, ControlAccesoIntentos, IdentidadEstudianteDesdeM1",
       "endpoint": "GET /api/v1/estudiantes/intentos/{id}; PUT /api/v1/estudiantes/intentos/{id}/respuestas/{idPregunta} (registrados; deniegan sin identidad)",
-      "pruebas_referencia": "RepositorioIntentosJpaIT (28, PG+concurrencia, pasa), IntentosEstudianteM5MvcTest (5, pasa); EstudianteIntentosM5SecurityIT (6) FALLA en HEAD",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "EstudianteIntentosM5SecurityIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "IntentosEstudianteM5MvcTest",
+          "modulo": "m5",
+          "fase": "surefire",
+          "cantidad": 5,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "RepositorioIntentosJpaIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 28,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-02 (identidad estudiantil)",
@@ -272,20 +585,34 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "RepositorioIntentosJpaIT (28, PG+concurrencia, pasa), IntentosEstudianteM5MvcTest (5, pasa); EstudianteIntentosM5SecurityIT (6) FALLA en HEAD",
+      "bloqueo_historico": "DD-02 (identidad estudiantil)"
     },
     {
       "rf": "RF-11",
       "nombre": "Registrar respuestas y mostrar progreso",
       "texto_v27": "Registrar respuestas y mostrar progreso. El sistema debe registrar las respuestas del estudiante y mostrar su progreso en cada respuesta durante la participación.",
       "cu_arq_documental": "ARQ-CU-04",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-15"
+      ],
       "modulo": "M5",
       "estado": "Implementado y bloqueado",
       "clases": "RegistrarRespuestaServicio, ResumenIntento (revisión/resumen estable, A-01), ConsultarIntentoServicio",
       "endpoint": "GET/PUT de intentos (ver RF-10)",
-      "pruebas_referencia": "RepositorioIntentosJpaIT, pruebas de aplicación M5",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "RepositorioIntentosJpaIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 28,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-02",
@@ -296,20 +623,44 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "RepositorioIntentosJpaIT, pruebas de aplicación M5",
+      "bloqueo_historico": "DD-02"
     },
     {
       "rf": "RF-12",
       "nombre": "Registrar inicio y fin de la participación",
       "texto_v27": "Registrar inicio y fin de la participación. Cada participación debe quedar asociada a un inicio, un fin, una calificación final y la retroalimentación por pregunta.",
       "cu_arq_documental": "ARQ-CU-04/05",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-15",
+        "CU-16"
+      ],
       "modulo": "M5 + M6",
       "estado": "Parcial",
       "clases": "IniciarIntentoServicio, FinalizarIntentoServicio, IntentosM5Controlador (sin @RestController)",
       "endpoint": "POST /sesiones/{id}/intentos y POST /intentos/{id}/finalizar NO registrados",
-      "pruebas_referencia": "InicioIntentoIT (15, PG+concurrencia), AccesoEstudianteM4M5IT (9)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "AccesoEstudianteM4M5IT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 9,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "InicioIntentoIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 15,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-02, D07; ElegibilidadNoRatificada; calificación y retro por pregunta ausentes",
@@ -320,20 +671,53 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "InicioIntentoIT (15, PG+concurrencia), AccesoEstudianteM4M5IT (9)",
+      "bloqueo_historico": "DD-02, D07; ElegibilidadNoRatificada; calificación y retro por pregunta ausentes"
     },
     {
       "rf": "RF-13",
       "nombre": "Calcular nota con rúbrica",
       "texto_v27": "Calcular nota con rúbrica. El sistema debe calcular y almacenar la calificación de cada intento a partir de las respuestas y de la rúbrica asociada.",
       "cu_arq_documental": "ARQ-CU-05",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-08",
+        "CU-16"
+      ],
       "modulo": "M6",
       "estado": "Estructural",
       "clases": "EstrategiaEvaluacion (interfaz sin implementación productiva), EvaluacionProtectionProxy, PrepararEvaluacionProtegida, M6EvaluacionAuthorizationAdapter",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "EstrategiaEvaluacionTest (estrategia de prueba), ComposicionEvaluacionM5M6IT (7), CalificacionJpaReadIT (9)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CalificacionJpaReadIT",
+          "modulo": "m6",
+          "fase": "failsafe",
+          "cantidad": 9,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "ComposicionEvaluacionM5M6IT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 7,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "EstrategiaEvaluacionTest",
+          "modulo": "m6",
+          "fase": "surefire",
+          "cantidad": 6,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-03 (fórmula/escala); autorización M6 siempre DENEGADO",
@@ -344,20 +728,44 @@
         "T": 25,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "EstrategiaEvaluacionTest (estrategia de prueba), ComposicionEvaluacionM5M6IT (7), CalificacionJpaReadIT (9)",
+      "bloqueo_historico": "DD-03 (fórmula/escala); autorización M6 siempre DENEGADO"
     },
     {
       "rf": "RF-14",
       "nombre": "Mostrar resultado y retroalimentación final",
       "texto_v27": "Mostrar resultado y retroalimentación final. Al finalizar el intento, el sistema debe presentar aciertos, errores, sus explicaciones y nota final; no debe anticipar justificaciones durante la resolución.",
       "cu_arq_documental": "ARQ-CU-05/07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-16",
+        "CU-17"
+      ],
       "modulo": "M6",
       "estado": "Estructural",
       "clases": "CalificacionReadAdapter, RetroalimentacionGeneralReadAdapter (puertos de lectura)",
       "endpoint": "Ninguno (propuestas ARQ-004 /resultado no implementadas)",
-      "pruebas_referencia": "CalificacionJpaReadIT, RetroalimentacionGeneralJpaReadIT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CalificacionJpaReadIT",
+          "modulo": "m6",
+          "fase": "failsafe",
+          "cantidad": 9,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "RetroalimentacionGeneralJpaReadIT",
+          "modulo": "m6",
+          "fase": "failsafe",
+          "cantidad": 10,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-12 (provisional, contradice texto V27) + DD-03",
@@ -368,20 +776,34 @@
         "T": 25,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "CalificacionJpaReadIT, RetroalimentacionGeneralJpaReadIT",
+      "bloqueo_historico": "DD-12 (provisional, contradice texto V27) + DD-03"
     },
     {
       "rf": "RF-15",
       "nombre": "Consultar participaciones de estudiantes",
       "texto_v27": "Consultar participaciones de estudiantes. El docente debe navegar por los casos ya realizados y consultar por estudiante sus respuestas, retroalimentación por respuesta y retroalimentación general docente.",
       "cu_arq_documental": "ARQ-CU-07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-19"
+      ],
       "modulo": "M7 (V27) / M5-M6",
       "estado": "Estructural",
       "clases": "HistorialParticipacionPort (uso interno M4), lecturas M6",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "HistorialM4M5IT (23) prueba el historial para M4, no la consulta docente",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "HistorialM4M5IT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 23,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Sin diseño de API; DD-09",
@@ -392,20 +814,24 @@
         "T": 25,
         "H": 0,
         "R": 25
-      }
+      },
+      "pruebas_historicas_texto": "HistorialM4M5IT (23) prueba el historial para M4, no la consulta docente",
+      "bloqueo_historico": "Sin diseño de API; DD-09"
     },
     {
       "rf": "RF-16",
       "nombre": "Descargar reporte de participación",
       "texto_v27": "Descargar reporte de participación. El docente debe descargar el reporte de participación con los resultados académicos, incluidos avances parciales y ausencias, para registrar las notas en su sistema académico.",
       "cu_arq_documental": "ARQ-CU-07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-20"
+      ],
       "modulo": "M7 (V27)",
       "estado": "No implementado",
       "clases": "—",
       "endpoint": "—",
-      "pruebas_referencia": "—",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [],
+      "resultado": "Sin evidencia ejecutada suficiente para cerrar este RF; ver fuentes y brecha",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-04, DD-11",
@@ -416,20 +842,43 @@
         "T": 0,
         "H": 0,
         "R": 25
-      }
+      },
+      "pruebas_historicas_texto": "—",
+      "bloqueo_historico": "DD-04, DD-11"
     },
     {
       "rf": "RF-17",
       "nombre": "Registrar y asociar la rúbrica",
       "texto_v27": "Registrar y asociar la rúbrica. El docente debe registrar la rúbrica correspondiente al caso y asociarla para sustentar la calificación final.",
       "cu_arq_documental": "ARQ-CU-01",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-08"
+      ],
       "modulo": "M3 (+M6)",
       "estado": "Parcial",
       "clases": "Rubrica, CriterioRubrica, RubricaPregunta, RubricaStructureValidation, CasoBuilder.withRubrica",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "RubricaJpaReadIT, CasoJpaAggregateReadIT, pruebas de integridad de PR #52/#53",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CasoJpaAggregateReadIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 1,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "RubricaJpaReadIT",
+          "modulo": "m3",
+          "fase": "failsafe",
+          "cantidad": 1,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-03 (escala); sin REST",
@@ -440,23 +889,46 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "RubricaJpaReadIT, CasoJpaAggregateReadIT, pruebas de integridad de PR #52/#53",
+      "bloqueo_historico": "DD-03 (escala); sin REST"
     },
     {
       "rf": "RF-18",
       "nombre": "Agendar fecha, horarios y condiciones",
       "texto_v27": "Agendar fecha, horarios y condiciones. El docente debe definir fecha y horario de inicio y fin, tiempo máximo de participación no mayor al estimado del caso, lugar físico cuando aplique y mensaje personalizado.",
       "cu_arq_documental": "ARQ-CU-02",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-11"
+      ],
       "modulo": "M4",
       "estado": "Parcial",
       "clases": "CrearSesionRequest, SesionAcademica (fechas, tiempoMaximoParticipacionSegundos, lugarFisico, mensajePersonalizado)",
       "endpoint": "POST/PUT /api/m4/sesiones",
-      "pruebas_referencia": "SesionAcademicaPostgreSqlIT, M4HttpErrorsTest",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "M4HttpErrorsTest",
+          "modulo": "m4",
+          "fase": "surefire",
+          "cantidad": 32,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "SesionAcademicaPostgreSqlIT",
+          "modulo": "m4",
+          "fase": "failsafe",
+          "cantidad": 32,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
-      "bloqueo": "Regla 'tiempo ≤ estimado del caso' (CA-PROG-04) no encontrada",
+      "bloqueo": "Diferencia documental CA-PROG-04 frente a F3-04 vigente de duracion flexible; no cambiar regla M4 por inferencia",
       "evidencia_historica": "Campos implementados; validación solo de positividad; comparación con tiempoEstimado del caso ausente.",
       "puntuaciones_historicas": {
         "I": 75,
@@ -464,20 +936,35 @@
         "T": 75,
         "H": 50,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "SesionAcademicaPostgreSqlIT, M4HttpErrorsTest",
+      "bloqueo_historico": "Regla 'tiempo ≤ estimado del caso' (CA-PROG-04) no encontrada"
     },
     {
       "rf": "RF-19",
       "nombre": "Administrar estados de sesiones",
       "texto_v27": "Administrar estados de sesiones. Cada sesión debe pasar por Sin iniciar, En curso y Finalizado. El docente la inicia y puede finalizarla; el sistema debe automatizar el cierre un día después del fin previsto cuando corresponda.",
       "cu_arq_documental": "ARQ-CU-02/03",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-13",
+        "CU-14"
+      ],
       "modulo": "M4",
       "estado": "Parcial",
       "clases": "Patrón State: SinIniciarState, EnCursoState, FinalizadoState, SesionStateFactory",
       "endpoint": "PATCH /api/m4/sesiones/{id}/estado",
-      "pruebas_referencia": "SesionAcademicaPostgreSqlIT, pruebas de estado M4",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "SesionAcademicaPostgreSqlIT",
+          "modulo": "m4",
+          "fase": "failsafe",
+          "cantidad": 32,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Cierre automático +1 día no implementado; DD-01",
@@ -488,20 +975,44 @@
         "T": 75,
         "H": 50,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "SesionAcademicaPostgreSqlIT, pruebas de estado M4",
+      "bloqueo_historico": "Cierre automático +1 día no implementado; DD-01"
     },
     {
       "rf": "RF-20",
       "nombre": "Asignar y validar código de autorización",
       "texto_v27": "Asignar y validar código de autorización. El sistema debe asociar un código de autorización al acceso del estudiante convocado e incluirlo en la notificación de la programación.",
       "cu_arq_documental": "ARQ-CU-02/03",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-01",
+        "CU-11"
+      ],
       "modulo": "M1 / M4",
       "estado": "Estructural",
       "clases": "ActivacionCuentaEstudianteService;SessionStudentAccessService;DenyingStudentAccessService",
       "endpoint": "Ninguno productivo",
-      "pruebas_referencia": "CuentaEstudiantePostgreSqlIT;StudentSessionControlledHttpIT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "CuentaEstudiantePostgreSqlIT",
+          "modulo": "m1",
+          "fase": "failsafe",
+          "cantidad": 12,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "StudentSessionControlledHttpIT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 3,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "1338dcb;2858cc4",
       "cambio": "A01/A02/A03: recursos de autenticacion y transporte seguro; DD-02 no habilitada",
       "bloqueo": "DD-02",
@@ -512,20 +1023,53 @@
         "T": 50,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "CuentaEstudiantePostgreSqlIT;StudentSessionControlledHttpIT",
+      "bloqueo_historico": "DD-02"
     },
     {
       "rf": "RF-21",
       "nombre": "Notificar convocatoria y cambios de estudiantes",
       "texto_v27": "Notificar convocatoria y cambios de estudiantes. El sistema debe enviar por correo la información del caso, mensaje personalizado, URL y código; el docente podrá agregar o retirar estudiantes y cada afectado deberá ser notificado.",
       "cu_arq_documental": "ARQ-CU-02",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-11",
+        "CU-12"
+      ],
       "modulo": "M7 + M4",
       "estado": "Parcial",
       "clases": "NotificacionM4Adapter, NotificarConvocatoriaService (Observer), ProcesarEnviosPendientesService, JavaMailProveedorCorreoAdapter, PoliticaReintentos",
       "endpoint": "Indirecto vía POST convocatorias (M4)",
-      "pruebas_referencia": "M7EnvioWorkerPostgreSqlIT;M7ConvocatoriaPostgreSqlIT;DocenteConvocatoriaM1M7IT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "DocenteConvocatoriaM1M7IT",
+          "modulo": "app",
+          "fase": "failsafe",
+          "cantidad": 5,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M7ConvocatoriaPostgreSqlIT",
+          "modulo": "m7",
+          "fase": "failsafe",
+          "cantidad": 14,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "M7EnvioWorkerPostgreSqlIT",
+          "modulo": "m7",
+          "fase": "failsafe",
+          "cantidad": 13,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "5d1f8fc",
       "cambio": "A04: recuperacion SMTP tras configuracion fallida; worker deshabilitado",
       "bloqueo": "DD-02 (código/URL en correo); worker SMTP deshabilitado; sin retiro de estudiantes",
@@ -536,20 +1080,43 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "M7EnvioWorkerPostgreSqlIT;M7ConvocatoriaPostgreSqlIT;DocenteConvocatoriaM1M7IT",
+      "bloqueo_historico": "DD-02 (código/URL en correo); worker SMTP deshabilitado; sin retiro de estudiantes"
     },
     {
       "rf": "RF-22",
       "nombre": "Restringir ingreso tardío",
       "texto_v27": "Restringir ingreso tardío. El sistema debe impedir iniciar la participación si ya pasó la mitad de tiempo del caso en que el estudiante debió iniciar. La base de cálculo de ese umbral debe precisarse con el responsable académico antes de implementarl",
       "cu_arq_documental": "ARQ-CU-03",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-01"
+      ],
       "modulo": "M5",
       "estado": "Estructural",
       "clases": "LimiteTemporalInicio / LimiteTemporalNoRatificado (siempre bloquea)",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "IniciarIntentoServicioTest, TraductorErroresInicioTest",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "IniciarIntentoServicioTest",
+          "modulo": "m5",
+          "fase": "surefire",
+          "cantidad": 16,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "TraductorErroresInicioTest",
+          "modulo": "m5",
+          "fase": "surefire",
+          "cantidad": 4,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-05 (base de cálculo)",
@@ -560,20 +1127,44 @@
         "T": 50,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "IniciarIntentoServicioTest, TraductorErroresInicioTest",
+      "bloqueo_historico": "DD-05 (base de cálculo)"
     },
     {
       "rf": "RF-23",
       "nombre": "Controlar tiempo máximo de participación",
       "texto_v27": "Controlar tiempo máximo de participación. Al iniciar la participación, el sistema debe comenzar a contar el tiempo del estudiante y aplicar el tiempo máximo configurado, conservando las respuestas para su evaluación.",
       "cu_arq_documental": "ARQ-CU-04",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-15",
+        "CU-16"
+      ],
       "modulo": "M5",
       "estado": "Implementado y bloqueado",
       "clases": "IniciarIntentoServicio (limiteTemporal), FinalizarIntentoServicio (TIEMPO_VENCIDO), CoordinacionInicioDesdeM4",
       "endpoint": "Ninguno publicado",
-      "pruebas_referencia": "InicioIntentoIT, RepositorioIntentosJpaIT",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "InicioIntentoIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 15,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "RepositorioIntentosJpaIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 28,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-01, D07; inicio no habilitado",
@@ -584,20 +1175,26 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "InicioIntentoIT, RepositorioIntentosJpaIT",
+      "bloqueo_historico": "DD-01, D07; inicio no habilitado"
     },
     {
       "rf": "RF-24",
       "nombre": "Evaluar intentos incompletos y ausencias",
       "texto_v27": "Evaluar intentos incompletos y ausencias. El sistema debe calcular la nota parcial de quien no culmina y asignar cero a cada pregunta de quien no participa, aplicando las reglas de la rúbrica.",
       "cu_arq_documental": "ARQ-CU-05/07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-16",
+        "CU-19",
+        "CU-20"
+      ],
       "modulo": "M6",
       "estado": "No implementado",
       "clases": "—",
       "endpoint": "—",
-      "pruebas_referencia": "—",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [],
+      "resultado": "Sin evidencia ejecutada suficiente para cerrar este RF; ver fuentes y brecha",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-03, DD-13",
@@ -608,20 +1205,54 @@
         "T": 0,
         "H": 0,
         "R": 25
-      }
+      },
+      "pruebas_historicas_texto": "—",
+      "bloqueo_historico": "DD-03, DD-13"
     },
     {
       "rf": "RF-25",
       "nombre": "Autorizar repetición excepcional",
       "texto_v27": "Autorizar repetición excepcional. El sistema debe impedir repetir una participación registrada, salvo autorización del docente creador del caso; tampoco permitirá participar en una sesión finalizada.",
       "cu_arq_documental": "ARQ-CU-06",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-01",
+        "CU-14",
+        "CU-18"
+      ],
       "modulo": "M5 + BD",
       "estado": "Implementado y bloqueado",
       "clases": "Triggers V005/V007 (consumo de AutorizacionRepeticion), ck_intento_repeticion, RepeticionNoHabilitadaException",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "InicioIntentoIT, RepositorioParticipacionesJdbcTest, IniciarIntentoServicioTest",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "IniciarIntentoServicioTest",
+          "modulo": "m5",
+          "fase": "surefire",
+          "cantidad": 16,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "InicioIntentoIT",
+          "modulo": "m5",
+          "fase": "failsafe",
+          "cantidad": 15,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        },
+        {
+          "nombre": "RepositorioParticipacionesJdbcTest",
+          "modulo": "m5",
+          "fase": "surefire",
+          "cantidad": 4,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "Alcance entre sesiones pendiente; DD-04; sin operación docente",
@@ -632,20 +1263,34 @@
         "T": 75,
         "H": 25,
         "R": 75
-      }
+      },
+      "pruebas_historicas_texto": "InicioIntentoIT, RepositorioParticipacionesJdbcTest, IniciarIntentoServicioTest",
+      "bloqueo_historico": "Alcance entre sesiones pendiente; DD-04; sin operación docente"
     },
     {
       "rf": "RF-26",
       "nombre": "Registrar retroalimentación general docente",
       "texto_v27": "Registrar retroalimentación general docente. El docente debe añadir una valoración general a la participación individual del estudiante.",
       "cu_arq_documental": "ARQ-CU-07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-21"
+      ],
       "modulo": "M7 (V27) / M6",
       "estado": "Estructural",
       "clases": "RetroalimentacionGeneral (dominio) + RetroalimentacionGeneralReadAdapter",
       "endpoint": "Ninguno",
-      "pruebas_referencia": "RetroalimentacionGeneralJpaReadIT (10)",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [
+        {
+          "nombre": "RetroalimentacionGeneralJpaReadIT",
+          "modulo": "m6",
+          "fase": "failsafe",
+          "cantidad": 10,
+          "fallos": 0,
+          "errores": 0,
+          "omitidas": 0
+        }
+      ],
+      "resultado": "Evidencia tecnica parcial en SHA eb35f004b1261a57488162c631e08da1f4a744b4; no equivale a cierre funcional del RF",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-09",
@@ -656,20 +1301,25 @@
         "T": 25,
         "H": 0,
         "R": 50
-      }
+      },
+      "pruebas_historicas_texto": "RetroalimentacionGeneralJpaReadIT (10)",
+      "bloqueo_historico": "DD-09"
     },
     {
       "rf": "RF-27",
       "nombre": "Notificar calificaciones y feedback",
       "texto_v27": "Notificar calificaciones y feedback. El sistema debe notificar al estudiante su nota y avisar mediante el sistema cuando el docente agregue retroalimentación.",
       "cu_arq_documental": "ARQ-CU-05/07",
-      "cu_historico": null,
+      "cu_historico": [
+        "CU-17",
+        "CU-22"
+      ],
       "modulo": "M7",
       "estado": "No implementado",
       "clases": "—",
       "endpoint": "—",
-      "pruebas_referencia": "—",
-      "resultado": "Ver artefacto de aceptacion del SHA; no importar conteos historicos",
+      "pruebas_referencia": [],
+      "resultado": "Sin evidencia ejecutada suficiente para cerrar este RF; ver fuentes y brecha",
       "commit_cambio": "",
       "cambio": "Sin cambio productivo en este incremento",
       "bloqueo": "DD-12",
@@ -680,7 +1330,10 @@
         "T": 0,
         "H": 0,
         "R": 25
-      }
+      },
+      "pruebas_historicas_texto": "—",
+      "bloqueo_historico": "DD-12"
     }
-  ]
+  ],
+  "sha_evidencia_tecnica": "eb35f004b1261a57488162c631e08da1f4a744b4"
 }

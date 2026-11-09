@@ -1,0 +1,341 @@
+{
+  "collection": "postman/PRISALY-Integrante-1.postman_collection.json",
+  "exitCode": 0,
+  "requests": 13,
+  "assertions": 48,
+  "failures": 0,
+  "passed": true,
+  "executions": [
+    {
+      "name": "00-01 | Salud del backend | GET /health",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "service",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "status ok",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "01-01 | M1-POST-01 | Iniciar sesión correctamente",
+      "method": "POST",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "accessToken",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "tokenType",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "authPrototype",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "correo",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "01-02 | M1-POST-02 | Rechazar contraseña incorrecta",
+      "method": "POST",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code AUTH_FAILED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "01-03 | M1-POST-03 | Rechazar usuario inexistente",
+      "method": "POST",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code AUTH_FAILED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "01-04 | M1-NEG-01 | Rechazar usuario inactivo",
+      "method": "POST",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code AUTH_FAILED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "01-05 | M1-POST-07 | Rechazar datos de autenticación inválidos",
+      "method": "POST",
+      "status": 400,
+      "assertions": [
+        {
+          "name": "HTTP 400",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code VALIDATION_ERROR",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-01 | M1-PERF-01 | Consultar mi identidad",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "correo",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "tokenType",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "authPrototype",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-02 | M1-GET-04 | Rechazar consulta sin token",
+      "method": "GET",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code UNAUTHENTICATED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-03 | M1-GET-06 | Permitir operación con CREAR_CASO",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "allowed",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "permission",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "userId",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-04-prep | Autenticar usuario sin CREAR_CASO",
+      "method": "POST",
+      "status": 200,
+      "assertions": [
+        {
+          "name": "HTTP 200",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "accessToken",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "Sin CREAR_CASO",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-04 | M1-GET-05 | Rechazar operación sin CREAR_CASO",
+      "method": "GET",
+      "status": 403,
+      "assertions": [
+        {
+          "name": "HTTP 403",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code FORBIDDEN",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-05 | M1-NEG-02 | Rechazar token inválido",
+      "method": "GET",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code UNAUTHENTICATED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    },
+    {
+      "name": "02-06 | M1-NEG | Rechazar CREAR_CASO sin token",
+      "method": "GET",
+      "status": 401,
+      "assertions": [
+        {
+          "name": "HTTP 401",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "JSON",
+          "failed": false,
+          "skipped": false
+        },
+        {
+          "name": "code UNAUTHENTICATED",
+          "failed": false,
+          "skipped": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+> Building...
+√ Building...
+Initial chunk files | Names          |  Raw size | Estimated transfer size
+chunk-SZNFN6VW.js   | -              | 156.73 kB |                46.08 kB
+main-T6TV4M7R.js    | main           |  87.98 kB |                22.60 kB
+styles-DEYMKCJ5.css | styles         |   1.77 kB |               660 bytes
+
+                    | Initial total  | 246.48 kB |                69.34 kB
+
+Lazy chunk files    | Names          |  Raw size | Estimated transfer size
+chunk-VLWLUFIU.js   | simulador-page |  26.04 kB |                 6.78 kB
+
+Application bundle generation complete. [4.133 seconds] - 2026-11-09T00:05:56.414Z
+
+Output location: C:\Users\NICOLAS\.codex\worktrees\sim01-existente\PRISALY-Front\dist\PRISALY-Front
+

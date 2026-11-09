@@ -33,9 +33,9 @@ Se conserva el monolito modular, las capas y el gestor transaccional existente. 
 | Patrón/mecanismo observado | Evidencia existente | Estado y límite |
 |---|---|---|
 | Builder | M3 CasoBuilder | Construcción de borradores existente |
-| Composite | Jerarquía de contenido M3 documentada en el módulo | No cambia este incremento; no se certifica un catálogo oficial por nombre |
+| Composite | Jerarquía de contenido M3 documentada | Documentado; la composición de records por sí sola no demuestra el patrón GoF. Sin certificación nueva |
 | Facade | M5 ParticipacionFacade | Integración existente detrás del proxy protegido |
-| Chain of Responsibility | Cadena de validación de acceso M5 | Elegibilidad no ratificada conserva bloqueo |
+| Chain of Responsibility | Diseño conceptual de acceso; controles M5 existentes | El diseño no prueba una cadena de handlers productiva. Elegibilidad no ratificada conserva bloqueo |
 | State | M4 SesionState, SinIniciar/EnCurso/Finalizado | Existente; no cambia el efecto académico del cierre |
 | Adapter | M7 JavaMailProveedorCorreoAdapter y NotificacionM4Adapter | Integración existente; no contar todos los repositorios como GoF |
 | Observer | M7 contratos/estructura y M7ObserverTest | Estructural probado; el recorrido productivo usa también coordinación directa |
@@ -63,4 +63,4 @@ Reactor local secuencial: `mvnw -B -pl app -am clean verify`, aprobado. No ejecu
 
 Exclusión explícita: diagnóstico archivado `Bd0052BaselineIT#diagnosticoV010CreaDosTablasParalelasYEludeTriggerOficial`; no es una prueba aprobada ni omisión JUnit. Los tres métodos canónicos de esa suite se incluyen. No se ocultan errores ni se presentan mocks como persistencia real.
 
-Los 21 CU históricos se inventarían en `PLAN-21-CU.csv`, excluyendo CU-04 por integración en CU-11. Los CA completos no están recuperados; por eso sus resultados esperados y sus relaciones RF-CU no se inventan. El plan no equivale a ejecución completa. `v27-trazabilidad.json` conserva las relaciones ARQ documentales como tales, con advertencias históricas.
+Los 21 CU históricos se inventarían en `PLAN-21-CU.csv`, excluyendo CU-04 por integración en CU-11. Se localizaron sus nombres, actores y relaciones RF-CU en `PRISALY_Ing de Sofyware II.pdf`, páginas 6 y 8; las síntesis de las páginas 12–14 no sustituyen fichas exhaustivas ni actas de decisión. El plan relaciona pruebas parciales existentes y conserva sus límites. No equivale a ejecución completa de los CU. `v27-trazabilidad.json` separa estas relaciones históricas de los IDs ARQ.

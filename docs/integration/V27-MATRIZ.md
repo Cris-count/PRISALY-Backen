@@ -1,6 +1,6 @@
 # Matriz V27 de integracion — provisional
 
-Los 27 textos se conservan desde el catalogo disponible; la matriz historica corresponde a bc8e378. ARQ-CU-01..07 no se equiparan a los 21 CU historicos sin fuente. El JSON adjunto conserva clases, endpoints, pruebas de referencia, puntuaciones historicas y SHA-256 de fuentes. Los textos de brechas historicas pueden haber sido superados: no son hallazgos nuevos.
+Los 27 textos se conservan desde el catalogo disponible; la matriz historica corresponde a bc8e378. ARQ-CU-01..07 se conservan separados. Las relaciones historicas RF-CU proceden de PRISALY_Ing de Sofyware II.pdf, pagina 6; el catalogo de 21 CU, de su pagina 8. El JSON adjunto conserva clases, endpoints, pruebas de referencia, puntuaciones historicas y SHA-256 de fuentes. Los textos de brechas historicas pueden haber sido superados: no son hallazgos nuevos.
 
 | RF | Nombre | Modulo | Estado | Cambio de este incremento |
 |---|---|---|---|---|
@@ -38,4 +38,4 @@ La matriz de auditoria previa informa implementacion 47,2; integracion 40,7; pru
 
 Cumplimiento estricto historico: 0/27 con I=100. Este incremento no cierra un RF completo adicional: no se declara superar el 70 %. No se recalifican los 27 RF para aumentar una cifra. Comparacion porcentual inicial/final del incremento: no verificable sin valoracion actual por CA y ratificacion de referencia. Las nuevas pruebas se cuentan separadas del indice ponderado; no son cobertura instrumentada de codigo.
 
-Cobertura de pruebas planificadas para 21 CU historicos: el inventario de IDs existe, pero no se conoce el catalogo completo de resultados esperados y relaciones RF-CU aprobadas. No usar numero de suites como denominador ni confundir el plan con ejecucion.
+Cobertura de pruebas planificadas para 21 CU historicos: se recuperaron los 21 nombres y relaciones RF-CU documentales; sus sintesis no sustituyen fichas exhaustivas ni ratifican politicas pendientes. No usar numero de suites como denominador ni confundir el plan con ejecucion.
