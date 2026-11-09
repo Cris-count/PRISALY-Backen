@@ -4,6 +4,8 @@ Rama backend: `integration/cierre-backend-v27`. SHA inicial: `63eceb448e6c37596c
 
 [Ejecución 42539038094](https://github.com/Cris-count/PRISALY-Backen/actions/runs/42539038094), satisfactoria. PostgreSQL 16.15 real, Java 21, APP con servidor HTTP real y entorno efímero. Los conteos siguientes pertenecen exclusivamente a ese SHA; los commits documentales posteriores no se acreditan automáticamente por esta campaña. La validación final de la cabecera se identifica en los checks del PR y su artefacto.
 
+Validación posterior de cabecera: **19bfe6e755ce97733994328d75fd3c6885f60f83**, [Actions 42539911186](https://github.com/Cris-count/PRISALY-Backen/actions/runs/42539911186), satisfactoria: 1.207 pruebas Maven (801 unitarias/MVC y 406 PostgreSQL), 32 escenarios HTTP y 13 peticiones Postman con 48 aserciones aprobadas. Cero fallos, errores u omisiones JUnit; se conserva la exclusión explícita del diagnóstico V010 archivado. CI estándar aprobado. Este registro documental posterior conserva el límite de versión de esa evidencia.
+
 ## Cambios implementados
 
 | Commit | Módulo | Cambio |
