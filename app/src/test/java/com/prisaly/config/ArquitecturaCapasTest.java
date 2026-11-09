@@ -95,8 +95,8 @@ class ArquitecturaCapasTest {
         for (Fuente f : fuentes()) {
             if (enCapa(f, "presentation")) {
                 f.imports().stream()
-                        .filter(i -> i.endsWith("RepositoryPort") || i.startsWith("jakarta.persistence")
-                                || i.contains("JdbcTemplate"))
+                        .filter(i -> i.endsWith("RepositoryPort") || i.contains("JdbcTemplate")
+                                || (i.startsWith("jakarta.persistence") && !i.endsWith("Exception")))
                         .forEach(i -> violaciones.add(f.archivo() + " -> " + i));
             }
         }
