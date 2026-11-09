@@ -11,7 +11,7 @@ import com.prisaly.m1.application.port.AuthenticatedStudent;
 import com.prisaly.m1.application.port.StudentAccessPort;
 import com.prisaly.m1.application.service.DenyingStudentAccessService;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionAutenticadaM1Adapter;
 
 class ProgramacionAutenticadaTest {

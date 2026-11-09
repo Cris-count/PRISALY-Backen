@@ -1,5 +1,6 @@
 package com.prisaly.m4.application.port;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.domain.model.SesionAcademica;
 
 import java.util.List;
@@ -23,7 +24,7 @@ public interface SesionRepository {
     }
 
     private static RuntimeException noDisponible() {
-        return new com.prisaly.m4.domain.rule.ReglaNegocioException(
+        return new com.prisaly.m4.api.ReglaNegocioException(
                 "M4-PROVEEDOR-NO-DISPONIBLE",
                 "El repositorio no implementa el protocolo de bloqueo requerido");
     }

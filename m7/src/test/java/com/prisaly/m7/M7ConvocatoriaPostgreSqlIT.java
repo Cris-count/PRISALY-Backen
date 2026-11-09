@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.ConvocatoriaRepositoryAdapter;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m4.infrastructure.persistence.ConvocatoriaEntity;

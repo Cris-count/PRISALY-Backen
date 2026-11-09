@@ -1,6 +1,6 @@
 package com.prisaly.m4.domain.model;
 
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 import java.time.Instant;
 import java.util.Objects;

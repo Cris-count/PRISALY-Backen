@@ -1,7 +1,7 @@
 package com.prisaly.m4.presentation.controller;
 
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.presentation.dto.ActualizarSesionRequest;
 import com.prisaly.m4.presentation.dto.CambiarEstadoRequest;
 import com.prisaly.m4.presentation.dto.CrearSesionRequest;

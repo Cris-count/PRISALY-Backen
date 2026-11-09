@@ -13,7 +13,7 @@ import com.prisaly.m6.application.integration.IntentoEvaluacion;
 import com.prisaly.m6.application.integration.IntentoEvaluacion.RespuestaReferencia;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.ConsultaIntentoEvaluacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;

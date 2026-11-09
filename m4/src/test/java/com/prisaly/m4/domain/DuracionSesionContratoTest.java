@@ -3,7 +3,7 @@ package com.prisaly.m4.domain;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.prisaly.m4.domain.model.SesionAcademica;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.presentation.dto.CrearSesionRequest;
 import jakarta.validation.Validation;
 import java.time.Instant;

@@ -6,9 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import com.prisaly.m4.application.port.ConvocatoriaRepository;
-import com.prisaly.m4.domain.model.Convocatoria;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ConvocatoriasSesionPort;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m5.api.HistorialParticipacionPort;
 
 import org.junit.jupiter.api.AfterEach;
@@ -57,39 +56,13 @@ class ParticipacionesM4DesdeM5Test {
     private static final UUID CONVOCATORIA_A = UUID.randomUUID();
     private static final UUID CONVOCATORIA_B = UUID.randomUUID();
 
-    private List<Convocatoria> deLaSesion =
-            List.of(convocatoria(CONVOCATORIA_A), convocatoria(CONVOCATORIA_B));
+    private List<UUID> deLaSesion = List.of(CONVOCATORIA_A, CONVOCATORIA_B);
     private final List<Collection<UUID>> consultadas = new ArrayList<>();
     private boolean hayHistorial = true;
     private RuntimeException falloHistorial;
 
-    private final ConvocatoriaRepository m4 =
-            new ConvocatoriaRepository() {
-                @Override
-                public Convocatoria guardar(Convocatoria convocatoria) {
-                    throw new AssertionError("solo lectura");
-                }
-
-                @Override
-                public Optional<Convocatoria> buscarPorId(UUID id) {
-                    throw new AssertionError("no se usa");
-                }
-
-                @Override
-                public List<Convocatoria> listarPorSesion(UUID sesionId) {
-                    return SESION.equals(sesionId) ? deLaSesion : List.of();
-                }
-
-                @Override
-                public boolean existeConvocatoria(UUID sesionId, UUID estudianteId) {
-                    throw new AssertionError("no se usa");
-                }
-
-                @Override
-                public boolean estaConvocado(UUID sesionId, UUID estudianteId) {
-                    throw new AssertionError("no se usa");
-                }
-            };
+    private final ConvocatoriasSesionPort m4 =
+            sesionId -> SESION.equals(sesionId) ? deLaSesion : List.of();
 
     private final HistorialParticipacionPort historial =
             convocatorias -> {
@@ -139,7 +112,7 @@ class ParticipacionesM4DesdeM5Test {
     @Test
     @DisplayName("convocatorias incompletas de M4 se rechazan en lugar de ignorarse")
     void convocatoriasIncompletas() {
-        deLaSesion = List.of(new Convocatoria());
+        deLaSesion = java.util.Arrays.asList((UUID) null);
         assertThrows(
                 ReglaNegocioException.class, () -> proveedor.tieneParticipacionesOIntentos(SESION));
         deLaSesion = null;
@@ -158,9 +131,4 @@ class ParticipacionesM4DesdeM5Test {
         assertThrows(NullPointerException.class, () -> new ParticipacionesM4DesdeM5(m4, null));
     }
 
-    private static Convocatoria convocatoria(UUID id) {
-        Convocatoria convocatoria = new Convocatoria();
-        convocatoria.setId(id);
-        return convocatoria;
-    }
 }

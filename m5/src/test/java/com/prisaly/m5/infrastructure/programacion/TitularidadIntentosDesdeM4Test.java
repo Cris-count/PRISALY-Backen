@@ -23,7 +23,7 @@ import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.Titularidad;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 
 /**
  * Lógica del adaptador con dobles de la base y de M4. La integración real con

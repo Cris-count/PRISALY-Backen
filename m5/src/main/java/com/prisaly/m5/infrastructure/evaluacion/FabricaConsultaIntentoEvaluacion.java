@@ -6,7 +6,7 @@ import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.ConsultaIntentoEvaluacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 import org.springframework.transaction.PlatformTransactionManager;
 

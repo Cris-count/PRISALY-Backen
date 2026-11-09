@@ -4,7 +4,7 @@ import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 
 /**

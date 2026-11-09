@@ -9,7 +9,7 @@ import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m4.api.ContextoProgramacion;
 import com.prisaly.m4.api.ProgramacionAutenticadaPort;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 public final class ProgramacionAutenticadaM1Adapter implements ProgramacionAutenticadaPort {
     private final StudentAccessPort identidad;

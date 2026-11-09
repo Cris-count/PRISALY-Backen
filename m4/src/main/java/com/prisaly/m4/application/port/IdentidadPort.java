@@ -1,5 +1,6 @@
 package com.prisaly.m4.application.port;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import java.util.UUID;
 
 /**
@@ -14,7 +15,7 @@ public interface IdentidadPort {
 
     /** Identidad confiable de la petición; nunca se deduce de una cabecera del cliente. */
     default UUID docenteActual() {
-        throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+        throw new com.prisaly.m4.api.ReglaNegocioException(
                 "M4-NO-AUTENTICADO", "No existe una identidad autenticada disponible");
     }
 

@@ -16,7 +16,7 @@ import com.prisaly.m5.domain.intento.RespuestaDuplicadaException;
 import com.prisaly.m5.domain.intento.RespuestaNoRegistradaException;
 import com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException;
 import com.prisaly.m5.domain.respuesta.DatoRespuestaInvalidoException;
-import com.prisaly.m5.infrastructure.persistencia.PersistenciaIntentoException;
+import com.prisaly.m5.application.PersistenciaIntentoException;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataIntegrityViolationException;

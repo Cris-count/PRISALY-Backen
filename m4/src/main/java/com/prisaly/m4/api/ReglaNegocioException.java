@@ -1,4 +1,4 @@
-package com.prisaly.m4.domain.rule;
+package com.prisaly.m4.api;
 
 /**
  * Se lanza cuando se viola una regla de negocio en M4.

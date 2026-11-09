@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.time.OffsetDateTime;

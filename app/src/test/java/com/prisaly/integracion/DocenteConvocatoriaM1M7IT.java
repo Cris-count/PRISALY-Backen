@@ -15,7 +15,7 @@ import com.prisaly.m1.infrastructure.persistence.PermisoRepository;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.IdentidadM1Adapter;
 import com.prisaly.m7.application.ProcesarEnviosPendientesService;
 import com.prisaly.m7.domain.EstadoEnvioCorreo;

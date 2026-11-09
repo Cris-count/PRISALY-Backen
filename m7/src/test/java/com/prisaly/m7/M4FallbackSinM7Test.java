@@ -3,7 +3,7 @@ package com.prisaly.m7;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.prisaly.m4.application.port.NotificacionPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration;
 import com.prisaly.m7.infrastructure.NotificacionM4Adapter;
 import java.util.UUID;

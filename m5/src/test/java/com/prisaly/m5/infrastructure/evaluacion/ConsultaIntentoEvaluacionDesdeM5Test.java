@@ -12,7 +12,7 @@ import com.prisaly.m5.domain.respuesta.*;
 import com.prisaly.m6.application.AccesoEvaluacionDenegadoException;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.ConsultaIntentoEvaluacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.time.*;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;

@@ -5,7 +5,7 @@ import com.prisaly.m6.application.integration.ContextoEvaluacionPreparado;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso;
 import com.prisaly.m6.application.port.ConsultaCalificacionPort;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 
 /** Explicit internal composition only; never calculates, writes or publishes a grade. */

@@ -22,7 +22,7 @@ import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m3.domain.model.Caso;
 import com.prisaly.m3.domain.model.CasoEstado;
 import com.prisaly.m4.application.port.*;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.*;
 import com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration;
 

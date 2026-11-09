@@ -1,4 +1,4 @@
-package com.prisaly.m6.domain.strategy;
+package com.prisaly.m6.api;
 
 import java.util.Objects;
 import java.util.UUID;

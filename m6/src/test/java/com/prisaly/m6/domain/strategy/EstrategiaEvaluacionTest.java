@@ -1,5 +1,6 @@
 package com.prisaly.m6.domain.strategy;
 
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import static org.junit.jupiter.api.Assertions.*;
 import java.lang.reflect.Modifier;
 import java.math.BigDecimal;

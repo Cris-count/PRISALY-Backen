@@ -1,5 +1,6 @@
 package com.prisaly.m4.application.port;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import java.util.UUID;
 
 /**
@@ -24,7 +25,7 @@ public interface NotificacionPort {
      * para no simular entrega. {@code huellaCambio} identifica la nueva programación.
      */
     default void notificarCambioSesion(UUID sesionId, UUID estudianteId, String huellaCambio) {
-        throw new com.prisaly.m4.domain.rule.ReglaNegocioException(
+        throw new com.prisaly.m4.api.ReglaNegocioException(
                 "M4-PROVEEDOR-NO-DISPONIBLE",
                 "La notificación de cambios de sesión no está disponible");
     }

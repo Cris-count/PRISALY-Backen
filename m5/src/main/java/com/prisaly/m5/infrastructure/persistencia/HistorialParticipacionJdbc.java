@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.PersistenciaIntentoException;
 import java.sql.PreparedStatement;
 import java.util.Collection;
 import java.util.Objects;

@@ -8,7 +8,7 @@ import com.prisaly.m4.application.port.SesionRepository;
 import com.prisaly.m4.domain.model.Convocatoria;
 import com.prisaly.m4.domain.model.EstadoSesion;
 import com.prisaly.m4.domain.model.SesionAcademica;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -167,16 +167,6 @@ public class SesionAcademicaService {
                                 new ReglaNegocioException(
                                         "M4-SESION-NO-ENCONTRADA",
                                         "Sesión académica no encontrada: " + sesionId));
-    }
-
-    // ─── ListarSesiones ───────────────────────────────────────
-
-    @Transactional(readOnly = true)
-    public List<SesionAcademica> listarSesiones(UUID docenteId) {
-        if (docenteId != null) {
-            return sesionRepository.listarPorDocente(docenteId);
-        }
-        return sesionRepository.listarTodas();
     }
 
     // ─── ActualizarSesion ─────────────────────────────────────

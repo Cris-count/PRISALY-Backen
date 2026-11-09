@@ -1,7 +1,7 @@
 package com.prisaly.m4.infrastructure.adapter;
 
 import com.prisaly.m4.application.port.CasoAcademicoPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;

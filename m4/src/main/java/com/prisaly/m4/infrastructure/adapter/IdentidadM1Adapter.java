@@ -6,7 +6,7 @@ import java.util.UUID;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m4.application.port.IdentidadPort;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 /** Consume exclusivamente el contrato público de M1; no lee sus repositorios. */
 public final class IdentidadM1Adapter implements IdentidadPort {

@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import com.prisaly.m4.application.port.*;
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.model.SesionAcademica;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m4.infrastructure.config.M4ProviderAutoConfiguration;
 import com.prisaly.m4.infrastructure.persistence.JpaSesionRepository;

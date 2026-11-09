@@ -11,7 +11,7 @@ import com.prisaly.m4.api.*;
 import com.prisaly.m4.application.port.CasoAcademicoPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.model.*;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.CasoAcademicoBd0052Adapter;
 import com.prisaly.m4.infrastructure.adapter.IdentidadStubAdapter;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;

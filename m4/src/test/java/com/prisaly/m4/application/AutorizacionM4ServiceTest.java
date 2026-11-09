@@ -6,7 +6,7 @@ import static org.mockito.Mockito.*;
 import com.prisaly.m4.application.port.*;
 import com.prisaly.m4.application.service.SesionAcademicaService;
 import com.prisaly.m4.domain.model.SesionAcademica;
-import com.prisaly.m4.domain.rule.ReglaNegocioException;
+import com.prisaly.m4.api.ReglaNegocioException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

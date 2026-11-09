@@ -1,5 +1,6 @@
 package com.prisaly.m4.application;
 
+import com.prisaly.m4.api.ReglaNegocioException;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 

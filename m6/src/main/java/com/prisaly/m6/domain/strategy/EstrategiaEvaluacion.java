@@ -1,5 +1,6 @@
 package com.prisaly.m6.domain.strategy;
 
+import com.prisaly.m6.api.SolicitudEvaluacion;
 /**
  * Structural Strategy contract only. No default strategy or academic algorithm.
  * The caller must supply an explicitly selected implementation after DD-03 and

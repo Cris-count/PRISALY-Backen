@@ -9,7 +9,7 @@ import com.prisaly.m6.application.integration.ContextoEvaluacionPreparado;
 import com.prisaly.m6.application.integration.IntentoEvaluacion;
 import com.prisaly.m6.application.port.*;
 import com.prisaly.m6.domain.model.Calificacion;
-import com.prisaly.m6.domain.strategy.SolicitudEvaluacion;
+import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
