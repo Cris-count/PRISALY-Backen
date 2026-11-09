@@ -1,8 +1,7 @@
 package com.prisaly.m7.application;
 
-import com.prisaly.m7.domain.AvisoConvocatoria;
-import com.prisaly.m7.domain.EnvioCorreoConvocatoria;
 import com.prisaly.m7.domain.ConvocatoriaNotificable;
+import java.util.List;
 import java.util.Objects;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,10 +14,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class NotificarConvocatoriaService {
 
     private final ContextoConvocatoriaPort contexto;
-    private final RegistroAvisoPort registroAviso;
-    private final RegistroEnvioCorreoPort registroEnvio;
-    private final String plantillaContenido;
-    private final String plantillaAsunto;
+    private final PublicadorConvocatoria publicador;
 
     public NotificarConvocatoriaService(
             ContextoConvocatoriaPort contexto,
@@ -27,19 +23,16 @@ public class NotificarConvocatoriaService {
             String plantillaContenido,
             String plantillaAsunto) {
         this.contexto = Objects.requireNonNull(contexto, "contexto");
-        this.registroAviso = Objects.requireNonNull(registroAviso, "registroAviso");
-        this.registroEnvio = Objects.requireNonNull(registroEnvio, "registroEnvio");
         if (plantillaContenido == null || plantillaContenido.isBlank()) {
             throw new IllegalArgumentException("plantillaContenido is required");
         }
         if (plantillaAsunto == null || plantillaAsunto.isBlank()) {
             throw new IllegalArgumentException("plantillaAsunto is required");
         }
-        this.plantillaContenido = plantillaContenido;
-        this.plantillaAsunto = plantillaAsunto;
+        this.publicador = new PublicadorConvocatoria(
+                new ObservadorRegistroAviso(Objects.requireNonNull(registroAviso, "registroAviso"), plantillaContenido),
+                List.of(new ObservadorEncoladoCorreo(registroEnvio, plantillaAsunto, plantillaContenido)));
     }
-
-    private static final int LIMITE_ASUNTO = 255;
 
     @Transactional(propagation = Propagation.MANDATORY)
     public void ejecutar(NotificarConvocatoriaCommand command) {
@@ -53,27 +46,6 @@ public class NotificarConvocatoriaService {
                 || !command.estudianteId().equals(evento.estudianteId())) {
             throw new IllegalStateException("Contexto de convocatoria inconsistente");
         }
-        String contenido = componer(plantillaContenido, evento).strip();
-        String asunto = limitar(componer(plantillaAsunto, evento).strip(), LIMITE_ASUNTO);
-        registroAviso.registrar(new AvisoConvocatoria(evento, contenido));
-        registroEnvio.encolar(new EnvioCorreoConvocatoria(evento, asunto, contenido));
-    }
-
-    private static String componer(String plantilla, ConvocatoriaNotificable evento) {
-        return plantilla
-                .replace("{sesionId}", evento.sesionId().toString())
-                .replace("{nombreCaso}", texto(evento.nombreCaso()))
-                .replace("{nombreSesion}", texto(evento.nombreSesion()))
-                .replace("{inicioPrevisto}", texto(evento.inicioPrevisto()))
-                .replace("{finPrevisto}", texto(evento.finPrevisto()))
-                .replace("{mensajePersonalizado}", texto(evento.mensajePersonalizado()));
-    }
-
-    private static String texto(String valor) {
-        return valor == null ? "" : valor;
-    }
-
-    private static String limitar(String valor, int maximo) {
-        return valor.length() <= maximo ? valor : valor.substring(0, maximo);
+        publicador.publicar(evento);
     }
 }
