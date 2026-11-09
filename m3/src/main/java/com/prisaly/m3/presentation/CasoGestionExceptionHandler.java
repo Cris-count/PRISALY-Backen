@@ -6,7 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
-@RestControllerAdvice(assignableTypes = {CasoGestionController.class, CasoContenidoController.class})
+@RestControllerAdvice(assignableTypes = {CasoGestionController.class, CasoContenidoController.class,
+        CasoContenidoConsultaController.class})
 public final class CasoGestionExceptionHandler {
     public record ErrorResponse(String code, String message) { }
     @ExceptionHandler(CasoAuthenticationException.class)

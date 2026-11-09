@@ -49,6 +49,14 @@ public final class CasoDocenteConsultaService {
         return new CasoDocenteFichaVersionada(project(snapshot.caso()), snapshot.fingerprint());
     }
 
+    /** Complete aggregate for its owner, under the same read policy as the summary. */
+    public com.prisaly.m3.application.update.CasoUpdateResult consultarContenido(String idCaso) {
+        return authorized(idCaso, id -> {
+            if (versionedReader == null) { throw new IllegalStateException("Versioned reader unavailable"); }
+            return versionedReader.findById(id);
+        }, com.prisaly.m3.application.update.CasoUpdateResult::caso);
+    }
+
     private static CasoDocenteFicha project(Caso caso) {
         return new CasoDocenteFicha(UUID.fromString(caso.id()), caso.titulo(), caso.tiempoEstimadoSegundos(), caso.estado());
     }

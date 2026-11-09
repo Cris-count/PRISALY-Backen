@@ -1,0 +1,361 @@
+openapi: 3.0.3
+info:
+  title: PRISALY M3 - Casos y contenido
+  version: 1.0.0-candidato
+  description: >
+    Contrato de las rutas M3 implementadas. Documento nuevo: no sustituye a ARQ-008.3 ni a ningun
+    contrato historico. Las rutas de contenido son una propuesta tecnica autorizada bajo PD-04.
+    Las consultas exigen CONSULTAR_CASO y ser propietario. Las escrituras exigen ademas
+    MODIFICAR_CASO. La politica de lectura debe estar activada en el ambiente; sin ella, las
+    consultas responden 403.
+servers:
+  - url: /api
+security:
+  - bearerAuth: []
+tags:
+  - name: Casos
+  - name: Contenido
+paths:
+  /v1/casos:
+    post:
+      tags: [Casos]
+      summary: Crea un caso en Borrador. Requiere CREAR_CASO.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrearCaso' }
+      responses:
+        '201': { description: Creado }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    get:
+      tags: [Casos]
+      summary: Consulta resumida
+      responses:
+        '200':
+          description: Ficha del caso
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CasoResumen' }
+        '304': { description: If-None-Match coincide; comportamiento del marco, no es un contrato seleccionado }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    patch:
+      tags: [Casos]
+      summary: Modifica campos de un caso en Borrador
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PatchCaso' }
+      responses:
+        '204': { description: Modificado }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/contenido:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    get:
+      tags: [Contenido]
+      summary: Consulta completa del caso, con escenarios, preguntas, opciones y explicaciones
+      responses:
+        '200':
+          description: Contenido completo
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CasoContenido' }
+        '304': { description: If-None-Match coincide; comportamiento del marco }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '503': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/escenarios:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+    get:
+      tags: [Contenido]
+      summary: Lista los escenarios del caso
+      responses:
+        '200':
+          description: Escenarios ordenados
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Escenario' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    post:
+      tags: [Contenido]
+      summary: Agrega un escenario a un caso en Borrador
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrearEscenario' }
+      responses:
+        '201': { $ref: '#/components/responses/ElementoCreado' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/escenarios/{idEscenario}:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+      - $ref: '#/components/parameters/idEscenario'
+    get:
+      tags: [Contenido]
+      summary: Consulta un escenario del caso
+      responses:
+        '200':
+          description: Escenario
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Escenario' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/escenarios/{idEscenario}/preguntas:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+      - $ref: '#/components/parameters/idEscenario'
+    post:
+      tags: [Contenido]
+      summary: Agrega una pregunta a un escenario
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrearPregunta' }
+      responses:
+        '201': { $ref: '#/components/responses/ElementoCreado' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/preguntas/{idPregunta}:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+      - $ref: '#/components/parameters/idPregunta'
+    get:
+      tags: [Contenido]
+      summary: Consulta una pregunta del caso
+      responses:
+        '200':
+          description: Pregunta con opciones
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Pregunta' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /v1/casos/{idCaso}/preguntas/{idPregunta}/opciones:
+    parameters:
+      - $ref: '#/components/parameters/idCaso'
+      - $ref: '#/components/parameters/idPregunta'
+    get:
+      tags: [Contenido]
+      summary: Lista las opciones de una pregunta, con corrección y explicación
+      responses:
+        '200':
+          description: Opciones ordenadas
+          headers: { ETag: { $ref: '#/components/headers/ETag' } }
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Opcion' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+    post:
+      tags: [Contenido]
+      summary: Agrega una opción con su explicación
+      parameters:
+        - $ref: '#/components/parameters/ifMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CrearOpcion' }
+      responses:
+        '201': { $ref: '#/components/responses/ElementoCreado' }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { $ref: '#/components/responses/Error' }
+        '412': { $ref: '#/components/responses/Error' }
+        '428': { $ref: '#/components/responses/Error' }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+  headers:
+    ETag:
+      description: Validador fuerte del agregado completo
+      schema: { type: string, example: '"m3-v2:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"' }
+  parameters:
+    idCaso: { name: idCaso, in: path, required: true, schema: { type: string, format: uuid } }
+    idEscenario: { name: idEscenario, in: path, required: true, schema: { type: string, format: uuid } }
+    idPregunta: { name: idPregunta, in: path, required: true, schema: { type: string, format: uuid } }
+    ifMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag vigente. Si falta, 428; si es inválido, 400; si está obsoleto, 412.
+      schema: { type: string }
+  responses:
+    Error:
+      description: Error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ElementoCreado:
+      description: Creado. El ETag es el validador para la siguiente escritura.
+      headers: { ETag: { $ref: '#/components/headers/ETag' } }
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [id]
+            properties: { id: { type: string, format: uuid } }
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties: { code: { type: string }, message: { type: string } }
+    Estado: { type: string, enum: [BORRADOR, PUBLICADO, ARCHIVADO] }
+    CrearCaso:
+      type: object
+      required: [idCaso, titulo, tiempoEstimadoSegundos]
+      properties:
+        idCaso: { type: string, format: uuid }
+        titulo: { type: string, maxLength: 150 }
+        tiempoEstimadoSegundos: { type: integer, minimum: 1 }
+        historia: { type: string, nullable: true }
+        desarrolloSituacional: { type: string, nullable: true }
+    PatchCaso:
+      type: object
+      minProperties: 1
+      additionalProperties: false
+      properties:
+        titulo: { type: string }
+        tiempoEstimadoSegundos: { type: integer, minimum: 1 }
+        historia: { type: string, nullable: true }
+        desarrolloSituacional: { type: string, nullable: true }
+    CasoResumen:
+      type: object
+      required: [idCaso, titulo, tiempoEstimadoSegundos, estado]
+      properties:
+        idCaso: { type: string, format: uuid }
+        titulo: { type: string }
+        tiempoEstimadoSegundos: { type: integer }
+        estado: { $ref: '#/components/schemas/Estado' }
+    CasoContenido:
+      allOf:
+        - $ref: '#/components/schemas/CasoResumen'
+        - type: object
+          required: [escenarios]
+          properties:
+            historia: { type: string, nullable: true }
+            desarrolloSituacional: { type: string, nullable: true }
+            escenarios:
+              type: array
+              items: { $ref: '#/components/schemas/Escenario' }
+    Escenario:
+      type: object
+      required: [idEscenario, orden, activo, preguntas]
+      properties:
+        idEscenario: { type: string, format: uuid }
+        titulo: { type: string, nullable: true }
+        contexto: { type: string, nullable: true }
+        instrucciones: { type: string, nullable: true }
+        orden: { type: integer }
+        activo: { type: boolean }
+        preguntas:
+          type: array
+          items: { $ref: '#/components/schemas/Pregunta' }
+    Pregunta:
+      type: object
+      required: [idPregunta, enunciado, estadoEdicion, visible, orden, opciones]
+      properties:
+        idPregunta: { type: string, format: uuid }
+        enunciado: { type: string }
+        textoAyuda: { type: string, nullable: true }
+        estadoEdicion: { type: string }
+        visible: { type: boolean }
+        orden: { type: integer }
+        opciones:
+          type: array
+          items: { $ref: '#/components/schemas/Opcion' }
+    Opcion:
+      type: object
+      required: [idOpcion, texto, esCorrecta, orden]
+      properties:
+        idOpcion: { type: string, format: uuid }
+        texto: { type: string }
+        esCorrecta: { type: boolean }
+        explicacion: { type: string, nullable: true }
+        orden: { type: integer }
+    CrearEscenario:
+      type: object
+      required: [idEscenario, orden]
+      additionalProperties: false
+      properties:
+        idEscenario: { type: string, format: uuid }
+        titulo: { type: string, maxLength: 200, nullable: true }
+        contexto: { type: string, nullable: true }
+        instrucciones: { type: string, nullable: true }
+        orden: { type: integer, minimum: 1 }
+    CrearPregunta:
+      type: object
+      required: [idPregunta, enunciado, orden]
+      additionalProperties: false
+      properties:
+        idPregunta: { type: string, format: uuid }
+        enunciado: { type: string }
+        textoAyuda: { type: string, nullable: true }
+        orden: { type: integer, minimum: 1 }
+    CrearOpcion:
+      type: object
+      required: [idOpcion, texto, esCorrecta, explicacion, orden]
+      additionalProperties: false
+      properties:
+        idOpcion: { type: string, format: uuid }
+        texto: { type: string }
+        esCorrecta: { type: boolean }
+        explicacion: { type: string }
+        orden: { type: integer, minimum: 1 }
