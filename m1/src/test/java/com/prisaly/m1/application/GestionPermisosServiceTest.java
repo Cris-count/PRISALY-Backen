@@ -58,6 +58,8 @@ class GestionPermisosServiceTest {
         when(asignaciones.registrar(any(), any(), any(), any())).thenAnswer(inv ->
                 new AsignacionPermiso(inv.getArgument(0), inv.getArgument(1), true, inv.getArgument(2), OffsetDateTime.now()));
         when(asignaciones.deshabilitar(any(), any())).thenReturn(true);
+        when(asignaciones.reactivar(any(), any(), any(), any())).thenAnswer(inv ->
+                new AsignacionPermiso(inv.getArgument(0), inv.getArgument(1), true, inv.getArgument(2), OffsetDateTime.now()));
     }
 
     private static Usuario usuario(UUID id, Rol rol, String estado) {
@@ -124,11 +126,50 @@ class GestionPermisosServiceTest {
 
     @Test
     void duplicadoYUsuarioInexistenteSiguenRechazandose() {
-        when(asignaciones.existe(DOCENTE, id("CREAR_CASO"))).thenReturn(true);
+        when(asignaciones.existeHabilitada(DOCENTE, id("CREAR_CASO"))).thenReturn(true);
         assertEquals(PoliticaPermisos.CODE_DUPLICATE_ASSIGNMENT, assertThrows(IdentityDomainException.class,
                 () -> servicio.asignar(DOCENTE, id("CREAR_CASO"), ADMIN)).code());
         assertEquals(PoliticaPermisos.CODE_USER_NOT_FOUND, assertThrows(IdentityDomainException.class,
                 () -> servicio.asignar(AUSENTE, id("CREAR_CASO"), ADMIN)).code());
         verify(asignaciones, never()).registrar(any(), any(), any(), any());
+    }
+
+    /** DM1-02b (DC-M1-04): an active administrator MAY assign itself ordinary permissions. */
+    @ParameterizedTest
+    @ValueSource(strings = {"CREAR_CASO", "GESTIONAR_SESION", "CONSULTAR_CASO", "MODIFICAR_CASO"})
+    void dm102bAutoasignacionDePermisosOrdinariosPermitida(String codigo) {
+        servicio.asignar(ADMIN, id(codigo), ADMIN);
+        verify(asignaciones).registrar(eq(ADMIN), eq(id(codigo)), eq(ADMIN), any());
+        verify(auditoria).registrarExitoAlConfirmar("ASIGNAR", ADMIN, codigo, ADMIN);
+    }
+
+    /** DM1-02b (DC-M1-04): PUBLICAR_CASO and ARCHIVAR_CASO are never self-assignable; the rejection is audited. */
+    @ParameterizedTest
+    @ValueSource(strings = {"PUBLICAR_CASO", "ARCHIVAR_CASO"})
+    void dm102bAutoasignacionDePermisosOperativosProhibida(String codigo) {
+        var error = assertThrows(IdentityDomainException.class, () -> servicio.asignar(ADMIN, id(codigo), ADMIN));
+        assertEquals(PoliticaPermisos.CODE_SELF_ASSIGNMENT, error.code());
+        verify(auditoria).registrarRechazo("ASIGNAR", ADMIN, codigo, ADMIN, PoliticaPermisos.CODE_SELF_ASSIGNMENT);
+        verify(asignaciones, never()).registrar(any(), any(), any(), any());
+    }
+
+    /** DC-M1-04: a revoked assignment is re-enabled with the new administrator, not rejected as a duplicate. */
+    @Test
+    void asignacionRevocadaSeReactiva() {
+        when(asignaciones.existeHabilitada(DOCENTE, id("CREAR_CASO"))).thenReturn(false);
+        when(asignaciones.existe(DOCENTE, id("CREAR_CASO"))).thenReturn(true);
+        var resultado = servicio.asignar(DOCENTE, id("CREAR_CASO"), ADMIN);
+        assertEquals(ADMIN, resultado.getIdAdministradorAsignador());
+        verify(asignaciones).reactivar(eq(DOCENTE), eq(id("CREAR_CASO")), eq(ADMIN), any());
+        verify(asignaciones, never()).registrar(any(), any(), any(), any());
+    }
+
+    /** DC-M1-04: revoking a non-enabled assignment is reported as not found and audited as a rejection. */
+    @Test
+    void revocarAsignacionNoHabilitadaEsNoEncontrada() {
+        when(asignaciones.deshabilitar(DOCENTE, id("CREAR_CASO"))).thenReturn(false);
+        var error = assertThrows(IdentityDomainException.class, () -> servicio.revocar(DOCENTE, id("CREAR_CASO"), ADMIN));
+        assertEquals(PoliticaPermisos.CODE_PERMISSION_NOT_FOUND, error.code());
+        verify(auditoria).registrarRechazo("REVOCAR", DOCENTE, "CREAR_CASO", ADMIN, PoliticaPermisos.CODE_PERMISSION_NOT_FOUND);
     }
 }

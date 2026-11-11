@@ -57,7 +57,7 @@ class CasoContenidoConsultaHttpIT {
 
     @BeforeEach void administrador() {
         if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
-        admin = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+        admin = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
@@ -212,12 +212,12 @@ class CasoContenidoConsultaHttpIT {
     private Cuenta docente(boolean consultar, boolean modificar) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        Usuario u = catalog.registerUser("Docente", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        Usuario u = catalog.registerUser("Docente", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol);
         catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), admin); // DM1-02: setup only
         if (consultar) { catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin); }
         if (modificar) { catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + u.getCorreo() + "\",\"password\":\"Secret#1\"}")).build(), HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + u.getCorreo() + "\",\"password\":\"Fixture#Clave-2026\"}")).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, login.statusCode(), login.body());
         return new Cuenta(u.getIdUsuario(), json.readTree(login.body()).get("accessToken").asText());
     }

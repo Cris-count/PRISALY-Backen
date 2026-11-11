@@ -224,11 +224,11 @@ class ComposicionInstitucionalM1IT {
     private String docenteConCrearCaso(String correo) throws Exception {
         String rol = "Rol" + Math.abs(correo.hashCode());
         catalog.createRole(rol, "Docente");
-        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Fixture#Clave-2026", rol);
         catalog.assignPermission(user.getIdUsuario(), idPermisoCrearCaso(), administradorFixture());
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}"))
+                        .content("{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}"))
                 .andExpect(status().isOk())
                 .andReturn();
         return objectMapper.readTree(login.getResponse().getContentAsString()).get("accessToken").asText();

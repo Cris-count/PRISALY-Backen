@@ -91,10 +91,10 @@ class EstudianteIntentosM5SecurityIT {
     private String tokenPersonal(String sufijo) throws Exception {
         String correo = "m5.dd02." + sufijo + "@prisaly.test";
         identityCatalogService.createRole("DocenteM5" + sufijo, "Docente");
-        identityCatalogService.registerUser("Docente M5", correo, "Secret#1", "DocenteM5" + sufijo);
+        identityCatalogService.registerUser("Docente M5", correo, "Fixture#Clave-2026", "DocenteM5" + sufijo);
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}"))
+                        .content("{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}"))
                 .andExpect(status().isOk()).andReturn();
         return objectMapper.readTree(login.getResponse().getContentAsString()).get("accessToken").asText();
     }

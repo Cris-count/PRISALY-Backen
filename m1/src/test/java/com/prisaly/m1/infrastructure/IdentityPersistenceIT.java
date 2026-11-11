@@ -79,7 +79,7 @@ class IdentityPersistenceIT {
     private UUID usuarioFixture() {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         identityCatalogService.createRole(rol, "Fixture");
-        return identityCatalogService.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol)
+        return identityCatalogService.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol)
                 .getIdUsuario();
     }
 
@@ -87,7 +87,7 @@ class IdentityPersistenceIT {
         if (!identityCatalogService.existeRolAdministrador()) {
             identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
         }
-        return identityCatalogService.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+        return identityCatalogService.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
@@ -190,7 +190,7 @@ class IdentityPersistenceIT {
         Usuario usuario = identityCatalogService.registerUser(
                 "Ana Docente",
                 "Ana.Docente@prisaly.test",
-                "Secret#123",
+                "Fixture#Clave-2026-123",
                 "Docente");
 
         assertTrue(usuarioRepository.existsByCorreoIgnoreCase("ana.docente@prisaly.test"));
@@ -218,12 +218,12 @@ class IdentityPersistenceIT {
     @Test
     void rejectsDuplicateEmailCaseInsensitive() {
         identityCatalogService.createRole("DocenteDup", "Docente");
-        identityCatalogService.registerUser("Uno", "dup@prisaly.test", "Secret#1", "DocenteDup");
+        identityCatalogService.registerUser("Uno", "dup@prisaly.test", "Fixture#Clave-2026", "DocenteDup");
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
                 () -> identityCatalogService.registerUser(
-                        "Dos", "DUP@prisaly.test", "Secret#2", "DocenteDup"));
+                        "Dos", "DUP@prisaly.test", "Fixture#Clave-2026-2", "DocenteDup"));
 
         assertEquals(IdentityCatalogService.CODE_DUPLICATE_EMAIL, error.code());
     }
@@ -240,12 +240,12 @@ class IdentityPersistenceIT {
         Usuario admin = identityCatalogService.registerUser(
                 "Admin Asignador",
                 "asignador@prisaly.test",
-                "Secret#1",
+                "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR);
         Usuario docente = identityCatalogService.registerUser(
                 "Docente Perm",
                 "docente.perm@prisaly.test",
-                "Secret#1",
+                "Fixture#Clave-2026",
                 "AdminPerm");
 
         AsignacionPermiso assignment = identityCatalogService.assignPermission(
@@ -271,7 +271,7 @@ class IdentityPersistenceIT {
         Permiso permiso = identityCatalogService.createPermission(
                 "EDITAR_CASO", "Editar caso", null);
         Usuario user = identityCatalogService.registerUser(
-                "User Asig", "user.asig@prisaly.test", "Secret#1", "RolAsig");
+                "User Asig", "user.asig@prisaly.test", "Fixture#Clave-2026", "RolAsig");
 
         UUID actor = administradorFixture(); // DM1-02: setup only
         identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
@@ -290,7 +290,7 @@ class IdentityPersistenceIT {
         Permiso permiso = identityCatalogService.createPermission(
                 "VER_REPORTE", "Ver reporte", "Consulta");
         Usuario user = identityCatalogService.registerUser(
-                "User Disable", "user.disable@prisaly.test", "Secret#1", "RolDisable");
+                "User Disable", "user.disable@prisaly.test", "Fixture#Clave-2026", "RolDisable");
         UUID actor = administradorFixture(); // DM1-02: setup only
         identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
@@ -327,7 +327,9 @@ class IdentityPersistenceIT {
     @Import({IdentityCatalogService.class, PasswordHashConfig.class,
             com.prisaly.m1.application.service.GestionPermisosService.class,
             com.prisaly.m1.infrastructure.persistence.IdentidadJpaAdapter.class,
-            com.prisaly.m1.infrastructure.security.AuditoriaPermisosLog.class})
+            com.prisaly.m1.infrastructure.security.AuditoriaPermisosLog.class,
+            // DM1-08 (DC-M1-04): the catalog validates passwords against the blocklist.
+            com.prisaly.m1.infrastructure.security.ContrasenasBloqueadasClasspath.class})
     static class PersistenceTestApp {
     }
 }

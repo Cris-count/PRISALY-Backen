@@ -193,7 +193,7 @@ class ComposicionM3LecturaInstitucionalIT {
     private String docente(String correo, boolean conPermisoDeLectura) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
+        Usuario user = catalog.registerUser("Docente", correo, "Fixture#Clave-2026", rol);
         UUID actor = administradorFixture();
         catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), actor);
         if (conPermisoDeLectura) {
@@ -202,7 +202,7 @@ class ComposicionM3LecturaInstitucionalIT {
         HttpResponse<String> login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
-                        "{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}"))
+                        "{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}"))
                 .build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, login.statusCode(), login.body());
         String token = objectMapper.readTree(login.body()).get("accessToken").asText();

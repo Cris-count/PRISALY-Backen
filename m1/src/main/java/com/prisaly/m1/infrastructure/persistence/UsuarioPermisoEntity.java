@@ -69,6 +69,13 @@ public class UsuarioPermisoEntity {
         return habilitado;
     }
 
+    /** DC-M1-04: re-enables a revoked assignment, recording who re-granted it and when. */
+    public void reactivar(UUID asignador, OffsetDateTime fecha) {
+        this.habilitado = true;
+        this.idAdministradorAsignador = asignador;
+        this.fechaAsignacion = fecha;
+    }
+
     public void setHabilitado(boolean habilitado) {
         this.habilitado = habilitado;
     }

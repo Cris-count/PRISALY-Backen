@@ -70,7 +70,7 @@ class AuditoriaPermisosPersistenciaIT {
     }
 
     private UUID cuenta(String rol) {
-        Usuario u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        Usuario u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol);
         return u.getIdUsuario();
     }
     private UUID docente() {
@@ -129,7 +129,7 @@ class AuditoriaPermisosPersistenciaIT {
         catalog.assignPermission(docente, consultar, admin);
         String texto = registro();
         String hash = jdbc.queryForObject("SELECT \"passwordHash\" FROM \"Usuario\" WHERE \"idUsuario\"=?", String.class, docente);
-        for (String prohibido : new String[] {"Secret#1", hash, "@prisaly.test", "Bearer", "password", "token"}) {
+        for (String prohibido : new String[] {"Fixture#Clave-2026", hash, "@prisaly.test", "Bearer", "password", "token"}) {
             assertFalse(texto.contains(prohibido), prohibido);
         }
     }

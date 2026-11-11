@@ -20,4 +20,7 @@ public interface UsuarioRepositorioPort {
     void cambiarEstado(UUID idUsuario, String estado, OffsetDateTime fecha);
 
     boolean esCuentaEstudiante(UUID idUsuario);
+
+    /** DM1-08: sustituye el hash de la credencial; la política se valida antes, en la aplicación. */
+    void actualizarPasswordHash(UUID idUsuario, String passwordHash, OffsetDateTime fecha);
 }

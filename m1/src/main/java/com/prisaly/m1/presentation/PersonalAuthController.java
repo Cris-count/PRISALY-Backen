@@ -1,6 +1,7 @@
 package com.prisaly.m1.presentation;
 
 import com.prisaly.m1.application.port.AuthenticatedUser;
+import com.prisaly.m1.application.service.AutenticacionProtegidaService;
 import com.prisaly.m1.application.service.PersonnelAuthenticationService;
 import com.prisaly.m1.presentation.dto.PersonalAutenticarRequest;
 import com.prisaly.m1.presentation.dto.PersonalAutenticarResponse;
@@ -18,15 +19,20 @@ import org.springframework.web.bind.annotation.RestController;
 public class PersonalAuthController {
 
     private final PersonnelAuthenticationService personnelAuthenticationService;
+    private final AutenticacionProtegidaService autenticacionProtegida;
 
-    public PersonalAuthController(PersonnelAuthenticationService personnelAuthenticationService) {
+    public PersonalAuthController(PersonnelAuthenticationService personnelAuthenticationService,
+            AutenticacionProtegidaService autenticacionProtegida) {
         this.personnelAuthenticationService = personnelAuthenticationService;
+        this.autenticacionProtegida = autenticacionProtegida;
     }
 
     @PostMapping("/autenticar")
-    public PersonalAutenticarResponse autenticar(@Valid @RequestBody PersonalAutenticarRequest request) {
+    public PersonalAutenticarResponse autenticar(@Valid @RequestBody PersonalAutenticarRequest request,
+            HttpServletRequest http) {
+        // DM1-06: limits per account and per origin. The origin is the TCP peer; X-Forwarded-For is not trusted.
         PersonnelAuthenticationService.AuthResult result =
-                personnelAuthenticationService.authenticate(request.correo(), request.password());
+                autenticacionProtegida.autenticar(request.correo(), request.password(), http.getRemoteAddr());
         AuthenticatedUser user = result.user();
         return new PersonalAutenticarResponse(
                 result.accessToken(),

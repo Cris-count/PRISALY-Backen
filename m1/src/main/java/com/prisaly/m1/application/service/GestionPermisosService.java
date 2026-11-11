@@ -71,14 +71,17 @@ public class GestionPermisosService {
                         "Students cannot receive this permission");
             }
         }
-        if (asignaciones.existe(idUsuario, idPermiso)) {
+        if (asignaciones.existeHabilitada(idUsuario, idPermiso)) {
             throw duplicada();
         }
         if (idActor != null && !usuarios.existePorId(idActor)) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_USER_NOT_FOUND, "Assigner user not found");
         }
         try {
-            AsignacionPermiso guardada = asignaciones.registrar(idUsuario, idPermiso, idActor, OffsetDateTime.now());
+            // DC-M1-04: a revoked row (habilitado=false) is re-enabled instead of being reported as a duplicate.
+            AsignacionPermiso guardada = asignaciones.existe(idUsuario, idPermiso)
+                    ? asignaciones.reactivar(idUsuario, idPermiso, idActor, OffsetDateTime.now())
+                    : asignaciones.registrar(idUsuario, idPermiso, idActor, OffsetDateTime.now());
             auditoria.registrarExitoAlConfirmar(ASIGNAR, idUsuario, codigo, idActor);
             return guardada;
         } catch (DataIntegrityViolationException ex) {

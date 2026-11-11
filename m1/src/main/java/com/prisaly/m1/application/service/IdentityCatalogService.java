@@ -2,6 +2,7 @@ package com.prisaly.m1.application.service;
 
 import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.application.port.AuditoriaPermisosPort;
+import com.prisaly.m1.application.port.ContrasenasBloqueadasPort;
 import com.prisaly.m1.application.port.PermisoRepositorioPort;
 import com.prisaly.m1.application.port.RolRepositorioPort;
 import com.prisaly.m1.application.port.UsuarioRepositorioPort;
@@ -9,6 +10,7 @@ import com.prisaly.m1.domain.model.AsignacionPermiso;
 import com.prisaly.m1.domain.model.Permiso;
 import com.prisaly.m1.domain.model.Rol;
 import com.prisaly.m1.domain.model.Usuario;
+import com.prisaly.m1.domain.rule.PoliticaContrasena;
 import com.prisaly.m1.domain.rule.PoliticaPermisos;
 import java.time.OffsetDateTime;
 import java.util.Locale;
@@ -30,6 +32,7 @@ public class IdentityCatalogService {
     public static final String CODE_DUPLICATE_PERMISSION = "DUPLICATE_PERMISSION";
     public static final String CODE_DUPLICATE_ASSIGNMENT = PoliticaPermisos.CODE_DUPLICATE_ASSIGNMENT;
     public static final String CODE_ROLE_NOT_FOUND = "ROLE_NOT_FOUND";
+    public static final String CODE_AUTH_FAILED = "AUTH_FAILED";
     public static final String CODE_USER_NOT_FOUND = PoliticaPermisos.CODE_USER_NOT_FOUND;
     public static final String CODE_PERMISSION_NOT_FOUND = PoliticaPermisos.CODE_PERMISSION_NOT_FOUND;
     public static final String CODE_ACTOR_REQUIRED = PoliticaPermisos.CODE_ACTOR_REQUIRED;
@@ -48,14 +51,17 @@ public class IdentityCatalogService {
     private final UsuarioRepositorioPort usuarios;
     private final GestionPermisosService gestionPermisos;
     private final PasswordEncoder passwordEncoder;
+    private final ContrasenasBloqueadasPort contrasenasBloqueadas;
 
     public IdentityCatalogService(RolRepositorioPort roles, PermisoRepositorioPort permisos,
-            UsuarioRepositorioPort usuarios, GestionPermisosService gestionPermisos, PasswordEncoder passwordEncoder) {
+            UsuarioRepositorioPort usuarios, GestionPermisosService gestionPermisos, PasswordEncoder passwordEncoder,
+            ContrasenasBloqueadasPort contrasenasBloqueadas) {
         this.roles = roles;
         this.permisos = permisos;
         this.usuarios = usuarios;
         this.gestionPermisos = gestionPermisos;
         this.passwordEncoder = passwordEncoder;
+        this.contrasenasBloqueadas = contrasenasBloqueadas;
     }
 
     @Transactional
@@ -85,6 +91,8 @@ public class IdentityCatalogService {
     @Transactional
     public Usuario registerUser(String nombre, String correo, String rawPassword, String roleName) {
         String normalizedEmail = normalizeEmail(correo);
+        // DM1-08: the policy runs before anything is hashed or stored.
+        PoliticaContrasena.validar(rawPassword, normalizedEmail, contrasenasBloqueadas::contiene);
         if (usuarios.existePorCorreo(normalizedEmail)) {
             throw new IdentityDomainException(CODE_DUPLICATE_EMAIL, "Email already registered");
         }
@@ -115,6 +123,44 @@ public class IdentityCatalogService {
     @Transactional(readOnly = true)
     public boolean existeRolAdministrador() {
         return roles.buscarPorNombre(ROL_ADMINISTRADOR).isPresent();
+    }
+
+    /**
+     * DM1-04 (DC-M1-04): administrative registration of a teacher WITHOUT a usable credential (passwordHash NULL,
+     * allowed by BD-005.2). The account cannot authenticate until a secure credential delivery exists; no password
+     * is generated, returned or logged.
+     */
+    @Transactional
+    public Usuario registrarSinCredencial(String nombre, String correo, String roleName) {
+        String normalizedEmail = normalizeEmail(correo);
+        if (usuarios.existePorCorreo(normalizedEmail)) {
+            throw new IdentityDomainException(CODE_DUPLICATE_EMAIL, "Email already registered");
+        }
+        Rol rol = roles.buscarPorNombre(roleName)
+                .orElseThrow(() -> new IdentityDomainException(CODE_ROLE_NOT_FOUND, "Role not found"));
+        Usuario nuevo = new Usuario(UUID.randomUUID(), rol, nombre, normalizedEmail, null, ESTADO_ACTIVO,
+                OffsetDateTime.now(), null);
+        try {
+            return usuarios.registrar(nuevo);
+        } catch (DataIntegrityViolationException ex) {
+            throw new IdentityDomainException(CODE_DUPLICATE_EMAIL, "Email already registered");
+        }
+    }
+
+    /**
+     * DM1-08 (DC-M1-04): change of the own password. The current one must match; the new one must satisfy the policy
+     * before it is hashed. Historical accounts are not invalidated: the policy applies only when a credential changes.
+     */
+    @Transactional
+    public void cambiarContrasena(UUID idUsuario, String actual, String nueva) {
+        Usuario usuario = usuarios.buscarPorId(idUsuario)
+                .orElseThrow(() -> new IdentityDomainException(CODE_USER_NOT_FOUND, "User not found"));
+        if (!usuario.isActive() || usuario.getPasswordHash() == null || actual == null
+                || !passwordEncoder.matches(actual, usuario.getPasswordHash())) {
+            throw new IdentityDomainException(CODE_AUTH_FAILED, "Authentication failed");
+        }
+        PoliticaContrasena.validar(nueva, usuario.getCorreo(), contrasenasBloqueadas::contiene);
+        usuarios.actualizarPasswordHash(idUsuario, passwordEncoder.encode(nueva), OffsetDateTime.now());
     }
 
     @Transactional

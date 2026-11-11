@@ -125,7 +125,8 @@ public class HttpApiConfig {
         // If-Match / ETag carry the M3 aggregate precondition (DC-M3-M1-RES-03). Origins stay the
         // configured ones; no wildcard origins or headers.
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type", "Accept", "If-Match"));
-        configuration.setExposedHeaders(List.of("ETag"));
+        // Retry-After accompanies HTTP 429 on personnel login (DM1-06).
+        configuration.setExposedHeaders(List.of("ETag", "Retry-After"));
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         if (estudianteSessionFilter != null) {
             CorsConfiguration student = new CorsConfiguration(configuration);

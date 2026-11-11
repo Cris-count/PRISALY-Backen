@@ -104,7 +104,7 @@ class DocenteConvocatoriaM1M7IT {
         Usuario docente = identityCatalogService.registerUser(
                 "Docente Estab",
                 "docente.estab." + suffix + "@prisaly.test",
-                "Secret#Estab1",
+                "Fixture#Clave-Estab1",
                 roleName);
         docenteId = docente.getIdUsuario();
         permisoGestionarSesion = permisoRepository.findByCodigo(PERMISO_GESTIONAR_SESION).map(PermisoEntity::getIdPermiso)
@@ -118,7 +118,7 @@ class DocenteConvocatoriaM1M7IT {
                 .registerUser(
                         "Estudiante Estab",
                         "estudiante.estab." + suffix + "@prisaly.test",
-                        "Secret#Estab1",
+                        "Fixture#Clave-Estab1",
                         roleName)
                 .getIdUsuario();
         estudianteId = UUID.randomUUID();
