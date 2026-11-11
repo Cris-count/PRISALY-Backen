@@ -1,6 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {redact,cleanEnv,ownsContainer,SCENARIOS} from './run.mjs';
+import {redact,cleanEnv,ownsContainer,SCENARIOS,spawnPlan} from './run.mjs';
+test('P2-5: newman uses a shell only on Windows and quotes arguments with spaces',()=>{
+ assert.deepEqual(spawnPlan('newman',['run','a b.json'],'linux'),{file:'newman',args:['run','a b.json'],shell:false});
+ assert.deepEqual(spawnPlan('git',['status'],'win32'),{file:'git',args:['status'],shell:false});
+ const plan=spawnPlan('newman',['run','C:\\x y\\c.json','--folder','01-m1'],'win32');
+ assert.equal(plan.shell,true);assert.deepEqual(plan.args,['run','"C:\\x y\\c.json"','--folder','01-m1']);
+});
 test('redacts request/response secrets and split-stream assembled log',()=>{
  const actual=redact({headers:{Authorization:'Bearer abc'},body:{password:'value',accessToken:'abc',code:'AUTH_FAILED'},nested:[{cookie:'secret'}]},['abc']);
  assert.equal(actual.headers.Authorization,'[REDACTED]');assert.equal(actual.body.accessToken,'[REDACTED]');
