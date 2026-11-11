@@ -14,7 +14,7 @@ import javax.sql.DataSource;
 public class M4SchemaAutoConfiguration {
     @Bean
     SmartInitializingSingleton verificarEsquemaM4(ObjectProvider<DataSource> bases,
-            @Value("${prisaly.m4.schema-contract:bd0052-v009}") String contrato) {
+            @Value("${prisaly.m4.schema-contract:" + M4SchemaContract.VIGENTE + "}") String contrato) {
         return () -> {
             DataSource base = bases.getIfAvailable();
             if (base == null) return;
@@ -23,7 +23,7 @@ public class M4SchemaAutoConfiguration {
     }
 
     public static void verificar(JdbcTemplate jdbc) {
-        verificar(jdbc, M4SchemaContract.HISTORICO);
+        verificar(jdbc, M4SchemaContract.VIGENTE);
     }
 
     public static void verificar(JdbcTemplate jdbc, String contrato) {

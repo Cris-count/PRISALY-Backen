@@ -155,7 +155,9 @@ export async function main(args = process.argv.slice(2)) {
     if(!sourceOk||!javaOk) throw new Blocked('Preflight: SHA/árbol de fuentes o Java 21 inválidos');
     const migrations=join(ROOT,'app/src/main/resources/db/migration');
     const files=readdirSync(migrations).filter(f=>f!=='.gitkeep').sort();
-    if(files.length!==9 || !files.every(f=>/^V00[1-9]__.+\.sql$/.test(f))) throw new Blocked('Se requiere exclusivamente V001–V009');
+    // P5 (DC-P5-FASE-B-01): canonical manifest V001–V009 + V013; any other version blocks the campaign.
+    const versions=files.map(f=>(/^V(\d{3})__.+\.sql$/.exec(f)||[])[1]);
+    if(files.length!==10 || versions.join(',')!=='001,002,003,004,005,006,007,008,009,013') throw new Blocked('Se requiere exclusivamente V001–V009 y V013');
     report.migrations=files.map(file=>({file,sha256:hash(readFileSync(join(migrations,file)))}));
     report.harness=Object.fromEntries(['run.mjs','fixture.sql'].map(file=>[file,hash(readFileSync(join(HERE,file)))]));
     if(opts.preflight) {

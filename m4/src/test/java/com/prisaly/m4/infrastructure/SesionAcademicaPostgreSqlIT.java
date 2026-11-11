@@ -144,12 +144,13 @@ class SesionAcademicaPostgreSqlIT {
     void esquemaHibernateYFlywaySonOficiales() {
         assertInstanceOf(CasoAcademicoBd0052Adapter.class, casos);
         M4SchemaAutoConfiguration.verificar(jdbc);
+        // P5 (DC-P5-FASE-B-01): V001-V009 + V013; the 21 BD-005.2 tables + InicializacionAdministrador.
         assertEquals(
-                9,
+                10,
                 jdbc.queryForObject(
                         "SELECT count(*) FROM flyway_schema_history WHERE success", Integer.class));
         assertEquals(
-                21,
+                22,
                 jdbc.queryForObject(
                         "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"
                                 + " AND table_type='BASE TABLE' AND"

@@ -2,7 +2,10 @@
 // Two runs, each on its own fresh database and APP:
 //   rutas-m1:      PRISALY-Integrante-1 folders 00, 01, 02, 03 and 05 (existing M1 routes, regression);
 //   administracion: PRISALY-M1-Administracion (DM1-02/02b/04/06/07/08), with the teacher role set to the seed role.
-// Usage: node qa/m1-postman/run.mjs [--modo rutas-m1|administracion|ambos] [--newman <ruta>] [--sin-construir] [--salida <dir>]
+//   primer-administrador (P5-N1, DC-P5-FASE-B-01): PRISALY-M1-Administracion on a database whose ADMINISTRADOR was
+//                  created by the real initialization procedure (V013 marker), NOT by fixture-administrador.sql.
+// Since DC-P5-FASE-B-01 the teacher role is the shipped default DOCENTE (seeded by PD-01); no override is passed.
+// Usage: node qa/m1-postman/run.mjs [--modo rutas-m1|administracion|primer-administrador|ambos|p5] [--newman <ruta>] [--sin-construir] [--salida <dir>]
 import {spawnSync, spawn} from 'node:child_process';
 import {createHash, randomUUID, randomBytes} from 'node:crypto';
 import {mkdirSync, readFileSync, writeFileSync, existsSync, readdirSync, unlinkSync} from 'node:fs';
@@ -22,9 +25,13 @@ const CORRIDAS = {
       inactiveEmail: 'inactive.bruno@prisaly.local', unknownEmail: 'unknown@prisaly.invalid'},
     claves: ['personnelPassword', 'personnelNoPermPassword', 'inactivePassword']},
   'administracion': {coleccion: 'postman/PRISALY-M1-Administracion.postman_collection.json', carpetas: [],
-    semillas: ['qa/m1-postman/fixture-administrador.sql'], argumentos: ['--prisaly.m1.administracion.rol-docente=DocenteBruno'],
+    semillas: ['qa/m1-postman/fixture-administrador.sql'], argumentos: [],
     entorno: {adminEmail: 'admin.qa@prisaly.invalid', docenteEmail: 'docente.bruno@prisaly.local', estudianteEmail: 'estudiante.bruno@prisaly.local'},
     claves: ['adminPassword', 'docentePassword', 'estudiantePassword']},
+  'primer-administrador': {coleccion: 'postman/PRISALY-M1-Administracion.postman_collection.json', carpetas: [],
+    semillas: [], argumentos: [], inicializacion: {correo: 'admin.qa@prisaly.invalid', nombre: 'Administrador inicial QA'},
+    entorno: {adminEmail: 'admin.qa@prisaly.invalid', docenteEmail: 'docente.bruno@prisaly.local', estudianteEmail: 'estudiante.bruno@prisaly.local'},
+    claves: ['docentePassword', 'estudiantePassword']},
 };
 const SEEDS = ['bruno/scripts/m1-bruno-seed-local.sql', 'bruno/scripts/m7-bruno-seed-local.sql', 'docs/provision/pd01-inicializacion.sql'];
 const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -32,9 +39,9 @@ const sha256 = data => createHash('sha256').update(data).digest('hex');
 
 const args = process.argv.slice(2);
 const opt = (name, fallback) => { const i = args.indexOf(name); return i >= 0 ? args[i + 1] : fallback; };
-const modos = {'rutas-m1': ['rutas-m1'], administracion: ['administracion'], ambos: ['rutas-m1', 'administracion']}[opt('--modo', 'ambos')];
-if (!modos) throw new Error('--modo debe ser rutas-m1, administracion o ambos');
-if (!modos) throw new Error('--modo debe ser productiva, prueba o ambos');
+const modos = {'rutas-m1': ['rutas-m1'], administracion: ['administracion'], 'primer-administrador': ['primer-administrador'],
+  ambos: ['rutas-m1', 'administracion'], p5: ['rutas-m1', 'administracion', 'primer-administrador']}[opt('--modo', 'ambos')];
+if (!modos) throw new Error('--modo debe ser rutas-m1, administracion, primer-administrador, ambos o p5');
 const newmanBin = opt('--newman', 'newman');
 const env = cleanEnv();
 const secrets = [PUBLIC_PASSWORD];
@@ -99,31 +106,73 @@ async function corrida(modo) {
     };
     const port = await new Promise((res, rej) => { const s = net.createServer(); s.on('error', rej); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); }); });
     const jdbc = `jdbc:postgresql://127.0.0.1:${port5432.HostPort}/qa_m3?sslmode=disable`;
-    app = spawn('java', ['-jar', jar, '--server.address=127.0.0.1', `--server.port=${port}`, '--server.servlet.context-path=/api',
-      '--spring.jpa.hibernate.ddl-auto=validate', '--spring.flyway.enabled=true', '--prisaly.m1.student-access.enabled=false',
-      '--prisaly.m7.worker.enabled=false', ...corridaCfg.argumentos],
-      {cwd: ROOT, env: {...env, DATABASE_URL: jdbc, DATABASE_USER: 'qa_m3', DATABASE_PASSWORD: dbPassword}, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true});
-    for (const s of [app.stdout, app.stderr]) s.on('data', b => appLog.push(b));
-    app.on('error', () => {});
     const base = `http://127.0.0.1:${port}/api`;
-    let up = false;
-    for (let i = 0; i < 180 && !up; i++) {
-      if (app.exitCode !== null) break;
-      try { const r = await fetch(base + '/health', {signal: AbortSignal.timeout(1000)}); up = r.status === 200 && Buffer.concat(appLog).toString().includes('Started PrisalyApplication'); } catch {}
-      if (!up) await delay(500);
-    }
-    if (!up) throw new Error('APP no arrancó; ver app.log');
+    const arrancar = async extra => {
+      const desde = appLog.length;
+      app = spawn('java', ['-jar', jar, '--server.address=127.0.0.1', `--server.port=${port}`, '--server.servlet.context-path=/api',
+        '--spring.jpa.hibernate.ddl-auto=validate', '--spring.flyway.enabled=true', '--prisaly.m1.student-access.enabled=false',
+        '--prisaly.m7.worker.enabled=false', ...corridaCfg.argumentos, ...extra],
+        {cwd: ROOT, env: {...env, DATABASE_URL: jdbc, DATABASE_USER: 'qa_m3', DATABASE_PASSWORD: dbPassword}, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true});
+      for (const s of [app.stdout, app.stderr]) s.on('data', b => appLog.push(b));
+      app.on('error', () => {});
+      let up = false;
+      for (let i = 0; i < 180 && !up; i++) {
+        if (app.exitCode !== null) break;
+        try { const r = await fetch(base + '/health', {signal: AbortSignal.timeout(1000)}); up = r.status === 200 && Buffer.concat(appLog.slice(desde)).toString().includes('Started PrisalyApplication'); } catch {}
+        if (!up) await delay(500);
+      }
+      if (!up) throw new Error('APP no arrancó; ver app.log');
+      return Buffer.concat(appLog.slice(desde)).toString('utf8');
+    };
+    const detener = async () => {
+      if (!app) return;
+      app.kill('SIGTERM'); for (let i = 0; i < 100 && app.exitCode === null; i++) await delay(100);
+      if (app.exitCode === null) app.kill('SIGKILL');
+      app = null;
+    };
+    await arrancar([]);
     informe.postgres = sql('SHOW server_version;');
+    informe.flyway = sql(`SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history WHERE success;`);
     informe.semillas = [];
     const semillas = [...SEEDS, 'qa/backend-http/fixture.sql', ...corridaCfg.semillas];
     for (const file of semillas) { const t = readFileSync(join(ROOT, file), 'utf8'); sql(t); informe.semillas.push({file, sha256: sha256(t)}); }
+    const claves = Object.fromEntries(corridaCfg.claves.map(k => [k, PUBLIC_PASSWORD]));
+    if (corridaCfg.inicializacion) {
+      // P5-N1: operating procedure. PD-01 is already applied; restart with the one-shot initialization enabled and a
+      // random credential read from a file that is deleted right after startup. The password exists only in memory.
+      const adminPassword = 'P5#' + randomBytes(18).toString('base64url'); secrets.push(adminPassword);
+      const credencial = join(out, `credencial-${runId}.txt`);
+      writeFileSync(credencial, adminPassword + '\n', {mode: 0o600});
+      await detener();
+      let log;
+      try {
+        log = await arrancar(['--prisaly.m1.inicializacion-admin.habilitada=true',
+          `--prisaly.m1.inicializacion-admin.correo=${corridaCfg.inicializacion.correo}`,
+          `--prisaly.m1.inicializacion-admin.nombre=${corridaCfg.inicializacion.nombre}`,
+          `--prisaly.m1.inicializacion-admin.archivo-credencial=${credencial}`]);
+        // ApplicationRunners run AFTER 'Started PrisalyApplication': wait for the security event before deleting the file.
+        for (let i = 0; i < 120 && !/SEGURIDAD_ADMINISTRACION evento=INICIALIZACION/.test(log); i++) {
+          await delay(500); log = Buffer.concat(appLog).toString('utf8');
+        }
+      } finally { if (existsSync(credencial)) unlinkSync(credencial); }
+      informe.inicializacion = {
+        evento: (log.match(/SEGURIDAD_ADMINISTRACION evento=INICIALIZACION[^\r\n]*/) || [null])[0],
+        credencialEnLog: log.includes(adminPassword), archivoCredencialBorrado: !existsSync(credencial),
+        marcador: JSON.parse(sql(`SELECT jsonb_build_object('filas', count(*), 'origen', max(i."origen"),
+          'administradorActivo', bool_and(u."estado"='Activo'), 'rol', max(r."nombre"))
+          FROM "InicializacionAdministrador" i JOIN "Usuario" u ON u."idUsuario"=i."idUsuarioAdministrador"
+          JOIN "Rol" r ON r."idRol"=u."idRol";`))};
+      if (!/resultado=EXITOSO/.test(informe.inicializacion.evento || '') || informe.inicializacion.credencialEnLog
+          || informe.inicializacion.marcador.filas !== 1) throw new Error('La inicialización del primer administrador no se verificó');
+      claves.adminPassword = adminPassword;
+    }
     informe.permisosDocente = sql(`SELECT string_agg(p."codigo", ',' ORDER BY p."codigo") FROM "UsuarioPermiso" up
       JOIN "Usuario" u ON u."idUsuario" = up."idUsuario" JOIN "Permiso" p ON p."idPermiso" = up."idPermiso"
       WHERE u."correo" = 'docente.bruno@prisaly.local' AND up."habilitado";`);
 
     const envFile = join(out, `env-${runId}.json`), rawFile = join(out, `raw-${runId}.json`);
     writeFileSync(envFile, JSON.stringify({values: Object.entries({baseUrl: base, ...corridaCfg.entorno,
-      ...Object.fromEntries(corridaCfg.claves.map(k => [k, PUBLIC_PASSWORD]))}).map(([key, value]) => ({key, value, enabled: true}))}));
+      ...claves}).map(([key, value]) => ({key, value, enabled: true}))}));
     try {
       // Newman resolves to newman.cmd on Windows: a shell is required (P2-5 of DC-AUD-01).
       const result = run(newmanBin, ['run', corridaCfg.coleccion, ...corridaCfg.carpetas.flatMap(f => ['--folder', f]),
@@ -149,9 +198,13 @@ async function corrida(modo) {
     informe.postgresEvidencia = JSON.parse(sql(`SELECT jsonb_build_object(
       'catalogo', (SELECT jsonb_agg("codigo" ORDER BY "codigo") FROM "Permiso"),
       'rolAdministrador', (SELECT count(*) FROM "Rol" WHERE "nombre"='ADMINISTRADOR'),
+      'rolDocente', (SELECT count(*) FROM "Rol" WHERE "nombre"='DOCENTE'),
+      'docentesCreadosConRolDOCENTE', (SELECT count(*) FROM "Usuario" u JOIN "Rol" r ON r."idRol"=u."idRol" WHERE r."nombre"='DOCENTE'),
+      'marcadoresInicializacion', (SELECT count(*) FROM "InicializacionAdministrador"),
       'cuentasSinCredencial', (SELECT count(*) FROM "Usuario" WHERE "passwordHash" IS NULL),
       'asignacionesHabilitadasPorAdministradorQA', (SELECT count(*) FROM "UsuarioPermiso"
-        WHERE "idAdministradorAsignador"='44444444-4444-4444-4444-444444444401' AND "habilitado"),
+        WHERE "idAdministradorAsignador" IN ('44444444-4444-4444-4444-444444444401',
+          (SELECT "idUsuarioAdministrador" FROM "InicializacionAdministrador")) AND "habilitado"),
       'asignacionesHabilitadasPorPermiso', (SELECT jsonb_object_agg(c, n) FROM (SELECT p."codigo" c, count(up.*) n FROM "Permiso" p
         LEFT JOIN "UsuarioPermiso" up ON up."idPermiso"=p."idPermiso" AND up."habilitado" GROUP BY p."codigo") t));`));
   } catch (error) {

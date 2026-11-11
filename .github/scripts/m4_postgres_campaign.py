@@ -36,10 +36,10 @@ def main():
         raise RuntimeError(f"Unexpected candidate SHA: {sha}")
     baseline = source / "app/src/main/resources/db/migration"
     migrations = sorted(baseline.glob("*.sql"))
-    if len(migrations) != 9 or {p.name.split("__")[0] for p in migrations} != {
-        f"V{i:03}" for i in range(1, 10)
-    }:
-        raise RuntimeError("Expected only canonical V001-V009")
+    # P5 (DC-P5-FASE-B-01): canonical manifest is V001-V009 plus V013.
+    expected = {f"V{i:03}" for i in range(1, 10)} | {"V013"}
+    if len(migrations) != 10 or {p.name.split("__")[0] for p in migrations} != expected:
+        raise RuntimeError("Expected only canonical V001-V009 and V013")
     # Fresh checkout is mandatory: do not consume previous build/test evidence.
     if list(source.glob("*/target")):
         raise RuntimeError("Candidate must have no pre-existing target directories")
@@ -120,7 +120,7 @@ def main():
     if totals["tests"] != sum(EXPECTED.values()):
         problems.append("Not all mandatory PostgreSQL cases executed")
     summary = dict(sha=sha, maven_exit=code, totals=totals, suites=results, problems=problems,
-                   migrations="V001-V009 manifest; baseline cases passed" if not problems
+                   migrations="V001-V009 + V013 manifest; baseline cases passed" if not problems
                    else "See manifest, migrations.log and baseline report; not approved globally",
                    diagnostic_v010="excluded", shared_databases="not used")
     (output / "summary.json").write_text(json.dumps(summary, indent=2))
