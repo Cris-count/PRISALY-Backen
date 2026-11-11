@@ -5,6 +5,11 @@ INSERT INTO "Rol" ("nombre", "descripcion")
 VALUES ('ADMINISTRADOR', 'Administra la asignacion y revocacion de permisos')
 ON CONFLICT ("nombre") DO NOTHING;
 
+-- D-04 (DC-P5-FASE-B-01): rol docente canonico. Sin permisos: siguen siendo individuales (DM1-03).
+INSERT INTO "Rol" ("nombre", "descripcion")
+VALUES ('DOCENTE', 'Docente que gestiona casos y sesiones')
+ON CONFLICT ("nombre") DO NOTHING;
+
 INSERT INTO "Permiso" ("codigo", "nombre")
 VALUES ('CONSULTAR_CASO', 'Consultar caso'),
        ('MODIFICAR_CASO', 'Modificar caso'),

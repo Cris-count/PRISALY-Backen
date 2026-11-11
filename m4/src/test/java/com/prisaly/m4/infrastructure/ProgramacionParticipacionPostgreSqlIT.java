@@ -119,8 +119,9 @@ VALUES (?,?,?,'Contrato M4-M5','2026-11-05 09:00:00-05','2026-11-05 11:00:00-05'
         assertEquals(Duration.ofMinutes(30), contexto.tiempoMaximoParticipacion());
         assertTrue(contexto.fechaInicioReal().isEmpty());
         assertTrue(contexto.fechaFinReal().isEmpty());
+        // P5 (DC-P5-FASE-B-01): 21 BD-005.2 tables + InicializacionAdministrador (V013); M4 adds none.
         assertEquals(
-                21,
+                22,
                 jdbc.queryForObject(
                         "SELECT count(*) FROM information_schema.tables WHERE table_schema='public'"
                             + " AND table_type='BASE TABLE' AND"
