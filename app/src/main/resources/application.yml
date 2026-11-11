@@ -40,10 +40,17 @@ prisaly:
         max-por-cuenta: 5
         max-por-origen: 20
         ventana: PT15M
-    # DM1-04 (DC-M1-04): role given to teachers created by POST /v1/admin/docentes. Blank until Dirección Central
-    # defines the teacher role in the catalog; while blank the operation answers 503 TEACHER_ROLE_NOT_CONFIGURED.
+    # DM1-04 (DC-M1-04) / D-04 (DC-P5-FASE-B-01): role given to teachers created by POST /v1/admin/docentes.
+    # DOCENTE is seeded by PD-01; if the catalog lacks it the operation answers 503 TEACHER_ROLE_NOT_CONFIGURED.
     administracion:
-      rol-docente: ${PRISALY_ROL_DOCENTE:}
+      rol-docente: ${PRISALY_ROL_DOCENTE:DOCENTE}
+    # P5 / DM1-01 (DC-P5-FASE-B-01): one-shot first-administrator initialization, never via HTTP. Disabled by default.
+    # The initial password is read once from a file readable only by the operator, and is never logged.
+    inicializacion-admin:
+      habilitada: ${PRISALY_INICIALIZACION_ADMIN:false}
+      correo: ${PRISALY_INICIALIZACION_ADMIN_CORREO:}
+      nombre: ${PRISALY_INICIALIZACION_ADMIN_NOMBRE:}
+      archivo-credencial: ${PRISALY_INICIALIZACION_ADMIN_ARCHIVO:}
   m3:
     # Institutional read policy for GET /v1/casos/{id} (DC-M3-RES-02). Pending ratification by
     # Dirección Central: permission and visible states stay blank, so every read is denied.

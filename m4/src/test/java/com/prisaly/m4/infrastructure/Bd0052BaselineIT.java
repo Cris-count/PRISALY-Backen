@@ -192,7 +192,8 @@ class Bd0052BaselineIT {
                                     + " table_schema='public' AND table_type='BASE TABLE' AND"
                                     + " table_name<>'flyway_schema_history'")) {
             assertTrue(resultado.next());
-            assertEquals(21, resultado.getInt(1));
+            // P5 (DC-P5-FASE-B-01): the baseline location now includes V013 (21 BD-005.2 tables + 1).
+            assertEquals(22, resultado.getInt(1));
         }
         // Solo esta base efímera carga deliberadamente la propuesta archivada.
         Flyway.configure()

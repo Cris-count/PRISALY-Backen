@@ -32,7 +32,8 @@ class StudentSessionControlledHttpIT {
             if (!Files.isDirectory(base)) base = Path.of("app/src/main/resources/db").toAbsolutePath();
             return "filesystem:" + base.resolve("migration") + ",filesystem:" + base.resolve("dd02-propuesta");
         });
-        p.add("prisaly.m4.schema-contract", () -> "bd0052-dd02-v012");
+        // P5 (DC-P5-FASE-B-01): canonical V001-V009 + V013 plus the opt-in DD-02 proposals.
+        p.add("prisaly.m4.schema-contract", () -> "bd0052-v013-dd02");
         p.add("prisaly.m1.student-access.enabled", () -> "true");
         p.add("prisaly.m1.student-access.hmac-secret", () -> "controlled-http-fixture-key-not-production");
         p.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
