@@ -1,6 +1,7 @@
 package com.prisaly.m1.presentation;
 
 import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.application.port.EmisorTokenAccesoPort;
 import com.prisaly.m1.presentation.dto.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice(basePackages = "com.prisaly.m1")
 public class IdentityExceptionHandler {
 
-    @ExceptionHandler(com.prisaly.m1.infrastructure.security.ProvisionalAccessTokenStore.CapacityExceededException.class)
+    @ExceptionHandler(EmisorTokenAccesoPort.CapacidadAgotadaException.class)
     public ResponseEntity<ErrorResponse> handleTokenCapacity() {
         return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
                 .body(new ErrorResponse("AUTH_CAPACITY_EXCEEDED", "Authentication temporarily unavailable"));

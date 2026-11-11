@@ -3,6 +3,7 @@ package com.prisaly.m1.presentation;
 import com.prisaly.m1.application.port.AuthenticatedUser;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m1.api.IdentityDomainException;
+import com.prisaly.m1.api.PermisosCaso;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/v1/personal")
 public class PersonalAuthorizationController {
 
-    public static final String PERMISSION_CREAR_CASO = "CREAR_CASO";
+    public static final String PERMISSION_CREAR_CASO = PermisosCaso.CREAR_CASO;
     public static final String CODE_FORBIDDEN = "FORBIDDEN";
 
     private final IdentityAccessPort identityAccessPort;
