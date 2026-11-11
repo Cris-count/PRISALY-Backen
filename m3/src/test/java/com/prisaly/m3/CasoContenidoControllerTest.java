@@ -135,6 +135,21 @@ class CasoContenidoControllerTest {
         send("/escenarios", escenario(), etag).andExpect(status().isConflict());
     }
 
+    /** H-M3-02: the under-lock draft re-check is a business rejection (409), never a 500. */
+    @ParameterizedTest
+    @ValueSource(strings = {"SCENARIO_ADD_REQUIRES_DRAFT", "QUESTION_ADD_REQUIRES_DRAFT", "OPTION_ADD_REQUIRES_DRAFT"})
+    void draftRequiredUnderLockIs409WithItsCode(String code) throws Exception {
+        doThrow(new CasoDomainException(code, "x")).when(updates).update(eq(id), eq(fingerprint), any());
+        var request = switch (code) {
+            case "SCENARIO_ADD_REQUIRES_DRAFT" -> send("/escenarios", escenario(), etag);
+            case "QUESTION_ADD_REQUIRES_DRAFT" -> send("/escenarios/" + parent + "/preguntas",
+                    "{\"idPregunta\":\"" + element + "\",\"enunciado\":\"Q\",\"orden\":1}", etag);
+            default -> send("/preguntas/" + parent + "/opciones", opcion(",\"explicacion\":\"W\""), etag);
+        };
+        request.andExpect(status().isConflict()).andExpect(jsonPath("$.code").value(code))
+                .andExpect(header().doesNotExist("ETag"));
+    }
+
     @Test void withoutCodecFailsClosed() throws Exception {
         mvc = MockMvcBuilders.standaloneSetup(new CasoContenidoController(new com.prisaly.m3.application.service.CasoContenidoService(identity, write, updates),
                 Optional.empty())).setControllerAdvice(new CasoGestionExceptionHandler()).build();
