@@ -24,19 +24,15 @@ copy .env.example .env
 | `APP_PORT` | API port (default `8080`) |
 | `CORS_ORIGINS` | Front origins (default `http://localhost:4200`) |
 
-## Clean start (reproducible)
+## Arranque
+
+Desde `PRISALY-Backend`:
 
 ```powershell
-copy .env.example .env
-docker compose up -d
-docker compose ps
-# wait until health = healthy
-
-$env:DATABASE_URL="jdbc:postgresql://localhost:5432/prisaly?sslmode=disable"
-$env:DATABASE_USER="prisaly"
-$env:DATABASE_PASSWORD="<same as .env>"
-.\mvnw.cmd -B -pl app -am package -DskipTests
+.\iniciar.cmd
 ```
+
+Ese comando crea `.env` si falta, abre Docker Desktop si hace falta, levanta PostgreSQL, compila la API y la deja en `http://localhost:8080/api/health`. Ctrl+C detiene la API. La base permanece en Docker; no borra el volumen.
 
 On first boot Flyway applies `app/src/main/resources/db/migration/V001`…`V009` and creates the 21 BD-005.2 tables. JPA uses `ddl-auto=validate` and `hibernate.globally_quoted_identifiers=true` (quoted identifiers in SQL).
 

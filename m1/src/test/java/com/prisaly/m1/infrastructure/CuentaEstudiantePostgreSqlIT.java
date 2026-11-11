@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -59,6 +60,9 @@ class CuentaEstudiantePostgreSqlIT {
 
     @Autowired
     private PasswordEncoder encoder;
+
+    @Autowired
+    private ActivacionCuentaEstudianteService activacionTransaccional;
 
     @Test
     void laIdentidadPersistidaSeRevocaYNoCruzaEstudiantes() {
@@ -96,6 +100,32 @@ class CuentaEstudiantePostgreSqlIT {
         assertThrows(IdentityDomainException.class, () -> acceso.requireCurrentStudent());
     }
 
+    // Uses the Spring-managed (transactional) service: a denied activation must not roll back
+    // the failed-attempt counter, otherwise the 5-attempt limit is never reached.
+    @Test
+    void losIntentosFallidosPersistenYBloqueanElCodigoCorrecto() {
+        UUID usuario = insertar("bruta.pg@prisaly.test");
+        var emitido = activacionTransaccional.emitir(usuario);
+        String erroneo = emitido.codigo().equals("00000000") ? "11111111" : "00000000";
+
+        for (int intento = 0; intento < ActivacionCuentaEstudianteService.INTENTOS_MAXIMOS; intento++) {
+            assertThrows(IdentityDomainException.class,
+                    () -> activacionTransaccional.activar(emitido.challengeId(), erroneo, "contrasena-segura"));
+        }
+
+        assertEquals(
+                ActivacionCuentaEstudianteService.INTENTOS_MAXIMOS,
+                jdbc.queryForObject(
+                        "SELECT \"intentosFallidos\" FROM \"ActivacionCuentaEstudiante\" WHERE \"challengeId\" = ?",
+                        Integer.class,
+                        emitido.challengeId()));
+        assertThrows(IdentityDomainException.class,
+                () -> activacionTransaccional.activar(
+                        emitido.challengeId(), emitido.codigo(), "contrasena-segura"));
+        assertEquals("Inactivo", jdbc.queryForObject(
+                "SELECT \"estado\" FROM \"Usuario\" WHERE \"idUsuario\" = ?", String.class, usuario));
+    }
+
     private UUID insertar(String correo) {
         Integer rol = jdbc.queryForObject(
                 "INSERT INTO \"Rol\" (\"nombre\", \"descripcion\") VALUES (?, ?) RETURNING \"idRol\"",
@@ -115,21 +145,37 @@ class CuentaEstudiantePostgreSqlIT {
         return usuario;
     }
 
+    // V011 lives outside the productive Flyway location until DD-02 is ratified;
+    // this IT applies BD-005.2 plus the pending DD-02 migration explicitly.
     static String flyway() {
         Path cwd = Path.of(System.getProperty("user.dir")).toAbsolutePath().normalize();
-        for (Path candidate : List.of(
-                cwd.resolve("app/src/main/resources/db/migration"),
-                cwd.resolve("../app/src/main/resources/db/migration").normalize())) {
-            if (Files.exists(candidate.resolve("V011__acceso_estudiante_cuenta.sql"))) {
-                return "filesystem:" + candidate;
+        for (Path resources : List.of(
+                cwd.resolve("app/src/main/resources/db"),
+                cwd.resolve("../app/src/main/resources/db").normalize())) {
+            Path canonica = resources.resolve("migration");
+            Path pendiente = resources.resolve("dd02-propuesta");
+            if (Files.exists(pendiente.resolve("V011__acceso_estudiante_cuenta.sql"))
+                    && Files.exists(canonica.resolve("V001__bd0052_estructura.sql"))) {
+                return "filesystem:" + canonica + ",filesystem:" + pendiente;
             }
         }
-        throw new IllegalStateException("No se encontró V011 desde " + cwd);
+        throw new IllegalStateException("No se encontró V011 en db/dd02-propuesta desde " + cwd);
     }
 
     @SpringBootConfiguration
     @EnableAutoConfiguration
     @Import({CuentaEstudianteJdbcAdapter.class, PasswordHashConfig.class})
     static class App {
+
+        @Bean
+        ClaveHmacEstudiante claveHmacEstudiante() {
+            return new ClaveHmacEstudiante("clave-hmac-prueba".getBytes(StandardCharsets.UTF_8));
+        }
+
+        @Bean
+        ActivacionCuentaEstudianteService activacionCuentaEstudianteService(
+                CuentaEstudiantePort cuentas, PasswordEncoder encoder, ClaveHmacEstudiante clave) {
+            return new ActivacionCuentaEstudianteService(cuentas, encoder, clave);
+        }
     }
 }
