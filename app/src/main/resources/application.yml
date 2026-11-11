@@ -33,6 +33,17 @@ prisaly:
   m1:
     student-access:
       enabled: false
+    # DM1-06 (DC-M1-04): failed personnel logins per account and per origin (TCP peer) in a sliding window.
+    # In-memory counters: academic local environment only (lost on restart, not shared between instances).
+    autenticacion:
+      intentos:
+        max-por-cuenta: 5
+        max-por-origen: 20
+        ventana: PT15M
+    # DM1-04 (DC-M1-04): role given to teachers created by POST /v1/admin/docentes. Blank until Dirección Central
+    # defines the teacher role in the catalog; while blank the operation answers 503 TEACHER_ROLE_NOT_CONFIGURED.
+    administracion:
+      rol-docente: ${PRISALY_ROL_DOCENTE:}
   m3:
     # Institutional read policy for GET /v1/casos/{id} (DC-M3-RES-02). Pending ratification by
     # Dirección Central: permission and visible states stay blank, so every read is denied.

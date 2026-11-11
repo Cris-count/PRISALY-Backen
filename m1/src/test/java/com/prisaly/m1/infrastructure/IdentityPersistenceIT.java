@@ -79,7 +79,7 @@ class IdentityPersistenceIT {
     private UUID usuarioFixture() {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         identityCatalogService.createRole(rol, "Fixture");
-        return identityCatalogService.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol)
+        return identityCatalogService.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol)
                 .getIdUsuario();
     }
 
@@ -87,7 +87,7 @@ class IdentityPersistenceIT {
         if (!identityCatalogService.existeRolAdministrador()) {
             identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
         }
-        return identityCatalogService.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+        return identityCatalogService.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
@@ -143,12 +143,45 @@ class IdentityPersistenceIT {
         assertTrue(salida.getOut().contains("resultado=RECHAZADO:" + IdentityCatalogService.CODE_ACTOR_REQUIRED), salida.getOut());
     }
 
+    /**
+     * DM1-02 (DC-M1-03) replaces the former S-1 behaviour (asserted by
+     * permisoNoControladoConservaElComportamientoAnterior): non-controlled permissions now also require
+     * an existing, active administrator to assign or revoke, and every rejection leaves nothing persisted.
+     */
     @Test
-    void permisoNoControladoConservaElComportamientoAnterior() {
-        UUID usuario = usuarioFixture();
-        Integer permiso = permisoFixture("CREAR_CASO");
-        identityCatalogService.assignPermission(usuario, permiso, null);
-        identityCatalogService.disablePermissionAssignment(usuario, permiso);
+    void permisoNoControladoTambienExigeAdministrador() {
+        UUID usuario = usuarioFixture(), actor = administradorFixture(), noAdmin = usuarioFixture();
+        // GESTIONAR_SESION, not CREAR_CASO: persistsPermisoAndUsuarioPermisoCompositeKey creates CREAR_CASO unguarded.
+        Integer permiso = permisoFixture("GESTIONAR_SESION");
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.assignPermission(usuario, permiso, null));
+        assertCodigo(IdentityCatalogService.CODE_USER_NOT_FOUND,
+                () -> identityCatalogService.assignPermission(usuario, permiso, UUID.randomUUID()));
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN,
+                () -> identityCatalogService.assignPermission(usuario, permiso, noAdmin));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, usuario));
+        identityCatalogService.assignPermission(usuario, permiso, actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.disablePermissionAssignment(usuario, permiso));
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN,
+                () -> identityCatalogService.disablePermissionAssignment(usuario, permiso, noAdmin));
+        assertEquals(true, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
+        identityCatalogService.disablePermissionAssignment(usuario, permiso, actor);
+        assertEquals(false, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
+        identityCatalogService.deactivateUser(actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_INVALID,
+                () -> identityCatalogService.assignPermission(noAdmin, permiso, actor));
+    }
+
+    /** DM1-02 keeps PD-01 separation of duties: an administrator never grants itself PUBLICAR/ARCHIVAR. */
+    @Test
+    void administradorNoSeAutoasignaPermisosOperativos() {
+        UUID actor = administradorFixture();
+        for (String codigo : new String[] {"PUBLICAR_CASO", "ARCHIVAR_CASO"}) {
+            assertCodigo(IdentityCatalogService.CODE_SELF_ASSIGNMENT,
+                    () -> identityCatalogService.assignPermission(actor, permisoFixture(codigo), actor));
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, actor));
     }
 
     @Test
@@ -157,7 +190,7 @@ class IdentityPersistenceIT {
         Usuario usuario = identityCatalogService.registerUser(
                 "Ana Docente",
                 "Ana.Docente@prisaly.test",
-                "Secret#123",
+                "Fixture#Clave-2026-123",
                 "Docente");
 
         assertTrue(usuarioRepository.existsByCorreoIgnoreCase("ana.docente@prisaly.test"));
@@ -185,12 +218,12 @@ class IdentityPersistenceIT {
     @Test
     void rejectsDuplicateEmailCaseInsensitive() {
         identityCatalogService.createRole("DocenteDup", "Docente");
-        identityCatalogService.registerUser("Uno", "dup@prisaly.test", "Secret#1", "DocenteDup");
+        identityCatalogService.registerUser("Uno", "dup@prisaly.test", "Fixture#Clave-2026", "DocenteDup");
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
                 () -> identityCatalogService.registerUser(
-                        "Dos", "DUP@prisaly.test", "Secret#2", "DocenteDup"));
+                        "Dos", "DUP@prisaly.test", "Fixture#Clave-2026-2", "DocenteDup"));
 
         assertEquals(IdentityCatalogService.CODE_DUPLICATE_EMAIL, error.code());
     }
@@ -200,15 +233,19 @@ class IdentityPersistenceIT {
         Rol adminRole = identityCatalogService.createRole("AdminPerm", "Admin");
         Permiso permiso = identityCatalogService.createPermission(
                 "CREAR_CASO", "Crear caso", "Alta de caso clinico");
+        // DM1-02: the assigner must hold the ADMINISTRADOR role (setup only; assertions unchanged).
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
         Usuario admin = identityCatalogService.registerUser(
                 "Admin Asignador",
                 "asignador@prisaly.test",
-                "Secret#1",
-                "AdminPerm");
+                "Fixture#Clave-2026",
+                IdentityCatalogService.ROL_ADMINISTRADOR);
         Usuario docente = identityCatalogService.registerUser(
                 "Docente Perm",
                 "docente.perm@prisaly.test",
-                "Secret#1",
+                "Fixture#Clave-2026",
                 "AdminPerm");
 
         AsignacionPermiso assignment = identityCatalogService.assignPermission(
@@ -234,14 +271,15 @@ class IdentityPersistenceIT {
         Permiso permiso = identityCatalogService.createPermission(
                 "EDITAR_CASO", "Editar caso", null);
         Usuario user = identityCatalogService.registerUser(
-                "User Asig", "user.asig@prisaly.test", "Secret#1", "RolAsig");
+                "User Asig", "user.asig@prisaly.test", "Fixture#Clave-2026", "RolAsig");
 
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+        UUID actor = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
                 () -> identityCatalogService.assignPermission(
-                        user.getIdUsuario(), permiso.getIdPermiso(), null));
+                        user.getIdUsuario(), permiso.getIdPermiso(), actor));
 
         assertEquals(IdentityCatalogService.CODE_DUPLICATE_ASSIGNMENT, error.code());
     }
@@ -252,10 +290,11 @@ class IdentityPersistenceIT {
         Permiso permiso = identityCatalogService.createPermission(
                 "VER_REPORTE", "Ver reporte", "Consulta");
         Usuario user = identityCatalogService.registerUser(
-                "User Disable", "user.disable@prisaly.test", "Secret#1", "RolDisable");
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+                "User Disable", "user.disable@prisaly.test", "Fixture#Clave-2026", "RolDisable");
+        UUID actor = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
-        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso());
+        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
         assertTrue(usuarioPermisoRepository
                 .findByIdUsuarioAndHabilitadoTrue(user.getIdUsuario())
@@ -288,7 +327,9 @@ class IdentityPersistenceIT {
     @Import({IdentityCatalogService.class, PasswordHashConfig.class,
             com.prisaly.m1.application.service.GestionPermisosService.class,
             com.prisaly.m1.infrastructure.persistence.IdentidadJpaAdapter.class,
-            com.prisaly.m1.infrastructure.security.AuditoriaPermisosLog.class})
+            com.prisaly.m1.infrastructure.security.AuditoriaPermisosLog.class,
+            // DM1-08 (DC-M1-04): the catalog validates passwords against the blocklist.
+            com.prisaly.m1.infrastructure.security.ContrasenasBloqueadasClasspath.class})
     static class PersistenceTestApp {
     }
 }

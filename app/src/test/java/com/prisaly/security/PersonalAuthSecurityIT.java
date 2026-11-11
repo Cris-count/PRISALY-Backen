@@ -73,12 +73,12 @@ class PersonalAuthSecurityIT {
     @Test
     void validCredentials_returnTokenAndAllowMe() throws Exception {
         identityCatalogService.createRole("DocenteOk", "Docente");
-        identityCatalogService.registerUser("Ana", "ana.sec@prisaly.test", "Secret#1", "DocenteOk");
+        identityCatalogService.registerUser("Ana", "ana.sec@prisaly.test", "Fixture#Clave-2026", "DocenteOk");
 
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"correo":"ana.sec@prisaly.test","password":"Secret#1"}
+                                {"correo":"ana.sec@prisaly.test","password":"Fixture#Clave-2026"}
                                 """))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.accessToken").isNotEmpty())
@@ -95,7 +95,7 @@ class PersonalAuthSecurityIT {
     @Test
     void wrongPassword_returns401() throws Exception {
         identityCatalogService.createRole("DocenteBadPwd", "Docente");
-        identityCatalogService.registerUser("Bob", "bob.sec@prisaly.test", "Secret#1", "DocenteBadPwd");
+        identityCatalogService.registerUser("Bob", "bob.sec@prisaly.test", "Fixture#Clave-2026", "DocenteBadPwd");
 
         mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -121,13 +121,13 @@ class PersonalAuthSecurityIT {
     void inactiveAccount_rejectsLoginWith401() throws Exception {
         identityCatalogService.createRole("DocenteInactive", "Docente");
         Usuario user = identityCatalogService.registerUser(
-                "Inactive", "inactive.sec@prisaly.test", "Secret#1", "DocenteInactive");
+                "Inactive", "inactive.sec@prisaly.test", "Fixture#Clave-2026", "DocenteInactive");
         identityCatalogService.deactivateUser(user.getIdUsuario());
 
         mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"correo":"inactive.sec@prisaly.test","password":"Secret#1"}
+                                {"correo":"inactive.sec@prisaly.test","password":"Fixture#Clave-2026"}
                                 """))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.code").value("AUTH_FAILED"));
@@ -151,12 +151,12 @@ class PersonalAuthSecurityIT {
     void studentAccessProbe_withPersonnelToken_returns403() throws Exception {
         identityCatalogService.createRole("DocenteStudentProbe", "Docente");
         identityCatalogService.registerUser(
-                "Probe", "probe.student@prisaly.test", "Secret#1", "DocenteStudentProbe");
+                "Probe", "probe.student@prisaly.test", "Fixture#Clave-2026", "DocenteStudentProbe");
 
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"correo":"probe.student@prisaly.test","password":"Secret#1"}
+                                {"correo":"probe.student@prisaly.test","password":"Fixture#Clave-2026"}
                                 """))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -183,15 +183,16 @@ class PersonalAuthSecurityIT {
     void revokedPermission_returns403() throws Exception {
         identityCatalogService.createRole("DocentePerm", "Docente");
         Usuario user = identityCatalogService.registerUser(
-                "Perm", "perm.sec@prisaly.test", "Secret#1", "DocentePerm");
+                "Perm", "perm.sec@prisaly.test", "Fixture#Clave-2026", "DocentePerm");
         Permiso permiso = identityCatalogService.createPermission(
                 PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+        java.util.UUID admin = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), admin);
 
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
-                                {"correo":"perm.sec@prisaly.test","password":"Secret#1"}
+                                {"correo":"perm.sec@prisaly.test","password":"Fixture#Clave-2026"}
                                 """))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -201,7 +202,7 @@ class PersonalAuthSecurityIT {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
-        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso());
+        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso(), admin);
 
         mockMvc.perform(get("/v1/personal/autorizacion/crear-caso")
                         .header("Authorization", "Bearer " + token))
@@ -212,5 +213,13 @@ class PersonalAuthSecurityIT {
     private String readToken(MvcResult login) throws Exception {
         JsonNode node = objectMapper.readTree(login.getResponse().getContentAsString());
         return node.get("accessToken").asText();
+    }
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private java.util.UUID administradorFixture() {
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return identityCatalogService.registerUser("Administrador fixture", java.util.UUID.randomUUID() + "@admin.prisaly.test",
+                java.util.UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 }

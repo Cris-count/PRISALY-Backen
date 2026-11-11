@@ -99,6 +99,58 @@ class PersonnelAuthenticationServiceTest {
     }
 
     @Test
+    void m1T03b_unknownUser_stillComparesAgainstReferenceHash() {
+        // H-01: the comparison runs even without an account, so timing does not reveal existence.
+        when(usuarioRepository.buscarPorCorreo(anyString())).thenReturn(Optional.empty());
+        when(passwordEncoder.encode(anyString())).thenReturn("reference-hash");
+
+        IdentityDomainException first = assertThrows(
+                IdentityDomainException.class,
+                () -> service.authenticate("ghost@prisaly.test", "x"));
+        IdentityDomainException second = assertThrows(
+                IdentityDomainException.class,
+                () -> service.authenticate("other@prisaly.test", "y"));
+
+        assertEquals(PersonnelAuthenticationService.CODE_AUTH_FAILED, first.code());
+        assertEquals(PersonnelAuthenticationService.CODE_AUTH_FAILED, second.code());
+        verify(passwordEncoder).matches("x", "reference-hash");
+        verify(passwordEncoder).matches("y", "reference-hash");
+        // The reference hash is computed once, not on every request.
+        verify(passwordEncoder, org.mockito.Mockito.times(1)).encode(anyString());
+    }
+
+    @Test
+    void m1T03c_userWithoutHash_comparesAndFailsGenerically() {
+        Rol rol = new Rol(1, "Docente", "Docente");
+        Usuario usuario = new Usuario(
+                UUID.randomUUID(), rol, "Ana", "ana@prisaly.test", null, "Activo", OffsetDateTime.now(), null);
+        when(usuarioRepository.buscarPorCorreo("ana@prisaly.test")).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.encode(anyString())).thenReturn("reference-hash");
+        when(passwordEncoder.matches("secret", "reference-hash")).thenReturn(true);
+
+        IdentityDomainException error = assertThrows(
+                IdentityDomainException.class,
+                () -> service.authenticate("ana@prisaly.test", "secret"));
+
+        assertEquals(PersonnelAuthenticationService.CODE_AUTH_FAILED, error.code());
+    }
+
+    @Test
+    void m1T03d_inactiveUserWithRightPassword_failsGenerically() {
+        Rol rol = new Rol(1, "Docente", "Docente");
+        Usuario usuario = new Usuario(
+                UUID.randomUUID(), rol, "Ana", "ana@prisaly.test", "hash", "Inactivo", OffsetDateTime.now(), null);
+        when(usuarioRepository.buscarPorCorreo("ana@prisaly.test")).thenReturn(Optional.of(usuario));
+        when(passwordEncoder.matches("secret", "hash")).thenReturn(true);
+
+        IdentityDomainException error = assertThrows(
+                IdentityDomainException.class,
+                () -> service.authenticate("ana@prisaly.test", "secret"));
+
+        assertEquals(PersonnelAuthenticationService.CODE_AUTH_FAILED, error.code());
+    }
+
+    @Test
     void m1T04_duplicateEmail_rejected() {
         when(identityCatalogService.registerUser("Ana", "ana@prisaly.test", "secret", "Docente"))
                 .thenThrow(new IdentityDomainException(

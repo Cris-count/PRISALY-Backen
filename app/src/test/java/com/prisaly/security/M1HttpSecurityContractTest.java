@@ -80,6 +80,10 @@ class M1HttpSecurityContractTest {
     @MockitoBean
     private PersonnelAuthenticationService personnelAuthenticationService;
 
+    // DM1-06 (DC-M1-04): the login controller now depends on the repeated-attempt protection.
+    @MockitoBean
+    private com.prisaly.m1.application.service.AutenticacionProtegidaService autenticacionProtegidaService;
+
     private MockMvc mockMvc;
 
     @BeforeEach

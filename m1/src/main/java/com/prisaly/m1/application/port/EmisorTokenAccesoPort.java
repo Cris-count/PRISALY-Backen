@@ -7,4 +7,11 @@ public interface EmisorTokenAccesoPort {
     String issue(UUID userId);
 
     void revoke(String token);
+
+    /** The issuer cannot hold more active tokens. Declared here so presentation does not depend on infrastructure (A17). */
+    class CapacidadAgotadaException extends RuntimeException {
+        public CapacidadAgotadaException(String message) {
+            super(message);
+        }
+    }
 }

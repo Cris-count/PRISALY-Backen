@@ -70,7 +70,7 @@ class AuditoriaPermisosPersistenciaIT {
     }
 
     private UUID cuenta(String rol) {
-        Usuario u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        Usuario u = catalog.registerUser("Cuenta", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol);
         return u.getIdUsuario();
     }
     private UUID docente() {
@@ -129,7 +129,7 @@ class AuditoriaPermisosPersistenciaIT {
         catalog.assignPermission(docente, consultar, admin);
         String texto = registro();
         String hash = jdbc.queryForObject("SELECT \"passwordHash\" FROM \"Usuario\" WHERE \"idUsuario\"=?", String.class, docente);
-        for (String prohibido : new String[] {"Secret#1", hash, "@prisaly.test", "Bearer", "password", "token"}) {
+        for (String prohibido : new String[] {"Fixture#Clave-2026", hash, "@prisaly.test", "Bearer", "password", "token"}) {
             assertFalse(texto.contains(prohibido), prohibido);
         }
     }
@@ -201,6 +201,18 @@ class AuditoriaPermisosPersistenciaIT {
         jdbc.execute(Files.readString(Path.of("../docs/provision/pd01-inicializacion.sql")));
         assertEquals(4, jdbc.queryForObject("SELECT count(*) FROM \"Permiso\" WHERE \"codigo\" IN ('CONSULTAR_CASO','MODIFICAR_CASO','PUBLICAR_CASO','ARCHIVAR_CASO')", Integer.class));
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, admin));
+    }
+
+    /** DM1-03 (DC-M1-03): CREAR_CASO and GESTIONAR_SESION are provisioned idempotently and granted to nobody. */
+    @Test void laInicializacionAprovisionaPermisosOperativosSinAsignarlos() throws Exception {
+        String script = Files.readString(Path.of("../docs/provision/pd01-inicializacion.sql"));
+        Integer asignacionesAntes = jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\"", Integer.class);
+        jdbc.execute(script);
+        jdbc.execute(script);
+        for (String codigo : new String[] {"CREAR_CASO", "GESTIONAR_SESION"}) {
+            assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM \"Permiso\" WHERE \"codigo\"=?", Integer.class, codigo));
+        }
+        assertEquals(asignacionesAntes, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\"", Integer.class));
     }
 
     @Test void laInicializacionEsIdempotenteYElRolQuedaVerificado() throws Exception {

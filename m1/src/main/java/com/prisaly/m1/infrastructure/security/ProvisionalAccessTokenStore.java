@@ -96,7 +96,7 @@ public class ProvisionalAccessTokenStore implements EmisorTokenAccesoPort {
     private record TokenRecord(UUID userId, Instant expiresAt) {
     }
 
-    public static final class CapacityExceededException extends RuntimeException {
+    public static final class CapacityExceededException extends EmisorTokenAccesoPort.CapacidadAgotadaException {
         public CapacityExceededException() { super("Provisional token capacity reached"); }
     }
 }

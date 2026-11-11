@@ -31,7 +31,7 @@ public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, 
             return false;
         }
         try {
-            return identity.hasPermission(current.userId(), "CREAR_CASO");
+            return identity.hasPermission(current.userId(), PermisosCaso.CREAR_CASO);
         } catch (IdentityDomainException ex) {
             throw translate(ex);
         }

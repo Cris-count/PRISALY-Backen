@@ -181,18 +181,28 @@ class ComposicionM3LecturaInstitucionalIT {
         return caso;
     }
 
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private UUID administradorFixture() {
+        if (!catalog.existeRolAdministrador()) {
+            catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return catalog.registerUser("Administrador fixture", UUID.randomUUID() + "@admin.prisaly.test",
+                UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+    }
+
     private String docente(String correo, boolean conPermisoDeLectura) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        Usuario user = catalog.registerUser("Docente", correo, "Fixture#Clave-2026", rol);
+        UUID actor = administradorFixture();
+        catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), actor);
         if (conPermisoDeLectura) {
-            catalog.assignPermission(user.getIdUsuario(), idPermiso(PERMISO_FIXTURE), null);
+            catalog.assignPermission(user.getIdUsuario(), idPermiso(PERMISO_FIXTURE), actor);
         }
         HttpResponse<String> login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar"))
                 .header("Content-Type", "application/json")
                 .POST(HttpRequest.BodyPublishers.ofString(
-                        "{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}"))
+                        "{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}"))
                 .build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, login.statusCode(), login.body());
         String token = objectMapper.readTree(login.body()).get("accessToken").asText();

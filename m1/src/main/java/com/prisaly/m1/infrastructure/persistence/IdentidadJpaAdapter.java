@@ -10,9 +10,11 @@ import com.prisaly.m1.domain.model.Rol;
 import com.prisaly.m1.domain.model.Usuario;
 import java.time.OffsetDateTime;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 /** Traduce el modelo de M1 hacia sus entidades JPA. Los errores de integridad se propagan. */
@@ -65,6 +67,23 @@ public class IdentidadJpaAdapter implements UsuarioRepositorioPort, RolRepositor
         UsuarioEntity usuario = usuarios.findById(idUsuario).orElseThrow();
         usuario.changeEstado(estado, fecha);
         usuarios.saveAndFlush(usuario);
+    }
+
+    @Override
+    public void actualizarPasswordHash(UUID idUsuario, String passwordHash, OffsetDateTime fecha) {
+        UsuarioEntity usuario = usuarios.findById(idUsuario).orElseThrow();
+        usuario.replacePasswordHash(passwordHash, fecha);
+        usuarios.saveAndFlush(usuario);
+    }
+
+    @Override
+    public List<Rol> listarRoles() {
+        return roles.findAll(Sort.by("idRol")).stream().map(IdentidadJpaAdapter::rol).toList();
+    }
+
+    @Override
+    public List<Permiso> listarPermisos() {
+        return permisos.findAll(Sort.by("idPermiso")).stream().map(IdentidadJpaAdapter::permiso).toList();
     }
 
     @Override
@@ -128,12 +147,28 @@ public class IdentidadJpaAdapter implements UsuarioRepositorioPort, RolRepositor
 
     @Override
     public boolean deshabilitar(UUID idUsuario, Integer idPermiso) {
-        Optional<UsuarioPermisoEntity> asignacion = asignaciones.findByIdUsuarioAndIdPermiso(idUsuario, idPermiso);
+        Optional<UsuarioPermisoEntity> asignacion = asignaciones.findByIdUsuarioAndIdPermiso(idUsuario, idPermiso)
+                .filter(UsuarioPermisoEntity::isHabilitado);
         asignacion.ifPresent(a -> {
             a.setHabilitado(false);
             asignaciones.saveAndFlush(a);
         });
         return asignacion.isPresent();
+    }
+
+    @Override
+    public boolean existeHabilitada(UUID idUsuario, Integer idPermiso) {
+        return asignaciones.findByIdUsuarioAndIdPermiso(idUsuario, idPermiso)
+                .map(UsuarioPermisoEntity::isHabilitado).orElse(false);
+    }
+
+    @Override
+    public AsignacionPermiso reactivar(UUID idUsuario, Integer idPermiso, UUID idAsignador, OffsetDateTime fecha) {
+        UsuarioPermisoEntity asignacion = asignaciones.findByIdUsuarioAndIdPermiso(idUsuario, idPermiso).orElseThrow();
+        asignacion.reactivar(idAsignador, fecha);
+        UsuarioPermisoEntity guardada = asignaciones.saveAndFlush(asignacion);
+        return new AsignacionPermiso(guardada.getIdUsuario(), guardada.getIdPermiso(), guardada.isHabilitado(),
+                guardada.getIdAdministradorAsignador(), guardada.getFechaAsignacion());
     }
 
     private static Rol rol(RolEntity e) {

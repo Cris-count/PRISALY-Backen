@@ -83,6 +83,16 @@ class M3CasoCreationIT {
     private UUID owner;
     private String token;
     private int permissionId;
+    private UUID admin;
+
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private UUID administradorFixture() {
+        if (!catalog.existeRolAdministrador()) {
+            catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return catalog.registerUser("Administrador fixture", UUID.randomUUID() + "@admin.prisaly.test",
+                UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+    }
 
     @BeforeEach
     void prepareInstitutionalIdentity() throws Exception {
@@ -96,7 +106,8 @@ class M3CasoCreationIT {
         owner = catalog.registerUser("Docente M3 REST", email, password, role).getIdUsuario();
         permissionId = permissions.findByCodigo("CREAR_CASO").map(com.prisaly.m1.infrastructure.persistence.PermisoEntity::getIdPermiso)
                 .orElseGet(() -> catalog.createPermission("CREAR_CASO", "Crear caso", null).getIdPermiso());
-        catalog.assignPermission(owner, permissionId, null);
+        admin = administradorFixture();
+        catalog.assignPermission(owner, permissionId, admin);
         var login = mvc.perform(post("/api/v1/personal/autenticar").contextPath("/api")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json.writeValueAsString(Map.of("correo", email, "password", password))))
@@ -164,7 +175,7 @@ class M3CasoCreationIT {
                 .contentType(MediaType.APPLICATION_JSON).content(body(id, "No autenticado")))
                 .andExpect(status().isUnauthorized());
         assertEquals(0, count(id));
-        catalog.disablePermissionAssignment(owner, permissionId);
+        catalog.disablePermissionAssignment(owner, permissionId, admin);
         create(id, "Permiso revocado", 403);
         assertEquals(0, count(id));
     }

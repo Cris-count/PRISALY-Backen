@@ -59,25 +59,29 @@ public class GestionPermisosService {
             throw new IdentityDomainException(PoliticaPermisos.CODE_USER_NOT_FOUND, "User not found");
         }
         String codigo = codigo(idPermiso);
+        // DM1-02 (DC-M1-03): every assignment needs an active administrator, not only the PD-01 controlled set.
+        exigirAdministrador(idActor);
+        if (PoliticaPermisos.exigeSeparacionDeFunciones(codigo) && idUsuario.equals(idActor)) {
+            throw new IdentityDomainException(PoliticaPermisos.CODE_SELF_ASSIGNMENT,
+                    "Assigning and executing must stay separate");
+        }
         if (PoliticaPermisos.esControlado(codigo)) {
-            exigirAdministrador(idActor);
-            if (PoliticaPermisos.exigeSeparacionDeFunciones(codigo) && idUsuario.equals(idActor)) {
-                throw new IdentityDomainException(PoliticaPermisos.CODE_SELF_ASSIGNMENT,
-                        "Assigning and executing must stay separate");
-            }
             if (usuarios.esCuentaEstudiante(idUsuario)) {
                 throw new IdentityDomainException(PoliticaPermisos.CODE_STUDENT_NOT_ALLOWED,
                         "Students cannot receive this permission");
             }
         }
-        if (asignaciones.existe(idUsuario, idPermiso)) {
+        if (asignaciones.existeHabilitada(idUsuario, idPermiso)) {
             throw duplicada();
         }
         if (idActor != null && !usuarios.existePorId(idActor)) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_USER_NOT_FOUND, "Assigner user not found");
         }
         try {
-            AsignacionPermiso guardada = asignaciones.registrar(idUsuario, idPermiso, idActor, OffsetDateTime.now());
+            // DC-M1-04: a revoked row (habilitado=false) is re-enabled instead of being reported as a duplicate.
+            AsignacionPermiso guardada = asignaciones.existe(idUsuario, idPermiso)
+                    ? asignaciones.reactivar(idUsuario, idPermiso, idActor, OffsetDateTime.now())
+                    : asignaciones.registrar(idUsuario, idPermiso, idActor, OffsetDateTime.now());
             auditoria.registrarExitoAlConfirmar(ASIGNAR, idUsuario, codigo, idActor);
             return guardada;
         } catch (DataIntegrityViolationException ex) {
@@ -87,9 +91,8 @@ public class GestionPermisosService {
 
     private void ejecutarRevocacion(UUID idUsuario, Integer idPermiso, UUID idActor) {
         String codigo = codigo(idPermiso);
-        if (PoliticaPermisos.esControlado(codigo)) {
-            exigirAdministrador(idActor);
-        }
+        // DM1-02 (DC-M1-03): every revocation needs an active administrator as well.
+        exigirAdministrador(idActor);
         if (!asignaciones.deshabilitar(idUsuario, idPermiso)) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_PERMISSION_NOT_FOUND,
                     "Permission assignment not found");

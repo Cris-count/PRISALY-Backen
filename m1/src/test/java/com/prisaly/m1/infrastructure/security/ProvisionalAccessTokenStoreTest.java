@@ -94,6 +94,24 @@ class ProvisionalAccessTokenStoreTest {
         store.issue(USER);
     }
 
+    /**
+     * DM1-07 (DC-M1-03) characterization, not a desired rule: the store has no per-user limit, so a single
+     * account can exhaust the global capacity and other users get CapacityExceeded (HTTP 503) until expiry.
+     * This documents the risk reported to Dirección Central; it must change when a per-user limit is approved.
+     */
+    @Test
+    void caracterizacionDm107_unSoloUsuarioAgotaLaCapacidadGlobal() {
+        TestClock clock = new TestClock();
+        var store = new ProvisionalAccessTokenStore(clock, 60, 3);
+        for (int i = 0; i < 3; i++) {
+            store.issue(USER);
+        }
+        UUID otro = UUID.fromString("22222222-2222-2222-2222-222222222222");
+        assertThrows(ProvisionalAccessTokenStore.CapacityExceededException.class, () -> store.issue(otro));
+        clock.advance(Duration.ofSeconds(60));
+        assertTrue(store.resolveActiveUserId(store.issue(otro)).isPresent());
+    }
+
     @Test
     void emitirReclamaCapacidadDeVencidos() {
         TestClock clock = new TestClock();

@@ -157,15 +157,16 @@ class CasoContenidoHttpIT {
     private String docente(String correo, boolean modificar) throws Exception {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
-        Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(user.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        Usuario user = catalog.registerUser("Docente", correo, "Fixture#Clave-2026", rol);
         if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
-        UUID asignador = catalog.registerUser("Asignador", "asignador." + correo, "Secret#1",
+        UUID asignador = catalog.registerUser("Asignador", "asignador." + correo, "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+        // DM1-02: CREAR_CASO is now assigned by the administrator as well (setup only).
+        catalog.assignPermission(user.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), asignador);
         catalog.assignPermission(user.getIdUsuario(), permiso(LECTURA), asignador);
         if (modificar) { catalog.assignPermission(user.getIdUsuario(), permiso("MODIFICAR_CASO"), asignador); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}")).build(),
+                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}")).build(),
                 HttpResponse.BodyHandlers.ofString());
         assertEquals(200, login.statusCode(), login.body());
         return objectMapper.readTree(login.body()).get("accessToken").asText();

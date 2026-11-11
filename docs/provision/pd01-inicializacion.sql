@@ -11,3 +11,10 @@ VALUES ('CONSULTAR_CASO', 'Consultar caso'),
        ('PUBLICAR_CASO', 'Publicar caso'),
        ('ARCHIVAR_CASO', 'Archivar caso')
 ON CONFLICT ("codigo") DO NOTHING;
+
+-- DM1-03 (DC-M1-03): operational permissions already checked by M1/M3 (CREAR_CASO) and M4
+-- (GESTIONAR_SESION). Catalog entries only: they are NOT assigned to any teacher or administrator.
+INSERT INTO "Permiso" ("codigo", "nombre")
+VALUES ('CREAR_CASO', 'Crear caso'),
+       ('GESTIONAR_SESION', 'Gestionar sesion')
+ON CONFLICT ("codigo") DO NOTHING;

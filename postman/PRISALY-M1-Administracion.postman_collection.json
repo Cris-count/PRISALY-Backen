@@ -1,0 +1,2748 @@
+{
+  "info": {
+    "name": "PRISALY — M1 Administración y seguridad (DC-M1-04)",
+    "description": "Flujo administrativo y de seguridad de M1 sobre el backend real. Orden: 00 a 07 (07 al final). La inicialización del primer administrador (D-C / DM1-01) NO está incluida: quedó detenida por la incompatibilidad de V010 con la guarda de esquema de M4. El administrador de prueba lo crea qa/m1-postman/fixture-administrador.sql en una base efímera. Contraseñas del entorno vacías.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "00-autenticacion-e-identidad",
+      "item": [
+        {
+          "name": "M1A-00-01 | Salud del backend",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-00-02 | Autenticar administrador",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"adminEmail\",\"adminPassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken; pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenAdmin\", t);",
+                  "pm.test(\"rol ADMINISTRADOR\", () => pm.expect(pm.response.json().rol).to.eql(\"ADMINISTRADOR\")); pm.collectionVariables.set(\"idAdmin\", pm.response.json().userId);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-00-03 | Autenticar docente sin privilegios administrativos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"docenteEmail\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken; pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenDocente\", t);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{docenteEmail}}\",\n  \"password\": \"{{docentePassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-00-04 | Autenticar cuenta de estudiante (Usuario con Estudiante)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"estudianteEmail\",\"estudiantePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken; pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenEstudiante\", t);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{estudianteEmail}}\",\n  \"password\": \"{{estudiantePassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-00-05 | Consultar la identidad del administrador",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "pm.test(\"es el administrador\", () => pm.expect(pm.response.json().rol).to.eql(\"ADMINISTRADOR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Esperado: HTTP 200."
+          }
+        }
+      ]
+    },
+    {
+      "name": "01-consulta-roles-permisos",
+      "item": [
+        {
+          "name": "M1A-01-01 | Consultar roles",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "pm.test(\"incluye ADMINISTRADOR\", () => pm.expect(pm.response.json().items.map(r => r.nombre)).to.include(\"ADMINISTRADOR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/roles",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-01-02 | Consultar permisos (catálogo DM1-03)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "const items = pm.response.json().items; const id = c => (items.find(p => p.codigo === c) || {}).idPermiso;",
+                  "pm.test(\"CREAR_CASO y GESTIONAR_SESION aprovisionados\", () => { pm.expect(id(\"CREAR_CASO\")).to.be.a(\"number\"); pm.expect(id(\"GESTIONAR_SESION\")).to.be.a(\"number\"); });",
+                  "pm.collectionVariables.set(\"idCrearCaso\", id(\"CREAR_CASO\")); pm.collectionVariables.set(\"idGestionarSesion\", id(\"GESTIONAR_SESION\"));",
+                  "pm.collectionVariables.set(\"idPublicarCaso\", id(\"PUBLICAR_CASO\")); pm.collectionVariables.set(\"idConsultarCaso\", id(\"CONSULTAR_CASO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/permisos",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-01-03 | Rechazar consulta sin credencial",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/v1/admin/roles",
+            "description": "Esperado: HTTP 401 UNAUTHENTICATED."
+          }
+        },
+        {
+          "name": "M1A-01-04 | Rechazar consulta de un docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código ADMIN_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"ADMIN_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/permisos",
+            "description": "Esperado: HTTP 403 ADMIN_REQUIRED."
+          }
+        },
+        {
+          "name": "M1A-01-05 | Rechazar consulta de un estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenEstudiante\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código ADMIN_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"ADMIN_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenEstudiante}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/roles",
+            "description": "Esperado: HTTP 403 ADMIN_REQUIRED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02-alta-docente",
+      "item": [
+        {
+          "name": "M1A-02-01 | Dar de alta un docente (sin credencial utilizable)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"correoNuevo\", \"docente.\" + require(\"uuid\").v4() + \"@prisaly.invalid\");",
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "const b = pm.response.json(); pm.test(\"UsuarioDocente sin credenciales\", () => { pm.expect(Object.keys(b).sort()).to.eql([\"correo\",\"estado\",\"idUsuario\",\"nombre\"]);",
+                  "  pm.expect(b.estado).to.eql(\"Activo\"); }); pm.collectionVariables.set(\"idNuevo\", b.idUsuario);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/docentes",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Docente Newman\",\n  \"correo\": \"{{correoNuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-02-02 | Rechazar correo duplicado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"correoNuevo\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"código DUPLICATE_EMAIL\", () => pm.expect(pm.response.json().code).to.eql(\"DUPLICATE_EMAIL\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/docentes",
+            "description": "Esperado: HTTP 409 DUPLICATE_EMAIL.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Duplicado\",\n  \"correo\": \"{{correoNuevo}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-02-03 | Rechazar datos inválidos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código VALIDATION_ERROR\", () => pm.expect(pm.response.json().code).to.eql(\"VALIDATION_ERROR\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/docentes",
+            "description": "Esperado: HTTP 400 VALIDATION_ERROR.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"\",\n  \"correo\": \"no-es-correo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-02-04 | Rechazar alta por un docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código ADMIN_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"ADMIN_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/docentes",
+            "description": "Esperado: HTTP 403 ADMIN_REQUIRED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"No autorizado\",\n  \"correo\": \"no.autorizado@prisaly.invalid\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-02-05 | El docente nuevo no puede autenticarse hasta la entrega segura",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"correoNuevo\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Credencial PENDIENTE: no existe infraestructura aprobada de entrega segura; no se simula. Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{correoNuevo}}\",\n  \"password\": \"{{docentePassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03-asignacion-consulta-autoasignacion",
+      "item": [
+        {
+          "name": "M1A-03-01 | Asignar CREAR_CASO al docente nuevo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idNuevo\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "pm.test(\"habilitado\", () => pm.expect(pm.response.json().habilitado).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-03-02 | Rechazar asignación duplicada",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idNuevo\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"código DUPLICATE_ASSIGNMENT\", () => pm.expect(pm.response.json().code).to.eql(\"DUPLICATE_ASSIGNMENT\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 409 DUPLICATE_ASSIGNMENT."
+          }
+        },
+        {
+          "name": "M1A-03-03 | Consultar permisos del docente nuevo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idNuevo\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "pm.test(\"incluye CREAR_CASO\", () => pm.expect(pm.response.json().items.map(p => p.codigo)).to.eql([\"CREAR_CASO\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-03-04 | Rechazar usuario inexistente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"código USER_NOT_FOUND\", () => pm.expect(pm.response.json().code).to.eql(\"USER_NOT_FOUND\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 404 USER_NOT_FOUND."
+          }
+        },
+        {
+          "name": "M1A-03-05 | Rechazar permiso inexistente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idNuevo\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"código PERMISSION_NOT_FOUND\", () => pm.expect(pm.response.json().code).to.eql(\"PERMISSION_NOT_FOUND\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos/999999",
+            "description": "Esperado: HTTP 404 PERMISSION_NOT_FOUND."
+          }
+        },
+        {
+          "name": "M1A-03-06 | Rechazar identificador mal formado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código VALIDATION_ERROR\", () => pm.expect(pm.response.json().code).to.eql(\"VALIDATION_ERROR\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/no-es-uuid/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 400 VALIDATION_ERROR."
+          }
+        },
+        {
+          "name": "M1A-03-07 | Rechazar asignación por un docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idNuevo\",\"idGestionarSesion\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código ADMIN_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"ADMIN_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos/{{idGestionarSesion}}",
+            "description": "Esperado: HTTP 403 ADMIN_REQUIRED."
+          }
+        },
+        {
+          "name": "M1A-03-08 | Rechazar permiso controlado para un estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idConsultarCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"código PERMISSION_NOT_ALLOWED_FOR_STUDENT\", () => pm.expect(pm.response.json().code).to.eql(\"PERMISSION_NOT_ALLOWED_FOR_STUDENT\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/11111111-1111-1111-1111-111111111201/permisos/{{idConsultarCaso}}",
+            "description": "Esperado: HTTP 422 PERMISSION_NOT_ALLOWED_FOR_STUDENT."
+          }
+        },
+        {
+          "name": "M1A-03-09 | Autoasignación permitida de CREAR_CASO (DM1-02b)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idAdmin\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idAdmin}}/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-03-10 | Autoasignación permitida de GESTIONAR_SESION (DM1-02b)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idAdmin\",\"idGestionarSesion\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idAdmin}}/permisos/{{idGestionarSesion}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-03-11 | Rechazar autoasignación de PUBLICAR_CASO (DM1-02b)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idAdmin\",\"idPublicarCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código PERMISSION_SELF_ASSIGNMENT_NOT_ALLOWED\", () => pm.expect(pm.response.json().code).to.eql(\"PERMISSION_SELF_ASSIGNMENT_NOT_ALLOWED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idAdmin}}/permisos/{{idPublicarCaso}}",
+            "description": "Esperado: HTTP 403 PERMISSION_SELF_ASSIGNMENT_NOT_ALLOWED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04-revocacion-efectiva",
+      "item": [
+        {
+          "name": "M1A-04-01 | El docente opera con CREAR_CASO",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-04-02 | Revocar CREAR_CASO al docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/11111111-1111-1111-1111-111111111101/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 204."
+          }
+        },
+        {
+          "name": "M1A-04-03 | La revocación se aplica en la siguiente petición",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Esperado: HTTP 403."
+          }
+        },
+        {
+          "name": "M1A-04-04 | Rechazar revocación repetida",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"código PERMISSION_NOT_FOUND\", () => pm.expect(pm.response.json().code).to.eql(\"PERMISSION_NOT_FOUND\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/11111111-1111-1111-1111-111111111101/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 404 PERMISSION_NOT_FOUND."
+          }
+        },
+        {
+          "name": "M1A-04-05 | Rechazar revocación por un docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idNuevo\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código ADMIN_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"ADMIN_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{idNuevo}}/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 403 ADMIN_REQUIRED."
+          }
+        },
+        {
+          "name": "M1A-04-06 | Volver a asignar (reactivación)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenAdmin\",\"baseUrl\",\"idCrearCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/11111111-1111-1111-1111-111111111101/permisos/{{idCrearCaso}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M1A-04-07 | El permiso vuelve a valer",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "Esperado: HTTP 200."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05-politica-contrasenas",
+      "item": [
+        {
+          "name": "M1A-05-01 | Rechazar menos de 12 caracteres",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"código PASSWORD_TOO_SHORT\", () => pm.expect(pm.response.json().code).to.eql(\"PASSWORD_TOO_SHORT\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 422 PASSWORD_TOO_SHORT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"{{docentePassword}}\",\n  \"nueva\": \"corta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-02 | Rechazar más de 72 bytes",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"código PASSWORD_TOO_LONG\", () => pm.expect(pm.response.json().code).to.eql(\"PASSWORD_TOO_LONG\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 422 PASSWORD_TOO_LONG.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"{{docentePassword}}\",\n  \"nueva\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-03 | Rechazar contraseña común",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"código PASSWORD_COMMON\", () => pm.expect(pm.response.json().code).to.eql(\"PASSWORD_COMMON\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 422 PASSWORD_COMMON.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"{{docentePassword}}\",\n  \"nueva\": \"Password1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-04 | Rechazar contraseña que contiene el correo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"docentePassword\",\"docenteEmail\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"código PASSWORD_CONTAINS_EMAIL\", () => pm.expect(pm.response.json().code).to.eql(\"PASSWORD_CONTAINS_EMAIL\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 422 PASSWORD_CONTAINS_EMAIL.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"{{docentePassword}}\",\n  \"nueva\": \"x{{docenteEmail}}!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-05 | Rechazar contraseña actual incorrecta",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"incorrecta-123\",\n  \"nueva\": \"una frase de paso nueva\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-06 | Cambiar la contraseña",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Esperado: HTTP 204.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"actual\": \"{{docentePassword}}\",\n  \"nueva\": \"una frase de paso nueva\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-05-07 | Autenticar con la contraseña nueva",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"docenteEmail\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{docenteEmail}}\",\n  \"password\": \"una frase de paso nueva\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06-revocacion-de-token",
+      "item": [
+        {
+          "name": "M1A-06-01 | Cerrar la sesión del docente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/cerrar-sesion",
+            "description": "Esperado: HTTP 204."
+          }
+        },
+        {
+          "name": "M1A-06-02 | El token revocado ya no vale",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Esperado: HTTP 401 UNAUTHENTICATED."
+          }
+        }
+      ]
+    },
+    {
+      "name": "07-limite-de-intentos",
+      "description": "Ejecutar al final: limita el origen durante 15 minutos.",
+      "item": [
+        {
+          "name": "M1A-07-01 | Fallo 1 de la cuenta de estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante.bruno@prisaly.local\",\n  \"password\": \"mala-1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-02 | Fallo 2 de la cuenta de estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante.bruno@prisaly.local\",\n  \"password\": \"mala-2\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-03 | Fallo 3 de la cuenta de estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante.bruno@prisaly.local\",\n  \"password\": \"mala-3\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-04 | Fallo 4 de la cuenta de estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante.bruno@prisaly.local\",\n  \"password\": \"mala-4\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-05 | Fallo 5 de la cuenta de estudiante",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 401 AUTH_FAILED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"estudiante.bruno@prisaly.local\",\n  \"password\": \"mala-5\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-06 | Sexto intento con la contraseña correcta: 429 con Retry-After",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"estudianteEmail\",\"estudiantePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 429\", () => pm.response.to.have.status(429));",
+                  "pm.test(\"código AUTH_RATE_LIMITED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_RATE_LIMITED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}",
+                  "pm.test(\"Retry-After en segundos (1..900)\", () => { const r = Number(pm.response.headers.get(\"Retry-After\")); pm.expect(r).to.be.within(1, 900); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 429 AUTH_RATE_LIMITED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{estudianteEmail}}\",\n  \"password\": \"{{estudiantePassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-07 | Otra cuenta del mismo origen sigue autenticando",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"adminEmail\",\"adminPassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-08 | Fallos con cuentas distintas hasta el límite del origen",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"intentosOrigen\", Number(pm.collectionVariables.get(\"intentosOrigen\") || 0) + 1);",
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const n = Number(pm.collectionVariables.get(\"intentosOrigen\"));",
+                  "pm.test(\"401 AUTH_FAILED o 429 AUTH_RATE_LIMITED\", () => { pm.expect([401, 429]).to.include(pm.response.code);",
+                  "  pm.expect(pm.response.json().code).to.eql(pm.response.code === 401 ? \"AUTH_FAILED\" : \"AUTH_RATE_LIMITED\"); });",
+                  "pm.test(\"el origen se limita antes de 20 intentos de este bucle (\" + n + \")\", () => pm.expect(n).to.be.at.most(20));",
+                  "if (pm.response.code === 429) { pm.test(\"Retry-After presente\", () => pm.expect(Number(pm.response.headers.get(\"Retry-After\"))).to.be.within(1, 900)); }",
+                  "if (pm.response.code === 401 && n < 20) { postman.setNextRequest(\"M1A-07-08 | Fallos con cuentas distintas hasta el límite del origen\"); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Se repite (setNextRequest) hasta que el origen queda limitado; el último intento cuenta como el que alcanza el umbral. Esperado: HTTP 401.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{$randomUUID}}@prisaly.invalid\",\n  \"password\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M1A-07-09 | Origen limitado: incluso el administrador recibe 429",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"adminEmail\",\"adminPassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) { console.warn(\"PRISALY M1: bloqueada por variables ausentes: \" + faltan.join(\", \")); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 429\", () => pm.response.to.have.status(429));",
+                  "pm.test(\"código AUTH_RATE_LIMITED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_RATE_LIMITED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos ni secretos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash|accessToken/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Esperado: HTTP 429 AUTH_RATE_LIMITED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenDocente",
+      "value": ""
+    },
+    {
+      "key": "tokenEstudiante",
+      "value": ""
+    },
+    {
+      "key": "tokenNuevo",
+      "value": ""
+    },
+    {
+      "key": "idAdmin",
+      "value": ""
+    },
+    {
+      "key": "idNuevo",
+      "value": ""
+    },
+    {
+      "key": "correoNuevo",
+      "value": ""
+    },
+    {
+      "key": "idCrearCaso",
+      "value": ""
+    },
+    {
+      "key": "idGestionarSesion",
+      "value": ""
+    },
+    {
+      "key": "idPublicarCaso",
+      "value": ""
+    },
+    {
+      "key": "idConsultarCaso",
+      "value": ""
+    },
+    {
+      "key": "intentosOrigen",
+      "value": ""
+    }
+  ]
+}

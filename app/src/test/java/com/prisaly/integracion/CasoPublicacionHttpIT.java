@@ -63,7 +63,7 @@ class CasoPublicacionHttpIT {
 
     @BeforeEach void administrador() {
         if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
-        admin = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1", IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+        admin = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
     @Test void cicloCompletoBorradorPublicadoArchivado() throws Exception {
@@ -112,7 +112,7 @@ class CasoPublicacionHttpIT {
         String etag = etag(caso, duenio);
         assertEquals(403, accion(ajeno, caso, "publicar", etag).statusCode());
         String correo = UUID.randomUUID() + "@prisaly.test";
-        catalog.registerUser("Admin2", correo, "Secret#1", IdentityCatalogService.ROL_ADMINISTRADOR);
+        catalog.registerUser("Admin2", correo, "Fixture#Clave-2026", IdentityCatalogService.ROL_ADMINISTRADOR);
         assertEquals(403, accion(new Cuenta(null, login(correo)), caso, "publicar", etag).statusCode());
         assertEquals("Borrador", estado(caso));
     }
@@ -241,8 +241,8 @@ class CasoPublicacionHttpIT {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
         String correo = UUID.randomUUID() + "@prisaly.test";
-        Usuario u = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        Usuario u = catalog.registerUser("Docente", correo, "Fixture#Clave-2026", rol);
+        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), admin); // DM1-02: setup only
         catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin);
         catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin);
         for (String p : extra) { catalog.assignPermission(u.getIdUsuario(), permiso(p), admin); }
@@ -250,7 +250,7 @@ class CasoPublicacionHttpIT {
     }
     private String login(String correo) throws Exception {
         var r = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}")).build(), HttpResponse.BodyHandlers.ofString());
+                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + correo + "\",\"password\":\"Fixture#Clave-2026\"}")).build(), HttpResponse.BodyHandlers.ofString());
         assertEquals(200, r.statusCode(), r.body());
         return json.readTree(r.body()).get("accessToken").asText();
     }

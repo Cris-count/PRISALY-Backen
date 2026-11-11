@@ -39,6 +39,16 @@ export function cleanEnv(source = process.env) {
   return Object.fromEntries(Object.entries(source).filter(([key]) => allowed.test(key)));
 }
 
+/**
+ * P2-5 (DC-AUD-01): on Windows `newman` is installed as `newman.cmd`, which spawnSync cannot run without a shell.
+ * Returns the spawn options for a command; with a shell every argument is quoted so paths with spaces survive.
+ */
+export function spawnPlan(commandName, argv, platform = process.platform) {
+  if (platform !== 'win32' || commandName !== 'newman') return {file: commandName, args: argv, shell: false};
+  const quote = a => /[\s"&|<>^()%!]/.test(a) ? `"${String(a).replace(/"/g, '""')}"` : a;
+  return {file: commandName, args: argv.map(quote), shell: true};
+}
+
 export function ownsContainer(info, id, name, runId) {
   return /^[a-f0-9]{64}$/.test(id) && info.Id === id && info.Name === `/${name}`
     && info.Config?.Labels?.['prisaly.qa.run'] === runId;
@@ -103,7 +113,8 @@ export async function main(args = process.argv.slice(2)) {
   process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
   const log=(file,text)=>writeFileSync(join(out,file),redact(text,secrets));
   function command(command, argv, {input, timeout=30000, extraEnv={}}={}) {
-    const result=spawnSync(command,argv,{cwd:ROOT,env:{...env,...extraEnv},input,
+    const plan=spawnPlan(command,argv);
+    const result=spawnSync(plan.file,plan.args,{cwd:ROOT,env:{...env,...extraEnv},input,shell:plan.shell,
       encoding:'utf8',timeout,maxBuffer:32*1024*1024,windowsHide:true});
     return {ok:!result.error&&result.status===0,code:result.status,
       stdout:result.stdout||'', text:(result.stdout||'')+(result.stderr||''),error:result.error?.code};

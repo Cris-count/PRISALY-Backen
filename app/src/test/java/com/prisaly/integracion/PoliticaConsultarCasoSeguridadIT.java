@@ -56,7 +56,7 @@ class PoliticaConsultarCasoSeguridadIT {
 
     @BeforeEach void responsable() {
         if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
-        actor = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Secret#1",
+        actor = catalog.registerUser("Admin", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 
@@ -183,15 +183,15 @@ class PoliticaConsultarCasoSeguridadIT {
     private Usuario usuario() {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Fixture");
-        return catalog.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Secret#1", rol);
+        return catalog.registerUser("Fixture", UUID.randomUUID() + "@prisaly.test", "Fixture#Clave-2026", rol);
     }
     private Cuenta docente(boolean consultar, boolean modificar) throws Exception {
         Usuario u = usuario();
-        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), actor); // DM1-02: setup only
         if (consultar) { catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), actor); }
         if (modificar) { catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), actor); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + u.getCorreo() + "\",\"password\":\"Secret#1\"}")).build(),
+                .POST(HttpRequest.BodyPublishers.ofString("{\"correo\":\"" + u.getCorreo() + "\",\"password\":\"Fixture#Clave-2026\"}")).build(),
                 HttpResponse.BodyHandlers.ofString());
         assertEquals(200, login.statusCode(), login.body());
         return new Cuenta(u.getIdUsuario(), json.readTree(login.body()).get("accessToken").asText());
