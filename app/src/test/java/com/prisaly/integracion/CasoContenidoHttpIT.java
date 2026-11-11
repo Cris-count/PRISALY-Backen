@@ -158,10 +158,11 @@ class CasoContenidoHttpIT {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
         Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(user.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
         if (!catalog.existeRolAdministrador()) { catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture"); }
         UUID asignador = catalog.registerUser("Asignador", "asignador." + correo, "Secret#1",
                 IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+        // DM1-02: CREAR_CASO is now assigned by the administrator as well (setup only).
+        catalog.assignPermission(user.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), asignador);
         catalog.assignPermission(user.getIdUsuario(), permiso(LECTURA), asignador);
         if (modificar) { catalog.assignPermission(user.getIdUsuario(), permiso("MODIFICAR_CASO"), asignador); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")

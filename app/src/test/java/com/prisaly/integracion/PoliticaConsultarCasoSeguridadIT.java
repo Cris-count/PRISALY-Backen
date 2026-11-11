@@ -187,7 +187,7 @@ class PoliticaConsultarCasoSeguridadIT {
     }
     private Cuenta docente(boolean consultar, boolean modificar) throws Exception {
         Usuario u = usuario();
-        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), actor); // DM1-02: setup only
         if (consultar) { catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), actor); }
         if (modificar) { catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), actor); }
         var login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")

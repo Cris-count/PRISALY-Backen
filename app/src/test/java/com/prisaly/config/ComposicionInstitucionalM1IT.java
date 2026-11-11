@@ -202,6 +202,15 @@ class ComposicionInstitucionalM1IT {
     }
 
     // The permission catalog is shared by the tests of this class (same container).
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private UUID administradorFixture() {
+        if (!catalog.existeRolAdministrador()) {
+            catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return catalog.registerUser("Administrador fixture", UUID.randomUUID() + "@admin.prisaly.test",
+                UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
+    }
+
     private Integer idPermisoCrearCaso() {
         var existentes = jdbc.queryForList("SELECT \"idPermiso\" FROM \"Permiso\" WHERE \"codigo\" = ?",
                 Integer.class, PersonalAuthorizationController.PERMISSION_CREAR_CASO);
@@ -216,7 +225,7 @@ class ComposicionInstitucionalM1IT {
         String rol = "Rol" + Math.abs(correo.hashCode());
         catalog.createRole(rol, "Docente");
         Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(user.getIdUsuario(), idPermisoCrearCaso(), null);
+        catalog.assignPermission(user.getIdUsuario(), idPermisoCrearCaso(), administradorFixture());
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"correo\":\"" + correo + "\",\"password\":\"Secret#1\"}"))

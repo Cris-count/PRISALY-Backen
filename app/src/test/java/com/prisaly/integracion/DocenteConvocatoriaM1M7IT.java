@@ -90,6 +90,7 @@ class DocenteConvocatoriaM1M7IT {
     private JdbcTemplate jdbc;
 
     private UUID docenteId;
+    private UUID admin;
     private UUID estudianteId;
     private UUID casoId;
     private Integer permisoGestionarSesion;
@@ -109,8 +110,9 @@ class DocenteConvocatoriaM1M7IT {
         permisoGestionarSesion = permisoRepository.findByCodigo(PERMISO_GESTIONAR_SESION).map(PermisoEntity::getIdPermiso)
                 .orElseGet(() -> identityCatalogService.createPermission(
                         PERMISO_GESTIONAR_SESION, "Gestionar sesión", null).getIdPermiso());
+        admin = administradorFixture(); // DM1-02: setup only
         identityCatalogService.assignPermission(
-                docenteId, permisoGestionarSesion, null);
+                docenteId, permisoGestionarSesion, admin);
 
         UUID usuarioEstudiante = identityCatalogService
                 .registerUser(
@@ -188,7 +190,7 @@ class DocenteConvocatoriaM1M7IT {
     @Test
     void docenteSinPermiso_noCreaSesionNiNotifica() {
         identityCatalogService.disablePermissionAssignment(
-                docenteId, permisoGestionarSesion);
+                docenteId, permisoGestionarSesion, admin);
         Instant inicio = Instant.now().plusSeconds(86_400);
         int sesionesAntes = count("Sesion");
         int avisosAntes = count("Aviso");
@@ -256,5 +258,13 @@ class DocenteConvocatoriaM1M7IT {
                 "SELECT count(*) FROM \"Convocatoria\" WHERE \"idConvocatoria\" = ?",
                 Integer.class,
                 convocatoriaId);
+    }
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private java.util.UUID administradorFixture() {
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return identityCatalogService.registerUser("Administrador fixture", java.util.UUID.randomUUID() + "@admin.prisaly.test",
+                java.util.UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 }

@@ -186,7 +186,8 @@ class PersonalAuthSecurityIT {
                 "Perm", "perm.sec@prisaly.test", "Secret#1", "DocentePerm");
         Permiso permiso = identityCatalogService.createPermission(
                 PersonalAuthorizationController.PERMISSION_CREAR_CASO, "Crear caso", null);
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+        java.util.UUID admin = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), admin);
 
         MvcResult login = mockMvc.perform(post("/v1/personal/autenticar")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -201,7 +202,7 @@ class PersonalAuthSecurityIT {
                         .header("Authorization", "Bearer " + token))
                 .andExpect(status().isOk());
 
-        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso());
+        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso(), admin);
 
         mockMvc.perform(get("/v1/personal/autorizacion/crear-caso")
                         .header("Authorization", "Bearer " + token))
@@ -212,5 +213,13 @@ class PersonalAuthSecurityIT {
     private String readToken(MvcResult login) throws Exception {
         JsonNode node = objectMapper.readTree(login.getResponse().getContentAsString());
         return node.get("accessToken").asText();
+    }
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private java.util.UUID administradorFixture() {
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return identityCatalogService.registerUser("Administrador fixture", java.util.UUID.randomUUID() + "@admin.prisaly.test",
+                java.util.UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 }

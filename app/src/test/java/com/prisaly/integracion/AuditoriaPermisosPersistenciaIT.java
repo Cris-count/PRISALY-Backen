@@ -203,6 +203,18 @@ class AuditoriaPermisosPersistenciaIT {
         assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, admin));
     }
 
+    /** DM1-03 (DC-M1-03): CREAR_CASO and GESTIONAR_SESION are provisioned idempotently and granted to nobody. */
+    @Test void laInicializacionAprovisionaPermisosOperativosSinAsignarlos() throws Exception {
+        String script = Files.readString(Path.of("../docs/provision/pd01-inicializacion.sql"));
+        Integer asignacionesAntes = jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\"", Integer.class);
+        jdbc.execute(script);
+        jdbc.execute(script);
+        for (String codigo : new String[] {"CREAR_CASO", "GESTIONAR_SESION"}) {
+            assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM \"Permiso\" WHERE \"codigo\"=?", Integer.class, codigo));
+        }
+        assertEquals(asignacionesAntes, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\"", Integer.class));
+    }
+
     @Test void laInicializacionEsIdempotenteYElRolQuedaVerificado() throws Exception {
         String script = Files.readString(Path.of("../docs/provision/pd01-inicializacion.sql"));
         jdbc.execute(script);

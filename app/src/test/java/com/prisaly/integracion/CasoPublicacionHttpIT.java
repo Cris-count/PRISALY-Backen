@@ -242,7 +242,7 @@ class CasoPublicacionHttpIT {
         catalog.createRole(rol, "Docente");
         String correo = UUID.randomUUID() + "@prisaly.test";
         Usuario u = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        catalog.assignPermission(u.getIdUsuario(), permiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), admin); // DM1-02: setup only
         catalog.assignPermission(u.getIdUsuario(), permiso(CONSULTAR), admin);
         catalog.assignPermission(u.getIdUsuario(), permiso(MODIFICAR), admin);
         for (String p : extra) { catalog.assignPermission(u.getIdUsuario(), permiso(p), admin); }

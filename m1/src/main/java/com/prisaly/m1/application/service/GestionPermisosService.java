@@ -59,12 +59,13 @@ public class GestionPermisosService {
             throw new IdentityDomainException(PoliticaPermisos.CODE_USER_NOT_FOUND, "User not found");
         }
         String codigo = codigo(idPermiso);
+        // DM1-02 (DC-M1-03): every assignment needs an active administrator, not only the PD-01 controlled set.
+        exigirAdministrador(idActor);
+        if (PoliticaPermisos.exigeSeparacionDeFunciones(codigo) && idUsuario.equals(idActor)) {
+            throw new IdentityDomainException(PoliticaPermisos.CODE_SELF_ASSIGNMENT,
+                    "Assigning and executing must stay separate");
+        }
         if (PoliticaPermisos.esControlado(codigo)) {
-            exigirAdministrador(idActor);
-            if (PoliticaPermisos.exigeSeparacionDeFunciones(codigo) && idUsuario.equals(idActor)) {
-                throw new IdentityDomainException(PoliticaPermisos.CODE_SELF_ASSIGNMENT,
-                        "Assigning and executing must stay separate");
-            }
             if (usuarios.esCuentaEstudiante(idUsuario)) {
                 throw new IdentityDomainException(PoliticaPermisos.CODE_STUDENT_NOT_ALLOWED,
                         "Students cannot receive this permission");
@@ -87,9 +88,8 @@ public class GestionPermisosService {
 
     private void ejecutarRevocacion(UUID idUsuario, Integer idPermiso, UUID idActor) {
         String codigo = codigo(idPermiso);
-        if (PoliticaPermisos.esControlado(codigo)) {
-            exigirAdministrador(idActor);
-        }
+        // DM1-02 (DC-M1-03): every revocation needs an active administrator as well.
+        exigirAdministrador(idActor);
         if (!asignaciones.deshabilitar(idUsuario, idPermiso)) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_PERMISSION_NOT_FOUND,
                     "Permission assignment not found");

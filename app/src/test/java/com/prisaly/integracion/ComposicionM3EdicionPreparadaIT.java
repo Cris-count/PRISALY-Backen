@@ -238,12 +238,13 @@ class ComposicionM3EdicionPreparadaIT {
         String rol = "Rol-" + UUID.randomUUID().toString().substring(0, 8);
         catalog.createRole(rol, "Docente");
         Usuario user = catalog.registerUser("Docente", correo, "Secret#1", rol);
-        catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), null);
+        UUID actor = administradorFixture(); // DM1-02: setup only
+        catalog.assignPermission(user.getIdUsuario(), idPermiso(PersonalAuthorizationController.PERMISSION_CREAR_CASO), actor);
         if (lectura) {
-            catalog.assignPermission(user.getIdUsuario(), idPermiso(LECTURA_FIXTURE), null);
+            catalog.assignPermission(user.getIdUsuario(), idPermiso(LECTURA_FIXTURE), actor);
         }
         if (edicion) {
-            catalog.assignPermission(user.getIdUsuario(), idPermiso(EDICION_FIXTURE), null);
+            catalog.assignPermission(user.getIdUsuario(), idPermiso(EDICION_FIXTURE), actor);
         }
         HttpResponse<String> login = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar"))
                 .header("Content-Type", "application/json")
@@ -263,5 +264,13 @@ class ComposicionM3EdicionPreparadaIT {
 
     private URI uri(String path) {
         return URI.create("http://localhost:" + port + "/api" + path);
+    }
+    /** DM1-02 (DC-M1-03): assignments need an active ADMINISTRADOR actor. Fixture setup only. */
+    private java.util.UUID administradorFixture() {
+        if (!catalog.existeRolAdministrador()) {
+            catalog.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
+        return catalog.registerUser("Administrador fixture", java.util.UUID.randomUUID() + "@admin.prisaly.test",
+                java.util.UUID.randomUUID().toString(), IdentityCatalogService.ROL_ADMINISTRADOR).getIdUsuario();
     }
 }

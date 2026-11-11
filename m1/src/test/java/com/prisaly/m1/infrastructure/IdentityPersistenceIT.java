@@ -143,12 +143,45 @@ class IdentityPersistenceIT {
         assertTrue(salida.getOut().contains("resultado=RECHAZADO:" + IdentityCatalogService.CODE_ACTOR_REQUIRED), salida.getOut());
     }
 
+    /**
+     * DM1-02 (DC-M1-03) replaces the former S-1 behaviour (asserted by
+     * permisoNoControladoConservaElComportamientoAnterior): non-controlled permissions now also require
+     * an existing, active administrator to assign or revoke, and every rejection leaves nothing persisted.
+     */
     @Test
-    void permisoNoControladoConservaElComportamientoAnterior() {
-        UUID usuario = usuarioFixture();
-        Integer permiso = permisoFixture("CREAR_CASO");
-        identityCatalogService.assignPermission(usuario, permiso, null);
-        identityCatalogService.disablePermissionAssignment(usuario, permiso);
+    void permisoNoControladoTambienExigeAdministrador() {
+        UUID usuario = usuarioFixture(), actor = administradorFixture(), noAdmin = usuarioFixture();
+        // GESTIONAR_SESION, not CREAR_CASO: persistsPermisoAndUsuarioPermisoCompositeKey creates CREAR_CASO unguarded.
+        Integer permiso = permisoFixture("GESTIONAR_SESION");
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.assignPermission(usuario, permiso, null));
+        assertCodigo(IdentityCatalogService.CODE_USER_NOT_FOUND,
+                () -> identityCatalogService.assignPermission(usuario, permiso, UUID.randomUUID()));
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN,
+                () -> identityCatalogService.assignPermission(usuario, permiso, noAdmin));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, usuario));
+        identityCatalogService.assignPermission(usuario, permiso, actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_REQUIRED,
+                () -> identityCatalogService.disablePermissionAssignment(usuario, permiso));
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_NOT_ADMIN,
+                () -> identityCatalogService.disablePermissionAssignment(usuario, permiso, noAdmin));
+        assertEquals(true, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
+        identityCatalogService.disablePermissionAssignment(usuario, permiso, actor);
+        assertEquals(false, jdbc.queryForObject("SELECT \"habilitado\" FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=? AND \"idPermiso\"=?", Boolean.class, usuario, permiso));
+        identityCatalogService.deactivateUser(actor);
+        assertCodigo(IdentityCatalogService.CODE_ACTOR_INVALID,
+                () -> identityCatalogService.assignPermission(noAdmin, permiso, actor));
+    }
+
+    /** DM1-02 keeps PD-01 separation of duties: an administrator never grants itself PUBLICAR/ARCHIVAR. */
+    @Test
+    void administradorNoSeAutoasignaPermisosOperativos() {
+        UUID actor = administradorFixture();
+        for (String codigo : new String[] {"PUBLICAR_CASO", "ARCHIVAR_CASO"}) {
+            assertCodigo(IdentityCatalogService.CODE_SELF_ASSIGNMENT,
+                    () -> identityCatalogService.assignPermission(actor, permisoFixture(codigo), actor));
+        }
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"UsuarioPermiso\" WHERE \"idUsuario\"=?", Integer.class, actor));
     }
 
     @Test
@@ -200,11 +233,15 @@ class IdentityPersistenceIT {
         Rol adminRole = identityCatalogService.createRole("AdminPerm", "Admin");
         Permiso permiso = identityCatalogService.createPermission(
                 "CREAR_CASO", "Crear caso", "Alta de caso clinico");
+        // DM1-02: the assigner must hold the ADMINISTRADOR role (setup only; assertions unchanged).
+        if (!identityCatalogService.existeRolAdministrador()) {
+            identityCatalogService.createRole(IdentityCatalogService.ROL_ADMINISTRADOR, "Fixture");
+        }
         Usuario admin = identityCatalogService.registerUser(
                 "Admin Asignador",
                 "asignador@prisaly.test",
                 "Secret#1",
-                "AdminPerm");
+                IdentityCatalogService.ROL_ADMINISTRADOR);
         Usuario docente = identityCatalogService.registerUser(
                 "Docente Perm",
                 "docente.perm@prisaly.test",
@@ -236,12 +273,13 @@ class IdentityPersistenceIT {
         Usuario user = identityCatalogService.registerUser(
                 "User Asig", "user.asig@prisaly.test", "Secret#1", "RolAsig");
 
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+        UUID actor = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
         IdentityDomainException error = assertThrows(
                 IdentityDomainException.class,
                 () -> identityCatalogService.assignPermission(
-                        user.getIdUsuario(), permiso.getIdPermiso(), null));
+                        user.getIdUsuario(), permiso.getIdPermiso(), actor));
 
         assertEquals(IdentityCatalogService.CODE_DUPLICATE_ASSIGNMENT, error.code());
     }
@@ -253,9 +291,10 @@ class IdentityPersistenceIT {
                 "VER_REPORTE", "Ver reporte", "Consulta");
         Usuario user = identityCatalogService.registerUser(
                 "User Disable", "user.disable@prisaly.test", "Secret#1", "RolDisable");
-        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), null);
+        UUID actor = administradorFixture(); // DM1-02: setup only
+        identityCatalogService.assignPermission(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
-        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso());
+        identityCatalogService.disablePermissionAssignment(user.getIdUsuario(), permiso.getIdPermiso(), actor);
 
         assertTrue(usuarioPermisoRepository
                 .findByIdUsuarioAndHabilitadoTrue(user.getIdUsuario())
