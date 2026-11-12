@@ -77,6 +77,16 @@ class M4SchemaContratoPostgreSqlIT {
                 "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
         assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc));
     }
+    // DD-02 B (DC-DD02-B4-B5-01): the optional V014-V016 schema is recognized only with its own contract.
+    @Test void dd02bSeReconoceSoloConSuContratoYNoPorDefecto() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/dd02b-propuesta");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_DD02B));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_DD02);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
     @Test void ausenciaDeLaTablaV013SeDetecta() {
         jdbc.execute("DROP TABLE \"InicializacionAdministrador\"");
         rechaza(M4SchemaContract.V013);

@@ -25,6 +25,8 @@ class M4SchemaReferenceIT {
             exportar(output, M4SchemaContract.DD02, "filesystem:" + historico.toAbsolutePath(), "classpath:db/dd02-propuesta");
             exportar(output, M4SchemaContract.V013, "classpath:db/migration");
             exportar(output, M4SchemaContract.V013_DD02, "classpath:db/migration", "classpath:db/dd02-propuesta");
+            // DD-02 alternative B (DC-DD02-B4-B5-01): optional candidates V014-V016.
+            exportar(output, M4SchemaContract.V013_DD02B, "classpath:db/migration", "classpath:db/dd02b-propuesta");
         } finally {
             M4SchemaFixture.borrar(historico);
         }

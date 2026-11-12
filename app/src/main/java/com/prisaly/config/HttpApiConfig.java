@@ -108,9 +108,9 @@ public class HttpApiConfig {
                         // (e.g. 500); securing it turned infrastructure errors into 401.
                         .requestMatchers(HttpMethod.GET, "/health").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/personal/autenticar").permitAll()
+                        // DD-02 B (D-B4, DC-DD02-B4-B5-01): /activar and /autenticar (alternative A) are retired.
+                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/solicitar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/validar").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/activar").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/autenticar").permitAll()
                         .requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/cerrar-sesion").permitAll()
                         .anyRequest().authenticated();
                 })

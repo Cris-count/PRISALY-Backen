@@ -6,12 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.prisaly.PrisalyApplication;
 import com.prisaly.m1.application.service.IdentityCatalogService;
+import com.prisaly.m7.infrastructure.CifradorCodigoAccesoAesGcm;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +30,7 @@ import tools.jackson.databind.ObjectMapper;
  * DC-M5-DD02-01 — CONTROLLED QA SCENARIO, NOT A RATIFIED POLICY.
  *
  * <p>Student journey over the real APP and PostgreSQL 16.15 on the routes that are published today
- * (GET attempt, PUT answer), with the opt-in DD-02 candidate (alternative A, V011/V012 proposals) enabled ONLY in
+ * (GET attempt, PUT answer), with the opt-in DD-02 candidate (alternative B since DC-DD02-B4-B5-01, V014-V016 proposals) enabled ONLY in
  * this isolated fixture. The academic chain (case, session, call, participation, attempt) is seeded by SQL
  * because the first start is denied in production until eligibility and the time limit are ratified;
  * that denial is asserted, not bypassed.
@@ -46,21 +45,15 @@ class RecorridoEstudianteControladoHttpIT {
         p.add("spring.datasource.url", postgres::getJdbcUrl);
         p.add("spring.datasource.username", postgres::getUsername);
         p.add("spring.datasource.password", postgres::getPassword);
-        p.add("spring.flyway.locations", () -> {
-            Path base = Path.of("src/main/resources/db").toAbsolutePath();
-            if (!Files.isDirectory(base)) base = Path.of("app/src/main/resources/db").toAbsolutePath();
-            return "filesystem:" + base.resolve("migration") + ",filesystem:" + base.resolve("dd02-propuesta");
-        });
-        p.add("prisaly.m4.schema-contract", () -> "bd0052-v013-dd02");
-        p.add("prisaly.m1.student-access.enabled", () -> "true");
-        p.add("prisaly.m1.student-access.hmac-secret", () -> "controlled-http-fixture-key-not-production");
-        p.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
+        // DC-DD02-B4-B5-01: candidate DD-02 alternative B (V014-V016 dd02b), disposable keys, QA fixture only.
+        AccesoEstudianteQa.propiedades(p);
         p.add("prisaly.m7.worker.enabled", () -> "false");
     }
 
     @LocalServerPort int port;
     @Autowired IdentityCatalogService catalog;
     @Autowired JdbcTemplate jdbc;
+    @Autowired CifradorCodigoAccesoAesGcm cifrador;
     @Autowired ObjectMapper json;
     private final HttpClient http = HttpClient.newHttpClient();
 
@@ -213,10 +206,7 @@ class RecorridoEstudianteControladoHttpIT {
     }
     private int cantidad(String sql, Object... args) { return jdbc.queryForObject(sql, Integer.class, args); }
     private String login(String alias) throws Exception {
-        var r = send("POST", "/v1/acceso-estudiante/autenticar", null,
-                "{\"correo\":\"" + alias + "@recorrido.prisaly.test\",\"contrasena\":\"" + CLAVE + "\"}");
-        assertEquals(204, r.statusCode(), r.body());
-        return r.headers().firstValue("Set-Cookie").orElseThrow().split(";", 2)[0];
+        return AccesoEstudianteQa.login(http, port, jdbc, cifrador, alias + "@recorrido.prisaly.test");
     }
     private String bearer(String correo) throws Exception {
         var r = http.send(HttpRequest.newBuilder(uri("/v1/personal/autenticar")).header("Content-Type", "application/json")
