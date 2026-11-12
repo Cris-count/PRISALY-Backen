@@ -21,6 +21,7 @@ const reuse = prefix => {
 };
 
 const DOCENTE_ID = '11111111-1111-1111-1111-111111111101'; // Bruno fixture teacher (D-05: no HTTP teacher can log in).
+const SIN_PERMISO_ID = '11111111-1111-1111-1111-111111111102'; // Bruno fixture personnel account without case permissions.
 const PERMISOS_QA = ['CONSULTAR_CASO', 'MODIFICAR_CASO', 'PUBLICAR_CASO', 'GESTIONAR_SESION'];
 
 const guard = vars => [`const requeridas = ${JSON.stringify(vars)};`,
@@ -107,6 +108,18 @@ const productiva = [
     headers: [{key: 'If-Match', value: ETAG_FICTICIO, type: 'text'}], status: 403, tests: forbidden('FORBIDDEN')}),
   request('QA-P-10', 'Personal sin GESTIONAR_SESION no programa', 'POST', '/m4/sesiones', {auth: 'tokenSinPermiso', body: sesion('idCasoProd'),
     status: 403, tests: forbidden('M4-SIN-PERMISO')}),
+  // DC-EJEC-NOCTURNA-01 N1 (F4-H1): permission and ownership are decided before the If-Match precondition.
+  request('QA-P-11', 'Administrador asigna PUBLICAR_CASO al personal no propietario', 'PUT',
+    '/v1/admin/usuarios/{{sinPermisoId}}/permisos/{{idPermiso_PUBLICAR_CASO}}', {auth: 'tokenAdmin', status: 200,
+      tests: ['pm.test("asignacion habilitada", () => pm.expect(pm.response.json().habilitado).to.eql(true));']}),
+  request('QA-P-12', 'No propietario con PUBLICAR_CASO y sin If-Match: 403 antes de la precondicion', 'POST',
+    '/v1/casos/{{idCasoProd}}/publicar', {auth: 'tokenSinPermiso', status: 403, tests: forbidden('FORBIDDEN')}),
+  request('QA-P-13', 'No propietario con PUBLICAR_CASO e If-Match malformado: 403', 'POST', '/v1/casos/{{idCasoProd}}/publicar',
+    {auth: 'tokenSinPermiso', headers: [{key: 'If-Match', value: 'W/"x"', type: 'text'}], status: 403, tests: forbidden('FORBIDDEN')}),
+  request('QA-P-14', 'Propietario sin If-Match: 428 por su causa real', 'POST', '/v1/casos/{{idCasoProd}}/publicar',
+    {auth: 'tokenDocente', status: 428, tests: forbidden('IF_MATCH_REQUIRED')}),
+  request('QA-P-15', 'Administrador revoca PUBLICAR_CASO del personal no propietario', 'DELETE',
+    '/v1/admin/usuarios/{{sinPermisoId}}/permisos/{{idPermiso_PUBLICAR_CASO}}', {auth: 'tokenAdmin', status: 204}),
 ];
 
 const m3Reutilizadas = ['M3-B-01', 'M3-B-02', 'M3-B-03', 'M3-B-04', 'M3-B-05', 'M3-B-06', 'M3-B-07', 'M3-B-08', 'M3-B-10', 'M3-B-11',
@@ -139,7 +152,7 @@ const collection = {
     description: 'DC-EJEC-CIERRE-01. Campana QA M3 -> M4 con la politica F4 de pruebas (NO ratificada). Folder 00 + P (configuracion '
       + 'productiva) o 00 + Q (politica F4 QA). Permisos asignados por HTTP por el primer administrador; el caso se publica por HTTP; '
       + 'ningun caso Publicado se inserta por SQL. Solo bases desechables. Ejecutar con qa/m3-m4-postman/run.mjs.'},
-  variable: [...VARS.map(key => ({key, value: ''})), {key: 'docenteId', value: DOCENTE_ID},
+  variable: [...VARS.map(key => ({key, value: ''})), {key: 'docenteId', value: DOCENTE_ID}, {key: 'sinPermisoId', value: SIN_PERMISO_ID},
     {key: 'fechaInicio', value: '2030-11-05T14:00:00Z'}, {key: 'fechaFin', value: '2030-11-05T15:00:00Z'}],
   item: [{name: '00-preparacion', item: preparacion}, {name: 'P-configuracion-productiva', item: productiva},
     {name: 'Q-configuracion-qa-f4', item: qa}],
