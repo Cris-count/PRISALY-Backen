@@ -19,11 +19,18 @@ public final class M4SchemaContract {
     public static final String V013 = "bd0052-v013";
     /** P5: V013 combined with the opt-in DD-02 proposals (still NOT ratification or student enablement). */
     public static final String V013_DD02 = "bd0052-v013-dd02";
+    /**
+     * DD-02 alternative B (DC-DD02-B4-B5-01): V001-V009 + V013 plus the optional candidates V014-V016
+     * ({@code db/dd02b-propuesta}). Selecting it is NOT ratification nor activation of student access.
+     */
+    public static final String V013_DD02B = "bd0052-v013-dd02b";
+    private static final Set<String> TABLAS_DD02B = Set.of(
+            "CredencialAccesoEstudiante", "SesionEstudiante", "IntentoAccesoEstudiante", "EntregaCodigoAcceso");
     /** Contract of the canonical migration set shipped with the application. */
     public static final String VIGENTE = V013;
     public static final String TABLA_INICIALIZACION = "InicializacionAdministrador";
     private static final Set<String> TABLAS_DD02 = Set.of("ActivacionCuentaEstudiante", "SesionEstudiante");
-    private static final Set<String> CONOCIDOS = Set.of(HISTORICO, DD02, V013, V013_DD02);
+    private static final Set<String> CONOCIDOS = Set.of(HISTORICO, DD02, V013, V013_DD02, V013_DD02B);
     public static final Set<String> TABLAS_HISTORICAS = Set.of(
             "Rol", "Permiso", "Usuario", "UsuarioPermiso", "Estudiante", "Caso", "Escenario",
             "Pregunta", "OpcionRespuesta", "Sesion", "Convocatoria", "Participacion", "Intento",
@@ -34,7 +41,10 @@ public final class M4SchemaContract {
         if (!CONOCIDOS.contains(contrato)) throw pendiente("contrato desconocido");
         Set<String> esperadas = new TreeSet<>(TABLAS_HISTORICAS);
         if (DD02.equals(contrato) || V013_DD02.equals(contrato)) esperadas.addAll(TABLAS_DD02);
-        if (V013.equals(contrato) || V013_DD02.equals(contrato)) esperadas.add(TABLA_INICIALIZACION);
+        if (V013.equals(contrato) || V013_DD02.equals(contrato) || V013_DD02B.equals(contrato)) {
+            esperadas.add(TABLA_INICIALIZACION);
+        }
+        if (V013_DD02B.equals(contrato)) esperadas.addAll(TABLAS_DD02B);
         Set<String> presentes = new TreeSet<>(jdbc.queryForList("""
                 SELECT table_name FROM information_schema.tables
                 WHERE table_schema='public' AND table_type='BASE TABLE'

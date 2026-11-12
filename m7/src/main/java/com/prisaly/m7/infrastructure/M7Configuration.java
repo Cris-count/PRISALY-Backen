@@ -8,6 +8,7 @@ import com.prisaly.m7.application.RegistroAvisoPort;
 import com.prisaly.m7.application.RegistroEnvioCorreoPort;
 import jakarta.persistence.EntityManager;
 import org.springframework.core.env.Environment;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -21,12 +22,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration(proxyBeanMethods = false)
 public class M7Configuration {
 
+    // DD-02 B (DC-DD02-B4-B5-01): with the student-access flag ON the encrypted Outbox of
+    // ConfiguracionCodigoAccesoM7 is the delivery port; the in-memory adapter remains only while it is OFF.
     @Bean
+    @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "false", matchIfMissing = true)
     InMemoryStudentAccessDeliveryAdapter studentAccessDeliveryOutboxM7() {
         return new InMemoryStudentAccessDeliveryAdapter();
     }
 
     @Bean
+    @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "false", matchIfMissing = true)
     StudentAccessDeliveryPort studentAccessDeliveryM7(
             InMemoryStudentAccessDeliveryAdapter outbox) {
         return outbox;

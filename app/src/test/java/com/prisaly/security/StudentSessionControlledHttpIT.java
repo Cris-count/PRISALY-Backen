@@ -3,9 +3,9 @@ package com.prisaly.security;
 import static org.junit.jupiter.api.Assertions.*;
 import com.prisaly.PrisalyApplication;
 import com.prisaly.m1.application.service.IdentityCatalogService;
+import com.prisaly.m7.infrastructure.CifradorCodigoAccesoAesGcm;
 import java.net.URI;
 import java.net.http.*;
-import java.nio.file.*;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +18,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
 
-/** Real HTTP + PostgreSQL. Candidate DD-02 enabled ONLY in this isolated acceptance fixture. */
+/** Real HTTP + PostgreSQL. Candidate DD-02 (alternative B, code login) enabled ONLY in this isolated acceptance fixture. */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
 class StudentSessionControlledHttpIT {
@@ -27,20 +27,13 @@ class StudentSessionControlledHttpIT {
         p.add("spring.datasource.url", postgres::getJdbcUrl);
         p.add("spring.datasource.username", postgres::getUsername);
         p.add("spring.datasource.password", postgres::getPassword);
-        p.add("spring.flyway.locations", () -> {
-            Path base = Path.of("src/main/resources/db").toAbsolutePath();
-            if (!Files.isDirectory(base)) base = Path.of("app/src/main/resources/db").toAbsolutePath();
-            return "filesystem:" + base.resolve("migration") + ",filesystem:" + base.resolve("dd02-propuesta");
-        });
-        // P5 (DC-P5-FASE-B-01): canonical V001-V009 + V013 plus the opt-in DD-02 proposals.
-        p.add("prisaly.m4.schema-contract", () -> "bd0052-v013-dd02");
-        p.add("prisaly.m1.student-access.enabled", () -> "true");
-        p.add("prisaly.m1.student-access.hmac-secret", () -> "controlled-http-fixture-key-not-production");
-        p.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
+        // DC-DD02-B4-B5-01: candidate DD-02 alternative B (V014-V016 dd02b), disposable keys, QA fixture only.
+        AccesoEstudianteQa.propiedades(p);
     }
     @LocalServerPort int port;
     @Autowired IdentityCatalogService catalog;
     @Autowired JdbcTemplate jdbc;
+    @Autowired CifradorCodigoAccesoAesGcm cifrador;
     private final HttpClient http = HttpClient.newHttpClient();
 
     @Test void validCookieReachesM5WithoutPersonnelBearerAndRevocationTakesEffect() throws Exception {
@@ -71,8 +64,7 @@ class StudentSessionControlledHttpIT {
     }
 
     @Test void browserCredentialsAreRestrictedAndCookieHasSecurityAttributes() throws Exception {
-        var response = send("POST", "/v1/acceso-estudiante/autenticar", null,
-                "{\"correo\":\"" + student() + "\",\"contrasena\":\"ControlledPassword#123\"}");
+        var response = AccesoEstudianteQa.validar(http, port, jdbc, cifrador, student());
         assertEquals(204, response.statusCode());
         assertEquals("true", response.headers().firstValue("Access-Control-Allow-Credentials").orElseThrow());
         String cookie = response.headers().firstValue("Set-Cookie").orElseThrow();
@@ -94,12 +86,7 @@ class StudentSessionControlledHttpIT {
         jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", UUID.randomUUID(), user.getIdUsuario());
         return email;
     }
-    private String login(String email) throws Exception {
-        var r = send("POST", "/v1/acceso-estudiante/autenticar", null,
-                "{\"correo\":\"" + email + "\",\"contrasena\":\"ControlledPassword#123\"}");
-        assertEquals(204, r.statusCode());
-        return r.headers().firstValue("Set-Cookie").orElseThrow().split(";", 2)[0];
-    }
+    private String login(String email) throws Exception { return AccesoEstudianteQa.login(http, port, jdbc, cifrador, email); }
     private URI uri(String path) { return URI.create("http://localhost:" + port + "/api" + path); }
     private HttpResponse<String> get(String path, String cookie) throws Exception {
         return http.send(HttpRequest.newBuilder(uri(path)).header("Cookie", cookie).GET().build(), HttpResponse.BodyHandlers.ofString());
