@@ -1,0 +1,3818 @@
+{
+  "info": {
+    "name": "PRISALY-M3-M4-QA-F4",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "DC-EJEC-CIERRE-01. Campana QA M3 -> M4 con la politica F4 de pruebas (NO ratificada). Folder 00 + P (configuracion productiva) o 00 + Q (politica F4 QA). Permisos asignados por HTTP por el primer administrador; el caso se publica por HTTP; ningun caso Publicado se inserta por SQL. Solo bases desechables. Ejecutar con qa/m3-m4-postman/run.mjs."
+  },
+  "variable": [
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenDocente",
+      "value": ""
+    },
+    {
+      "key": "tokenSinPermiso",
+      "value": ""
+    },
+    {
+      "key": "tokenOtroDocente",
+      "value": ""
+    },
+    {
+      "key": "idCaso",
+      "value": ""
+    },
+    {
+      "key": "idCaso2",
+      "value": ""
+    },
+    {
+      "key": "idCasoProd",
+      "value": ""
+    },
+    {
+      "key": "idEscenarioProd",
+      "value": ""
+    },
+    {
+      "key": "etag",
+      "value": ""
+    },
+    {
+      "key": "etagAnterior",
+      "value": ""
+    },
+    {
+      "key": "etag2",
+      "value": ""
+    },
+    {
+      "key": "idEscenario",
+      "value": ""
+    },
+    {
+      "key": "idPregunta",
+      "value": ""
+    },
+    {
+      "key": "idOpcionCorrecta",
+      "value": ""
+    },
+    {
+      "key": "idOpcionIncorrecta",
+      "value": ""
+    },
+    {
+      "key": "sesionId",
+      "value": ""
+    },
+    {
+      "key": "idPermiso_CONSULTAR_CASO",
+      "value": ""
+    },
+    {
+      "key": "idPermiso_MODIFICAR_CASO",
+      "value": ""
+    },
+    {
+      "key": "idPermiso_PUBLICAR_CASO",
+      "value": ""
+    },
+    {
+      "key": "idPermiso_GESTIONAR_SESION",
+      "value": ""
+    },
+    {
+      "key": "docenteId",
+      "value": "11111111-1111-1111-1111-111111111101"
+    },
+    {
+      "key": "fechaInicio",
+      "value": "2030-11-05T14:00:00Z"
+    },
+    {
+      "key": "fechaFin",
+      "value": "2030-11-05T15:00:00Z"
+    }
+  ],
+  "item": [
+    {
+      "name": "00-preparacion",
+      "item": [
+        {
+          "name": "QA-00-01 | Salud del backend",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-02 | Autenticar primer administrador (inicializacion P5)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"adminEmail\",\"adminPassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken;",
+                  "pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenAdmin\", t);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/personal/autenticar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "personal",
+                "autenticar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-03 | Consultar catalogo de permisos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const requeridos = [\"CONSULTAR_CASO\",\"MODIFICAR_CASO\",\"PUBLICAR_CASO\",\"GESTIONAR_SESION\"];",
+                  "const porCodigo = Object.fromEntries((pm.response.json().items || []).map(p => [p.codigo, p.idPermiso]));",
+                  "pm.test(\"el catalogo contiene los permisos QA\", () => requeridos.forEach(c => pm.expect(porCodigo[c], c).to.be.a(\"number\")));",
+                  "requeridos.forEach(c => pm.collectionVariables.set(\"idPermiso_\" + c, String(porCodigo[c])));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/permisos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "permisos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-04 | Administrador asigna CONSULTAR_CASO al docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\",\"docenteId\",\"idPermiso_CONSULTAR_CASO\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"asignacion habilitada\", () => { pm.expect(b.habilitado).to.eql(true); pm.expect(b.idUsuario).to.eql(pm.variables.get(\"docenteId\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/usuarios/{{docenteId}}/permisos/{{idPermiso_CONSULTAR_CASO}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "usuarios",
+                "{{docenteId}}",
+                "permisos",
+                "{{idPermiso_CONSULTAR_CASO}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-05 | Administrador asigna MODIFICAR_CASO al docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\",\"docenteId\",\"idPermiso_MODIFICAR_CASO\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"asignacion habilitada\", () => { pm.expect(b.habilitado).to.eql(true); pm.expect(b.idUsuario).to.eql(pm.variables.get(\"docenteId\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/usuarios/{{docenteId}}/permisos/{{idPermiso_MODIFICAR_CASO}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "usuarios",
+                "{{docenteId}}",
+                "permisos",
+                "{{idPermiso_MODIFICAR_CASO}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-06 | Administrador asigna PUBLICAR_CASO al docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\",\"docenteId\",\"idPermiso_PUBLICAR_CASO\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"asignacion habilitada\", () => { pm.expect(b.habilitado).to.eql(true); pm.expect(b.idUsuario).to.eql(pm.variables.get(\"docenteId\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/usuarios/{{docenteId}}/permisos/{{idPermiso_PUBLICAR_CASO}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "usuarios",
+                "{{docenteId}}",
+                "permisos",
+                "{{idPermiso_PUBLICAR_CASO}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-07 | Administrador asigna GESTIONAR_SESION al docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\",\"docenteId\",\"idPermiso_GESTIONAR_SESION\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"asignacion habilitada\", () => { pm.expect(b.habilitado).to.eql(true); pm.expect(b.idUsuario).to.eql(pm.variables.get(\"docenteId\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/usuarios/{{docenteId}}/permisos/{{idPermiso_GESTIONAR_SESION}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "usuarios",
+                "{{docenteId}}",
+                "permisos",
+                "{{idPermiso_GESTIONAR_SESION}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-08 | Permisos efectivos del docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenAdmin\",\"docenteId\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const codigos = (pm.response.json().items || []).map(p => p.codigo).sort();",
+                  "pm.test(\"CREAR_CASO (semilla) + 4 asignados por HTTP\", () => pm.expect(codigos).to.eql([\"CONSULTAR_CASO\",\"CREAR_CASO\",\"GESTIONAR_SESION\",\"MODIFICAR_CASO\",\"PUBLICAR_CASO\"]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/admin/usuarios/{{docenteId}}/permisos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "admin",
+                "usuarios",
+                "{{docenteId}}",
+                "permisos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-09 | Autenticar docente QA",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"docenteEmail\",\"docentePassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken;",
+                  "pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenDocente\", t);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{docenteEmail}}\",\n  \"password\": \"{{docentePassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/personal/autenticar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "personal",
+                "autenticar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-00-10 | Autenticar personal sin permisos",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"sinPermisoEmail\",\"sinPermisoPassword\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const t = pm.response.json().accessToken;",
+                  "pm.test(\"token recibido\", () => pm.expect(t).to.be.a(\"string\").and.not.empty);",
+                  "if (t) pm.collectionVariables.set(\"tokenSinPermiso\", t);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{sinPermisoEmail}}\",\n  \"password\": \"{{sinPermisoPassword}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/personal/autenticar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "personal",
+                "autenticar"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "P-configuracion-productiva",
+      "item": [
+        {
+          "name": "QA-P-01 | Crear caso en Borrador (CREAR_CASO)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idCasoProd\", require(\"uuid\").v4());",
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"estado BORRADOR\", () => pm.expect(pm.response.json().estado).to.eql(\"BORRADOR\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCasoProd}}\",\n  \"titulo\": \"QA M3-M4 productiva\",\n  \"tiempoEstimadoSegundos\": 1800,\n  \"historia\": \"Historia QA\",\n  \"desarrolloSituacional\": \"Desarrollo QA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-02 | Consultar caso propio con permisos asignados: F4 vacia lo niega",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-03 | Consultar contenido: F4 vacia lo niega",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}/contenido",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}",
+                "contenido"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-04 | Editar con MODIFICAR_CASO sin ETag obtenible (GET negado): rechazado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 412\", () => pm.response.to.have.status(412));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo STALE_CASE\", () => pm.expect(pm.response.json().code).to.eql(\"STALE_CASE\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "\"m3-v2:0000000000000000000000000000000000000000000000000000000000000000\"",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"QA editado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-05 | Agregar escenario sin ETag obtenible: rechazado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idEscenarioProd\", require(\"uuid\").v4());",
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 412\", () => pm.response.to.have.status(412));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo STALE_CASE\", () => pm.expect(pm.response.json().code).to.eql(\"STALE_CASE\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "\"m3-v2:0000000000000000000000000000000000000000000000000000000000000000\"",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEscenario\": \"{{idEscenarioProd}}\",\n  \"titulo\": \"Escenario QA\",\n  \"contexto\": \"Contexto QA\",\n  \"instrucciones\": \"Lea y responda\",\n  \"orden\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}/escenarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}",
+                "escenarios"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-06 | Publicar con PUBLICAR_CASO sin ETag obtenible: rechazado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 412\", () => pm.response.to.have.status(412));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo STALE_CASE\", () => pm.expect(pm.response.json().code).to.eql(\"STALE_CASE\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "\"m3-v2:0000000000000000000000000000000000000000000000000000000000000000\"",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}/publicar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}",
+                "publicar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-07 | M4 no programa un caso que sigue en Borrador",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCasoProd\",\"fechaInicio\",\"fechaFin\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo M4-CASO-NO-PUBLICADO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-CASO-NO-PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{idCasoProd}}\",\n  \"titulo\": \"Sesion QA M3-M4\",\n  \"mensajePersonalizado\": \"Campana DC-EJEC-CIERRE-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-08 | Personal sin permisos no edita (autorizacion M1)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "\"m3-v2:0000000000000000000000000000000000000000000000000000000000000000\"",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"QA intruso\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-09 | Personal sin permisos no publica (autorizacion M1)",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"idCasoProd\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "\"m3-v2:0000000000000000000000000000000000000000000000000000000000000000\"",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCasoProd}}/publicar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCasoProd}}",
+                "publicar"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-P-10 | Personal sin GESTIONAR_SESION no programa",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"idCasoProd\",\"fechaInicio\",\"fechaFin\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo M4-SIN-PERMISO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-SIN-PERMISO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{idCasoProd}}\",\n  \"titulo\": \"Sesion QA M3-M4\",\n  \"mensajePersonalizado\": \"Campana DC-EJEC-CIERRE-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Q-configuracion-qa-f4",
+      "item": [
+        {
+          "name": "M3-B-01 | Rechazar creación sin credencial",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idCaso\", require(\"uuid\").v4());",
+                  "const requeridas = [\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 401 UNAUTHENTICATED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Sin credencial\",\n  \"tiempoEstimadoSegundos\": 1800,\n  \"historia\": \"Historia del caso de prueba\",\n  \"desarrolloSituacional\": \"Desarrollo situacional de prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-02 | Rechazar creación sin CREAR_CASO",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenSinPermiso\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 403 FORBIDDEN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Sin permiso\",\n  \"tiempoEstimadoSegundos\": 1800,\n  \"historia\": \"Historia del caso de prueba\",\n  \"desarrolloSituacional\": \"Desarrollo situacional de prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-03 | Rechazar tiempo estimado no positivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Tiempo cero\",\n  \"tiempoEstimadoSegundos\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-04 | Rechazar propietario inyectado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Inyección\",\n  \"tiempoEstimadoSegundos\": 60,\n  \"docenteId\": \"11111111-1111-1111-1111-111111111104\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-05 | Crear caso en Borrador",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"estado BORRADOR e identificador\", () => { const b = pm.response.json();",
+                  "  pm.expect(b.estado).to.eql(\"BORRADOR\"); pm.expect(b.idCaso).to.eql(pm.collectionVariables.get(\"idCaso\")); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Postman M3 recorrido\",\n  \"tiempoEstimadoSegundos\": 1800,\n  \"historia\": \"Historia del caso de prueba\",\n  \"desarrolloSituacional\": \"Desarrollo situacional de prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-06 | Rechazar identificador ya creado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"código CASE_CONFLICT\", () => pm.expect(pm.response.json().code).to.eql(\"CASE_CONFLICT\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Esperado: HTTP 409 CASE_CONFLICT.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{idCaso}}\",\n  \"titulo\": \"Duplicado\",\n  \"tiempoEstimadoSegundos\": 1800,\n  \"historia\": \"Historia del caso de prueba\",\n  \"desarrolloSituacional\": \"Desarrollo situacional de prueba\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-07 | Consultar caso propio",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"ficha\", () => { const b = pm.response.json(); pm.expect(b.estado).to.eql(\"BORRADOR\");",
+                  "  pm.expect(b.tiempoEstimadoSegundos).to.eql(1800); });",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));",
+                  "pm.collectionVariables.set(\"etagAnterior\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-08 | Rechazar consulta sin credencial",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"código UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 401 UNAUTHENTICATED."
+          }
+        },
+        {
+          "name": "M3-B-10 | Caso inexistente",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"código CASE_NOT_FOUND\", () => pm.expect(pm.response.json().code).to.eql(\"CASE_NOT_FOUND\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            "description": "Esperado: HTTP 404 CASE_NOT_FOUND."
+          }
+        },
+        {
+          "name": "M3-B-11 | Editar sin If-Match",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 428\", () => pm.response.to.have.status(428));",
+                  "pm.test(\"código IF_MATCH_REQUIRED\", () => pm.expect(pm.response.json().code).to.eql(\"IF_MATCH_REQUIRED\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 428 IF_MATCH_REQUIRED.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sin precondición\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-12 | Editar con If-Match mal formado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "no-es-un-etag",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Precondición inválida\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-13 | Editar título e historia",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 204.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Postman M3 recorrido editado\",\n  \"historia\": \"Historia editada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-14 | Rechazar ETag obsoleto",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etagAnterior\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 412\", () => pm.response.to.have.status(412));",
+                  "pm.test(\"código STALE_CASE\", () => pm.expect(pm.response.json().code).to.eql(\"STALE_CASE\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagAnterior}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 412 STALE_CASE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Con ETag obsoleto\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-15 | Consultar caso editado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"título editado\", () => pm.expect(pm.response.json().titulo).to.eql(\"Postman M3 recorrido editado\"));",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-16 | Rechazar edición con tiempo no positivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tiempoEstimadoSegundos\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-17 | Agregar escenario",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idEscenario\", require(\"uuid\").v4());",
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"id del escenario\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"idEscenario\")));",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/escenarios",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEscenario\": \"{{idEscenario}}\",\n  \"titulo\": \"Escenario 1\",\n  \"contexto\": \"Contexto situacional\",\n  \"instrucciones\": \"Lea y responda\",\n  \"orden\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-18 | Rechazar orden de escenario repetido",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"código SCENARIO_ORDER_IN_USE\", () => pm.expect(pm.response.json().code).to.eql(\"SCENARIO_ORDER_IN_USE\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/escenarios",
+            "description": "Esperado: HTTP 409 SCENARIO_ORDER_IN_USE.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEscenario\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\",\n  \"orden\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-19 | Agregar pregunta al escenario",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idPregunta\", require(\"uuid\").v4());",
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\",\"idEscenario\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/escenarios/{{idEscenario}}/preguntas",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPregunta\": \"{{idPregunta}}\",\n  \"enunciado\": \"¿Qué decisión toma?\",\n  \"orden\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-20 | Rechazar opción sin explicación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/{{idPregunta}}/opciones",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idOpcion\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\",\n  \"texto\": \"Sin explicación\",\n  \"esCorrecta\": false,\n  \"orden\": 3\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-21 | Agregar opción correcta con explicación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idOpcionCorrecta\", require(\"uuid\").v4());",
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/{{idPregunta}}/opciones",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idOpcion\": \"{{idOpcionCorrecta}}\",\n  \"texto\": \"Opción correcta\",\n  \"esCorrecta\": true,\n  \"explicacion\": \"Es correcta porque…\",\n  \"orden\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-22 | Agregar opción incorrecta con explicación",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"idOpcionIncorrecta\", require(\"uuid\").v4());",
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/{{idPregunta}}/opciones",
+            "description": "Esperado: HTTP 201.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idOpcion\": \"{{idOpcionIncorrecta}}\",\n  \"texto\": \"Opción incorrecta\",\n  \"esCorrecta\": false,\n  \"explicacion\": \"Es incorrecta porque…\",\n  \"orden\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-23 | Rechazar publicación sin rúbrica",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"código INCOMPLETE_RUBRIC\", () => pm.expect(pm.response.json().code).to.eql(\"INCOMPLETE_RUBRIC\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/publicar",
+            "description": "Esperado: HTTP 409 INCOMPLETE_RUBRIC."
+          }
+        },
+        {
+          "name": "M3-B-24 | Rechazar rúbrica con puntaje no positivo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"código INVALID_CASE_REQUEST\", () => pm.expect(pm.response.json().code).to.eql(\"INVALID_CASE_REQUEST\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/rubrica",
+            "description": "Esperado: HTTP 400 INVALID_CASE_REQUEST.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rúbrica inválida\",\n  \"criterios\": [{\"id\": \"c1\", \"descripcion\": \"Criterio\", \"puntaje\": 0}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-25 | Guardar rúbrica con criterio y pregunta asociada",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"rúbrica completa\", () => pm.expect(pm.response.json().completa).to.eql(true));",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/rubrica",
+            "description": "Esperado: HTTP 200.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rúbrica del caso\",\n  \"descripcion\": \"Datos almacenados sin fórmula (DD-03)\",\n  \"puntajeTotal\": 5.00,\n  \"criterios\": [{\"id\": \"c1\", \"descripcion\": \"Argumenta la decisión\", \"puntaje\": 5}],\n  \"preguntas\": [{\"idPregunta\": \"{{idPregunta}}\", \"valorPregunta\": 5.00, \"criterio\": \"c1\"}]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "M3-B-26 | Consultar rúbrica",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"criterio y asociación\", () => { const b = pm.response.json(); pm.expect(b.criterios).to.have.length(1); pm.expect(b.preguntas).to.have.length(1); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/rubrica",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-27 | Consultar contenido completo",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"escenario, pregunta y dos opciones con explicación\", () => { const b = pm.response.json();",
+                  "  pm.expect(b.escenarios).to.have.length(1); const p = b.escenarios[0].preguntas; pm.expect(p).to.have.length(1);",
+                  "  pm.expect(p[0].opciones).to.have.length(2); p[0].opciones.forEach(o => pm.expect(o.explicacion).to.be.a(\"string\").and.not.empty); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/contenido",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-28 | Listar escenarios",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"un escenario\", () => pm.expect(pm.response.json()).to.have.length(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/escenarios",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-29 | Consultar pregunta",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"pregunta\", () => pm.expect(pm.response.json().idPregunta).to.eql(pm.collectionVariables.get(\"idPregunta\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/{{idPregunta}}",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-30 | Listar opciones",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\",\"idPregunta\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"una correcta\", () => pm.expect(pm.response.json().filter(o => o.esCorrecta)).to.have.length(1));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/{{idPregunta}}/opciones",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "M3-B-31 | Rechazar pregunta de otro caso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"código ELEMENT_NOT_IN_CASE\", () => pm.expect(pm.response.json().code).to.eql(\"ELEMENT_NOT_IN_CASE\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/preguntas/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+            "description": "Esperado: HTTP 404 ELEMENT_NOT_IN_CASE."
+          }
+        },
+        {
+          "name": "M3-B-32 | Rechazar publicación sin PUBLICAR_CASO",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenSinPermiso\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"código FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/publicar",
+            "description": "Esperado: HTTP 403 FORBIDDEN."
+          }
+        },
+        {
+          "name": "M3-B-34 | Publicar caso validado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"tokenDocente\",\"etag\",\"baseUrl\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"estado PUBLICADO\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));",
+                  "if (pm.response.headers.get(\"ETag\")) pm.collectionVariables.set(\"etag\", pm.response.headers.get(\"ETag\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etag}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{idCaso}}/publicar",
+            "description": "Esperado: HTTP 200."
+          }
+        },
+        {
+          "name": "QA-Q-01 | Consultar el caso publicado por HTTP",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"estado PUBLICADO\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCaso}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCaso}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-Q-02 | Personal sin permisos no consulta el caso publicado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"idCaso\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/v1/casos/{{idCaso}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "casos",
+                "{{idCaso}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-Q-03 | Personal sin GESTIONAR_SESION no programa la sesion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"idCaso\",\"fechaInicio\",\"fechaFin\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo M4-SIN-PERMISO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-SIN-PERMISO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{idCaso}}\",\n  \"titulo\": \"Sesion QA M3-M4\",\n  \"mensajePersonalizado\": \"Campana DC-EJEC-CIERRE-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-Q-04 | M4 programa la sesion con el caso recien publicado",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"idCaso\",\"fechaInicio\",\"fechaFin\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"sesion SinIniciar\", () => { pm.expect(b.id).to.be.a(\"string\"); pm.expect(b.estado).to.eql(\"SinIniciar\"); });",
+                  "if (b.id) pm.collectionVariables.set(\"sesionId\", b.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{idCaso}}\",\n  \"titulo\": \"Sesion QA M3-M4\",\n  \"mensajePersonalizado\": \"Campana DC-EJEC-CIERRE-01\",\n  \"fechaInicio\": \"{{fechaInicio}}\",\n  \"fechaFin\": \"{{fechaFin}}\",\n  \"tiempoMaximoParticipacionSegundos\": 1800\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-Q-05 | Consultar la sesion: referencia al mismo caso",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenDocente\",\"sesionId\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "const b = pm.response.json();",
+                  "pm.test(\"misma sesion\", () => pm.expect(b.id).to.eql(pm.collectionVariables.get(\"sesionId\")));",
+                  "pm.test(\"mismo caso publicado por HTTP\", () => pm.expect(b.casoId).to.eql(pm.collectionVariables.get(\"idCaso\")));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenDocente}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "QA-Q-06 | Personal sin permisos no consulta la sesion",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const requeridas = [\"baseUrl\",\"tokenSinPermiso\",\"sesionId\"];",
+                  "const faltan = requeridas.filter(k => !String(pm.variables.get(k) ?? \"\").trim());",
+                  "if (faltan.length) {",
+                  "  console.warn(\"PRISALY M3-M4: bloqueada por variables ausentes: \" + faltan.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "if (pm.response.code >= 400) {",
+                  "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
+                  "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
+                  "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
+                  "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
+                  "}",
+                  "pm.test(\"codigo M4-SIN-PERMISO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-SIN-PERMISO\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenSinPermiso}}",
+                "type": "text"
+              }
+            ],
+            "auth": {
+              "type": "noauth"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "m4",
+                "sesiones",
+                "{{sesionId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
