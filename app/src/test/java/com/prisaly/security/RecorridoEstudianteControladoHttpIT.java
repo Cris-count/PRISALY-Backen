@@ -189,6 +189,47 @@ class RecorridoEstudianteControladoHttpIT {
         assertEquals(0, cantidad("SELECT count(*) FROM \"RetroalimentacionGeneral\""));
     }
 
+    // N3: concurrent saves with the same expected revision through the real proxy, CAS and PostgreSQL row lock:
+    // exactly one wins, the rest are 409 REVISION_OBSOLETA, and a single answer with revision 1 remains.
+    @Test void guardadosConcurrentesConLaMismaRevisionTienenUnSoloGanador() throws Exception {
+        var llamadas = new java.util.ArrayList<java.util.concurrent.CompletableFuture<HttpResponse<String>>>();
+        for (int i = 0; i < 6; i++) {
+            UUID opcion = i % 2 == 0 ? opcionA1a : opcionA1b;
+            llamadas.add(java.util.concurrent.CompletableFuture.supplyAsync(() -> {
+                try { return put(intentoA, preguntaA1, opcion, 0, cookieA, null); }
+                catch (Exception e) { throw new IllegalStateException(e); }
+            }));
+        }
+        var estados = new java.util.ArrayList<Integer>();
+        for (var l : llamadas) {
+            var r = l.get();
+            estados.add(r.statusCode());
+            if (r.statusCode() == 409) { assertTrue(r.body().contains("REVISION_OBSOLETA"), r.body()); }
+        }
+        assertEquals(1, estados.stream().filter(e -> e == 200).count(), estados.toString());
+        assertEquals(5, estados.stream().filter(e -> e == 409).count(), estados.toString());
+        assertEquals(1, cantidad("SELECT count(*) FROM \"Respuesta\" WHERE \"idIntento\"=?", intentoA));
+        var consulta = json.readTree(get("/v1/estudiantes/intentos/" + intentoA, cookieA, null).body());
+        assertEquals(1, consulta.get("respuestas").size());
+        assertEquals(1, consulta.get("respuestas").get(0).get("revision").asInt(), consulta.toString());
+    }
+
+    // N3: a finished attempt (finalized here by fixture, since finishing is not published) rejects any new or
+    // changed answer without writing, and the owner still reads it as Finalizado.
+    @Test void intentoFinalizadoNoAdmiteRespuestasNuevasNiCambios() throws Exception {
+        assertEquals(200, put(intentoA, preguntaA1, opcionA1a, 0, cookieA, null).statusCode());
+        jdbc.update("UPDATE \"Intento\" SET \"estado\"='Finalizado', \"fin\"=now(), \"motivoFinalizacion\"='ENTREGA_ESTUDIANTE' WHERE \"idIntento\"=?", intentoA);
+        var cambio = put(intentoA, preguntaA1, opcionA1b, 1, cookieA, null);
+        observar("finalizado-PUT", cambio);
+        assertEquals(409, cambio.statusCode(), cambio.body());
+        assertEquals(1, cantidad("SELECT count(*) FROM \"Respuesta\" WHERE \"idIntento\"=? AND \"idOpcionSeleccionada\"=?", intentoA, opcionA1a));
+        assertEquals(0, cantidad("SELECT count(*) FROM \"Respuesta\" WHERE \"idOpcionSeleccionada\"=?", opcionA1b));
+        var lectura = get("/v1/estudiantes/intentos/" + intentoA, cookieA, null);
+        assertEquals(200, lectura.statusCode(), lectura.body());
+        assertEquals("Finalizado", json.readTree(lectura.body()).get("estado").asText());
+        assertEquals(403, put(intentoA, preguntaA1, opcionA1b, 1, cookieB, null).statusCode(), "ownership still precedes state");
+    }
+
     // ---------- helpers ----------
     /** Records the exact status and body code observed, for the manual Postman guide (no secrets in bodies). */
     private static void observar(String caso, HttpResponse<String> r) {
