@@ -30,7 +30,8 @@ class CasoPublicacionControllerTest {
     final String fingerprint = "m3-v2:" + "a".repeat(64), etag = '"' + fingerprint + '"', next = "m3-v2:" + "b".repeat(64);
     final CasoCurrentUserPort identity = mock(CasoCurrentUserPort.class);
     final CaseAuthorizationPort auth = mock(CaseAuthorizationPort.class);
-    final CasoPublicationPort port = mock(CasoPublicationPort.class);
+    // N1/F4-H1: the service calls the lazy overload; its default delegates to the stubbed eager method.
+    final CasoPublicationPort port = mock(CasoPublicationPort.class, CALLS_REAL_METHODS);
     MockMvc mvc;
 
     @BeforeEach void setup() {
@@ -67,13 +68,13 @@ class CasoPublicacionControllerTest {
     @Test void losPermisosSonIndependientes() throws Exception {
         when(auth.canArchiveCase(owner.toString(), id.toString())).thenReturn(false);
         send("archivar", etag).andExpect(status().isForbidden());
-        verify(port, never()).archive(any(), any(), any());
+        verifyNoInteractions(port);
         send("publicar", etag).andExpect(status().isOk());
         when(auth.canPublishCase(owner.toString(), id.toString())).thenReturn(false);
         when(auth.canArchiveCase(owner.toString(), id.toString())).thenReturn(true);
         clearInvocations(port);
         send("publicar", etag).andExpect(status().isForbidden());
-        verify(port, never()).publish(any(), any(), any());
+        verifyNoInteractions(port);
     }
 
     @Test void puertoDeAutorizacionPorDefectoNoConcedeArchivar() {
@@ -88,7 +89,9 @@ class CasoPublicacionControllerTest {
     @Test void precondiciones() throws Exception {
         send("publicar", null).andExpect(status().isPreconditionRequired());
         send("archivar", "*").andExpect(status().isBadRequest());
-        verifyNoInteractions(port);
+        // The validator is resolved only after permission; no effective transition is ever reached.
+        verify(port, never()).publish(any(), any(), anyString());
+        verify(port, never()).archive(any(), any(), anyString());
     }
 
     @Test void sinIdentidad401() throws Exception {
