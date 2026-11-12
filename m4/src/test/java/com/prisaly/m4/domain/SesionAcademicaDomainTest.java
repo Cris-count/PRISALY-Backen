@@ -164,4 +164,20 @@ class SesionAcademicaDomainTest {
         assertNull(c.getFechaRetiro());
         assertThrows(ReglaNegocioException.class, c::confirmar);
     }
+
+    /**
+     * N2: abrir/cancelar have no callers and no ratified transition (the V010 states were not adopted). Every
+     * official state must keep rejecting them without changing the session, so they cannot silently grant a path.
+     */
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.EnumSource(EstadoSesion.class)
+    void transicionesSinRatificarSiguenRechazadasEnTodoEstadoOficial(EstadoSesion estado) {
+        var s = crear();
+        var state = SesionStateFactory.of(estado);
+        assertEquals(estado, state.getEstado());
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> state.abrir(s));
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> state.cancelar(s));
+        assertEquals(EstadoSesion.SIN_INICIAR, s.getEstado());
+        assertEquals(3, EstadoSesion.values().length, "the official catalog stays SinIniciar/EnCurso/Finalizado");
+    }
 }
