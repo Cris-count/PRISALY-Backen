@@ -22,6 +22,8 @@ const reuse = prefix => {
 
 const DOCENTE_ID = '11111111-1111-1111-1111-111111111101'; // Bruno fixture teacher (D-05: no HTTP teacher can log in).
 const SIN_PERMISO_ID = '11111111-1111-1111-1111-111111111102'; // Bruno fixture personnel account without case permissions.
+const CONVOCAR = JSON.stringify({estudianteId: '{{estudianteQaId}}'}, null, 2);
+const ESTUDIANTE_QA_ID = '22222222-2222-2222-2222-222222222301'; // qa/m3-m4-postman/fixture-estudiante-qa.sql (only SQL fixture).
 const PERMISOS_QA = ['CONSULTAR_CASO', 'MODIFICAR_CASO', 'PUBLICAR_CASO', 'GESTIONAR_SESION'];
 
 const guard = vars => [`const requeridas = ${JSON.stringify(vars)};`,
@@ -142,17 +144,30 @@ const qa = [
       'pm.test("mismo caso publicado por HTTP", () => pm.expect(b.casoId).to.eql(pm.collectionVariables.get("idCaso")));']}),
   request('QA-Q-06', 'Personal sin permisos no consulta la sesion', 'GET', '/m4/sesiones/{{sesionId}}',
     {auth: 'tokenSinPermiso', status: 403, tests: forbidden('M4-SIN-PERMISO')}),
+  // DC-CIERRE-MODULAR-01: M4 -> M7. The convocation registers the notice and queues the e-mail (Observer + Outbox).
+  request('QA-Q-07', 'Personal sin permisos no convoca', 'POST', '/m4/sesiones/{{sesionId}}/convocatorias',
+    {auth: 'tokenSinPermiso', body: CONVOCAR, status: 403, tests: forbidden('M4-SIN-PERMISO')}),
+  request('QA-Q-08', 'Docente convoca al estudiante QA en la sesion programada', 'POST', '/m4/sesiones/{{sesionId}}/convocatorias',
+    {auth: 'tokenDocente', body: CONVOCAR, status: 201, tests: ['const b = pm.response.json();',
+      'pm.test("convocatoria de la sesion y del estudiante", () => { pm.expect(b.sesionId).to.eql(pm.collectionVariables.get("sesionId"));',
+      '  pm.expect(b.estudianteId).to.eql(pm.variables.get("estudianteQaId")); pm.expect(b.fechaRetiro).to.eql(null); });',
+      'if (b.id) pm.collectionVariables.set("convocatoriaId", b.id);']}),
+  request('QA-Q-09', 'Convocar dos veces al mismo estudiante: 409', 'POST', '/m4/sesiones/{{sesionId}}/convocatorias',
+    {auth: 'tokenDocente', body: CONVOCAR, status: 409, tests: forbidden('M4-CONVOCATORIA-DUPLICADA')}),
+  request('QA-Q-10', 'Consultar convocatorias de la sesion', 'GET', '/m4/sesiones/{{sesionId}}/convocatorias', {auth: 'tokenDocente', status: 200,
+    tests: ['const l = pm.response.json();', 'pm.test("una sola convocatoria", () => pm.expect(l).to.have.length(1));',
+      'pm.test("es la registrada", () => pm.expect(l[0].id).to.eql(pm.collectionVariables.get("convocatoriaId")));']}),
 ];
 
 const VARS = ['tokenAdmin', 'tokenDocente', 'tokenSinPermiso', 'tokenOtroDocente', 'idCaso', 'idCaso2', 'idCasoProd', 'idEscenarioProd', 'etag', 'etagAnterior',
-  'etag2', 'idEscenario', 'idPregunta', 'idOpcionCorrecta', 'idOpcionIncorrecta', 'sesionId',
+  'etag2', 'idEscenario', 'idPregunta', 'idOpcionCorrecta', 'idOpcionIncorrecta', 'sesionId', 'convocatoriaId',
   ...PERMISOS_QA.map(c => 'idPermiso_' + c)];
 const collection = {
   info: {name: 'PRISALY-M3-M4-QA-F4', schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
     description: 'DC-EJEC-CIERRE-01. Campana QA M3 -> M4 con la politica F4 de pruebas (NO ratificada). Folder 00 + P (configuracion '
       + 'productiva) o 00 + Q (politica F4 QA). Permisos asignados por HTTP por el primer administrador; el caso se publica por HTTP; '
       + 'ningun caso Publicado se inserta por SQL. Solo bases desechables. Ejecutar con qa/m3-m4-postman/run.mjs.'},
-  variable: [...VARS.map(key => ({key, value: ''})), {key: 'docenteId', value: DOCENTE_ID}, {key: 'sinPermisoId', value: SIN_PERMISO_ID},
+  variable: [...VARS.map(key => ({key, value: ''})), {key: 'docenteId', value: DOCENTE_ID}, {key: 'sinPermisoId', value: SIN_PERMISO_ID}, {key: 'estudianteQaId', value: ESTUDIANTE_QA_ID},
     {key: 'fechaInicio', value: '2030-11-05T14:00:00Z'}, {key: 'fechaFin', value: '2030-11-05T15:00:00Z'}],
   item: [{name: '00-preparacion', item: preparacion}, {name: 'P-configuracion-productiva', item: productiva},
     {name: 'Q-configuracion-qa-f4', item: qa}],

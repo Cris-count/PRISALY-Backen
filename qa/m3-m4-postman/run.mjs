@@ -8,7 +8,10 @@
 //     inserted by SQL: the runner fails if any case exists before Newman starts;
 //   - the first administrator is created by the real P5 initialization (random credential, file deleted at startup) and
 //     grants CONSULTAR_CASO, MODIFICAR_CASO, PUBLICAR_CASO and GESTIONAR_SESION over HTTP (PUT /v1/admin/...);
-//   - DD-02 student access and the M7 worker stay disabled.
+//   - DD-02 student access stays disabled. In qa mode only (DC-CIERRE-MODULAR-01) the M7 convocation worker runs
+//     against a disposable Mailpit capture mailbox (loopback, own label, removed at the end), never a real SMTP;
+//   - qa mode also seeds one student (qa/m3-m4-postman/fixture-estudiante-qa.sql): there is no HTTP route to register
+//     students, and that student is convoked over HTTP. Still no case, session or convocation is inserted by SQL.
 // Usage: node qa/m3-m4-postman/run.mjs [--modo productiva|qa|ambos] [--newman <ruta>] [--sin-construir] [--salida <dir>]
 import {spawnSync, spawn} from 'node:child_process';
 import {createHash, randomUUID, randomBytes} from 'node:crypto';
@@ -23,6 +26,9 @@ const ROOT = resolve(HERE, '../..');
 const PUBLIC_PASSWORD = 'LocalBruno!234'; // Public Bruno fixture already in the repository; disposable DB only.
 const COLLECTION = 'postman/PRISALY-M3-M4-QA-F4.postman_collection.json';
 const SEEDS = ['bruno/scripts/m1-bruno-seed-local.sql', 'docs/provision/pd01-inicializacion.sql'];
+const SEED_ESTUDIANTE = 'qa/m3-m4-postman/fixture-estudiante-qa.sql';
+const MAILPIT = 'axllent/mailpit:v1.31.2';
+const REMITENTE_QA = 'no-reply@prisaly.test';
 const ADMIN = {correo: 'admin.qa@prisaly.invalid', nombre: 'Administrador inicial QA'};
 // Exactly the values of qa/m3-postman/run.mjs (Newman M3 151/151) and of the M3 integration tests. NOT ratified.
 const POLITICA_QA = ['--prisaly.m3.lectura.permiso=CONSULTAR_CASO',
@@ -52,7 +58,8 @@ const resumen = {inicio: new Date().toISOString(), sha: git(['rev-parse', 'HEAD'
   applicationYmlSha256: sha256(readFileSync(join(ROOT, 'app/src/main/resources/application.yml'))),
   coleccionSha256: sha256(readFileSync(join(ROOT, COLLECTION))),
   newman: run(newmanBin, ['--version'], {shell: process.platform === 'win32'}).stdout.trim(), corridas: []};
-for (const file of SEEDS) {
+for (const file of [...SEEDS, SEED_ESTUDIANTE]) {
+  if (/INSERT\s+INTO\s+"(Sesion|Convocatoria)"/i.test(readFileSync(join(ROOT, file), 'utf8'))) throw new Error(`${file} inserta sesiones o convocatorias`);
   if (/INSERT\s+INTO\s+"Caso"/i.test(readFileSync(join(ROOT, file), 'utf8'))) throw new Error(`${file} inserta casos: no admitido`);
 }
 
@@ -80,7 +87,8 @@ async function corrida(modo) {
   const out = join(outRoot, modo); mkdirSync(out, {recursive: true});
   const runId = randomUUID(), name = `prisaly-m3m4-${runId}`;
   const informe = {modo, runId, politicaLectura: modo === 'qa' ? POLITICA_QA : 'application.yml (vacía)', estado: 'en curso', limpieza: []};
-  let containerId = null, app = null; const appLog = [];
+  let containerId = null, app = null, mail = null; const appLog = [];
+  const flujoM7 = modo === 'qa';
   try {
     const dbPassword = randomBytes(24).toString('hex'); secrets.push(dbPassword);
     const started = spawnSync('docker', ['run', '--detach', '--rm', '--name', name, '--label', `prisaly.qa.run=${runId}`,
@@ -99,6 +107,19 @@ async function corrida(modo) {
       if (!r.ok) throw new Error('SQL falló: ' + redact(r.out, secrets).slice(0, 400));
       return r.stdout.trim();
     };
+    if (flujoM7) {
+      const mailName = `prisaly-m3m4-mailpit-${runId}`;
+      const st = spawnSync('docker', ['run', '--detach', '--rm', '--name', mailName, '--label', `prisaly.qa.run=${runId}`,
+        '--publish', '127.0.0.1::1025', '--publish', '127.0.0.1::8025', MAILPIT], {env, encoding: 'utf8', timeout: 180000, windowsHide: true});
+      const id = (st.stdout || '').trim();
+      if (st.status !== 0 || !/^[a-f0-9]{64}$/.test(id)) throw new Error('No se pudo iniciar Mailpit efímero');
+      const mi = JSON.parse(run('docker', ['inspect', id]).stdout)[0];
+      if (!ownsContainer(mi, id, mailName, runId)) throw new Error('No se acredita la propiedad del contenedor Mailpit');
+      mail = {id, name: mailName, smtp: mi.NetworkSettings.Ports['1025/tcp'][0].HostPort, api: mi.NetworkSettings.Ports['8025/tcp'][0].HostPort};
+    }
+    const trabajadorM7 = () => flujoM7 ? ['--prisaly.m7.worker.enabled=true', `--prisaly.m7.correo.remitente=${REMITENTE_QA}`,
+      '--prisaly.m7.worker.lote=10', '--prisaly.m7.worker.lease-segundos=60', '--prisaly.m7.worker.intervalo-ms=1000',
+      '--spring.mail.host=127.0.0.1', `--spring.mail.port=${mail.smtp}`] : ['--prisaly.m7.worker.enabled=false'];
     const port = await new Promise((res, rej) => { const s = net.createServer(); s.on('error', rej); s.listen(0, '127.0.0.1', () => { const p = s.address().port; s.close(() => res(p)); }); });
     const jdbc = `jdbc:postgresql://127.0.0.1:${port5432.HostPort}/qa_m3?sslmode=disable`;
     const base = `http://127.0.0.1:${port}/api`;
@@ -106,7 +127,7 @@ async function corrida(modo) {
       const desde = appLog.length;
       app = spawn('java', ['-jar', jar, '--server.address=127.0.0.1', `--server.port=${port}`, '--server.servlet.context-path=/api',
         '--spring.jpa.hibernate.ddl-auto=validate', '--spring.flyway.enabled=true', '--prisaly.m1.student-access.enabled=false',
-        '--prisaly.m7.worker.enabled=false', ...(modo === 'qa' ? POLITICA_QA : []), ...extra],
+        ...trabajadorM7(), ...(modo === 'qa' ? POLITICA_QA : []), ...extra],
         {cwd: ROOT, env: {...env, DATABASE_URL: jdbc, DATABASE_USER: 'qa_m3', DATABASE_PASSWORD: dbPassword}, stdio: ['ignore', 'pipe', 'pipe'], windowsHide: true});
       for (const s of [app.stdout, app.stderr]) s.on('data', b => appLog.push(b));
       app.on('error', () => {});
@@ -131,7 +152,7 @@ async function corrida(modo) {
     informe.tablasDd02b = Number(sql(`SELECT count(*) FROM information_schema.tables WHERE table_schema='public'
       AND table_name IN ('CredencialAccesoEstudiante','IntentoAccesoEstudiante','EntregaCodigoAcceso');`));
     informe.semillas = [];
-    for (const file of SEEDS) { const t = readFileSync(join(ROOT, file), 'utf8'); sql(t); informe.semillas.push({file, sha256: sha256(t)}); }
+    for (const file of flujoM7 ? [...SEEDS, SEED_ESTUDIANTE] : SEEDS) { const t = readFileSync(join(ROOT, file), 'utf8'); sql(t); informe.semillas.push({file, sha256: sha256(t)}); }
 
     // P5-N1 operating procedure: one-shot initialization with a random credential read from a file deleted at startup.
     const adminPassword = 'P5#' + randomBytes(18).toString('base64url'); secrets.push(adminPassword);
@@ -182,6 +203,25 @@ async function corrida(modo) {
       informe.estado = result.ok && ejecuciones.length > 0 && informe.bloqueadas === 0 && informe.asercionesFallidas === 0 ? 'aprobada' : 'fallida';
     } finally { for (const f of [envFile, rawFile]) if (existsSync(f)) unlinkSync(f); }
 
+    // DC-CIERRE-MODULAR-01, qa mode: convocation -> Aviso (Observer) -> EnvioCorreo (Outbox) -> worker -> Mailpit.
+    if (flujoM7) {
+      const consulta = () => JSON.parse(sql(`SELECT jsonb_build_object(
+        'convocatorias', (SELECT count(*) FROM "Convocatoria"),
+        'avisos', (SELECT count(*) FROM "Aviso" a WHERE a."idUsuarioDestino" = '11111111-1111-1111-1111-111111111301'),
+        'envios', (SELECT coalesce(jsonb_agg(jsonb_build_object('estado', e."estadoEnvio", 'intentos', e."numeroIntentos",
+          'enviado', e."fechaEnvio" IS NOT NULL, 'error', e."ultimoError")), '[]'::jsonb)
+          FROM "EnvioCorreo" e JOIN "Convocatoria" c ON c."idConvocatoria" = e."idConvocatoria"));`));
+      let m7 = consulta();
+      for (let i = 0; i < 60 && !(m7.envios.length && m7.envios.every(e => e.estado !== 'Pendiente')); i++) { await delay(1000); m7 = consulta(); }
+      const buzon = await (await fetch(`http://127.0.0.1:${mail.api}/api/v1/messages`)).json();
+      const mensajes = (buzon.messages || []).map(m => ({para: (m.To || []).map(t => t.Address), de: m.From?.Address, asunto: m.Subject}));
+      informe.flujoM4M7 = {...m7, buzonQa: {total: buzon.messages_count ?? mensajes.length, mensajes}};
+      const entregado = m7.convocatorias === 1 && m7.avisos >= 1 && m7.envios.length === 1 && m7.envios[0].estado === 'Enviado'
+        && mensajes.length === 1 && mensajes[0].para.includes('estudiante.qa@prisaly.invalid') && mensajes[0].de === REMITENTE_QA;
+      informe.flujoM4M7.verificado = entregado;
+      if (!entregado && informe.estado === 'aprobada') { informe.estado = 'fallida'; informe.problema = 'Flujo M4 -> M7 no verificado'; }
+    }
+
     // PostgreSQL evidence: what the run persisted, and who granted the permissions.
     informe.postgresEvidencia = JSON.parse(sql(`SELECT jsonb_build_object(
       'casos', (SELECT coalesce(jsonb_agg(jsonb_build_object('idCaso', c."idCaso", 'nombre', c."nombre", 'estado', c."estado", 'activo', c."activo",
@@ -209,6 +249,11 @@ async function corrida(modo) {
       let removed = false;
       try { const info = JSON.parse(run('docker', ['inspect', containerId]).stdout)[0]; if (ownsContainer(info, containerId, name, runId)) removed = run('docker', ['rm', '--force', containerId]).ok; } catch {}
       informe.limpieza.push({recurso: 'postgres-propio', ok: removed});
+    }
+    if (mail) {
+      let removed = false;
+      try { const mi = JSON.parse(run('docker', ['inspect', mail.id]).stdout)[0]; if (ownsContainer(mi, mail.id, mail.name, runId)) removed = run('docker', ['rm', '--force', mail.id]).ok; } catch {}
+      informe.limpieza.push({recurso: 'mailpit-propio', ok: removed});
     }
     informe.fin = new Date().toISOString();
     writeFileSync(join(out, 'informe.json'), JSON.stringify(redact(informe, secrets), null, 2) + '\n');
