@@ -11,6 +11,10 @@ import java.util.UUID;
  * inicioPrevisto/finPrevisto NO se presentan como apertura/cierre autorizados.
  * observadoEn procede de clock_timestamp() PostgreSQL, no del cliente.
  * Su adopción como reloj académico requiere ratificación de Dirección Central.
+ *
+ * <p>tiempoEstimadoCaso es Caso.tiempoEstimadoSegundos tal como está persistido
+ * (NOT NULL y mayor que cero en BD-005.2). Es un dato del contrato: este record
+ * no decide ingreso tardío, elegibilidad ni límites (RF-22 sin implementar).
  */
 public record ContextoProgramacion(
         UUID convocatoriaId,
@@ -27,6 +31,7 @@ public record ContextoProgramacion(
         Optional<Instant> fechaInicioReal,
         Optional<Instant> fechaFinReal,
         Duration tiempoMaximoParticipacion,
+        Duration tiempoEstimadoCaso,
         Instant observadoEn) {
 
     public ContextoProgramacion {
@@ -43,9 +48,11 @@ public record ContextoProgramacion(
         Objects.requireNonNull(fechaInicioReal);
         Objects.requireNonNull(fechaFinReal);
         Objects.requireNonNull(tiempoMaximoParticipacion);
+        Objects.requireNonNull(tiempoEstimadoCaso);
         Objects.requireNonNull(observadoEn);
         if (!finPrevisto.isAfter(inicioPrevisto) || tiempoMaximoParticipacion.isNegative()
-                || tiempoMaximoParticipacion.isZero()) {
+                || tiempoMaximoParticipacion.isZero() || tiempoEstimadoCaso.isNegative()
+                || tiempoEstimadoCaso.isZero()) {
             throw new IllegalArgumentException("Programación persistida inconsistente");
         }
     }

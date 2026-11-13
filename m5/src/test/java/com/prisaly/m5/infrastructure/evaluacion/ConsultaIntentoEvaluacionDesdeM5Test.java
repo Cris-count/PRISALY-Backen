@@ -57,7 +57,7 @@ class ConsultaIntentoEvaluacionDesdeM5Test {
     ContextoProgramacion contexto(UUID convocatoriaId) {
         return new ContextoProgramacion(convocatoriaId, estudiante, UUID.randomUUID(), caso, "Programada", "Autorizada",
                 Optional.empty(), "Publicado", true, Instant.EPOCH, Instant.EPOCH.plusSeconds(3600),
-                Optional.empty(), Optional.empty(), Duration.ofMinutes(60), Instant.now());
+                Optional.empty(), Optional.empty(), Duration.ofMinutes(60), Duration.ofMinutes(45), Instant.now());
     }
     @Test void mapeaInmutableEnTransaccionEstableSinCargarAgregados() {
         var dato = lector.findById(id).orElseThrow();

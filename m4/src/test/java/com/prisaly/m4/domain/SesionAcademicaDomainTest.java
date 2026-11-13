@@ -17,6 +17,9 @@ import java.util.UUID;
 class SesionAcademicaDomainTest {
     private static final Instant INICIO = Instant.parse("2030-11-05T09:00:00Z"),
             FIN = INICIO.plusSeconds(3600);
+    /** Instantes fijos del reloj académico (C4): el dominio ya no lee la JVM. */
+    private static final Instant T1 = Instant.parse("2030-11-05T09:01:02.123456Z"),
+            T2 = T1.plusSeconds(1200);
 
     private SesionAcademica crear() {
         return SesionAcademica.crear(
@@ -85,27 +88,27 @@ class SesionAcademicaDomainTest {
     void stateRecorreSoloCatalogoOficial() {
         var s = crear();
         assertInstanceOf(SinIniciarState.class, SesionStateFactory.of(s.getEstado()));
-        s.iniciar();
+        s.iniciar(T1);
         assertEquals(EstadoSesion.EN_CURSO, s.getEstado());
-        assertNotNull(s.getFechaInicioReal());
-        s.cerrar();
+        assertEquals(T1, s.getFechaInicioReal());
+        s.cerrar(T2);
         assertEquals(EstadoSesion.FINALIZADO, s.getEstado());
-        assertNotNull(s.getFechaFinReal());
+        assertEquals(T2, s.getFechaFinReal());
         assertFalse(s.getFechaFinReal().isBefore(s.getFechaInicioReal()));
     }
 
     @Test
     void noCierraSinIniciar() {
-        assertThrows(SesionOperacionNoPermitidaException.class, () -> crear().cerrar());
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> crear().cerrar(T2));
     }
 
     @Test
     void noReabreFinalizado() {
         var s = crear();
-        s.iniciar();
-        s.cerrar();
-        assertThrows(SesionOperacionNoPermitidaException.class, s::iniciar);
-        assertThrows(SesionOperacionNoPermitidaException.class, s::cerrar);
+        s.iniciar(T1);
+        s.cerrar(T2);
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> s.iniciar(T1));
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> s.cerrar(T2));
     }
 
     @Test
@@ -132,7 +135,7 @@ class SesionAcademicaDomainTest {
     void programaSoloAntesDeIniciar() {
         var s = crear();
         s.actualizarProgramacion("Nuevo", null, INICIO, FIN);
-        s.iniciar();
+        s.iniciar(T1);
         assertThrows(
                 SesionOperacionNoPermitidaException.class,
                 () -> s.actualizarProgramacion("Otro", null, INICIO, FIN));
@@ -144,7 +147,7 @@ class SesionAcademicaDomainTest {
         var destino = UUID.randomUUID();
         s.cambiarCaso(destino);
         assertEquals(destino, s.getCasoId());
-        s.iniciar();
+        s.iniciar(T1);
         assertThrows(
                 SesionOperacionNoPermitidaException.class, () -> s.cambiarCaso(UUID.randomUUID()));
     }
@@ -153,7 +156,7 @@ class SesionAcademicaDomainTest {
     void convocatoriaNoEquivaleAAcceso() {
         var s = crear();
         assertTrue(s.permiteConvocatoria());
-        s.iniciar();
+        s.iniciar(T1);
         assertFalse(s.permiteConvocatoria());
     }
 
@@ -179,5 +182,54 @@ class SesionAcademicaDomainTest {
         assertThrows(SesionOperacionNoPermitidaException.class, () -> state.cancelar(s));
         assertEquals(EstadoSesion.SIN_INICIAR, s.getEstado());
         assertEquals(3, EstadoSesion.values().length, "the official catalog stays SinIniciar/EnCurso/Finalizado");
+    }
+
+    /** C4: el instante lo aporta el reloj académico y una fecha real existente nunca se sobrescribe. */
+    @Test
+    void fechaInicioRealExistenteNoSeSobrescribe() {
+        var s = crear();
+        Instant persistida = Instant.parse("2030-11-05T08:59:00Z");
+        s.setFechaInicioReal(persistida);
+        s.iniciar(T1);
+        assertEquals(EstadoSesion.EN_CURSO, s.getEstado());
+        assertEquals(persistida, s.getFechaInicioReal());
+        s.cerrar(T2);
+        assertEquals(persistida, s.getFechaInicioReal());
+        assertEquals(T2, s.getFechaFinReal());
+    }
+
+    @Test
+    void fechaFinRealExistenteNoSeSobrescribe() {
+        var s = crear();
+        s.iniciar(T1);
+        Instant persistida = T1.plusSeconds(5);
+        s.setFechaFinReal(persistida);
+        s.cerrar(T2);
+        assertEquals(persistida, s.getFechaFinReal());
+        assertEquals(T1, s.getFechaInicioReal());
+    }
+
+    @Test
+    void sinInstanteDelRelojNoHayTransicionNiMarca() {
+        var s = crear();
+        assertThrows(NullPointerException.class, () -> s.iniciar(null));
+        assertEquals(EstadoSesion.SIN_INICIAR, s.getEstado());
+        assertNull(s.getFechaInicioReal());
+        // Los estados solo pueden cambiarla durante iniciar/cerrar: sin instante no hay marca JVM.
+        assertThrows(IllegalStateException.class, () -> s.cambiarEstado(EnCursoState.INSTANCE));
+        assertEquals(EstadoSesion.SIN_INICIAR, s.getEstado());
+        assertNull(s.getFechaInicioReal());
+        s.iniciar(T1);
+        assertThrows(NullPointerException.class, () -> s.cerrar(null));
+        assertEquals(EstadoSesion.EN_CURSO, s.getEstado());
+        assertNull(s.getFechaFinReal());
+    }
+
+    @Test
+    void unaTransicionRechazadaNoDejaInstantePendiente() {
+        var s = crear();
+        assertThrows(SesionOperacionNoPermitidaException.class, () -> s.cerrar(T2));
+        assertThrows(IllegalStateException.class, () -> s.cambiarEstado(EnCursoState.INSTANCE));
+        assertNull(s.getFechaFinReal());
     }
 }

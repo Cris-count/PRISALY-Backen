@@ -23,6 +23,13 @@ import com.prisaly.m6.application.port.ConsultaContextoAcademicoPort;
 import com.prisaly.m6.application.port.SolicitudCapacidadContextoAcademicoPort;
 import com.prisaly.m6.application.service.PrepararContextoEvaluacionService;
 import com.prisaly.m6.application.service.PrepararEvaluacionProtegida;
+import com.prisaly.m6.application.EvaluacionNoDisponibleException;
+import com.prisaly.m6.application.proxy.EvaluacionProtectionProxy;
+import com.prisaly.m6.application.service.EvaluarIntentoService;
+import com.prisaly.m6.domain.strategy.EntradaEvaluacion;
+import com.prisaly.m6.domain.strategy.EstrategiaEvaluacion;
+import com.prisaly.m6.domain.strategy.ResultadoEvaluacion;
+import com.prisaly.m6.infrastructure.persistence.jdbc.CalificacionJdbcWriter;
 import com.prisaly.m6.domain.model.Calificacion;
 import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.math.BigDecimal;
@@ -56,7 +63,9 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * <p>Only the providers that do not exist in production yet are test doubles: institutional
  * authorization, capability issuer, the M3 protected context (read here from the same database)
  * and the grade lookup (a plain SQL count). None is registered as a Spring bean. Nothing in this
- * class calculates, persists or publishes a grade, and DD-02/DD-03/DD-04/D07 stay disabled.
+ * class calculates or publishes a grade, and DD-02/DD-03/DD-04/D07 stay disabled. Only
+ * {@code intentoFinalizadoSeEvaluaConEstrategiaExplicitaYSeRegistraUnaSolaVez} (DC-BE-24H-01) persists a grade, with an
+ * explicitly supplied TEST strategy and fixture value: it proves the evaluator wiring, not a formula.
  */
 @SpringBootTest(classes = RepositorioIntentosJpaIT.AppPrueba.class)
 @Testcontainers
@@ -253,6 +262,71 @@ class ComposicionEvaluacionM5M6IT {
         assertEquals(0, calificaciones());
     }
 
+    // DC-BE-24H-01: finalized attempt -> real M6 preparation -> Proxy -> evaluator with an explicit TEST strategy ->
+    // real insert-only writer. Production supplies no strategy, so the official evaluation stays blocked.
+    @Test void intentoFinalizadoSeEvaluaConEstrategiaExplicitaYSeRegistraUnaSolaVez() {
+        cadena = CadenaIntentoPrueba.crearConRubrica(jdbc); // the rubric must exist before the session is programmed
+        finalizarConRespuesta();
+        var solicitud = new SolicitudEvaluacion(cadena.idIntento(), cadena.rubrica());
+        AutorizacionEvaluacionPort autorizador = s -> DecisionAcceso.AUTORIZADO;
+        var preparacion = new PrepararEvaluacionProtegida(autorizador, notasDesdeBd(), new PrepararContextoEvaluacionService(
+                lector(autorizador, solicitud, cadena.estudiante(), programacionReal()), capacidades(),
+                contextoDesdeBd(solicitud.idRubrica())));
+        var vistas = new ArrayList<EntradaEvaluacion>();
+        EstrategiaEvaluacion dePrueba = s -> { vistas.add(s); return new ResultadoEvaluacion(new BigDecimal("1.00"), "{\"fixture\":true}"); };
+        var writer = new CalificacionJdbcWriter(jdbc);
+
+        var bloqueado = new EvaluarIntentoService(preparacion, Map.of("estrategia-prueba", dePrueba), "", writer);
+        assertThrows(EvaluacionNoDisponibleException.class, () -> new EvaluacionProtectionProxy(autorizador, bloqueado).evaluar(solicitud));
+        assertEquals(0, calificaciones());
+        assertEquals(0, capacidadesSolicitadas.get(), "a blocked evaluation reads nothing");
+
+        var proxy = new EvaluacionProtectionProxy(autorizador,
+                new EvaluarIntentoService(preparacion, Map.of("estrategia-prueba", dePrueba), "estrategia-prueba", writer));
+        assertEquals(new BigDecimal("1.00"), proxy.evaluar(solicitud).valor());
+        var fila = jdbc.queryForMap("SELECT \"idRubrica\", \"valor\", \"versionPolitica\" FROM \"Calificacion\" WHERE \"idIntento\"=?",
+                cadena.idIntento());
+        assertEquals(solicitud.idRubrica(), fila.get("idRubrica"));
+        assertEquals(new BigDecimal("1.00"), fila.get("valor"));
+        assertEquals("estrategia-prueba", fila.get("versionPolitica"));
+        // C2: the strategy received the prepared context built from persisted rows, uninterpreted.
+        assertEquals(1, vistas.size());
+        EntradaEvaluacion entrada = vistas.getFirst();
+        assertEquals(solicitud, entrada.solicitud());
+        assertEquals(List.of(UUID.fromString(cadena.pregunta1().valor()), UUID.fromString(cadena.pregunta2().valor())),
+                entrada.preguntas().stream().map(EntradaEvaluacion.PreguntaEvaluable::idPregunta).toList());
+        assertEquals(respuestasPersistidas().getFirst().get(1), entrada.preguntas().get(0).opcionSeleccionada().orElseThrow());
+        assertEquals(UUID.fromString(cadena.opcion1a().valor()), entrada.preguntas().get(0).opcionSeleccionada().orElseThrow());
+        assertEquals(Optional.empty(), entrada.preguntas().get(1).opcionSeleccionada());
+        assertEquals(jdbc.queryForObject("SELECT \"valorPregunta\" FROM \"RubricaPregunta\" WHERE \"idRubrica\"=?",
+                BigDecimal.class, cadena.rubrica()), entrada.preguntas().get(0).valorPregunta().orElseThrow());
+        assertEquals(new BigDecimal("2.50"), entrada.preguntas().get(0).valorPregunta().orElseThrow());
+        assertEquals(Optional.empty(), entrada.preguntas().get(1).valorPregunta());
+        assertEquals(Optional.of(jdbc.queryForObject("SELECT \"definicionEvaluacion\"::text FROM \"Rubrica\" WHERE \"idRubrica\"=?",
+                String.class, cadena.rubrica())), entrada.definicionEvaluacionRubrica());
+        // The evaluation state catalogue (PD-11) is pending: it is not changed.
+        assertEquals("Pendiente", jdbc.queryForObject("SELECT \"estadoEvaluacion\" FROM \"Intento\" WHERE \"idIntento\"=?",
+                String.class, cadena.idIntento()));
+
+        // Re-evaluation is refused by the preparation before the strategy runs; the grade is not overwritten.
+        assertThrows(IllegalStateException.class, () -> proxy.evaluar(solicitud));
+        assertEquals(1, vistas.size());
+        assertEquals(1, calificaciones());
+    }
+
+    private ConsultaCalificacionPort notasDesdeBd() {
+        return new ConsultaCalificacionPort() {
+            public Optional<Calificacion> findById(UUID id) { throw new UnsupportedOperationException(); }
+            public Optional<Calificacion> findByIntentoId(UUID id) {
+                return jdbc.query("SELECT \"idCalificacion\", \"idIntento\", \"idRubrica\", \"valor\", \"fechaCalculo\","
+                                + " \"detalleEvaluacion\"::text, \"versionPolitica\" FROM \"Calificacion\" WHERE \"idIntento\"=?",
+                        (rs, n) -> new Calificacion(rs.getObject(1, UUID.class), rs.getObject(2, UUID.class),
+                                rs.getObject(3, UUID.class), rs.getBigDecimal(4), rs.getTimestamp(5).toInstant(),
+                                rs.getString(6), rs.getString(7)), id).stream().findFirst();
+            }
+        };
+    }
+
     // ---------------------------------------------------------------- assembly helpers
 
     private PrepararEvaluacionProtegida servicio(AutorizacionEvaluacionPort autorizador,
@@ -301,8 +375,19 @@ class ComposicionEvaluacionM5M6IT {
                             (Integer) e.get("orden"), (Boolean) e.get("activo"), preguntas((UUID) e.get("idEscenario"))))
                     .toList();
             UUID pregunta = escenarios.getFirst().preguntas().getFirst().idPregunta();
-            var rubrica = new ContextoAcademico.Rubrica(idRubrica, idCaso, "Rubrica de prueba", null, null, null, null,
-                    Set.of(new ContextoAcademico.RubricaPregunta(idAsociacion, idRubrica, pregunta, BigDecimal.ONE, null)));
+            var persistida = jdbc.queryForList("SELECT \"nombre\", \"definicionEvaluacion\"::text AS definicion"
+                    + " FROM \"Rubrica\" WHERE \"idRubrica\"=?", idRubrica);
+            // A persisted rubric (C2 fixture) is read with its real associations; otherwise the in-memory snapshot.
+            var rubrica = persistida.isEmpty()
+                    ? new ContextoAcademico.Rubrica(idRubrica, idCaso, "Rubrica de prueba", null, null, null, null,
+                            Set.of(new ContextoAcademico.RubricaPregunta(idAsociacion, idRubrica, pregunta, BigDecimal.ONE, null)))
+                    : new ContextoAcademico.Rubrica(idRubrica, idCaso, (String) persistida.getFirst().get("nombre"), null,
+                            null, (String) persistida.getFirst().get("definicion"), null, Set.copyOf(jdbc.query(
+                                    "SELECT \"idRubricaPregunta\", \"idPregunta\", \"valorPregunta\", \"criterio\""
+                                            + " FROM \"RubricaPregunta\" WHERE \"idRubrica\"=?",
+                                    (rs, n) -> new ContextoAcademico.RubricaPregunta(rs.getObject(1, UUID.class), idRubrica,
+                                            rs.getObject(2, UUID.class), rs.getBigDecimal(3), rs.getString(4)),
+                                    idRubrica)));
             return Optional.of(new ContextoAcademico(idCaso, (UUID) caso.get("idDocente"), (String) caso.get("nombre"),
                     (String) caso.get("historia"), (String) caso.get("desarrolloSituacional"),
                     (Integer) caso.get("tiempoEstimadoSegundos"), (String) caso.get("estado"), (Boolean) caso.get("activo"),

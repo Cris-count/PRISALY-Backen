@@ -117,6 +117,7 @@ VALUES (?,?,?,'Contrato M4-M5','2026-11-05 09:00:00-05','2026-11-05 11:00:00-05'
         assertEquals(Instant.parse("2026-11-05T14:00:00Z"), contexto.inicioPrevisto());
         assertEquals(Instant.parse("2026-11-05T16:00:00Z"), contexto.finPrevisto());
         assertEquals(Duration.ofMinutes(30), contexto.tiempoMaximoParticipacion());
+        assertEquals(Duration.ofSeconds(600), contexto.tiempoEstimadoCaso());
         assertTrue(contexto.fechaInicioReal().isEmpty());
         assertTrue(contexto.fechaFinReal().isEmpty());
         // P5 (DC-P5-FASE-B-01): 21 BD-005.2 tables + InicializacionAdministrador (V013); M4 adds none.
@@ -127,6 +128,42 @@ VALUES (?,?,?,'Contrato M4-M5','2026-11-05 09:00:00-05','2026-11-05 11:00:00-05'
                             + " AND table_type='BASE TABLE' AND"
                             + " table_name<>'flyway_schema_history'",
                         Integer.class));
+    }
+
+    @Test
+    void tiempoEstimadoDelCasoEsElPersistidoEnLosTresPuertos() {
+        // C1 (DC-CLAUDE-BE-COMP-03): dato del contrato, sin política de ingreso tardío.
+        Integer persistido =
+                jdbc.queryForObject(
+                        "SELECT \"tiempoEstimadoSegundos\" FROM \"Caso\" WHERE \"idCaso\"=?",
+                        Integer.class,
+                        caso);
+        Duration esperado = Duration.ofSeconds(persistido);
+        assertEquals(
+                esperado, port.consultarSesion(sesion, estudiante).orElseThrow().tiempoEstimadoCaso());
+        assertEquals(
+                esperado,
+                port.consultarConvocatoria(convocatoria, estudiante)
+                        .orElseThrow()
+                        .tiempoEstimadoCaso());
+        var dataSource = (javax.sql.DataSource) jdbc.getDataSource();
+        var coordinado =
+                new com.prisaly.m4.infrastructure.adapter.ProgramacionInicioCoordinadoJdbcAdapter(
+                        new JdbcTemplate(dataSource), new ProgramacionParticipacionJdbcAdapter(
+                                new JdbcTemplate(dataSource)));
+        var transaccion =
+                new org.springframework.transaction.support.TransactionTemplate(
+                        new org.springframework.jdbc.datasource.DataSourceTransactionManager(
+                                dataSource));
+        var desdeInicio =
+                transaccion.execute(
+                        estado ->
+                                coordinado
+                                        .bloquearYConsultarConvocatoria(convocatoria, estudiante)
+                                        .orElseThrow());
+        assertEquals(esperado, desdeInicio.tiempoEstimadoCaso());
+        // La sesión tiene su propio máximo de participación: los dos datos no se confunden.
+        assertEquals(Duration.ofSeconds(1800), desdeInicio.tiempoMaximoParticipacion());
     }
 
     @Test

@@ -46,8 +46,8 @@ class FinalizarIntentoServicioTest {
     }
 
     @Test
-    @DisplayName("rechaza una segunda finalización sin guardar ni cambiar el motivo")
-    void rechazaSegundaFinalizacion() {
+    @DisplayName("rechaza una segunda finalización con otro motivo sin guardar ni cambiar el motivo")
+    void rechazaSegundaFinalizacionConOtroMotivo() {
         servicio.finalizar(REF, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
 
         assertThrows(TransicionIntentoInvalidaException.class,
@@ -55,6 +55,30 @@ class FinalizarIntentoServicioTest {
 
         assertEquals(1, repositorio.guardados());
         assertEquals(Optional.of(MotivoFinalizacion.ENTREGA_ESTUDIANTE), intento.motivoFinalizacion());
+    }
+
+    @Test
+    @DisplayName("D13: un reintento con el mismo motivo devuelve el resumen existente sin guardar")
+    void reintentoConElMismoMotivoEsIdempotente() {
+        ResumenIntento primero = servicio.finalizar(REF, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+
+        ResumenIntento repetido = servicio.finalizar(REF, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+
+        assertEquals(primero, repetido);
+        assertEquals(1, repositorio.guardados());
+        assertEquals(EstadoIntento.FINALIZADO, intento.estado());
+        assertEquals(Optional.of(MotivoFinalizacion.ENTREGA_ESTUDIANTE), intento.motivoFinalizacion());
+    }
+
+    @Test
+    @DisplayName("un motivo nulo sobre un intento finalizado sigue siendo un dato inválido")
+    void motivoNuloSobreIntentoFinalizado() {
+        servicio.finalizar(REF, MotivoFinalizacion.TIEMPO_VENCIDO);
+
+        assertThrows(MotivoFinalizacionRequeridoException.class, () -> servicio.finalizar(REF, null));
+
+        assertEquals(1, repositorio.guardados());
+        assertEquals(Optional.of(MotivoFinalizacion.TIEMPO_VENCIDO), intento.motivoFinalizacion());
     }
 
     @Test

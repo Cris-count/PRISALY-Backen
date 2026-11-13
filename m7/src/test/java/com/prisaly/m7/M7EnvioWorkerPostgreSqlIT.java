@@ -7,6 +7,7 @@ import com.icegreen.greenmail.util.ServerSetup;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
+import com.prisaly.m4.infrastructure.adapter.RelojAcademicoJdbcAdapter;
 import com.prisaly.m4.infrastructure.adapter.ConvocatoriaRepositoryAdapter;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
 import com.prisaly.m4.infrastructure.persistence.ConvocatoriaEntity;
@@ -368,6 +369,7 @@ class M7EnvioWorkerPostgreSqlIT {
     @Import({
         M7Configuration.class,
         SesionAcademicaService.class,
+        RelojAcademicoJdbcAdapter.class,
         SesionRepositoryAdapter.class,
         ConvocatoriaRepositoryAdapter.class
     })

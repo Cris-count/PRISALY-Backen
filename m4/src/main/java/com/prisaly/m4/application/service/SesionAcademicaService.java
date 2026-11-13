@@ -4,6 +4,7 @@ import com.prisaly.m4.application.port.CasoAcademicoPort;
 import com.prisaly.m4.application.port.ConvocatoriaRepository;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
+import com.prisaly.m4.application.port.RelojAcademicoPort;
 import com.prisaly.m4.application.port.SesionRepository;
 import com.prisaly.m4.domain.model.Convocatoria;
 import com.prisaly.m4.domain.model.EstadoSesion;
@@ -34,18 +35,21 @@ public class SesionAcademicaService {
     private final IdentidadPort identidadPort;
     private final CasoAcademicoPort casoAcademicoPort;
     private final NotificacionPort notificacionPort;
+    private final RelojAcademicoPort relojAcademico;
 
     public SesionAcademicaService(
             SesionRepository sesionRepository,
             ConvocatoriaRepository convocatoriaRepository,
             IdentidadPort identidadPort,
             CasoAcademicoPort casoAcademicoPort,
-            NotificacionPort notificacionPort) {
+            NotificacionPort notificacionPort,
+            RelojAcademicoPort relojAcademico) {
         this.sesionRepository = sesionRepository;
         this.convocatoriaRepository = convocatoriaRepository;
         this.identidadPort = identidadPort;
         this.casoAcademicoPort = casoAcademicoPort;
         this.notificacionPort = notificacionPort;
+        this.relojAcademico = java.util.Objects.requireNonNull(relojAcademico, "relojAcademico");
     }
 
     // ─── CrearSesion ──────────────────────────────────────────
@@ -262,11 +266,13 @@ public class SesionAcademicaService {
     // ─── CambiarEstadoSesion ──────────────────────────────────
 
     public SesionAcademica cambiarEstado(UUID docenteId, UUID sesionId, EstadoSesion nuevoEstado) {
+        // La sesión queda bloqueada (FOR UPDATE) antes de leer el reloj: la marca real y la fila
+        // que la persiste pertenecen a la misma transacción (C4, reloj de PostgreSQL).
         SesionAcademica sesion = cargarSesionParaModificar(docenteId, sesionId);
 
         switch (nuevoEstado) {
-            case EN_CURSO -> sesion.iniciar();
-            case FINALIZADO -> sesion.cerrar();
+            case EN_CURSO -> sesion.iniciar(relojAcademico.ahora());
+            case FINALIZADO -> sesion.cerrar(relojAcademico.ahora());
             default ->
                     throw new ReglaNegocioException(
                             "M4-ESTADO-INVALIDO",

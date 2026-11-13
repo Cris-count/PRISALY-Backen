@@ -148,6 +148,7 @@ class ConfiguracionParticipacionTest {
                                                 Optional.empty(),
                                                 Optional.empty(),
                                                 Duration.ofMinutes(30),
+                                                Duration.ofMinutes(20),
                                                 Instant.EPOCH)));
         for (int i = 0; i < beans.length; i++) {
             registrar(contexto, "dependencia" + i, beans[i]);

@@ -124,6 +124,6 @@ class TitularidadSesionDesdeM4Test {
         return new ContextoProgramacion(CONVOCATORIA, estudiante, sesion, UUID.randomUUID(),
                 "SinIniciar", "Autorizado", Optional.empty(), "Publicado", true,
                 ahora.minusSeconds(3600), ahora.plusSeconds(3600), Optional.empty(), Optional.empty(),
-                Duration.ofMinutes(30), ahora);
+                Duration.ofMinutes(30), Duration.ofMinutes(20), ahora);
     }
 }

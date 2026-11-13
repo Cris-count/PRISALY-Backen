@@ -33,6 +33,7 @@ public class ProgramacionParticipacionJdbcAdapter implements ProgramacionPartici
                    s."inicioPrevisto" AS inicio_previsto, s."finPrevisto" AS fin_previsto,
                    s."fechaInicioReal" AS inicio_real, s."fechaFinReal" AS fin_real,
                    s."tiempoMaximoParticipacionSegundos" AS duracion_segundos,
+                   k."tiempoEstimadoSegundos" AS caso_tiempo_segundos,
                    clock_timestamp() AS observado_en
             FROM public."Convocatoria" c
             JOIN public."Sesion" s ON s."idSesion" = c."idSesion"
@@ -79,7 +80,8 @@ public class ProgramacionParticipacionJdbcAdapter implements ProgramacionPartici
                 Optional.ofNullable(instante(rs, "fecha_retiro")), rs.getString("estado_caso"),
                 rs.getBoolean("caso_activo"), instante(rs, "inicio_previsto"), instante(rs, "fin_previsto"),
                 Optional.ofNullable(instante(rs, "inicio_real")), Optional.ofNullable(instante(rs, "fin_real")),
-                Duration.ofSeconds(rs.getInt("duracion_segundos")), instante(rs, "observado_en"));
+                Duration.ofSeconds(rs.getInt("duracion_segundos")),
+                Duration.ofSeconds(rs.getInt("caso_tiempo_segundos")), instante(rs, "observado_en"));
     }
 
     private Instant instante(ResultSet rs, String columna) throws SQLException {

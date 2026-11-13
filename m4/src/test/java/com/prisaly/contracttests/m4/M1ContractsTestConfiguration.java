@@ -28,6 +28,7 @@ public class M1ContractsTestConfiguration {
     @Bean NotificacionPort notificaciones() { return mock(NotificacionPort.class); }
     @Bean SesionAcademicaService servicio(SesionRepository sesiones, ConvocatoriaRepository convocatorias,
             IdentidadPort identidad, CasoAcademicoPort casos, NotificacionPort notificaciones) {
-        return new SesionAcademicaService(sesiones, convocatorias, identidad, casos, notificaciones);
+        return new SesionAcademicaService(sesiones, convocatorias, identidad, casos, notificaciones,
+                mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
     }
 }

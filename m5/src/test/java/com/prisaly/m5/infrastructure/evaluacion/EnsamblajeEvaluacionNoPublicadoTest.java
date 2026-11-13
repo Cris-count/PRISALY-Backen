@@ -47,7 +47,9 @@ class EnsamblajeEvaluacionNoPublicadoTest {
             EnsamblajeConsultaIntentoEvaluacion.class, AutorizacionEvaluacionPort.class,
             SolicitudCapacidadContextoAcademicoPort.class, ConsultaContextoAcademicoPort.class,
             PrepararEvaluacionProtegida.class, PrepararContextoEvaluacionService.class,
-            EvaluacionProtectionProxy.class, EvaluacionCasoUso.class, EstrategiaEvaluacion.class);
+            EvaluacionProtectionProxy.class, EvaluacionCasoUso.class, EstrategiaEvaluacion.class,
+            // DC-BE-24H-01: the evaluator service is an EvaluacionCasoUso; its grade writer is not published either.
+            com.prisaly.m6.application.port.RegistroCalificacionPort.class);
 
     @Test
     void elEscaneoDeAppNoPublicaComponentesNiBeansEvaluativos() throws Exception {
