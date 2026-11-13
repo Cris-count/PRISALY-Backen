@@ -88,16 +88,16 @@ const preparacion = {
 
 const productiva = {
   name: "A-configuracion-productiva",
-  description: "Política de lectura F4 vacía (application.yml) y sin permisos de casos asignados: estado real de producción.",
+  description: "application.yml entregado (F4 de I1: CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; también inactivos propios) y sin permisos de casos asignados: la lectura se niega por falta de CONSULTAR_CASO.",
   item: [
     request("M3-A-01", "Crear caso en Borrador", "POST", "/v1/casos", { auth: "tokenDocente", pre: uuid("idCaso"),
       body: caso("idCaso", "Postman M3 productiva"), status: 201,
       test: 'pm.test("estado BORRADOR", () => pm.expect(pm.response.json().estado).to.eql("BORRADOR"));' }),
-    request("M3-A-02", "Consultar caso propio: política F4 sin ratificar", "GET", "/v1/casos/{{idCaso}}",
+    request("M3-A-02", "Consultar caso propio sin CONSULTAR_CASO asignado", "GET", "/v1/casos/{{idCaso}}",
       { auth: "tokenDocente", status: 403, code: "FORBIDDEN" }),
-    request("M3-A-03", "Consultar contenido: política F4 sin ratificar", "GET", "/v1/casos/{{idCaso}}/contenido",
+    request("M3-A-03", "Consultar contenido sin CONSULTAR_CASO asignado", "GET", "/v1/casos/{{idCaso}}/contenido",
       { auth: "tokenDocente", status: 403, code: "FORBIDDEN" }),
-    request("M3-A-04", "Consultar rúbrica: política F4 sin ratificar", "GET", "/v1/casos/{{idCaso}}/rubrica",
+    request("M3-A-04", "Consultar rúbrica sin CONSULTAR_CASO asignado", "GET", "/v1/casos/{{idCaso}}/rubrica",
       { auth: "tokenDocente", status: 403, code: "FORBIDDEN" }),
     request("M3-A-05", "Editar sin MODIFICAR_CASO asignado", "PATCH", "/v1/casos/{{idCaso}}",
       { auth: "tokenDocente", ifMatch: '"m3-v2:' + "0".repeat(64) + '"', body: { titulo: "Cambio" }, status: 403, code: "FORBIDDEN" }),
@@ -111,7 +111,7 @@ const productiva = {
 
 const prueba = {
   name: "B-configuracion-prueba",
-  description: "Política F4 de prueba (CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; solo activos), la misma de las IT. NO ratificada (D-B). Permisos de casos asignados por SQL en una base efímera.",
+  description: "application.yml entregado (F4 de I1: CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; también inactivos propios). Permisos de casos asignados por SQL en una base efímera.",
   item: [
     request("M3-B-01", "Rechazar creación sin credencial", "POST", "/v1/casos", { pre: uuid("idCaso"),
       body: caso("idCaso", "Sin credencial"), status: 401, code: "UNAUTHENTICATED" }),

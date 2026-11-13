@@ -26,7 +26,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-/** F5/PD-06 over the productive composition and PostgreSQL 16.15, with requiere-activo=true. */
+/** F5/PD-06 over the productive composition and PostgreSQL 16.15, with the delivered F4 policy (I1). */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CasoRubricaHttpIT {
     static final String CONSULTAR = "CONSULTAR_CASO", MODIFICAR = "MODIFICAR_CASO";
@@ -42,9 +42,7 @@ class CasoRubricaHttpIT {
         r.add("spring.jpa.properties.hibernate.globally_quoted_identifiers", () -> "true");
         r.add("spring.flyway.enabled", () -> "true");
         r.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
-        r.add("prisaly.m3.lectura.permiso", () -> CONSULTAR);
-        r.add("prisaly.m3.lectura.estados-visibles", () -> "BORRADOR,PUBLICADO,ARCHIVADO");
-        r.add("prisaly.m3.lectura.requiere-activo", () -> "true");
+        // I1: F4 comes from application.yml as delivered (CONSULTAR; BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false).
     }
 
     @LocalServerPort int port;

@@ -239,7 +239,7 @@
     },
     {
       "name": "A-configuracion-productiva",
-      "description": "Política de lectura F4 vacía (application.yml) y sin permisos de casos asignados: estado real de producción.",
+      "description": "application.yml entregado (F4 de I1: CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; también inactivos propios) y sin permisos de casos asignados: la lectura se niega por falta de CONSULTAR_CASO.",
       "item": [
         {
           "name": "M3-A-01 | Crear caso en Borrador",
@@ -307,7 +307,7 @@
           }
         },
         {
-          "name": "M3-A-02 | Consultar caso propio: política F4 sin ratificar",
+          "name": "M3-A-02 | Consultar caso propio sin CONSULTAR_CASO asignado",
           "event": [
             {
               "listen": "prerequest",
@@ -357,7 +357,7 @@
           }
         },
         {
-          "name": "M3-A-03 | Consultar contenido: política F4 sin ratificar",
+          "name": "M3-A-03 | Consultar contenido sin CONSULTAR_CASO asignado",
           "event": [
             {
               "listen": "prerequest",
@@ -407,7 +407,7 @@
           }
         },
         {
-          "name": "M3-A-04 | Consultar rúbrica: política F4 sin ratificar",
+          "name": "M3-A-04 | Consultar rúbrica sin CONSULTAR_CASO asignado",
           "event": [
             {
               "listen": "prerequest",
@@ -654,7 +654,7 @@
     },
     {
       "name": "B-configuracion-prueba",
-      "description": "Política F4 de prueba (CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; solo activos), la misma de las IT. NO ratificada (D-B). Permisos de casos asignados por SQL en una base efímera.",
+      "description": "application.yml entregado (F4 de I1: CONSULTAR_CASO; BORRADOR, PUBLICADO, ARCHIVADO; también inactivos propios). Permisos de casos asignados por SQL en una base efímera.",
       "item": [
         {
           "name": "M3-B-01 | Rechazar creación sin credencial",
