@@ -262,6 +262,93 @@ class ComposicionEvaluacionM5M6IT {
         assertEquals(0, calificaciones());
     }
 
+    // DC-CLAUDE-BE-EJECUCION-04, B: the CANDIDATE weighted strategy (proposal under test, not ratified) assembled
+    // ONLY in this test. Production supplies no strategy; nothing here registers a bean or changes the assembly.
+    private EvaluacionProtectionProxy proxyConCandidata(SolicitudEvaluacion solicitud) {
+        AutorizacionEvaluacionPort autorizador = s -> DecisionAcceso.AUTORIZADO;
+        var preparacion = new PrepararEvaluacionProtegida(autorizador, notasDesdeBd(), new PrepararContextoEvaluacionService(
+                lector(autorizador, solicitud, cadena.estudiante(), programacionReal()), capacidades(),
+                contextoDesdeBd(solicitud.idRubrica())));
+        var candidata = new com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata();
+        String id = com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata.IDENTIFICADOR;
+        return new EvaluacionProtectionProxy(autorizador,
+                new EvaluarIntentoService(preparacion, Map.of(id, candidata), id, new CalificacionJdbcWriter(jdbc)));
+    }
+
+    @Test void laEstrategiaCandidataPonderaPesosPersistidosYRegistraUnaCalificacionInmutable() {
+        cadena = CadenaIntentoPrueba.crear(jdbc, "/db/m5-cadena-intento-rubrica-completa.sql");
+        // p1 (weight 2.00) answered WRONG, p2 (weight 1.00) answered RIGHT: 5 × 1/3 = 1.666… → HALF_UP 1.67.
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta2(), cadena.opcion2a());
+        fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        var solicitud = new SolicitudEvaluacion(cadena.idIntento(), cadena.rubrica());
+        var proxy = proxyConCandidata(solicitud);
+
+        var resultado = proxy.evaluar(solicitud);
+
+        assertEquals(new BigDecimal("1.67"), resultado.valor());
+        var fila = jdbc.queryForMap("SELECT \"valor\", \"versionPolitica\", \"detalleEvaluacion\"::text AS detalle"
+                + " FROM \"Calificacion\" WHERE \"idIntento\"=?", cadena.idIntento());
+        assertEquals(new BigDecimal("1.67"), fila.get("valor"));
+        assertEquals(com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata.IDENTIFICADOR, fila.get("versionPolitica"));
+        assertTrue(((String) fila.get("detalle")).contains("\"ratificada\": false"), (String) fila.get("detalle"));
+        assertEquals(Boolean.TRUE, jdbc.queryForObject(
+                "SELECT (\"detalleEvaluacion\"->>'pesoTotal')::numeric = 3.00 FROM \"Calificacion\" WHERE \"idIntento\"=?",
+                Boolean.class, cadena.idIntento()));
+        // One immutable grade per attempt: re-evaluation is refused before computing, and V003 forbids updates.
+        assertThrows(IllegalStateException.class, () -> proxy.evaluar(solicitud));
+        assertThrows(org.springframework.dao.DataAccessException.class, () -> jdbc.update(
+                "UPDATE \"Calificacion\" SET \"valor\" = 5.00 WHERE \"idIntento\"=?", cadena.idIntento()));
+        assertEquals(1, calificaciones());
+        assertEquals(new BigDecimal("1.67"), jdbc.queryForObject(
+                "SELECT \"valor\" FROM \"Calificacion\" WHERE \"idIntento\"=?", BigDecimal.class, cadena.idIntento()));
+    }
+
+    @Test void evaluacionesConcurrentesConLaCandidataDejanUnaSolaCalificacion() throws Exception {
+        cadena = CadenaIntentoPrueba.crear(jdbc, "/db/m5-cadena-intento-rubrica-completa.sql");
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1b()); // p1 right
+        fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        var solicitud = new SolicitudEvaluacion(cadena.idIntento(), cadena.rubrica());
+        var proxy = proxyConCandidata(solicitud);
+        var pool = java.util.concurrent.Executors.newFixedThreadPool(4);
+        var salida = new java.util.concurrent.CountDownLatch(1);
+        var tareas = new ArrayList<java.util.concurrent.Future<Object>>();
+        try {
+            for (int i = 0; i < 4; i++) {
+                tareas.add(pool.submit(() -> {
+                    salida.await();
+                    try { return (Object) proxy.evaluar(solicitud); } catch (RuntimeException e) { return e; }
+                }));
+            }
+            salida.countDown();
+            var resultados = new ArrayList<Object>();
+            for (var t : tareas) { resultados.add(t.get(60, java.util.concurrent.TimeUnit.SECONDS)); }
+            assertEquals(1, resultados.stream().filter(ResultadoEvaluacion.class::isInstance).count(), resultados.toString());
+            assertTrue(resultados.stream().filter(r -> !(r instanceof ResultadoEvaluacion))
+                    .allMatch(IllegalStateException.class::isInstance), resultados.toString());
+        } finally {
+            pool.shutdownNow();
+        }
+        // 5 × 2/3 = 3.333… → 3.33, recorded once.
+        assertEquals(1, calificaciones());
+        assertEquals(new BigDecimal("3.33"), jdbc.queryForObject(
+                "SELECT \"valor\" FROM \"Calificacion\" WHERE \"idIntento\"=?", BigDecimal.class, cadena.idIntento()));
+    }
+
+    @Test void laEstrategiaCandidataRechazaPesosIncompletosSinCrearCalificacion() {
+        cadena = CadenaIntentoPrueba.crearConRubrica(jdbc); // RubricaPregunta only for p1: p2 has no weight
+        finalizarConRespuesta();
+        var solicitud = new SolicitudEvaluacion(cadena.idIntento(), cadena.rubrica());
+
+        var error = assertThrows(com.prisaly.m6.domain.strategy.EvaluacionRechazadaException.class,
+                () -> proxyConCandidata(solicitud).evaluar(solicitud));
+
+        assertEquals("PESOS_INCOMPLETOS", error.codigo());
+        assertEquals(0, calificaciones());
+        assertEquals("Pendiente", jdbc.queryForObject("SELECT \"estadoEvaluacion\" FROM \"Intento\" WHERE \"idIntento\"=?",
+                String.class, cadena.idIntento()));
+    }
+
     // DC-BE-24H-01: finalized attempt -> real M6 preparation -> Proxy -> evaluator with an explicit TEST strategy ->
     // real insert-only writer. Production supplies no strategy, so the official evaluation stays blocked.
     @Test void intentoFinalizadoSeEvaluaConEstrategiaExplicitaYSeRegistraUnaSolaVez() {
@@ -446,7 +533,11 @@ class ComposicionEvaluacionM5M6IT {
                 jdbc.queryForList("SELECT count(*) AS n FROM \"RetroalimentacionGeneral\""));
     }
 
-    private long calificaciones() { return jdbc.queryForObject("SELECT count(*) FROM \"Calificacion\"", Long.class); }
+    // Grades are immutable (V003 forbids DELETE) and the database is shared by the class, so the count is scoped to
+    // the attempt of the current test: other tests' grades (EJECUCION-04, B) must not leak into this assertion.
+    private long calificaciones() {
+        return jdbc.queryForObject("SELECT count(*) FROM \"Calificacion\" WHERE \"idIntento\"=?", Long.class, cadena.idIntento());
+    }
 
     private void assertNoInstitutionalReads() {
         assertEquals(0, capacidadesSolicitadas.get(), "no capability may be requested");

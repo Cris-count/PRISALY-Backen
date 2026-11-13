@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
 import com.prisaly.m4.infrastructure.adapter.ProgramacionParticipacionJdbcAdapter;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.LimiteTemporalVencidoException;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ResumenIntento;
 import com.prisaly.m5.application.RevisionObsoletaException;
@@ -740,6 +741,147 @@ class RepositorioIntentosJpaIT {
                 "SELECT \"estado\", \"motivoFinalizacion\", \"fin\" FROM \"Intento\" WHERE"
                     + " \"idIntento\" = ?",
                 cadena.idIntento());
+    }
+
+    // ─── A1 (DC-CLAUDE-BE-EJECUCION-04): límite temporal de las respuestas ───
+
+    /** Desplaza inicio y límite respecto del reloj de PostgreSQL; ck_intento_tiempos se respeta. */
+    private void limiteEn(String desplazamiento) {
+        jdbc.update(
+                "UPDATE \"Intento\" SET \"inicio\" = clock_timestamp() - interval '2 hours',"
+                        + " \"limiteTemporal\" = clock_timestamp() + CAST(? AS interval)"
+                        + " WHERE \"idIntento\" = ?",
+                desplazamiento,
+                cadena.idIntento());
+    }
+
+    private List<Map<String, Object>> respuestasPersistidas() {
+        return jdbc.queryForList(
+                "SELECT \"idPregunta\", \"idOpcionSeleccionada\", \"revision\", \"fechaActualizacion\""
+                        + " FROM \"Respuesta\" WHERE \"idIntento\" = ? ORDER BY \"idPregunta\"",
+                cadena.idIntento());
+    }
+
+    @Test
+    @DisplayName("A1: tras el límite temporal no se registra, actualiza ni guarda con CAS, y lo persistido se conserva")
+    void respuestasTrasElLimiteSeRechazanSinEscribir() {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        limiteEn("-1 second");
+        List<Map<String, Object>> antes = respuestasPersistidas();
+        Map<String, Object> intentoAntes = filaIntento();
+        String version = versionFila();
+
+        LimiteTemporalVencidoException registro =
+                assertThrows(
+                        LimiteTemporalVencidoException.class,
+                        () ->
+                                fachada.registrarRespuesta(
+                                        cadena.intento(), cadena.pregunta2(), cadena.opcion2a()));
+        assertThrows(
+                LimiteTemporalVencidoException.class,
+                () ->
+                        fachada.actualizarRespuesta(
+                                cadena.intento(), cadena.pregunta1(), cadena.opcion1b()));
+        assertThrows(
+                LimiteTemporalVencidoException.class,
+                () ->
+                        fachada.guardarRespuesta(
+                                cadena.intento(), cadena.pregunta1(), cadena.opcion1b(), 1));
+        assertThrows(
+                LimiteTemporalVencidoException.class,
+                () ->
+                        fachada.guardarRespuesta(
+                                cadena.intento(), cadena.pregunta2(), cadena.opcion2a(), 0));
+
+        var http = TraductorErroresM5.traducir(registro).orElseThrow();
+        assertEquals(409, http.estado());
+        assertEquals("LIMITE_TEMPORAL_VENCIDO", http.cuerpo().code());
+        assertEquals(antes, respuestasPersistidas());
+        assertEquals(intentoAntes, filaIntento());
+        assertEquals(version, versionFila());
+        assertEquals(EstadoIntento.EN_CURSO, fachada.consultarIntento(cadena.intento()).estado());
+    }
+
+    @Test
+    @DisplayName("A1: antes del límite se responde y la marca queda dentro del límite")
+    void respuestaAntesDelLimiteSeAceptaDentroDelLimite() {
+        limiteEn("30 seconds");
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        assertEquals(
+                Boolean.TRUE,
+                jdbc.queryForObject(
+                        "SELECT r.\"fechaActualizacion\" <= i.\"limiteTemporal\" FROM \"Respuesta\" r"
+                                + " JOIN \"Intento\" i ON i.\"idIntento\" = r.\"idIntento\""
+                                + " WHERE r.\"idIntento\" = ?",
+                        Boolean.class,
+                        cadena.idIntento()));
+    }
+
+    @Test
+    @DisplayName("A1: vencido el límite, la finalización sigue disponible y conserva las respuestas (sin política nueva)")
+    void finalizacionTrasElLimiteConservaLasRespuestas() {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        limiteEn("-1 second");
+        List<Map<String, Object>> antes = respuestasPersistidas();
+
+        ResumenIntento cerrado =
+                fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO);
+
+        assertEquals(EstadoIntento.FINALIZADO, cerrado.estado());
+        assertEquals(antes, respuestasPersistidas());
+        // C3/D13: el reintento idéntico devuelve el mismo cierre; otro motivo sigue en conflicto.
+        assertEquals(
+                cerrado,
+                fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
+        assertThrows(
+                TransicionIntentoInvalidaException.class,
+                () ->
+                        fachada.finalizarIntento(
+                                cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        assertEquals("TIEMPO_VENCIDO", filaIntento().get("motivoFinalizacion"));
+    }
+
+    @Test
+    @DisplayName("A1 concurrencia: una respuesta cargada antes del límite y guardada después se rechaza; el cierre concurrente prevalece")
+    void respuestaQueCruzaElLimiteSeRechazaYElCierreConcurrenteEspera() throws Exception {
+        limiteEn("1500 milliseconds");
+        CountDownLatch bloqueado = new CountDownLatch(1);
+        Future<?> respuesta =
+                hilos.submit(
+                        () ->
+                                new TransactionTemplate(transacciones)
+                                        .executeWithoutResult(
+                                                estado -> {
+                                                    Intento intento =
+                                                            repositorio
+                                                                    .buscar(cadena.intento())
+                                                                    .orElseThrow();
+                                                    bloqueado.countDown();
+                                                    dormir(2500);
+                                                    intento.registrarRespuesta(
+                                                            cadena.pregunta1(), cadena.opcion1a());
+                                                    repositorio.guardar(cadena.intento(), intento);
+                                                }));
+        assertTrue(bloqueado.await(10, TimeUnit.SECONDS));
+        long inicio = System.nanoTime();
+        Future<ResumenIntento> cierre =
+                hilos.submit(
+                        () ->
+                                fachada.finalizarIntento(
+                                        cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
+
+        ExecutionException error =
+                assertThrows(ExecutionException.class, () -> respuesta.get(20, TimeUnit.SECONDS));
+        ResumenIntento cerrado = cierre.get(20, TimeUnit.SECONDS);
+        long esperaMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - inicio);
+
+        assertTrue(
+                error.getCause() instanceof LimiteTemporalVencidoException,
+                String.valueOf(error.getCause()));
+        assertTrue(esperaMs >= 1500, "el cierre debió esperar el bloqueo; esperó " + esperaMs + " ms");
+        assertEquals(EstadoIntento.FINALIZADO, cerrado.estado());
+        assertEquals(List.of(), cerrado.respuestas());
+        assertEquals(0, contarRespuestas());
     }
 
     /** Versión de la fila en PostgreSQL ({@code xmin}): cambia con cada reescritura. */

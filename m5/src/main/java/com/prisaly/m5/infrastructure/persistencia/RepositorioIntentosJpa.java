@@ -1,5 +1,6 @@
 package com.prisaly.m5.infrastructure.persistencia;
 
+import com.prisaly.m5.application.LimiteTemporalVencidoException;
 import com.prisaly.m5.application.PersistenciaIntentoException;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -103,6 +104,10 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
         // Después del bloqueo de la fila: la marca es posterior a cualquier
         // escritura confirmada sobre el intento.
         OffsetDateTime ahora = ahoraEnBaseDeDatos();
+        // A1 (DC-CLAUDE-BE-EJECUCION-04): ninguna respuesta cambia después del límite del intento.
+        // Se decide con la fila bloqueada y con el mismo instante que se grabaría, así que una
+        // respuesta y un vencimiento concurrentes quedan serializados y no hay escrituras parciales.
+        boolean vencido = ahora.toInstant().isAfter(entidad.getLimiteTemporal().toInstant());
 
         Map<UUID, RespuestaEntity> existentes = new HashMap<>();
         for (RespuestaEntity respuesta : respuestas.findByIdIntentoOrderByIdPreguntaAsc(id)) {
@@ -111,7 +116,16 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
         Map<UUID, UUID> opcionesPersistidas = new HashMap<>();
         existentes.forEach((pregunta, respuesta) -> opcionesPersistidas.put(pregunta, respuesta.getIdOpcionSeleccionada()));
 
-        for (CambioRespuesta cambio : MapeoIntento.cambios(opcionesPersistidas, intento)) {
+        List<CambioRespuesta> cambios = MapeoIntento.cambios(opcionesPersistidas, intento);
+        boolean avanzaRevision = intento.respuestas().stream().anyMatch(r -> {
+            var persistida = existentes.get(UUID.fromString(r.pregunta().valor()));
+            return persistida != null && persistida.getRevision() < r.revision();
+        });
+        if (vencido && (!cambios.isEmpty() || avanzaRevision)) {
+            throw new LimiteTemporalVencidoException();
+        }
+
+        for (CambioRespuesta cambio : cambios) {
             if (cambio.nueva()) {
                 respuestas.save(RespuestaEntity.nueva(id, cambio.idPregunta(), cambio.idOpcionSeleccionada(), ahora));
             } else {

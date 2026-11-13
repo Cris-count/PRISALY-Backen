@@ -63,6 +63,10 @@ class TraductorErroresM5Test {
                         "TRANSICION_INVALIDA"),
                 Arguments.of(new RespuestaDuplicadaException(PREGUNTA), 409, "RESPUESTA_DUPLICADA"),
                 Arguments.of(
+                        new com.prisaly.m5.application.LimiteTemporalVencidoException(),
+                        409,
+                        "LIMITE_TEMPORAL_VENCIDO"),
+                Arguments.of(
                         new RespuestaNoRegistradaException(PREGUNTA),
                         409,
                         "RESPUESTA_NO_REGISTRADA"),
