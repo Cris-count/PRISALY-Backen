@@ -263,6 +263,50 @@ class InicioIntentoIT {
     }
 
     @Test
+    @DisplayName("A2/A3: flujo inicio → respuesta → vencimiento → cierre único idempotente, con titularidad y sin repetición")
+    void flujoCompletoConVencimientoYCierreUnico() throws Exception {
+        autenticar(ana);
+        AccesoProtegidoParticipacion acceso =
+                accesoConPoliticasDePrueba(PoliticasInicioDePrueba.limiteFijo(Duration.ofMillis(1500)));
+        ResultadoInicio inicio = acceso.iniciarOReanudar(ana.referenciaConvocatoria());
+        var intento = inicio.intento().referencia();
+        acceso.registrarRespuesta(intento, ana.pregunta1(), ana.opcion1a());
+
+        // Otro estudiante no opera el intento ajeno (titularidad intacta).
+        autenticar(luis);
+        assertThrows(com.prisaly.m5.application.acceso.AccesoIntentoDenegadoException.class,
+                () -> acceso.registrarRespuesta(intento, ana.pregunta2(), ana.opcion2a()));
+        autenticar(ana);
+
+        // Espera según el reloj de PostgreSQL, el mismo con el que se decide el vencimiento.
+        while (!Boolean.TRUE.equals(jdbc.queryForObject("SELECT clock_timestamp() > ?", Boolean.class,
+                OffsetDateTime.ofInstant(inicio.limiteTemporal(), java.time.ZoneOffset.UTC)))) {
+            Thread.sleep(100);
+        }
+        assertThrows(com.prisaly.m5.application.LimiteTemporalVencidoException.class,
+                () -> acceso.registrarRespuesta(intento, ana.pregunta2(), ana.opcion2a()));
+        assertThrows(com.prisaly.m5.application.LimiteTemporalVencidoException.class,
+                () -> acceso.actualizarRespuesta(intento, ana.pregunta1(), ana.opcion1b()));
+
+        var cierre = acceso.finalizarIntento(intento, MotivoFinalizacion.TIEMPO_VENCIDO);
+        assertEquals(EstadoIntento.FINALIZADO, cierre.estado());
+        assertEquals(cierre, acceso.finalizarIntento(intento, MotivoFinalizacion.TIEMPO_VENCIDO));
+        assertThrows(com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException.class,
+                () -> acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        assertThrows(RepeticionNoHabilitadaException.class, () -> acceso.iniciarOReanudar(ana.referenciaConvocatoria()));
+
+        Map<String, Object> fila = filaIntento(inicio);
+        assertEquals("Finalizado", fila.get("estado"));
+        assertEquals("TIEMPO_VENCIDO", fila.get("motivoFinalizacion"));
+        assertEquals(1, intentosDe(ana.convocatoria()));
+        assertEquals(1, jdbc.queryForObject("SELECT count(*) FROM \"Respuesta\" WHERE \"idIntento\" = ?",
+                Integer.class, UUID.fromString(intento.valor())));
+        assertEquals(UUID.fromString(ana.opcion1a().valor()), jdbc.queryForObject(
+                "SELECT \"idOpcionSeleccionada\" FROM \"Respuesta\" WHERE \"idIntento\" = ?",
+                UUID.class, UUID.fromString(intento.valor())));
+    }
+
+    @Test
     @DisplayName("intento finalizado: no se reanuda ni se crea otro (repetición no habilitada)")
     void intentoFinalizado() {
         autenticar(ana);

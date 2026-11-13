@@ -46,7 +46,8 @@ final class CadenaIntentoPrueba {
         return crear(jdbc, "/db/m5-cadena-convocatoria.sql");
     }
 
-    private static CadenaIntentoPrueba crear(JdbcTemplate jdbc, String recurso) {
+    /** Visible for tests that need a specific fixture template (DC-CLAUDE-BE-EJECUCION-04, B). */
+    static CadenaIntentoPrueba crear(JdbcTemplate jdbc, String recurso) {
         Map<String, String> valores = new HashMap<>();
         valores.put("sufijo", UUID.randomUUID().toString().substring(0, 8));
         valores.put("rolDocente", String.valueOf(ThreadLocalRandom.current().nextInt(100_000, 1_000_000_000)));

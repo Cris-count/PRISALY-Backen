@@ -49,7 +49,26 @@ class EnsamblajeEvaluacionNoPublicadoTest {
             PrepararEvaluacionProtegida.class, PrepararContextoEvaluacionService.class,
             EvaluacionProtectionProxy.class, EvaluacionCasoUso.class, EstrategiaEvaluacion.class,
             // DC-BE-24H-01: the evaluator service is an EvaluacionCasoUso; its grade writer is not published either.
-            com.prisaly.m6.application.port.RegistroCalificacionPort.class);
+            com.prisaly.m6.application.port.RegistroCalificacionPort.class,
+            // DC-CLAUDE-BE-EJECUCION-04, A4: repetition authorization stays unpublished while PF-08 is pending.
+            com.prisaly.m5.application.repeticion.AutorizacionRepeticionPort.class,
+            com.prisaly.m5.application.repeticion.PoliticaRepeticion.class,
+            com.prisaly.m5.application.repeticion.AutorizarRepeticionServicio.class,
+            com.prisaly.m4.api.ResponsableConvocatoriaPort.class);
+
+    @Test
+    void laAutorizacionDeRepeticionYSuLecturaEnM4NoSonComponentes() throws Exception {
+        var scanner = new ClassPathScanningCandidateComponentProvider(true);
+        for (BeanDefinition definicion : scanner.findCandidateComponents("com.prisaly.m4")) {
+            Class<?> tipo = Class.forName(definicion.getBeanClassName());
+            assertFalse(com.prisaly.m4.api.ResponsableConvocatoriaPort.class.isAssignableFrom(tipo),
+                    tipo + " publishes ResponsableConvocatoriaPort");
+            for (Method metodo : beanMethods(tipo)) {
+                assertFalse(com.prisaly.m4.api.ResponsableConvocatoriaPort.class.isAssignableFrom(metodo.getReturnType()),
+                        metodo + " may publish ResponsableConvocatoriaPort");
+            }
+        }
+    }
 
     @Test
     void elEscaneoDeAppNoPublicaComponentesNiBeansEvaluativos() throws Exception {
