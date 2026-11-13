@@ -1,7 +1,7 @@
 // DC-M3-01: runs the M3 Postman collection with Newman against the real APP JAR and a disposable
 // PostgreSQL 16.15. Two configurations, each on its own fresh database:
-//   productiva: application.yml as shipped (F4 read policy blank, no case permissions assigned);
-//   prueba:     F4 policy of the integration tests (NOT ratified, D-B) and case permissions granted by SQL.
+//   productiva: application.yml as delivered (F4 since I1), no case permissions assigned;
+//   prueba:     the same application.yml, with case permissions granted by SQL.
 // Usage: node qa/m3-postman/run.mjs [--modo productiva|prueba|ambos] [--newman <ruta>] [--sin-construir]
 import {spawnSync, spawn} from 'node:child_process';
 import {createHash, randomUUID, randomBytes} from 'node:crypto';
@@ -16,8 +16,8 @@ const ROOT = resolve(HERE, '../..');
 const PUBLIC_PASSWORD = 'LocalBruno!234'; // Public Bruno fixture already in the repository; disposable DB only.
 const COLLECTION = 'postman/PRISALY-M3-Casos.postman_collection.json';
 const SEEDS = ['bruno/scripts/m1-bruno-seed-local.sql', 'bruno/scripts/m7-bruno-seed-local.sql', 'docs/provision/pd01-inicializacion.sql'];
-const POLITICA_PRUEBA = ['--prisaly.m3.lectura.permiso=CONSULTAR_CASO',
-  '--prisaly.m3.lectura.estados-visibles=BORRADOR,PUBLICADO,ARCHIVADO', '--prisaly.m3.lectura.requiere-activo=true'];
+// I1: F4 is delivered in application.yml (CONSULTAR_CASO; BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false).
+const POLITICA_PRUEBA = [];
 const delay = ms => new Promise(r => setTimeout(r, ms));
 const sha256 = data => createHash('sha256').update(data).digest('hex');
 
@@ -65,7 +65,7 @@ process.exitCode = resumen.corridas.every(c => c.estado === 'aprobada') ? 0 : 1;
 async function corrida(modo) {
   const out = join(outRoot, modo); mkdirSync(out, {recursive: true});
   const runId = randomUUID(), name = `prisaly-m3-${runId}`;
-  const informe = {modo, runId, politicaLectura: modo === 'prueba' ? POLITICA_PRUEBA : 'application.yml (vacía)', estado: 'en curso', limpieza: []};
+  const informe = {modo, runId, politicaLectura: 'application.yml (F4 entregada en I1)', estado: 'en curso', limpieza: []};
   let containerId = null, app = null, appLog = [];
   try {
     const dbPassword = randomBytes(24).toString('hex'); secrets.push(dbPassword);

@@ -46,9 +46,7 @@ class CasoContenidoHttpIT {
         registry.add("spring.jpa.properties.hibernate.globally_quoted_identifiers", () -> "true");
         registry.add("spring.flyway.enabled", () -> "true");
         registry.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
-        registry.add("prisaly.m3.lectura.permiso", () -> LECTURA);
-        registry.add("prisaly.m3.lectura.estados-visibles", () -> "BORRADOR,PUBLICADO,ARCHIVADO");
-        registry.add("prisaly.m3.lectura.requiere-activo", () -> "true");
+        // I1: F4 comes from application.yml as delivered (LECTURA; BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false).
     }
 
     @LocalServerPort

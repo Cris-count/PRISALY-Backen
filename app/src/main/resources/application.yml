@@ -52,12 +52,15 @@ prisaly:
       nombre: ${PRISALY_INICIALIZACION_ADMIN_NOMBRE:}
       archivo-credencial: ${PRISALY_INICIALIZACION_ADMIN_ARCHIVO:}
   m3:
-    # Institutional read policy for GET /v1/casos/{id} (DC-M3-RES-02). Pending ratification by
-    # Dirección Central: permission and visible states stay blank, so every read is denied.
+    # Institutional read policy for M3 case reads (DC-M3-RES-02), I1 (DC-I1-F4-IMPLEMENTACION-FINAL-01):
+    #   permiso CONSULTAR_CASO        -> authorized by Dirección Central (existing permission, none created);
+    #   estados-visibles (D2)         -> communicated as approved: the owner reads Borrador, Publicado, Archivado;
+    #   requiere-activo=false (D3)    -> communicated as approved: the owner also reads own inactive cases.
+    # Ownership is still enforced by M3. Writes keep their own M1 permissions; F4-H1-alcance remains pending.
     lectura:
-      permiso: ""
-      estados-visibles: ""
-      requiere-activo: true
+      permiso: CONSULTAR_CASO
+      estados-visibles: BORRADOR,PUBLICADO,ARCHIVADO
+      requiere-activo: false
   m4:
     consulta-bd0052:
       enabled: true

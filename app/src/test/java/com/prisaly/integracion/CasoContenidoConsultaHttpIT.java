@@ -23,7 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * F2/PD-04 over the productive composition and PostgreSQL 16.15. The read policy is set here,
- * with requiere-activo=true, because its productive activation (F4) is not yet authorized.
+ * with the F4 policy delivered in application.yml (I1: CONSULTAR_CASO; three states; requiere-activo=false).
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class CasoContenidoConsultaHttpIT {
@@ -40,9 +40,7 @@ class CasoContenidoConsultaHttpIT {
         r.add("spring.jpa.properties.hibernate.globally_quoted_identifiers", () -> "true");
         r.add("spring.flyway.enabled", () -> "true");
         r.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
-        r.add("prisaly.m3.lectura.permiso", () -> CONSULTAR);
-        r.add("prisaly.m3.lectura.estados-visibles", () -> "BORRADOR,PUBLICADO,ARCHIVADO");
-        r.add("prisaly.m3.lectura.requiere-activo", () -> "true");
+        // I1: F4 comes from application.yml as delivered (CONSULTAR; BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false).
     }
 
     @LocalServerPort int port;
@@ -127,15 +125,18 @@ class CasoContenidoConsultaHttpIT {
         assertEquals(403, escritura.statusCode());
     }
 
-    @Test void losTresEstadosSonConsultablesYCasoInactivoSeDeniega() throws Exception {
-        Cuenta c = docente(true, true);
+    // I1, D2 + D3: the owner reads its content in the three states, also when the case is inactive; another teacher
+    // with the same permissions never does.
+    @Test void losTresEstadosSonConsultablesTambienInactivosYSoloPorElPropietario() throws Exception {
+        Cuenta c = docente(true, true), ajeno = docente(true, true);
         Contenido x = contenido(c);
         for (String estado : new String[] {"Borrador", "Publicado", "Archivado"}) {
-            jdbc.update("UPDATE \"Caso\" SET \"estado\"=? WHERE \"idCaso\"=?", estado, x.caso());
-            assertEquals(200, get(x.caso() + "/contenido", c).statusCode(), estado);
+            for (boolean activo : new boolean[] {true, false}) {
+                jdbc.update("UPDATE \"Caso\" SET \"estado\"=?, \"activo\"=? WHERE \"idCaso\"=?", estado, activo, x.caso());
+                assertEquals(200, get(x.caso() + "/contenido", c).statusCode(), estado + " activo=" + activo);
+                assertEquals(403, get(x.caso() + "/contenido", ajeno).statusCode(), "ajeno " + estado + " activo=" + activo);
+            }
         }
-        jdbc.update("UPDATE \"Caso\" SET \"activo\"=false WHERE \"idCaso\"=?", x.caso());
-        assertEquals(403, get(x.caso() + "/contenido", c).statusCode());
     }
 
     @Test void cuentaEstudianteNoConsulta() throws Exception {

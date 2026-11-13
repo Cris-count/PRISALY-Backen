@@ -840,7 +840,7 @@
           "response": []
         },
         {
-          "name": "QA-P-02 | Consultar caso propio con permisos asignados: F4 vacia lo niega",
+          "name": "QA-P-02 | Consultar caso propio en Borrador con la F4 entregada",
           "event": [
             {
               "listen": "prerequest",
@@ -861,14 +861,15 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
                   "if (pm.response.code >= 400) {",
                   "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
                   "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
                   "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
                   "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
                   "}",
-                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                  "pm.test(\"estado BORRADOR\", () => pm.expect(pm.response.json().estado).to.eql(\"BORRADOR\"));",
+                  "pm.test(\"ETag fuerte m3-v2\", () => pm.expect(pm.response.headers.get(\"ETag\")).to.match(/^\"m3-v2:[0-9a-f]{64}\"$/));"
                 ]
               }
             }
@@ -900,7 +901,7 @@
           "response": []
         },
         {
-          "name": "QA-P-03 | Consultar contenido: F4 vacia lo niega",
+          "name": "QA-P-03 | Consultar contenido del caso propio con la F4 entregada",
           "event": [
             {
               "listen": "prerequest",
@@ -921,14 +922,14 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
                   "if (pm.response.code >= 400) {",
                   "  pm.test(\"error con contrato code/message\", () => { const b = pm.response.json();",
                   "    pm.expect(b.code).to.be.a(\"string\"); pm.expect(b.message).to.be.a(\"string\"); });",
                   "  pm.test(\"sin detalles internos\", () => pm.expect(pm.response.text())",
                   "    .to.not.match(/exception|jdbc:|org\\.(springframework|hibernate)|stacktrace|passwordhash/i));",
                   "}",
-                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                  "pm.test(\"mismo caso\", () => pm.expect(pm.response.json().idCaso).to.eql(pm.collectionVariables.get(\"idCasoProd\")));"
                 ]
               }
             }
@@ -961,7 +962,7 @@
           "response": []
         },
         {
-          "name": "QA-P-04 | Editar con MODIFICAR_CASO sin ETag obtenible (GET negado): rechazado",
+          "name": "QA-P-04 | Editar con MODIFICAR_CASO y un ETag obsoleto: 412 por la precondicion",
           "event": [
             {
               "listen": "prerequest",
@@ -1040,7 +1041,7 @@
           "response": []
         },
         {
-          "name": "QA-P-05 | Agregar escenario sin ETag obtenible: rechazado",
+          "name": "QA-P-05 | Agregar escenario con un ETag obsoleto: 412",
           "event": [
             {
               "listen": "prerequest",
@@ -1121,7 +1122,7 @@
           "response": []
         },
         {
-          "name": "QA-P-06 | Publicar con PUBLICAR_CASO sin ETag obtenible: rechazado",
+          "name": "QA-P-06 | Publicar con un ETag obsoleto: 412",
           "event": [
             {
               "listen": "prerequest",

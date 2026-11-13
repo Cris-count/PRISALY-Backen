@@ -1,8 +1,9 @@
 // DC-EJEC-CIERRE-01: M3 -> M4 acceptance campaign with Newman against the real APP JAR and a disposable PostgreSQL 16.15.
 // Each mode runs on its own fresh database and APP:
-//   productiva: application.yml as shipped (F4 read policy blank). The teacher receives the case permissions anyway,
-//               and every read, edit and publication is still denied; M4 refuses the unpublished case.
-//   qa:         F4 policy of the integration tests (NOT ratified, D-B) passed ONLY as command-line arguments.
+//   productiva: application.yml as delivered. Since I1 it carries the F4 read policy (CONSULTAR_CASO;
+//               BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false): the owner reads its case, and writes are decided
+//               by M1 permissions, ownership and If-Match.
+//   qa:         the same application.yml plus the QA-only M7 worker and Mailpit (below); no read-policy override.
 // In both modes:
 //   - seeds are the public Bruno M1 fixture (teacher and no-permission user) and PD-01 (catalog). No "Caso" row is
 //     inserted by SQL: the runner fails if any case exists before Newman starts;
@@ -30,9 +31,8 @@ const SEED_ESTUDIANTE = 'qa/m3-m4-postman/fixture-estudiante-qa.sql';
 const MAILPIT = 'axllent/mailpit:v1.31.2';
 const REMITENTE_QA = 'no-reply@prisaly.test';
 const ADMIN = {correo: 'admin.qa@prisaly.invalid', nombre: 'Administrador inicial QA'};
-// Exactly the values of qa/m3-postman/run.mjs (Newman M3 151/151) and of the M3 integration tests. NOT ratified.
-const POLITICA_QA = ['--prisaly.m3.lectura.permiso=CONSULTAR_CASO',
-  '--prisaly.m3.lectura.estados-visibles=BORRADOR,PUBLICADO,ARCHIVADO', '--prisaly.m3.lectura.requiere-activo=true'];
+// I1 (DC-I1-F4-IMPLEMENTACION-FINAL-01): F4 is now delivered in application.yml, so no mode overrides it.
+const POLITICA_QA = [];
 const CARPETA = {productiva: 'P-configuracion-productiva', qa: 'Q-configuracion-qa-f4'};
 const delay = ms => new Promise(r => setTimeout(r, ms));
 const sha256 = data => createHash('sha256').update(data).digest('hex');
@@ -86,7 +86,7 @@ process.exitCode = resumen.corridas.every(c => c.estado === 'aprobada') ? 0 : 1;
 async function corrida(modo) {
   const out = join(outRoot, modo); mkdirSync(out, {recursive: true});
   const runId = randomUUID(), name = `prisaly-m3m4-${runId}`;
-  const informe = {modo, runId, politicaLectura: modo === 'qa' ? POLITICA_QA : 'application.yml (vacía)', estado: 'en curso', limpieza: []};
+  const informe = {modo, runId, politicaLectura: 'application.yml (F4 entregada en I1)', estado: 'en curso', limpieza: []};
   let containerId = null, app = null, mail = null; const appLog = [];
   const flujoM7 = modo === 'qa';
   try {

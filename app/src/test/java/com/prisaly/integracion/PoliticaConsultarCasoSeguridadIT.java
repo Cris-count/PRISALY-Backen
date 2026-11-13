@@ -23,7 +23,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * PD-01 conditions over the productive composition and PostgreSQL 16.15. The read policy is set
- * here with requiere-activo=true because its productive activation (F4) is not yet authorized.
+ * here with the F4 policy delivered in application.yml (I1: CONSULTAR_CASO; three states; requiere-activo=false).
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class PoliticaConsultarCasoSeguridadIT {
@@ -40,9 +40,7 @@ class PoliticaConsultarCasoSeguridadIT {
         r.add("spring.jpa.properties.hibernate.globally_quoted_identifiers", () -> "true");
         r.add("spring.flyway.enabled", () -> "true");
         r.add("prisaly.cors.allowed-origins", () -> "http://localhost:4200");
-        r.add("prisaly.m3.lectura.permiso", () -> CONSULTAR);
-        r.add("prisaly.m3.lectura.estados-visibles", () -> "BORRADOR,PUBLICADO,ARCHIVADO");
-        r.add("prisaly.m3.lectura.requiere-activo", () -> "true");
+        // I1: F4 comes from application.yml as delivered (CONSULTAR; BORRADOR,PUBLICADO,ARCHIVADO; requiere-activo=false).
     }
 
     @LocalServerPort int port;
@@ -149,11 +147,19 @@ class PoliticaConsultarCasoSeguridadIT {
         assertTrue(r.statusCode() == 401 || r.statusCode() == 403, "status " + r.statusCode());
     }
 
-    @Test void conRequiereActivoTrueUnCasoInactivoSeDeniega() throws Exception {
-        Cuenta c = docente(true, false);
+    // I1, D3 (requiere-activo=false): an inactive own case stays readable by its owner, never by another teacher,
+    // and reading it grants no edition (PATCH still needs MODIFICAR_CASO, which this owner lacks).
+    @Test void elPropietarioConsultaSuCasoInactivoYOtroDocenteNo() throws Exception {
+        Cuenta c = docente(true, false), ajeno = docente(true, false);
         UUID caso = crearCaso(c);
         jdbc.update("UPDATE \"Caso\" SET \"activo\"=false WHERE \"idCaso\"=?", caso);
-        assertEquals(403, get(caso, c).statusCode());
+        var propio = get(caso, c);
+        assertEquals(200, propio.statusCode(), propio.body());
+        assertEquals(403, get(caso, ajeno).statusCode());
+        var edicion = http.send(req("/v1/casos/" + caso, c).header("Content-Type", "application/json")
+                .header("If-Match", propio.headers().firstValue("ETag").orElseThrow())
+                .method("PATCH", HttpRequest.BodyPublishers.ofString("{\"titulo\":\"Cambio\"}")).build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(403, edicion.statusCode(), edicion.body());
     }
 
     private String etag(UUID caso, Cuenta c) throws Exception {
