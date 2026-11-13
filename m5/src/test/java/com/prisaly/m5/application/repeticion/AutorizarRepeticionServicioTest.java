@@ -2,6 +2,8 @@ package com.prisaly.m5.application.repeticion;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import com.prisaly.m3.api.AutoriaCasoNoDisponibleException;
+import com.prisaly.m3.api.AutoriaCasoPort;
 import com.prisaly.m4.api.ResponsableConvocatoriaPort;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.RepeticionNoHabilitadaException;
@@ -16,14 +18,40 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-/** A4: orquestación de la autorización de repetición con dobles en memoria (no es evidencia de BD). */
+/** A4 + RF-25: orquestación de la autorización de repetición con dobles en memoria (no es evidencia de BD). */
 class AutorizarRepeticionServicioTest {
     final UUID creador = UUID.randomUUID(), participacion = UUID.randomUUID(), convocatoria = UUID.randomUUID();
+    // RF-25: the session is programmed by a DIFFERENT teacher than the case creator.
+    final UUID programador = UUID.randomUUID(), caso = UUID.randomUUID();
     final Puerto puerto = new Puerto();
-    final ResponsableConvocatoriaPort responsables = c -> c.equals(convocatoria) ? Optional.of(creador) : Optional.empty();
+    final List<UUID> casosConsultados = new ArrayList<>();
+    final ResponsableConvocatoriaPort responsables = c -> c.equals(convocatoria)
+            ? Optional.of(new ResponsableConvocatoriaPort.ProgramacionConvocatoria(UUID.randomUUID(), caso, programador))
+            : Optional.empty();
+    final AutoriaCasoPort autoria = c -> { casosConsultados.add(c); return c.equals(caso) ? Optional.of(creador) : Optional.empty(); };
 
     AutorizarRepeticionServicio servicio(PoliticaRepeticion politica) {
-        return new AutorizarRepeticionServicio(politica, puerto, responsables);
+        return new AutorizarRepeticionServicio(politica, puerto, responsables, autoria);
+    }
+
+    @Test
+    void elDocenteProgramadorDistintoDelCreadorNoAutoriza() {
+        assertThrows(AutorizacionRepeticionDenegadaException.class,
+                () -> servicio(() -> true).autorizar(programador, participacion, "m", null));
+        assertEquals(List.of("bloquear"), puerto.llamadas);
+        assertEquals(List.of(caso), casosConsultados, "the author is looked up for the programmed case");
+    }
+
+    @Test
+    void sinAutorVerificableFallaCerrado() {
+        AutoriaCasoPort sinAutor = c -> Optional.empty();
+        var s = new AutorizarRepeticionServicio(() -> true, puerto, responsables, sinAutor);
+        assertThrows(AutoriaCasoNoDisponibleException.class, () -> s.autorizar(creador, participacion, "m", null));
+        AutoriaCasoPort caido = c -> { throw new AutoriaCasoNoDisponibleException(); };
+        var t = new AutorizarRepeticionServicio(() -> true, puerto, responsables, caido);
+        assertThrows(AutoriaCasoNoDisponibleException.class, () -> t.autorizar(creador, participacion, "m", null));
+        assertFalse(puerto.llamadas.contains("registrar"));
+        assertThrows(NullPointerException.class, () -> new AutorizarRepeticionServicio(() -> true, puerto, responsables, null));
     }
 
     @Test

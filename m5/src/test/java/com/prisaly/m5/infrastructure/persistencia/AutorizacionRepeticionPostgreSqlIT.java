@@ -76,7 +76,8 @@ class AutorizacionRepeticionPostgreSqlIT {
 
     private AutorizarRepeticionServicio servicio(com.prisaly.m5.application.repeticion.PoliticaRepeticion politica) {
         return new AutorizarRepeticionServicio(politica, new AutorizacionRepeticionJdbc(jdbc),
-                new ResponsableConvocatoriaJdbcAdapter(jdbc));
+                new ResponsableConvocatoriaJdbcAdapter(jdbc),
+                new com.prisaly.m3.infrastructure.persistence.jdbc.AutoriaCasoJdbcAdapter(jdbc));
     }
 
     private AutorizacionRegistrada autorizar(AutorizarRepeticionServicio s, UUID docente, Duration vigencia) {
@@ -122,7 +123,7 @@ class AutorizacionRepeticionPostgreSqlIT {
     }
 
     @Test
-    @DisplayName("el docente que programó la sesión autoriza con fechas del reloj de PostgreSQL")
+    @DisplayName("RF-25: el docente creador del caso autoriza con fechas del reloj de PostgreSQL")
     void creadorAutoriza() {
         var antes = jdbc.queryForObject("SELECT clock_timestamp()", java.time.OffsetDateTime.class).toInstant();
         var a = autorizar(habilitado, cadena.docente(), Duration.ofHours(1));
@@ -143,6 +144,25 @@ class AutorizacionRepeticionPostgreSqlIT {
         assertThrows(AutorizacionRepeticionDenegadaException.class,
                 () -> autorizar(habilitado, cadena.estudiante(), null));
         assertEquals(0, autorizaciones());
+    }
+
+    @Test
+    @DisplayName("RF-25: el programador de la sesión distinto del creador del caso es rechazado; el creador autoriza")
+    void programadorDistintoDelCreadorRechazadoYCreadorAutoriza() {
+        UUID programador = otroDocente();
+        jdbc.update("UPDATE \"Sesion\" SET \"idDocenteProgramador\"=? WHERE \"idSesion\"=?", programador, cadena.sesion());
+        assertEquals(programador, jdbc.queryForObject("SELECT \"idDocenteProgramador\" FROM \"Sesion\" WHERE \"idSesion\"=?",
+                UUID.class, cadena.sesion()));
+        assertEquals(cadena.docente(), jdbc.queryForObject("SELECT \"idDocente\" FROM \"Caso\" WHERE \"idCaso\"=?",
+                UUID.class, cadena.caso()));
+
+        assertThrows(AutorizacionRepeticionDenegadaException.class, () -> autorizar(habilitado, programador, null));
+        assertEquals(0, autorizaciones());
+
+        var a = autorizar(habilitado, cadena.docente(), null);
+        assertEquals("Vigente", estado(a.idAutorizacion()));
+        assertEquals(cadena.docente(), a.idDocenteAutorizador());
+        assertEquals(1, autorizaciones());
     }
 
     @Test
