@@ -90,7 +90,8 @@ class M4ProviderSecurityTest {
                                     mock(ConvocatoriaRepository.class),
                                     context.getBean(IdentidadPort.class),
                                     casos,
-                                    mock(NotificacionPort.class));
+                                    mock(NotificacionPort.class),
+                                    mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
                     var inicio = Instant.now().plus(2, java.time.temporal.ChronoUnit.DAYS);
                     var error =
                             assertThrows(
@@ -121,7 +122,8 @@ class M4ProviderSecurityTest {
                                     mock(ConvocatoriaRepository.class),
                                     (id, permiso) -> true,
                                     context.getBean(CasoAcademicoPort.class),
-                                    mock(NotificacionPort.class));
+                                    mock(NotificacionPort.class),
+                                    mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
                     var inicio = Instant.now().plus(2, java.time.temporal.ChronoUnit.DAYS);
                     assertNoDisponible(
                             () ->
@@ -170,7 +172,8 @@ class M4ProviderSecurityTest {
                                     mock(ConvocatoriaRepository.class),
                                     (id, permiso) -> true,
                                     mock(CasoAcademicoPort.class),
-                                    mock(NotificacionPort.class));
+                                    mock(NotificacionPort.class),
+                                    mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
                     assertNoDisponible(
                             () ->
                                     service.actualizarSesion(

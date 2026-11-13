@@ -18,6 +18,14 @@ import com.prisaly.m5.domain.intento.MotivoFinalizacion;
  *
  * <p>Quién decide que el tiempo venció ({@link MotivoFinalizacion#TIEMPO_VENCIDO})
  * es responsabilidad del invocador; el límite temporal depende de la sesión (M4).
+ *
+ * <p>Reintento idempotente (D13, preparación técnica DC-CLAUDE-BE-COMP-03): si el
+ * intento ya está Finalizado con el <b>mismo</b> motivo, se devuelve el resumen
+ * persistido sin guardar nada, de modo que el cierre original (estado, motivo y
+ * marca {@code fin}) se conserva. Con un motivo <b>distinto</b> no es un reintento:
+ * el dominio sigue rechazándolo y el conflicto se mantiene. El intento se carga con
+ * el bloqueo de escritura del repositorio, así que dos finalizaciones simultáneas se
+ * serializan y la segunda observa el cierre de la primera.
  */
 public final class FinalizarIntentoServicio {
 
@@ -30,12 +38,22 @@ public final class FinalizarIntentoServicio {
     /**
      * @throws IntentoNoEncontradoException si el intento no existe
      * @throws com.prisaly.m5.domain.ParticipacionDominioException si el dominio
-     *         rechaza la finalización (motivo nulo o intento ya finalizado)
+     *         rechaza la finalización (motivo nulo o intento ya finalizado con
+     *         otro motivo)
      */
     public ResumenIntento finalizar(ReferenciaIntento referencia, MotivoFinalizacion motivo) {
         Intento intento = CargaIntento.cargar(repositorio, referencia);
+        if (esReintento(intento, motivo)) {
+            return repositorio.resumir(referencia, intento);
+        }
         intento.finalizar(motivo);
         repositorio.guardar(referencia, intento);
         return repositorio.resumir(referencia, intento);
+    }
+
+    private static boolean esReintento(Intento intento, MotivoFinalizacion motivo) {
+        return motivo != null
+                && intento.estaFinalizado()
+                && intento.motivoFinalizacion().filter(motivo::equals).isPresent();
     }
 }

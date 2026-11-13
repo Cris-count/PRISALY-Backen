@@ -131,6 +131,6 @@ class TitularidadConvocatoriaDesdeM4Test {
         return new ContextoProgramacion(convocatoria, estudiante, UUID.randomUUID(), UUID.randomUUID(),
                 "EnCurso", "Autorizado", Optional.empty(), "Publicado", true,
                 ahora.minusSeconds(3600), ahora.plusSeconds(3600), Optional.empty(), Optional.empty(),
-                Duration.ofMinutes(30), ahora);
+                Duration.ofMinutes(30), Duration.ofMinutes(20), ahora);
     }
 }

@@ -16,6 +16,8 @@ public class SesionAcademica {
     private int tiempoMaximoParticipacionSegundos;
     private EstadoSesion estado;
     private transient SesionState stateHandler;
+    /** Instante del reloj académico de la transición en curso; solo existe durante ella. */
+    private transient Instant instanteTransicion;
 
     public SesionAcademica() {}
 
@@ -56,20 +58,45 @@ public class SesionAcademica {
                 estado.name(), "cancelar: sin equivalencia oficial");
     }
 
-    public void iniciar() {
-        resolverState().iniciar(this);
+    /**
+     * @param ahora instante del reloj académico (C4: PostgreSQL en la transacción que persiste);
+     *     solo se usa si {@code fechaInicioReal} aún no existe
+     */
+    public void iniciar(Instant ahora) {
+        transicionar(ahora, () -> resolverState().iniciar(this));
     }
 
-    public void cerrar() {
-        resolverState().cerrar(this);
+    /**
+     * @param ahora instante del reloj académico; solo se usa si {@code fechaFinReal} aún no existe
+     */
+    public void cerrar(Instant ahora) {
+        transicionar(ahora, () -> resolverState().cerrar(this));
     }
 
+    private void transicionar(Instant ahora, Runnable transicion) {
+        instanteTransicion =
+                Objects.requireNonNull(ahora, "El instante del reloj académico es obligatorio");
+        try {
+            transicion.run();
+        } finally {
+            instanteTransicion = null;
+        }
+    }
+
+    /**
+     * Invocado por los estados durante {@link #iniciar(Instant)} o {@link #cerrar(Instant)}. Las
+     * marcas reales solo se escriben si no existen: una fecha real persistida nunca se sobrescribe.
+     */
     public void cambiarEstado(SesionState nuevo) {
+        if (instanteTransicion == null)
+            throw new IllegalStateException(
+                    "La transición de sesión requiere el instante del reloj académico");
         estado = nuevo.getEstado();
         stateHandler = nuevo;
         if (estado == EstadoSesion.EN_CURSO && fechaInicioReal == null)
-            fechaInicioReal = Instant.now();
-        if (estado == EstadoSesion.FINALIZADO && fechaFinReal == null) fechaFinReal = Instant.now();
+            fechaInicioReal = instanteTransicion;
+        if (estado == EstadoSesion.FINALIZADO && fechaFinReal == null)
+            fechaFinReal = instanteTransicion;
     }
 
     public void actualizarProgramacion(String titulo, String mensaje, Instant inicio, Instant fin) {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.service.SesionAcademicaService;
+import com.prisaly.m4.infrastructure.adapter.RelojAcademicoJdbcAdapter;
 import com.prisaly.m4.api.ReglaNegocioException;
 import com.prisaly.m4.infrastructure.adapter.ConvocatoriaRepositoryAdapter;
 import com.prisaly.m4.infrastructure.adapter.SesionRepositoryAdapter;
@@ -376,6 +377,7 @@ class M7ConvocatoriaPostgreSqlIT {
     @Import({
         M7Configuration.class,
         SesionAcademicaService.class,
+        RelojAcademicoJdbcAdapter.class,
         SesionRepositoryAdapter.class,
         ConvocatoriaRepositoryAdapter.class
     })

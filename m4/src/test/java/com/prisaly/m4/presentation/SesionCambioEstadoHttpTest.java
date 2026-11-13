@@ -50,10 +50,10 @@ class SesionCambioEstadoHttpTest {
         SesionAcademica s = SesionAcademica.crear(UUID.randomUUID(), DOCENTE, "Sesión", null,
                 Instant.parse("2030-11-05T09:00:00Z"), Instant.parse("2030-11-05T11:00:00Z"), 1800);
         if (destino != EstadoSesion.SIN_INICIAR) {
-            s.iniciar();
+            s.iniciar(Instant.parse("2030-11-05T09:00:01Z"));
         }
         if (destino == EstadoSesion.FINALIZADO) {
-            s.cerrar();
+            s.cerrar(Instant.parse("2030-11-05T10:00:01Z"));
         }
         return s;
     }

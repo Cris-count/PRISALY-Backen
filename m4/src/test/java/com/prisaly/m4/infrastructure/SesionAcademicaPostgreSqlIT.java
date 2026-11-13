@@ -471,6 +471,107 @@ class SesionAcademicaPostgreSqlIT {
                 () -> service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO));
     }
 
+    // ─── C4 (DC-CLAUDE-BE-COMP-03): reloj académico de PostgreSQL ───
+
+    private Instant relojBase() {
+        return jdbc.queryForObject("SELECT clock_timestamp()", java.time.OffsetDateTime.class)
+                .toInstant();
+    }
+
+    private Instant columna(String nombre, UUID sesion) {
+        Timestamp valor =
+                jdbc.queryForObject(
+                        "SELECT \"" + nombre + "\" FROM \"Sesion\" WHERE \"idSesion\"=?",
+                        Timestamp.class,
+                        sesion);
+        return valor == null ? null : valor.toInstant();
+    }
+
+    @Test
+    void fechaInicioRealProcedeDelRelojDePostgresqlYEsLaPersistida() {
+        var s = crear();
+        Instant antes = relojBase();
+        var iniciada = service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        Instant despues = relojBase();
+        Instant persistida = columna("fechaInicioReal", s.getId());
+        assertNotNull(persistida);
+        assertFalse(persistida.isBefore(antes), persistida + " < " + antes);
+        assertFalse(persistida.isAfter(despues), persistida + " > " + despues);
+        // Lo que devuelve el caso de uso es exactamente lo persistido (sin redondeos JVM/BD).
+        assertEquals(persistida, iniciada.getFechaInicioReal());
+        assertEquals(persistida, service.consultarSesion(s.getId()).getFechaInicioReal());
+    }
+
+    @Test
+    void unaSegundaTransicionNoSobrescribeFechaInicioRealYCumpleCkSesionFechas() {
+        var s = crear();
+        service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        Instant inicioReal = columna("fechaInicioReal", s.getId());
+        Instant antes = relojBase();
+        var finalizada = service.cambiarEstado(docente, s.getId(), EstadoSesion.FINALIZADO);
+        Instant despues = relojBase();
+        Instant finReal = columna("fechaFinReal", s.getId());
+        assertEquals(inicioReal, columna("fechaInicioReal", s.getId()));
+        assertEquals(inicioReal, finalizada.getFechaInicioReal());
+        assertEquals(finReal, finalizada.getFechaFinReal());
+        assertFalse(finReal.isBefore(antes));
+        assertFalse(finReal.isAfter(despues));
+        assertFalse(finReal.isBefore(inicioReal));
+        assertThrows(
+                RuntimeException.class,
+                () -> service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO));
+        assertEquals(inicioReal, columna("fechaInicioReal", s.getId()));
+        assertEquals(finReal, columna("fechaFinReal", s.getId()));
+    }
+
+    @Test
+    void unaFechaInicioRealYaPersistidaSeConservaAlIniciar() {
+        var s = crear();
+        Instant previa = relojBase().minusSeconds(120);
+        jdbc.update(
+                "UPDATE \"Sesion\" SET \"fechaInicioReal\"=? WHERE \"idSesion\"=?",
+                Timestamp.from(previa),
+                s.getId());
+        Instant persistidaAntes = columna("fechaInicioReal", s.getId());
+        var iniciada = service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        assertEquals(EstadoSesion.EN_CURSO, iniciada.getEstado());
+        assertEquals(persistidaAntes, columna("fechaInicioReal", s.getId()));
+        assertEquals(persistidaAntes, iniciada.getFechaInicioReal());
+    }
+
+    @Test
+    void elConsumidorDeM4RecibeLaFechaInicioRealPersistida() {
+        var s = crear();
+        UUID convocatoria = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO \"Convocatoria\" (\"idConvocatoria\",\"idSesion\",\"idEstudiante\")"
+                        + " VALUES (?,?,?)",
+                convocatoria,
+                s.getId(),
+                estudiante);
+        service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        Instant persistida = columna("fechaInicioReal", s.getId());
+        var puerto = new ProgramacionParticipacionJdbcAdapter(jdbc);
+        assertEquals(
+                Optional.of(persistida),
+                puerto.consultarConvocatoria(convocatoria, estudiante).orElseThrow().fechaInicioReal());
+        assertEquals(
+                Optional.of(persistida),
+                puerto.consultarSesion(s.getId(), estudiante).orElseThrow().fechaInicioReal());
+    }
+
+    @Test
+    void elRelojAcademicoExigeLaTransaccionDelCasoDeUso() {
+        var reloj =
+                applicationContext.getBean(
+                        com.prisaly.m4.application.port.RelojAcademicoPort.class);
+        assertThrows(
+                org.springframework.transaction.IllegalTransactionStateException.class,
+                reloj::ahora);
+        Instant dentro = new TransactionTemplate(txManager).execute(estado -> reloj.ahora());
+        assertNotNull(dentro);
+    }
+
     @Test
     void docenteAjenoNoModifica() {
         var s = crear();
@@ -682,7 +783,9 @@ class SesionAcademicaPostgreSqlIT {
                                 com.prisaly.m4.application.port.ConvocatoriaRepository.class),
                         identidad,
                         casos,
-                        (s, e) -> llamadas.incrementAndGet());
+                        (s, e) -> llamadas.incrementAndGet(),
+                        applicationContext.getBean(
+                                com.prisaly.m4.application.port.RelojAcademicoPort.class));
         assertThrows(
                 org.springframework.dao.DataIntegrityViolationException.class,
                 () ->

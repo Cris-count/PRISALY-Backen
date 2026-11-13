@@ -36,6 +36,11 @@ final class CadenaIntentoPrueba {
         return crear(jdbc, "/db/m5-cadena-intento.sql");
     }
 
+    /** La misma cadena con una Rubrica del caso creada antes de programar la sesión (evaluación, DC-BE-24H-01). */
+    static CadenaIntentoPrueba crearConRubrica(JdbcTemplate jdbc) {
+        return crear(jdbc, "/db/m5-cadena-intento-con-rubrica.sql");
+    }
+
     /** La misma cadena hasta la Convocatoria, sin Participacion ni Intento: para el primer inicio. */
     static CadenaIntentoPrueba crearHastaConvocatoria(JdbcTemplate jdbc) {
         return crear(jdbc, "/db/m5-cadena-convocatoria.sql");
@@ -55,6 +60,10 @@ final class CadenaIntentoPrueba {
         marcador.appendTail(sql);
         jdbc.execute(sql.toString());
         return new CadenaIntentoPrueba(valores);
+    }
+
+    UUID rubrica() {
+        return UUID.fromString(valores.get("rubrica"));
     }
 
     ReferenciaIntento intento() {

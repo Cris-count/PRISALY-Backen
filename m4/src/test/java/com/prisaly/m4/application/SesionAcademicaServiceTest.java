@@ -25,6 +25,10 @@ class SesionAcademicaServiceTest {
     private final UUID docente = UUID.randomUUID(), caso = UUID.randomUUID();
     private final Instant inicio = Instant.parse("2030-11-05T09:00:00Z"),
             fin = inicio.plusSeconds(3600);
+    /** Instantes del reloj académico (C4); en producción proceden de PostgreSQL. */
+    private static final Instant T1 = Instant.parse("2030-11-05T09:00:30.654321Z"),
+            T2 = T1.plusSeconds(1800);
+    private RelojAcademicoPort reloj;
 
     @BeforeEach
     void configurar() {
@@ -33,7 +37,9 @@ class SesionAcademicaServiceTest {
         identidad = mock(IdentidadPort.class);
         casos = mock(CasoAcademicoPort.class);
         notificaciones = mock(NotificacionPort.class);
-        service = new SesionAcademicaService(repo, conv, identidad, casos, notificaciones);
+        reloj = mock(RelojAcademicoPort.class);
+        when(reloj.ahora()).thenReturn(T1, T2);
+        service = new SesionAcademicaService(repo, conv, identidad, casos, notificaciones, reloj);
         when(identidad.tienePermiso(any(), any())).thenReturn(true);
         when(casos.estaPublicado(any())).thenReturn(true);
         when(repo.guardar(any())).thenAnswer(i -> i.getArgument(0));
@@ -164,6 +170,20 @@ class SesionAcademicaServiceTest {
         service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
         service.cambiarEstado(docente, s.getId(), EstadoSesion.FINALIZADO);
         assertEquals(EstadoSesion.FINALIZADO, s.getEstado());
+        // C4: las marcas reales son exactamente las del reloj académico, no Instant.now().
+        assertEquals(T1, s.getFechaInicioReal());
+        assertEquals(T2, s.getFechaFinReal());
+        verify(reloj, times(2)).ahora();
+    }
+
+    @Test
+    void unDestinoNoPermitidoNoConsultaElReloj() {
+        var s = sesion();
+        assertThrows(
+                ReglaNegocioException.class,
+                () -> service.cambiarEstado(docente, s.getId(), EstadoSesion.SIN_INICIAR));
+        verify(reloj, never()).ahora();
+        verify(repo, never()).guardar(any());
     }
 
     @Test
@@ -177,7 +197,7 @@ class SesionAcademicaServiceTest {
     @Test
     void noConvocaEnCurso() {
         var s = sesion();
-        s.iniciar();
+        s.iniciar(T1);
         assertThrows(
                 ReglaNegocioException.class,
                 () -> service.convocarEstudiante(docente, s.getId(), UUID.randomUUID()));

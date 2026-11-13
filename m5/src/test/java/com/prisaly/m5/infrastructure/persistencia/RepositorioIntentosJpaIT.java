@@ -401,23 +401,108 @@ class RepositorioIntentosJpaIT {
     }
 
     @Test
-    @DisplayName("una finalización repetida y rechazada no altera estado, motivo ni la marca fin")
+    @DisplayName("una finalización repetida con otro motivo se rechaza (409) sin alterar la fila")
     void finalizacionRepetidaSinEfectos() {
         fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
         Map<String, Object> antes = filaIntento();
+        String versionFila = versionFila();
 
-        assertThrows(
-                TransicionIntentoInvalidaException.class,
-                () ->
-                        fachada.finalizarIntento(
-                                cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
-        assertThrows(
-                TransicionIntentoInvalidaException.class,
-                () ->
-                        fachada.finalizarIntento(
-                                cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        TransicionIntentoInvalidaException error =
+                assertThrows(
+                        TransicionIntentoInvalidaException.class,
+                        () ->
+                                fachada.finalizarIntento(
+                                        cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
 
+        assertEquals(409, TraductorErroresM5.traducir(error).orElseThrow().estado());
         assertEquals(antes, filaIntento());
+        assertEquals(versionFila, versionFila());
+    }
+
+    @Test
+    @DisplayName("D13: el reintento con el mismo motivo devuelve el cierre original sin escribir")
+    void reintentoConElMismoMotivoConservaElCierreOriginal() {
+        fachada.registrarRespuesta(cadena.intento(), cadena.pregunta1(), cadena.opcion1a());
+        ResumenIntento original =
+                fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        Map<String, Object> antes = filaIntento();
+        String versionFila = versionFila();
+        dormir(50);
+
+        ResumenIntento repetido =
+                fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+
+        assertEquals(original, repetido);
+        assertEquals(antes, filaIntento());
+        // xmin solo cambia si la fila se reescribe: el reintento no hizo ninguna escritura.
+        assertEquals(versionFila, versionFila());
+        assertEquals(finPersistido(), repetido.tiempos().orElseThrow().fin());
+        assertEquals(1, contarRespuestas());
+    }
+
+    @Test
+    @DisplayName("D13 concurrencia: dos finalizaciones simultáneas con el mismo motivo devuelven el mismo cierre")
+    void finalizacionesSimultaneasConElMismoMotivo() throws Exception {
+        List<Object> resultados =
+                carrera(
+                        () ->
+                                fachada.finalizarIntento(
+                                        cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO),
+                        () ->
+                                fachada.finalizarIntento(
+                                        cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
+
+        assertTrue(
+                resultados.stream().allMatch(ResumenIntento.class::isInstance),
+                resultados.toString());
+        ResumenIntento primero = (ResumenIntento) resultados.get(0);
+        ResumenIntento segundo = (ResumenIntento) resultados.get(1);
+        assertEquals(primero, segundo);
+        Map<String, Object> fila = filaIntento();
+        assertEquals("Finalizado", fila.get("estado"));
+        assertEquals("TIEMPO_VENCIDO", fila.get("motivoFinalizacion"));
+        assertEquals(finPersistido(), primero.tiempos().orElseThrow().fin());
+    }
+
+    @Test
+    @DisplayName("D13 concurrencia: el reintento espera al cierre en curso y devuelve su marca fin")
+    void reintentoEsperaAlCierreEnCursoYDevuelveSuMarca() throws Exception {
+        CountDownLatch bloqueado = new CountDownLatch(1);
+        Future<ResumenIntento> cierre =
+                hilos.submit(
+                        () ->
+                                new TransactionTemplate(transacciones)
+                                        .execute(
+                                                estado -> {
+                                                    Intento intento =
+                                                            repositorio
+                                                                    .buscar(cadena.intento())
+                                                                    .orElseThrow();
+                                                    bloqueado.countDown();
+                                                    dormir(800);
+                                                    intento.finalizar(
+                                                            MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+                                                    repositorio.guardar(cadena.intento(), intento);
+                                                    return repositorio.resumir(
+                                                            cadena.intento(), intento);
+                                                }));
+        assertTrue(bloqueado.await(10, TimeUnit.SECONDS));
+
+        long inicio = System.nanoTime();
+        Future<ResumenIntento> reintento =
+                hilos.submit(
+                        () ->
+                                fachada.finalizarIntento(
+                                        cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        ResumenIntento repetido = reintento.get(20, TimeUnit.SECONDS);
+        long esperaMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - inicio);
+        ResumenIntento original = cierre.get(20, TimeUnit.SECONDS);
+
+        assertTrue(
+                esperaMs >= 500,
+                "el reintento debió esperar el bloqueo; esperó " + esperaMs + " ms");
+        assertEquals(original.tiempos().orElseThrow().fin(), repetido.tiempos().orElseThrow().fin());
+        assertEquals(finPersistido(), repetido.tiempos().orElseThrow().fin());
     }
 
     @Test
@@ -655,6 +740,22 @@ class RepositorioIntentosJpaIT {
                 "SELECT \"estado\", \"motivoFinalizacion\", \"fin\" FROM \"Intento\" WHERE"
                     + " \"idIntento\" = ?",
                 cadena.idIntento());
+    }
+
+    /** Versión de la fila en PostgreSQL ({@code xmin}): cambia con cada reescritura. */
+    private String versionFila() {
+        return jdbc.queryForObject(
+                "SELECT xmin::text FROM \"Intento\" WHERE \"idIntento\" = ?",
+                String.class,
+                cadena.idIntento());
+    }
+
+    private java.time.Instant finPersistido() {
+        return jdbc.queryForObject(
+                        "SELECT \"fin\" FROM \"Intento\" WHERE \"idIntento\" = ?",
+                        OffsetDateTime.class,
+                        cadena.idIntento())
+                .toInstant();
     }
 
     private int contarRespuestas() {
