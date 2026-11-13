@@ -54,20 +54,30 @@ class EnsamblajeEvaluacionNoPublicadoTest {
             com.prisaly.m5.application.repeticion.AutorizacionRepeticionPort.class,
             com.prisaly.m5.application.repeticion.PoliticaRepeticion.class,
             com.prisaly.m5.application.repeticion.AutorizarRepeticionServicio.class,
-            com.prisaly.m4.api.ResponsableConvocatoriaPort.class);
+            com.prisaly.m4.api.ResponsableConvocatoriaPort.class,
+            // DC-CLAUDE-BE-CIERRE-07, RF-25: the case-authorship contract of M3 is assembled explicitly only.
+            com.prisaly.m3.api.AutoriaCasoPort.class);
 
     @Test
-    void laAutorizacionDeRepeticionYSuLecturaEnM4NoSonComponentes() throws Exception {
+    void laAutorizacionDeRepeticionYSusLecturasEnM3YM4NoSonComponentes() throws Exception {
         var scanner = new ClassPathScanningCandidateComponentProvider(true);
-        for (BeanDefinition definicion : scanner.findCandidateComponents("com.prisaly.m4")) {
-            Class<?> tipo = Class.forName(definicion.getBeanClassName());
-            assertFalse(com.prisaly.m4.api.ResponsableConvocatoriaPort.class.isAssignableFrom(tipo),
-                    tipo + " publishes ResponsableConvocatoriaPort");
-            for (Method metodo : beanMethods(tipo)) {
-                assertFalse(com.prisaly.m4.api.ResponsableConvocatoriaPort.class.isAssignableFrom(metodo.getReturnType()),
-                        metodo + " may publish ResponsableConvocatoriaPort");
+        var contratos = List.<Class<?>>of(com.prisaly.m4.api.ResponsableConvocatoriaPort.class,
+                com.prisaly.m3.api.AutoriaCasoPort.class);
+        int vistos = 0;
+        for (String paquete : List.of("com.prisaly.m3", "com.prisaly.m4")) {
+            for (BeanDefinition definicion : scanner.findCandidateComponents(paquete)) {
+                vistos++;
+                Class<?> tipo = Class.forName(definicion.getBeanClassName());
+                for (Class<?> contrato : contratos) {
+                    assertFalse(contrato.isAssignableFrom(tipo), tipo + " publishes " + contrato.getSimpleName());
+                    for (Method metodo : beanMethods(tipo)) {
+                        assertFalse(contrato.isAssignableFrom(metodo.getReturnType()),
+                                metodo + " may publish " + contrato.getSimpleName());
+                    }
+                }
             }
         }
+        assertTrue(vistos > 0, "the scan must see the real M3/M4 components");
     }
 
     @Test

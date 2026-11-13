@@ -307,6 +307,55 @@ class InicioIntentoIT {
     }
 
     @Test
+    @DisplayName("CIERRE-07 P3: candidatas de elegibilidad y límite individual sobre el contrato real de M4 (solo prueba)")
+    void politicasCandidatasSobreElContratoDeM4() {
+        autenticar(ana);
+        var jdbcM4 = new ProgramacionParticipacionJdbcAdapter(jdbc);
+        // Stand-in for ProgramacionAutenticadaM1Adapter: the student comes from the authenticated test identity only.
+        var autenticada = new com.prisaly.m4.api.ProgramacionAutenticadaPort() {
+            public Optional<ContextoProgramacion> consultarSesion(UUID s) {
+                return jdbcM4.consultarSesion(s, UUID.fromString(identidad.actual.orElseThrow().valor()));
+            }
+            public Optional<ContextoProgramacion> consultarConvocatoria(UUID c) {
+                return jdbcM4.consultarConvocatoria(c, UUID.fromString(identidad.actual.orElseThrow().valor()));
+            }
+        };
+        AccesoProtegidoParticipacion acceso = new AccesoProtegidoParticipacion(
+                new ControlAccesoIntentos(identidad, titularidad),
+                FachadaSinControlDePrueba.ensamblar(repositorio, participaciones, transacciones,
+                        new com.prisaly.m5.infrastructure.programacion.ElegibilidadCandidataDesdeM4(autenticada),
+                        new com.prisaly.m5.infrastructure.programacion.LimiteIndividualCandidatoDesdeM4(autenticada)));
+
+        // Session not started yet: not eligible, nothing written.
+        assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
+                () -> acceso.iniciarOReanudar(ana.referenciaConvocatoria()));
+        assertEquals(0, intentosDe(ana.convocatoria()));
+
+        jdbc.update("UPDATE \"Sesion\" SET \"estado\"='EnCurso', \"fechaInicioReal\"=clock_timestamp() WHERE \"idSesion\"=?",
+                ana.sesion());
+        ResultadoInicio inicio = acceso.iniciarOReanudar(ana.referenciaConvocatoria());
+
+        Map<String, Object> sesion = jdbc.queryForMap(
+                "SELECT \"finPrevisto\", \"tiempoMaximoParticipacionSegundos\" FROM \"Sesion\" WHERE \"idSesion\"=?", ana.sesion());
+        java.time.Instant finPrevisto = instante(sesion.get("finPrevisto"));
+        java.time.Instant porDuracion = inicio.inicio().plusSeconds((Integer) sesion.get("tiempoMaximoParticipacionSegundos"));
+        java.time.Instant esperado = porDuracion.isBefore(finPrevisto) ? porDuracion : finPrevisto;
+        assertEquals(esperado, inicio.limiteTemporal());
+        assertEquals(esperado, instante(filaIntento(inicio).get("limiteTemporal")));
+        assertEquals(1, intentosDe(ana.convocatoria()));
+
+        // Another student cannot use the candidates on Ana's convocation (ownership through M4).
+        autenticar(luis);
+        assertThrows(RuntimeException.class, () -> acceso.iniciarOReanudar(ana.referenciaConvocatoria()));
+        assertEquals(1, intentosDe(ana.convocatoria()));
+        // Production assembly still refuses a first start: the candidates are not wired.
+        var pendiente = assertThrows(InicioNoDisponibleException.class,
+                () -> produccion.iniciarOReanudar(luis.referenciaConvocatoria()));
+        assertEquals(DecisionPendiente.ELEGIBILIDAD_ACADEMICA, pendiente.decision());
+        assertEquals(0, intentosDe(luis.convocatoria()));
+    }
+
+    @Test
     @DisplayName("intento finalizado: no se reanuda ni se crea otro (repetición no habilitada)")
     void intentoFinalizado() {
         autenticar(ana);
