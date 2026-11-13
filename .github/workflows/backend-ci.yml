@@ -25,6 +25,30 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      - name: Prepare verified Maven 3.9.11 for the wrapper
+        shell: bash
+        run: |
+          set -euo pipefail
+          distribution_url=$(sed -n 's/^distributionUrl=//p' .mvn/wrapper/maven-wrapper.properties | tr -d '\r')
+          expected_url=https://repo.maven.apache.org/maven2/org/apache/maven/apache-maven/3.9.11/apache-maven-3.9.11-bin.zip
+          test "$distribution_url" = "$expected_url"
+          expected_sha512=03e2d65d4483a3396980629f260e25cac0d8b6f7f2791e4dc20bc83f9514db8d0f05b0479e699a5f34679250c49c8e52e961262ded468a20de0be254d8207076
+          temporary_dir=$(mktemp -d "$RUNNER_TEMP/maven-3.9.11.XXXXXX")
+          trap 'rm -rf -- "$temporary_dir"' EXIT
+          archive_url=https://archive.apache.org/dist/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip
+          if ! curl --fail --location --show-error --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 "$distribution_url" --output "$temporary_dir/maven.zip"; then
+            curl --fail --location --show-error --retry 3 --retry-all-errors --retry-delay 2 --connect-timeout 20 --max-time 120 "$archive_url" --output "$temporary_dir/maven.zip"
+          fi
+          printf '%s  %s\n' "$expected_sha512" "$temporary_dir/maven.zip" | sha512sum --check
+          unzip -q "$temporary_dir/maven.zip" -d "$temporary_dir"
+          # Match mvnw's unsigned Java String.hashCode of the configured URL.
+          wrapper_hash=$(python3 -c 'import sys; from functools import reduce; print(format(reduce(lambda h,c: (h*31+ord(c)) & 0xffffffff, sys.argv[1], 0), "x"))' "$distribution_url")
+          wrapper_home="${MAVEN_USER_HOME:-$HOME/.m2}/wrapper/dists/apache-maven-3.9.11/$wrapper_hash"
+          mkdir -p "$wrapper_home"
+          cp -a "$temporary_dir/apache-maven-3.9.11/." "$wrapper_home/"
+          printf '%s\n' "$distribution_url" > "$wrapper_home/mvnw.url"
+          MVNW_VERBOSE=true sh ./mvnw -Dstyle.color=never --version | tee "$RUNNER_TEMP/maven-version.txt"
+          grep -F 'Apache Maven 3.9.11' "$RUNNER_TEMP/maven-version.txt"
       - name: Check Docker and PostgreSQL 16.15 image
         run: |
           docker info
