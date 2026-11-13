@@ -27,7 +27,7 @@ Respuesta 200, `Cache-Control: no-store`:
 | pregunta.opciones[] | en orden persistido; desempate por UUID |
 | opcion.idOpcion, texto, orden | UUID, string, int |
 
-DTO Java: `ConsultaContenidoIntento.Contenido` y los records anidados de
+DTO Java: `ContenidoIntento` y los records anidados de
 `ContenidoCasoEstudiantilPort`. Listas inmutables. Los campos texto conservan lo almacenado;
 no hay fallback ni conversión de contexto/instrucciones en un guion.
 Los idPregunta/idOpcion pueden usarse en el PUT existente, sin cambiar su revisión esperada/CAS.
@@ -35,8 +35,9 @@ El GET existente conserva estado, tiempos y respuestas propias; esta ruta no los
 
 Errores: 400 UUID inválido; 401 credencial ausente/no válida; 403 identidad no estudiantil o
 intento ajeno (mismo criterio actual M5); 404 intento inexistente; 409 con
-`code=CONTENIDO_INTENTO_NO_DISPONIBLE` si el contenido no puede entregarse de forma segura;
-500 genérico ante fallo de persistencia, a través del manejador M5 existente.
+`{"code":"CONTENIDO_INTENTO_NO_DISPONIBLE","message":"Contenido académico no disponible para esta lectura"}` si el contenido no puede entregarse de forma segura;
+503 si el proveedor de programación M4 no está disponible; 500 genérico ante fallo de persistencia,
+a través del manejador M5 existente.
 El manejo de sesión M1 también puede rechazar credenciales revocadas o vencidas.
 
 ## Relación real y reutilización
@@ -49,7 +50,9 @@ convocatoria del estudiante autenticado. Solo el adaptador M3 consulta las tabla
 La vista docente no se reutiliza porque contiene corrección y explicaciones. Se reutilizan los
 contratos de acceso y programación, con una nueva proyección M3 por lista permitida.
 
-El coordinador abre una transacción PostgreSQL REPEATABLE READ de solo lectura. Titularidad,
+El ensamblaje ConfiguracionParticipacion abre una transacción PostgreSQL REPEATABLE READ de solo lectura
+para la operación del Proxy AccesoProtegidoParticipacion, que acredita identidad y titularidad antes de delegar.
+La consulta interna no se publica como bean y ControlAccesoIntentos solo se construye en ese ensamblaje. Titularidad,
 vínculo, programación y contenido comparten ese snapshot. El adaptador M3 exige una transacción
 existente (MANDATORY); no abre un snapshot independiente. No se reserva ni modifica el intento.
 
@@ -71,7 +74,7 @@ existente (MANDATORY); no abre un snapshot independiente. No se reserva ni modif
 
 ## Verificación focalizada
 
-Pruebas nuevas: `ConsultaContenidoIntentoTest` (7) y `ContenidoIntentoEstudianteHttpIT` (6).
+Pruebas nuevas: `ConsultaContenidoIntentoTest` (8) y `ContenidoIntentoEstudianteHttpIT` (6).
 La prueba HTTP usa APP real, PostgreSQL 16.15, sesiones M1 reales y un caso SQL controlado;
 verifica titular, ajeno, credenciales, IDs manipulados, no filtración, no escritura, orden,
 compatibilidad GET/PUT y rechazo cerrado de contenido restringido. Su decorador QA comprueba
@@ -82,7 +85,7 @@ Desde la raíz, con Java 21, Docker y sin variables que apunten a bases comparti
 
 ```powershell
 .\mvnw.cmd -B -Pdocker-it -pl app -am verify `
-  "-Dtest=ConsultaContenidoIntentoTest,ArquitecturaCapasTest,IntentosEstudianteM5MvcTest,EnsamblajeEvaluacionNoPublicadoTest" `
+  "-Dtest=ConsultaContenidoIntentoTest,ArquitecturaAccesoProtegidoTest,ArquitecturaCapasTest,IntentosEstudianteM5MvcTest,EnsamblajeEvaluacionNoPublicadoTest" `
   "-Dit.test=ContenidoIntentoEstudianteHttpIT,RecorridoEstudianteControladoHttpIT,EstudianteIntentosM5SecurityIT" `
   "-Dsurefire.failIfNoSpecifiedTests=false" "-Dfailsafe.failIfNoSpecifiedTests=false"
 ```

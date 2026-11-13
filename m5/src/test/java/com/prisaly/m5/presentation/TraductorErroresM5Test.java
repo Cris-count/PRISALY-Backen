@@ -38,6 +38,8 @@ class TraductorErroresM5Test {
 
     static Stream<Arguments> excepcionesDeM5() {
         return Stream.of(
+                Arguments.of(new com.prisaly.m5.application.ContenidoIntentoNoDisponibleException(),
+                        409, "CONTENIDO_INTENTO_NO_DISPONIBLE"),
                 Arguments.of(
                         new ConsultaProgramacionNoDisponibleException(),
                         503,

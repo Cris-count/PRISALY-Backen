@@ -172,7 +172,10 @@ class ContenidoIntentoEstudianteHttpIT {
         cadena(modo);
         var r=get(ruta(),cookieA,null);
         assertEquals(409,r.statusCode(),r.body());
-        assertTrue(r.body().contains("CONTENIDO_INTENTO_NO_DISPONIBLE"));
+        var error=json.readTree(r.body());
+        assertEquals(2,error.size(),r.body());
+        assertEquals("CONTENIDO_INTENTO_NO_DISPONIBLE",error.get("code").asText());
+        assertEquals("Contenido académico no disponible para esta lectura",error.get("message").asText());
         assertFalse(r.body().contains("Historia persistida"));
         assertEquals(0,cantidad("SELECT count(*) FROM \"Respuesta\" WHERE \"idIntento\"=?",intentoA));
     }

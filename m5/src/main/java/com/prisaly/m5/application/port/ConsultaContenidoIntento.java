@@ -1,11 +1,18 @@
 package com.prisaly.m5.application.port;
 
-import com.prisaly.m3.api.ContenidoCasoEstudiantilPort.Caso;
+import com.prisaly.m5.application.ContenidoIntento;
 import com.prisaly.m5.application.ReferenciaIntento;
-import java.util.UUID;
+import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 
-/** Lectura para el estudiante autenticado por M1, nunca para una identidad del cliente. */
+/** Salida interna: identidad acreditada por el proxy M5, nunca por el cliente HTTP.
+ * Se construye dentro del ensamblaje protegido, sin publicar un bean de consulta sin control.
+ */
 public interface ConsultaContenidoIntento {
-    Contenido consultar(ReferenciaIntento intento);
-    record Contenido(UUID idIntento, UUID idSesion, Caso caso) { }
+    ContenidoIntento consultar(ReferenciaIntento intento, IdentificadorEstudiante estudiante);
+
+    static ConsultaContenidoIntento noDisponible() {
+        return (intento, estudiante) -> {
+            throw new com.prisaly.m5.application.ContenidoIntentoNoDisponibleException();
+        };
+    }
 }

@@ -23,6 +23,11 @@ public interface OperacionesParticipacion {
 
     ResumenIntento consultarIntento(ReferenciaIntento intento);
 
+    /** Lectura de contenido por el proxy protegido; las composiciones sin proveedor deniegan. */
+    default ContenidoIntento consultarContenido(ReferenciaIntento intento) {
+        throw new ContenidoIntentoNoDisponibleException();
+    }
+
     ResumenIntento registrarRespuesta(ReferenciaIntento intento, ReferenciaPregunta pregunta, ValorRespuesta valor);
 
     /** Operación provisional, pendiente de ratificación académica. */
