@@ -14,6 +14,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.function.Supplier;
 import org.hibernate.Session;
 import org.springframework.orm.jpa.EntityManagerFactoryUtils;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -42,9 +43,17 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
 
     @Override
     public CasoUpdateResult publish(String userId, UUID caseId, String expectedFingerprint) {
-        return enTransaccionBloqueada("Publication", userId, caseId, expectedFingerprint, (connection, before) -> {
+        validarIdentificadores(userId, caseId);
+        CasoCommandUpdateAdapter.validateFingerprintVersion(expectedFingerprint);
+        return publishResolvingPrecondition(userId, caseId, () -> expectedFingerprint);
+    }
+
+    @Override
+    public CasoUpdateResult publishResolvingPrecondition(String userId, UUID caseId, Supplier<String> precondition) {
+        return enTransaccionBloqueada("Publication", userId, caseId, precondition, (connection, before) -> {
             assertAuthorized(authorization, userId, caseId);
             assertOwner(before, userId);
+            String expectedFingerprint = resolver(precondition);
             CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
             assertSchedulingGuards(connection);
             Caso published = validatePublication(before, expectedFingerprint);
@@ -71,9 +80,17 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
 
     @Override
     public CasoUpdateResult archive(String userId, UUID caseId, String expectedFingerprint) {
-        return enTransaccionBloqueada("Archiving", userId, caseId, expectedFingerprint, (connection, before) -> {
+        validarIdentificadores(userId, caseId);
+        CasoCommandUpdateAdapter.validateFingerprintVersion(expectedFingerprint);
+        return archiveResolvingPrecondition(userId, caseId, () -> expectedFingerprint);
+    }
+
+    @Override
+    public CasoUpdateResult archiveResolvingPrecondition(String userId, UUID caseId, Supplier<String> precondition) {
+        return enTransaccionBloqueada("Archiving", userId, caseId, precondition, (connection, before) -> {
             assertArchiveAuthorized(authorization, userId, caseId);
             assertOwner(before, userId);
+            String expectedFingerprint = resolver(precondition);
             if (!CasoAggregateFingerprint.of(before).equals(expectedFingerprint)) {
                 throw new CasoDomainException(CasoCommandUpdateAdapter.STALE_CASE, "Aggregate precondition is stale");
             }
@@ -102,12 +119,9 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
     }
 
     private CasoUpdateResult enTransaccionBloqueada(String operacion, String userId, UUID caseId,
-            String expectedFingerprint, TransicionBloqueada transicion) {
-        if (userId == null || userId.isBlank()) {
-            throw new IllegalArgumentException("userId is required");
-        }
-        Objects.requireNonNull(caseId, "caseId");
-        CasoCommandUpdateAdapter.validateFingerprintVersion(expectedFingerprint);
+            Supplier<String> precondition, TransicionBloqueada transicion) {
+        validarIdentificadores(userId, caseId);
+        Objects.requireNonNull(precondition, "precondition");
         return Objects.requireNonNull(transaction.execute(status -> {
             var em = Objects.requireNonNull(EntityManagerFactoryUtils.getTransactionalEntityManager(emf));
             return em.unwrap(Session.class).doReturningWork(connection -> {
@@ -119,6 +133,23 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
                 return transicion.aplicar(connection, before);
             });
         }));
+    }
+
+    private static void validarIdentificadores(String userId, UUID caseId) {
+        if (userId == null || userId.isBlank()) {
+            throw new IllegalArgumentException("userId is required");
+        }
+        Objects.requireNonNull(caseId, "caseId");
+    }
+
+    /**
+     * N1/F4-H1: called only after permission and ownership. Absence (428), malformed (400) and stale (412)
+     * validators are therefore never observable by a caller that is not allowed to act on the case.
+     */
+    private static String resolver(Supplier<String> precondition) {
+        String fingerprint = precondition.get();
+        CasoCommandUpdateAdapter.validateFingerprintVersion(fingerprint);
+        return fingerprint;
     }
 
     private static void assertArchiveAuthorized(CaseAuthorizationPort authorization, String userId, UUID caseId) {

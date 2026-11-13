@@ -139,9 +139,10 @@ class CasoPublicationContractTest {
         var result = new CasoUpdateResult(CasoPersistenceMapper.toDomain(source), CasoAggregateFingerprint.of(source));
         var authorization = mock(CaseAuthorizationPort.class);
         when(authorization.canPublishCase(USER.toString(), ID.toString())).thenReturn(true);
-        when(port.publish(USER.toString(), ID, result.fingerprint())).thenReturn(result);
+        when(port.publishResolvingPrecondition(eq(USER.toString()), eq(ID), org.mockito.ArgumentMatchers.<java.util.function.Supplier<String>>any()))
+                .thenAnswer(i -> { assertEquals(result.fingerprint(), i.<java.util.function.Supplier<String>>getArgument(2).get()); return result; });
         assertSame(result, new CasoTransicionService(() -> USER, authorization, port).publicar(ID, result::fingerprint));
-        verify(port).publish(USER.toString(), ID, result.fingerprint());
+        verify(port).publishResolvingPrecondition(eq(USER.toString()), eq(ID), org.mockito.ArgumentMatchers.<java.util.function.Supplier<String>>any());
         verifyNoMoreInteractions(port);
     }
 
@@ -194,11 +195,12 @@ class CasoPublicationContractTest {
         var source = snapshot("Borrador", null, true, true);
         var result = new CasoUpdateResult(CasoPersistenceMapper.toDomain(source), CasoAggregateFingerprint.of(source));
         UUID user = source.caso().idDocente();
-        when(port.publish(user.toString(), ID, result.fingerprint())).thenReturn(result);
+        when(port.publishResolvingPrecondition(eq(user.toString()), eq(ID), org.mockito.ArgumentMatchers.<java.util.function.Supplier<String>>any()))
+                .thenAnswer(i -> { assertEquals(result.fingerprint(), i.<java.util.function.Supplier<String>>getArgument(2).get()); return result; });
         var authorization = mock(CaseAuthorizationPort.class);
         when(authorization.canPublishCase(user.toString(), ID.toString())).thenReturn(true);
         assertSame(result, new CasoTransicionService(() -> user, authorization, port).publicar(ID, result::fingerprint));
-        verify(port).publish(user.toString(), ID, result.fingerprint());
+        verify(port).publishResolvingPrecondition(eq(user.toString()), eq(ID), org.mockito.ArgumentMatchers.<java.util.function.Supplier<String>>any());
         verifyNoMoreInteractions(port);
     }
 

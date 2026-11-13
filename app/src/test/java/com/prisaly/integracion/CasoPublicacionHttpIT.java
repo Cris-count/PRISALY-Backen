@@ -136,6 +136,51 @@ class CasoPublicacionHttpIT {
         assertEquals("Borrador", estado(caso));
     }
 
+    /**
+     * N1/F4-H1: permission and ownership are decided before the If-Match precondition. A non-owner holding every
+     * M1 permission is answered 403 whatever validator it sends (absent, malformed, stale or the owner's valid one),
+     * and nothing is persisted; the owner receives 428/400/412 for the real precondition cause.
+     */
+    @Test void ajenoConTodosLosPermisosRecibe403AntesDeLaPrecondicion() throws Exception {
+        Cuenta duenio = cuenta(PUBLICAR, ARCHIVAR), ajeno = cuenta(PUBLICAR, ARCHIVAR);
+        UUID caso = casoCompleto(duenio);
+        String valido = etag(caso, duenio), obsoleto = "\"m3-v2:" + "0".repeat(64) + "\"";
+        java.util.Map<String, String> validadores = new java.util.LinkedHashMap<>();
+        validadores.put("ausente", null);
+        validadores.put("malformado", "W/\"x\"");
+        validadores.put("obsoleto", obsoleto);
+        validadores.put("valido-del-duenio", valido);
+        for (var v : validadores.entrySet()) {
+            for (String accion : List.of("publicar", "archivar")) {
+                var r = accion(ajeno, caso, accion, v.getValue());
+                assertEquals(403, r.statusCode(), accion + "/" + v.getKey() + ": " + r.body());
+            }
+            var patch = escribir(ajeno, "PATCH", caso.toString(), v.getValue(), "{\"titulo\":\"Ajeno\"}");
+            assertEquals(403, patch.statusCode(), "PATCH/" + v.getKey() + ": " + patch.body());
+            var rubrica = escribir(ajeno, "PUT", caso + "/rubrica", v.getValue(),
+                    "{\"nombre\":\"X\",\"criterios\":[{\"id\":\"x\",\"descripcion\":\"X\",\"puntaje\":1}]}");
+            assertEquals(403, rubrica.statusCode(), "rubrica/" + v.getKey() + ": " + rubrica.body());
+            var escenario = escribir(ajeno, "POST", caso + "/escenarios", v.getValue(),
+                    "{\"idEscenario\":\"" + UUID.randomUUID() + "\",\"orden\":9}");
+            assertEquals(403, escenario.statusCode(), "escenario/" + v.getKey() + ": " + escenario.body());
+        }
+        assertEquals(valido, etag(caso, duenio), "a rejected write must not change the aggregate");
+        assertEquals("Borrador", estado(caso));
+        assertEquals(428, accion(duenio, caso, "publicar", null).statusCode());
+        assertEquals(400, accion(duenio, caso, "publicar", "W/\"x\"").statusCode());
+        assertEquals(412, accion(duenio, caso, "publicar", obsoleto).statusCode());
+        assertEquals(428, accion(duenio, caso, "archivar", null).statusCode());
+        assertEquals("Borrador", estado(caso));
+        assertEquals(200, accion(duenio, caso, "publicar", valido).statusCode());
+    }
+
+    private HttpResponse<String> escribir(Cuenta c, String metodo, String path, String etag, String body) throws Exception {
+        var b = req("/v1/casos/" + path, c).header("Content-Type", "application/json")
+                .method(metodo, HttpRequest.BodyPublishers.ofString(body));
+        if (etag != null) { b.header("If-Match", etag); }
+        return http.send(b.build(), HttpResponse.BodyHandlers.ofString());
+    }
+
     @Test void publicacionesConcurrentesTienenUnSoloGanador() throws Exception {
         Cuenta c = cuenta(PUBLICAR);
         UUID caso = casoCompleto(c);

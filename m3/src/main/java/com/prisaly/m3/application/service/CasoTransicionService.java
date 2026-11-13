@@ -32,17 +32,17 @@ public final class CasoTransicionService {
     public CasoUpdateResult publicar(UUID caso, Supplier<String> fingerprint) {
         return ejecutar("PUBLICAR", caso, fingerprint,
                 authorization == null ? (u, c) -> false : authorization::canPublishCase,
-                (usuario, esperado) -> publication.publish(usuario, caso, esperado));
+                (usuario, esperado) -> publication.publishResolvingPrecondition(usuario, caso, esperado));
     }
 
     public CasoUpdateResult archivar(UUID caso, Supplier<String> fingerprint) {
         return ejecutar("ARCHIVAR", caso, fingerprint,
                 authorization == null ? (u, c) -> false : authorization::canArchiveCase,
-                (usuario, esperado) -> publication.archive(usuario, caso, esperado));
+                (usuario, esperado) -> publication.archiveResolvingPrecondition(usuario, caso, esperado));
     }
 
     @FunctionalInterface
-    private interface Transicion { CasoUpdateResult aplicar(String usuario, String esperado); }
+    private interface Transicion { CasoUpdateResult aplicar(String usuario, Supplier<String> esperado); }
 
     private CasoUpdateResult ejecutar(String accion, UUID caso, Supplier<String> fingerprint,
             BiPredicate<String, String> permitido, Transicion transicion) {
@@ -51,7 +51,8 @@ public final class CasoTransicionService {
         try {
             VerificacionCaso.exigir(() -> permitido.test(user.toString(), caso.toString()), "Case transition denied");
             if (publication == null) { throw VerificacionCaso.noDisponible(); }
-            CasoUpdateResult resultado = transicion.aplicar(user.toString(), fingerprint.get());
+            // N1/F4-H1: the If-Match validator is resolved by the adapter after permission and ownership.
+            CasoUpdateResult resultado = transicion.aplicar(user.toString(), Objects.requireNonNull(fingerprint, "fingerprint"));
             auditar(accion, caso, user, "EXITOSO");
             return resultado;
         } catch (CasoDomainException rechazo) {
