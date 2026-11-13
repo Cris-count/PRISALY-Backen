@@ -178,6 +178,8 @@ class ConfiguracionParticipacionTest {
             assertEquals(Map.of(), ctx.getBeansOfType(ParticipacionFacade.class));
             assertEquals(Map.of(), ctx.getBeansOfType(FachadaParticipacionTransaccional.class));
             assertEquals(Map.of(), ctx.getBeansOfType(ControlAccesoIntentos.class));
+            assertEquals(Map.of(), ctx.getBeansOfType(com.prisaly.m5.application.port.ConsultaContenidoIntento.class));
+            assertEquals(Map.of(), ctx.getBeansOfType(com.prisaly.m5.infrastructure.contenido.ConsultaContenidoIntentoTransaccional.class));
             // Un consumidor que pide la interfaz recibe el proxy, sin ambigüedad.
             assertInstanceOf(
                     AccesoProtegidoParticipacion.class,

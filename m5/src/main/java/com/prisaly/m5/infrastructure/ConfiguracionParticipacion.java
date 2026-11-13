@@ -1,6 +1,11 @@
 package com.prisaly.m5.infrastructure;
 
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
+import com.prisaly.m4.api.ProgramacionParticipacionPort;
+import com.prisaly.m3.api.ContenidoCasoEstudiantilPort;
+import com.prisaly.m5.application.ContenidoIntentoNoDisponibleException;
+import com.prisaly.m5.application.port.ConsultaContenidoIntento;
+import com.prisaly.m5.infrastructure.contenido.ConsultaContenidoIntentoTransaccional;
 import com.prisaly.m4.api.ProgramacionInicioCoordinadoPort;
 import com.prisaly.m5.application.ParticipacionFacade;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
@@ -25,6 +30,8 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.function.Consumer;
 
@@ -58,7 +65,9 @@ public class ConfiguracionParticipacion {
             PlatformTransactionManager transacciones,
             IdentidadEstudianteActual identidad,
             TitularidadIntentos titularidad,
-            ObjectProvider<ProgramacionInicioCoordinadoPort> coordinacion) {
+            ObjectProvider<ProgramacionInicioCoordinadoPort> coordinacion,
+            ObjectProvider<ProgramacionParticipacionPort> programacion,
+            ObjectProvider<ContenidoCasoEstudiantilPort> contenido) {
         return ensamblar(
                 repositorio,
                 participaciones,
@@ -73,7 +82,18 @@ public class ConfiguracionParticipacion {
                                         (convocatoria, estudiante) -> {
                                             throw new ConsultaProgramacionNoDisponibleException();
                                         }),
-                        identidad));
+                        identidad),
+                consultaContenido(repositorio, programacion, contenido));
+    }
+
+    private static ConsultaContenidoIntento consultaContenido(RepositorioIntentos repositorio,
+            ObjectProvider<ProgramacionParticipacionPort> programacion,
+            ObjectProvider<ContenidoCasoEstudiantilPort> contenido) {
+        var m4 = programacion.getIfAvailable();
+        if (m4 == null) return (intento, estudiante) -> { throw new ConsultaProgramacionNoDisponibleException(); };
+        var m3 = contenido.getIfAvailable();
+        if (m3 == null) return (intento, estudiante) -> { throw new ContenidoIntentoNoDisponibleException(); };
+        return new ConsultaContenidoIntentoTransaccional(repositorio, m4, m3);
     }
 
     static AccesoProtegidoParticipacion ensamblar(
@@ -85,6 +105,21 @@ public class ConfiguracionParticipacion {
             ElegibilidadInicio elegibilidad,
             LimiteTemporalInicio limiteTemporal,
             Consumer<ReferenciaConvocatoria> coordinacion) {
+        return ensamblar(repositorio, participaciones, transacciones, identidad, titularidad,
+                elegibilidad, limiteTemporal, coordinacion,
+                (intento, estudiante) -> { throw new ContenidoIntentoNoDisponibleException(); });
+    }
+
+    static AccesoProtegidoParticipacion ensamblar(
+            RepositorioIntentos repositorio,
+            RepositorioParticipaciones participaciones,
+            PlatformTransactionManager transacciones,
+            IdentidadEstudianteActual identidad,
+            TitularidadIntentos titularidad,
+            ElegibilidadInicio elegibilidad,
+            LimiteTemporalInicio limiteTemporal,
+            Consumer<ReferenciaConvocatoria> coordinacion,
+            ConsultaContenidoIntento contenido) {
         ParticipacionFacade fachada =
                 new ParticipacionFacade(
                         new ConsultarIntentoServicio(repositorio),
@@ -93,8 +128,14 @@ public class ConfiguracionParticipacion {
                         new FinalizarIntentoServicio(repositorio),
                         new IniciarIntentoServicio(
                                 participaciones, repositorio, elegibilidad, limiteTemporal));
+        TransactionTemplate lecturaContenido = new TransactionTemplate(transacciones);
+        lecturaContenido.setReadOnly(true);
+        lecturaContenido.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
+        lecturaContenido.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         return new AccesoProtegidoParticipacion(
                 new ControlAccesoIntentos(identidad, titularidad),
-                new FachadaParticipacionTransaccional(fachada, transacciones, coordinacion));
+                new FachadaParticipacionTransaccional(fachada, transacciones, coordinacion),
+                contenido,
+                accion -> java.util.Objects.requireNonNull(lecturaContenido.execute(estado -> accion.get())));
     }
 }

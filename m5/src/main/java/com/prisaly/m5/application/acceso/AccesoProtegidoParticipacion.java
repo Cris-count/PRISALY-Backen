@@ -1,6 +1,10 @@
 package com.prisaly.m5.application.acceso;
 
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
+import com.prisaly.m5.application.ContenidoIntento;
+import com.prisaly.m5.application.port.ConsultaContenidoIntento;
+import java.util.function.Function;
+import java.util.function.Supplier;
 import com.prisaly.m5.application.OperacionesParticipacion;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
@@ -27,13 +31,35 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
 
     private final ControlAccesoIntentos control;
     private final OperacionesParticipacion operaciones;
+    private final ConsultaContenidoIntento contenido;
+    private final Function<Supplier<ContenidoIntento>, ContenidoIntento> lecturaContenido;
 
     public AccesoProtegidoParticipacion(ControlAccesoIntentos control, OperacionesParticipacion operaciones) {
-        if (control == null || operaciones == null) {
+        this(control, operaciones,
+                ConsultaContenidoIntento.noDisponible(),
+                Supplier::get);
+    }
+
+    /** El ensamblaje aporta la frontera transaccional; aplicación permanece libre de Spring. */
+    public AccesoProtegidoParticipacion(ControlAccesoIntentos control, OperacionesParticipacion operaciones,
+            ConsultaContenidoIntento contenido,
+            Function<Supplier<ContenidoIntento>, ContenidoIntento> lecturaContenido) {
+        if (control == null || operaciones == null || contenido == null || lecturaContenido == null) {
             throw new DatoAplicacionInvalidoException("El acceso protegido requiere control y operaciones");
         }
         this.control = control;
         this.operaciones = operaciones;
+        this.contenido = contenido;
+        this.lecturaContenido = lecturaContenido;
+    }
+
+    /** Identidad/titularidad y lectura académica comparten el snapshot abierto por el ensamblaje. */
+    @Override
+    public ContenidoIntento consultarContenido(ReferenciaIntento intento) {
+        return lecturaContenido.apply(() -> {
+            var estudiante = control.verificar(intento);
+            return contenido.consultar(intento, estudiante);
+        });
     }
 
     /**

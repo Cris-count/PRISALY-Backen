@@ -14,6 +14,12 @@
     <name>m5</name>
 
     <dependencies>
+        <!-- Proyección pública de contenido estudiantil; sin entidades ni servicios docentes. -->
+        <dependency>
+            <groupId>com.prisaly</groupId>
+            <artifactId>m3</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.prisaly</groupId>
             <artifactId>m6</artifactId>

@@ -2,6 +2,7 @@ package com.prisaly.m5.presentation;
 
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
 import com.prisaly.m5.application.ConvocatoriaNoEncontradaException;
+import com.prisaly.m5.application.ContenidoIntentoNoDisponibleException;
 import com.prisaly.m5.application.DatoAplicacionInvalidoException;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
 import com.prisaly.m5.application.LimiteTemporalVencidoException;
@@ -44,6 +45,9 @@ public final class TraductorErroresM5 {
 
     /** Traducción de una excepción conocida de M5; vacío si no corresponde a M5. */
     public static Optional<ErrorHttp> traducir(Throwable error) {
+        if (error instanceof ContenidoIntentoNoDisponibleException e) {
+            return error(409, "CONTENIDO_INTENTO_NO_DISPONIBLE", e.getMessage());
+        }
         if (error instanceof ConsultaProgramacionNoDisponibleException) {
             return error(
                     503,
