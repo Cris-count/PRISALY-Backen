@@ -30,6 +30,11 @@ public final class ProgramacionAutenticadaM1Adapter implements ProgramacionAuten
         return programacion.consultarConvocatoria(Objects.requireNonNull(convocatoriaId), estudianteActual());
     }
 
+    @Override
+    public java.util.List<ContextoProgramacion> listarConvocatoriasPropias() {
+        return programacion.listarConvocatoriasDelEstudiante(estudianteActual());
+    }
+
     private UUID estudianteActual() {
         try {
             var actual = identidad.requireCurrentStudent();

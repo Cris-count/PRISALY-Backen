@@ -3,10 +3,13 @@ package com.prisaly.m5.presentation.rest;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.annotation.Annotation;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -98,15 +101,25 @@ class IntentosM5ControladorTest {
     }
 
     @Test
-    @DisplayName("no se registra en MVC: sin @RestController, @Controller ni @Component")
-    void sinRegistroMvc() {
+    @DisplayName("CIERRE-FUNCIONAL-09: los POST solo se registran con el interruptor explícito, desactivado por defecto")
+    void soloSeRegistraConElInterruptorExplicito() throws Exception {
         List<String> anotaciones = Stream.of(IntentosM5Controlador.class.getAnnotations())
                 .map(Annotation::annotationType).map(Class::getSimpleName).toList();
-        assertFalse(anotaciones.contains("RestController"));
         assertFalse(anotaciones.contains("Controller"));
         assertFalse(anotaciones.contains("Component"));
+        var condicion = IntentosM5Controlador.class.getAnnotation(
+                org.springframework.boot.autoconfigure.condition.ConditionalOnProperty.class);
+        assertNotNull(condicion, "without the condition the POST endpoints would be published");
+        assertArrayEquals(new String[] {IntentosM5Controlador.PROPIEDAD_PUBLICACION}, condicion.name());
+        assertEquals("true", condicion.havingValue());
+        assertFalse(condicion.matchIfMissing(), "missing property must mean NOT published");
         assertArrayEquals(new String[] {"/v1/estudiantes"},
                 IntentosM5Controlador.class.getAnnotation(RequestMapping.class).value());
+        // The shipped configuration keeps them unpublished.
+        Path yml = Path.of("../app/src/main/resources/application.yml");
+        if (!Files.exists(yml)) { yml = Path.of("app/src/main/resources/application.yml"); }
+        String contenido = Files.readString(yml).replace("\r", "");
+        assertTrue(contenido.contains("inicio-finalizacion:\n      publicacion:\n        enabled: false"), contenido);
     }
 
     @Test

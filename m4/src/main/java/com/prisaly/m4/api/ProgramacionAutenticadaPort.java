@@ -1,5 +1,6 @@
 package com.prisaly.m4.api;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,4 +13,12 @@ import java.util.UUID;
 public interface ProgramacionAutenticadaPort {
     Optional<ContextoProgramacion> consultarSesion(UUID sesionId);
     Optional<ContextoProgramacion> consultarConvocatoria(UUID convocatoriaId);
+
+    /**
+     * DC-BE-CIERRE-FUNCIONAL-09, fase 2: convocatorias del estudiante autenticado por M1. No recibe ningún
+     * identificador del cliente. Las implementaciones que no lo soportan fallan cerradas.
+     */
+    default List<ContextoProgramacion> listarConvocatoriasPropias() {
+        throw new ConsultaProgramacionNoDisponibleException();
+    }
 }

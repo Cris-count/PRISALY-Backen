@@ -61,6 +61,13 @@ prisaly:
       permiso: CONSULTAR_CASO
       estados-visibles: BORRADOR,PUBLICADO,ARCHIVADO
       requiere-activo: false
+  m5:
+    # DC-BE-CIERRE-FUNCIONAL-09 (fase 3): POST /v1/estudiantes/sesiones/{idSesion}/intentos y
+    # POST /v1/estudiantes/intentos/{idIntento}/finalizar quedan SIN publicar hasta que se autoricen
+    # las reglas de elegibilidad y de tiempo individual. Activarlo no ratifica ninguna regla.
+    inicio-finalizacion:
+      publicacion:
+        enabled: false
   m4:
     consulta-bd0052:
       enabled: true

@@ -1,5 +1,6 @@
 package com.prisaly.m4.api;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -20,4 +21,13 @@ public interface ProgramacionParticipacionPort {
     /** Vacío tanto para convocatoria inexistente como para titular distinto. */
     Optional<ContextoProgramacion> consultarConvocatoria(
             UUID convocatoriaId, UUID estudianteAutenticadoId);
+
+    /**
+     * DC-BE-CIERRE-FUNCIONAL-09, fase 2: todas las convocatorias cuyo titular es el estudiante autenticado, en
+     * orden estable ({@code inicioPrevisto}, {@code idConvocatoria}). Solo las propias: el filtro por titular lo
+     * aplica la consulta, nunca el cliente. Las implementaciones que no lo soportan fallan cerradas.
+     */
+    default List<ContextoProgramacion> listarConvocatoriasDelEstudiante(UUID estudianteAutenticadoId) {
+        throw new ConsultaProgramacionNoDisponibleException();
+    }
 }
