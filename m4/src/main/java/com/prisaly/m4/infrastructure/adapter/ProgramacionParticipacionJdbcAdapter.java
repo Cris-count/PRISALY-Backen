@@ -58,6 +58,18 @@ public class ProgramacionParticipacionJdbcAdapter implements ProgramacionPartici
                 convocatoriaId, estudianteAutenticadoId);
     }
 
+    @Override
+    public List<ContextoProgramacion> listarConvocatoriasDelEstudiante(UUID estudianteAutenticadoId) {
+        Objects.requireNonNull(estudianteAutenticadoId, "El estudiante autenticado es obligatorio");
+        try {
+            return List.copyOf(jdbc.query(SELECT + " WHERE c.\"idEstudiante\" = ?"
+                    + " ORDER BY s.\"inicioPrevisto\", c.\"idConvocatoria\"", (rs, row) -> mapear(rs),
+                    estudianteAutenticadoId));
+        } catch (DataAccessException | IllegalArgumentException ex) {
+            throw new ConsultaProgramacionNoDisponibleException(ex);
+        }
+    }
+
     private Optional<ContextoProgramacion> consultar(String sql, UUID referencia, UUID estudiante) {
         Objects.requireNonNull(referencia, "La referencia es obligatoria");
         Objects.requireNonNull(estudiante, "El estudiante autenticado es obligatorio");

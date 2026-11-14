@@ -167,6 +167,48 @@ VALUES (?,?,?,'Contrato M4-M5','2026-11-05 09:00:00-05','2026-11-05 11:00:00-05'
     }
 
     @Test
+    void listaSoloLasConvocatoriasDelEstudianteEnOrdenEstable() {
+        // CIERRE-FUNCIONAL-09 F2: a second session for the same student and a convocation of another student.
+        UUID otraSesion = UUID.randomUUID(), otraConvocatoria = UUID.randomUUID();
+        jdbc.update(
+                """
+INSERT INTO "Sesion" ("idSesion","idCaso","idDocenteProgramador","nombreEspacioAcademico",
+    "inicioPrevisto","finPrevisto","tiempoMaximoParticipacionSegundos")
+SELECT ?, "idCaso", "idDocenteProgramador", 'Segunda', '2026-11-04 09:00:00-05', '2026-11-04 11:00:00-05', 900
+FROM "Sesion" WHERE "idSesion"=?
+""",
+                otraSesion,
+                sesion);
+        jdbc.update(
+                "INSERT INTO \"Convocatoria\" (\"idConvocatoria\",\"idSesion\",\"idEstudiante\") VALUES (?,?,?)",
+                otraConvocatoria,
+                otraSesion,
+                estudiante);
+        UUID ajeno = UUID.randomUUID(), usuarioAjeno = UUID.randomUUID();
+        jdbc.update(
+                "INSERT INTO \"Usuario\" (\"idUsuario\",\"idRol\",\"nombre\",\"correo\") VALUES"
+                    + " (?,1,'Ajeno','ajeno@example.invalid')",
+                usuarioAjeno);
+        jdbc.update("INSERT INTO \"Estudiante\" (\"idEstudiante\",\"idUsuario\") VALUES (?,?)", ajeno, usuarioAjeno);
+        jdbc.update(
+                "INSERT INTO \"Convocatoria\" (\"idConvocatoria\",\"idSesion\",\"idEstudiante\") VALUES (?,?,?)",
+                UUID.randomUUID(),
+                sesion,
+                ajeno);
+
+        var propias = port.listarConvocatoriasDelEstudiante(estudiante);
+        // Ordered by inicioPrevisto: the 4-nov session first, then the 5-nov one.
+        assertEquals(java.util.List.of(otraConvocatoria, convocatoria),
+                propias.stream().map(c -> c.convocatoriaId()).toList());
+        assertTrue(propias.stream().allMatch(c -> estudiante.equals(c.estudianteId())));
+        assertEquals(Duration.ofSeconds(900), propias.get(0).tiempoMaximoParticipacion());
+        assertEquals(1, port.listarConvocatoriasDelEstudiante(ajeno).size());
+        assertTrue(port.listarConvocatoriasDelEstudiante(usuarioEstudiante).isEmpty(), "idUsuario is not idEstudiante");
+        assertTrue(port.listarConvocatoriasDelEstudiante(UUID.randomUUID()).isEmpty());
+        assertThrows(UnsupportedOperationException.class, () -> propias.add(propias.get(0)));
+    }
+
+    @Test
     void titularidadRechazaOtroEstudianteYNoConfundeIdUsuario() {
         assertTrue(port.consultarConvocatoria(convocatoria, estudiante).isPresent());
         assertTrue(port.consultarConvocatoria(convocatoria, UUID.randomUUID()).isEmpty());
