@@ -29,6 +29,7 @@ public class ConvocatoriaController {
         this.service = service;
     }
 
+    /** Cita a un estudiante mientras la sesión está SinIniciar. El 201 no envía el correo. */
     @PostMapping
     public ResponseEntity<ConvocatoriaResponse> convocarEstudiante(
             @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
@@ -43,6 +44,7 @@ public class ConvocatoriaController {
                 .body(ConvocatoriaResponse.from(convocatoria));
     }
 
+    /** Lista las convocatorias de la sesión para su docente. */
     @GetMapping
     public ResponseEntity<List<ConvocatoriaResponse>> consultarConvocatorias(
             @PathVariable UUID sesionId) {

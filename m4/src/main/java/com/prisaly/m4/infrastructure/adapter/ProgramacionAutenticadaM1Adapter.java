@@ -11,6 +11,10 @@ import com.prisaly.m4.api.ProgramacionAutenticadaPort;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m4.api.ReglaNegocioException;
 
+/**
+ * Patrón Adapter. Une la identidad estudiantil de M1 con la consulta de programación de M4.
+ * Si no hay estudiante autenticado, no devuelve la sesión como si fuera pública.
+ */
 public final class ProgramacionAutenticadaM1Adapter implements ProgramacionAutenticadaPort {
     private final StudentAccessPort identidad;
     private final ProgramacionParticipacionPort programacion;

@@ -22,6 +22,7 @@ public final class CasoGestionController {
         this.concurrency = concurrency.orElse(null);
     }
 
+    /** Ficha del caso para su docente. Incluye el ETag que las escrituras deben devolver. */
     @GetMapping(value = "/{idCaso}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CasoDocenteConsultaResponse> get(@PathVariable("idCaso") String id) {
         if (concurrency instanceof CasoEtagConcurrencyContract contract) {
@@ -33,6 +34,7 @@ public final class CasoGestionController {
                 .body(CasoDocenteConsultaResponse.from(read.consultar(id)));
     }
 
+    /** Actualiza campos del borrador si el If-Match coincide con la versión guardada. */
     @PatchMapping(value = "/{idCaso}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Void> patch(@PathVariable("idCaso") String value,
             @RequestHeader HttpHeaders headers, @RequestBody String body) {

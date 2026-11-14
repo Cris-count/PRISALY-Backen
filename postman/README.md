@@ -1,4 +1,21 @@
-# Postman — PRISALY Integrante 1 (espejo de Bruno)
+# Postman
+
+## Flujos
+
+`PRISALY-Flujos.postman_collection.json` agrupa por recorrido, no por módulo.
+
+1. Importa la colección y `PRISALY-Flujos.postman_environment.json`.
+2. Selecciona **PRISALY Flujos local**.
+3. Escribe las contraseñas solo en **Current value**. No exportes el entorno después.
+4. Antes de correr, el backend responde en `GET /health` y el seed tiene un docente con `CREAR_CASO` y `GESTIONAR_SESION`, otro sin `CREAR_CASO`, un usuario inactivo, el caso publicado `33333333-3333-3333-3333-333333333301` y el estudiante `22222222-2222-2222-2222-222222222201`.
+
+Corre una carpeta a la vez. `01` cierra su token; `02` a `06` vuelven a iniciar sesión. `02-08` no cambia la contraseña salvo que la variable de colección `ejecutarCambioContrasena` valga `si`. La carpeta `07` está vacía: estudiante, intento, evaluación y correo no tienen un recorrido de éxito.
+
+```powershell
+node .\postman\build_flujos.mjs
+```
+
+## Integrante 1 (espejo de Bruno)
 
 Misma secuencia, IDs y contratos que `bruno/` (carpetas `00`–`05`).  
 Los tokens e identificadores capturados viven en variables de colección (`accessToken`, `noPermAccessToken`, `sesionId`, `convocatoriaId`). Evita duplicarlos en el entorno o en Globals. No exportes la colección de Desktop después de ejecutar las pruebas con tokens.

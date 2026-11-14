@@ -10,8 +10,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 import java.util.UUID;
 
 /**
- * Protocolo SQL V007-V009: M4 lee metadatos aprobados y escribe SOLO Sesion. El trigger oficial es
- * el único escritor de fechaBloqueoAcademico.
+ * Patrón Adapter por JDBC, alternativa al de M3. Lee los metadatos del caso que aprueban
+ * las migraciones V007 a V009 y escribe solo en Sesion. El trigger de la base es el único
+ * que marca fechaBloqueoAcademico; esta clase no lo actualiza a mano.
  */
 public final class CasoAcademicoBd0052Adapter implements CasoAcademicoPort {
     private final JdbcTemplate jdbc;

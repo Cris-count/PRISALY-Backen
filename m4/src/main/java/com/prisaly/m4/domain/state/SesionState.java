@@ -4,11 +4,12 @@ import com.prisaly.m4.domain.model.EstadoSesion;
 import com.prisaly.m4.domain.model.SesionAcademica;
 
 /**
- * Interfaz del patrón GoF State para controlar el comportamiento
- * de una sesión académica según su estado actual.
+ * Patrón State. La sesión no decide con ifs qué puede hacer: delega en el objeto
+ * de estado que tenga montado (SinIniciar, EnCurso o Finalizado).
  *
- * <p>Cada implementación concreta define qué operaciones están
- * permitidas y cuáles son rechazadas en ese estado.</p>
+ * <p>Cada estado concreto permite solo sus transiciones y rechaza el resto.
+ * Abrir, iniciar, cerrar y cancelar cambian de estado; el resto de operaciones
+ * se niega desde {@link AbstractSesionState}.</p>
  */
 public interface SesionState {
 

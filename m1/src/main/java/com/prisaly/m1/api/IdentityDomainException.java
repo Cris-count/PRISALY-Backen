@@ -1,5 +1,9 @@
 package com.prisaly.m1.api;
 
+/**
+ * Error de identidad con un código estable (por ejemplo AUTH_FAILED o USER_INACTIVE).
+ * El manejador HTTP traduce ese código a 401, 403 o 400. No transporta la contraseña.
+ */
 public final class IdentityDomainException extends RuntimeException {
 
     private final String code;

@@ -18,7 +18,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Adaptador de persistencia que implementa {@link SesionRepository} delegando en Spring Data JPA.
+ * Patrón Adapter sobre el puerto {@link SesionRepository}. El dominio no ve JPA:
+ * esta clase convierte con {@link com.prisaly.m4.infrastructure.persistence.EntityMapper}
+ * y persiste con Spring Data. El bloqueo pesimista vive aquí, no en el agregado.
  */
 @Repository
 public class SesionRepositoryAdapter implements SesionRepository {

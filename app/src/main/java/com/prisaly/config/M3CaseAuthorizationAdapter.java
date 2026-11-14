@@ -11,7 +11,11 @@ import com.prisaly.m3.domain.rule.CasoDomainException;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Real M1 permissions for creation, modification (D6), publication and archiving (PD-02). */
+/**
+ * Patrón Adapter entre M3 y M1. M3 pregunta por un permiso de caso
+ * ({@link PermisosCaso}); esta clase lo resuelve con el personal del token.
+ * Cubre crear, modificar, publicar y archivar. No autoriza a un estudiante.
+ */
 public final class M3CaseAuthorizationAdapter implements CaseAuthorizationPort, CasoCurrentUserPort {
     private final IdentityAccessPort identity;
 

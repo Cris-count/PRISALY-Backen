@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/** Fila del catálogo Rol. Cada usuario tiene un solo rol, según BD-005.2. */
 @Entity
 @Table(name = "Rol")
 public class RolEntity {

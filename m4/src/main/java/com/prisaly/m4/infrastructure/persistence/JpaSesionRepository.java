@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import java.time.Instant;
 import java.util.*;
 
+/** Consultas JPA de sesiones. bloquearPorId evita que dos cambios de estado se pisen. */
 public interface JpaSesionRepository extends JpaRepository<SesionAcademicaEntity, UUID> {
     List<SesionAcademicaEntity> findByDocenteId(UUID docenteId);
 

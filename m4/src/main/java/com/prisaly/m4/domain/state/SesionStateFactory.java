@@ -4,6 +4,11 @@ import com.prisaly.m4.domain.model.EstadoSesion;
 
 import java.util.Objects;
 
+/**
+ * Patrón Factory. A partir del valor persistido (SinIniciar, EnCurso, Finalizado)
+ * devuelve el objeto State correspondiente. No crea uno nuevo por sesión:
+ * reutiliza las instancias INSTANCE. El constructor privado impide instanciar la fábrica.
+ */
 public final class SesionStateFactory {
     private SesionStateFactory() {}
 

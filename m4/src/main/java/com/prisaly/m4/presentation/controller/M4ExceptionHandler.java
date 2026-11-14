@@ -25,8 +25,9 @@ import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 /**
- * Manejo centralizado de excepciones para M4. Mapea excepciones de dominio a códigos HTTP
- * apropiados.
+ * Traduce las excepciones de M4 a HTTP. Una operación de estado no permitida y una regla
+ * de negocio no se convierten en 500: salen con su código (por ejemplo M4-SIN-PERMISO o
+ * M4-REFERENCIA-NO-VALIDA). El detalle SQL no se copia al cuerpo.
  */
 @RestControllerAdvice(basePackages = "com.prisaly.m4.presentation")
 public class M4ExceptionHandler extends ResponseEntityExceptionHandler {

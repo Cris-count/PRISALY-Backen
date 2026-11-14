@@ -18,10 +18,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Servicio de aplicación que coordina los casos de uso de M4.
- *
- * <p>Orquesta la validación de permisos (M1), la verificación de casos publicados (M3), las reglas
- * de dominio y la persistencia.
+ * Servicio de aplicación de M4. No es el estado ni el repositorio: orquesta.
+ * Pide el permiso GESTIONAR_SESION a M1, comprueba que el caso esté publicado,
+ * deja que el patrón State acepte o rechace la transición y recién entonces persiste.
  */
 @Service
 @Transactional

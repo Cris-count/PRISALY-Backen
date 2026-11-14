@@ -42,6 +42,7 @@ public class EstudianteCuentaController {
         this.autenticacion = autenticacion;
     }
 
+    /** Activa la cuenta con el código de un solo uso. Con el flag apagado responde 501. */
     @PostMapping("/activar")
     public ResponseEntity<?> activar(@Valid @RequestBody ActivarCuentaEstudianteRequest request) {
         ActivacionCuentaEstudianteService servicio = servicio(activacion);
@@ -52,6 +53,7 @@ public class EstudianteCuentaController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Inicia sesión del estudiante y deja la cookie prisaly_estudiante. No devuelve Bearer. */
     @PostMapping("/autenticar")
     public ResponseEntity<?> autenticar(
             @Valid @RequestBody AutenticarEstudianteRequest request,
@@ -67,6 +69,7 @@ public class EstudianteCuentaController {
         return ResponseEntity.noContent().build();
     }
 
+    /** Revoca la sesión de la cookie y la borra en el navegador. */
     @PostMapping("/cerrar-sesion")
     public ResponseEntity<?> cerrarSesion(HttpServletRequest http, HttpServletResponse response) {
         AutenticacionEstudianteService servicio = servicio(autenticacion);

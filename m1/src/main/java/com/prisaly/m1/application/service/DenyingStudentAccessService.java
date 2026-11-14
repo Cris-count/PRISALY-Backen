@@ -7,8 +7,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 /**
- * Provisional production adapter while DD-02 (student authentication) remains open.
- * Never reads SecurityContext or client-supplied ids; never treats personnel tokens as students.
+ * Adaptador que niega. Está activo cuando el flag de acceso estudiantil es falso.
+ * requireCurrentStudent() siempre lanza STUDENT_IDENTITY_UNAVAILABLE. No lee el
+ * SecurityContext ni acepta un id de estudiante enviado por el cliente.
  */
 @Service
 @ConditionalOnProperty(

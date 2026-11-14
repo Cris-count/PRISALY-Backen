@@ -29,6 +29,7 @@ public class PersonalContrasenaController {
 
     public record CambioContrasenaRequest(@NotNull String actual, @NotNull String nueva) { }
 
+    /** Cambia la contraseña del personal autenticado. No invalida los tokens ya emitidos. */
     @PutMapping("/contrasena")
     public ResponseEntity<Void> cambiar(@Valid @RequestBody CambioContrasenaRequest request) {
         AuthenticatedUser actual = identidad.currentUser();

@@ -8,7 +8,11 @@ import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.api.ReglaNegocioException;
 
-/** Consume exclusivamente el contrato público de M1; no lee sus repositorios. */
+/**
+ * Patrón Adapter. M4 habla con {@link com.prisaly.m4.application.port.IdentidadPort};
+ * esta clase lo traduce al {@code IdentityAccessPort} público de M1.
+ * No abre los repositorios de usuarios. Si M1 niega la sesión, M4 recibe su propio error de negocio.
+ */
 public final class IdentidadM1Adapter implements IdentidadPort {
     private final IdentityAccessPort identidad;
 

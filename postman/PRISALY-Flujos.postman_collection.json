@@ -1,0 +1,2771 @@
+{
+  "info": {
+    "name": "PRISALY — Flujos",
+    "description": "Una carpeta es un recorrido. Los negativos no reemplazan accessToken. Las contraseñas van solo en el valor actual del entorno. Las carpetas 02 a 06 vuelven a iniciar sesión porque 01 cierra la suya. HTTP 201 de convocatoria no es entrega de correo. El acceso estudiantil productivo responde 501.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "noPermAccessToken",
+      "value": ""
+    },
+    {
+      "key": "sesionId",
+      "value": ""
+    },
+    {
+      "key": "convocatoriaId",
+      "value": ""
+    },
+    {
+      "key": "flujoCasoId",
+      "value": ""
+    },
+    {
+      "key": "flujoEscenarioId",
+      "value": ""
+    },
+    {
+      "key": "flujoPreguntaId",
+      "value": ""
+    },
+    {
+      "key": "flujoOpcionId",
+      "value": ""
+    },
+    {
+      "key": "flujoCriterioId",
+      "value": ""
+    },
+    {
+      "key": "etagCaso",
+      "value": ""
+    },
+    {
+      "key": "flujoDocenteId",
+      "value": ""
+    },
+    {
+      "key": "flujoDocenteCorreo",
+      "value": ""
+    },
+    {
+      "key": "flujoPermisoId",
+      "value": ""
+    },
+    {
+      "key": "sesionAjenaId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 — Sistema",
+      "description": "Si esta carpeta falla, no continúes.",
+      "item": [
+        {
+          "name": "00-01 Salud",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/health",
+            "description": "El backend debe responder antes de cualquier flujo."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"ok\", () => pm.expect(pm.response.json().status).to.eql(\"ok\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 — Inicio de sesión del personal",
+      "description": "El inicio correcto guarda accessToken. Los negativos no lo pisan. El cierre queda al final de esta carpeta.",
+      "item": [
+        {
+          "name": "01-01 Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Docente activo del seed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"{{personnelPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\",\"personnelPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"accessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-02 Clave incorrecta",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "No modifica accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"clave-incorrecta-flujo\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-03 Usuario inexistente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "La respuesta no distingue correo inexistente de clave mala.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{unknownEmail}}\", \"password\": \"clave-inexistente-flujo\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"unknownEmail\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-04 Usuario inactivo",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Requiere el usuario inactivo del seed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{inactiveEmail}}\", \"password\": \"{{inactivePassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"inactiveEmail\",\"inactivePassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo AUTH_FAILED\", () => pm.expect(pm.response.json().code).to.eql(\"AUTH_FAILED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-05 Datos inválidos",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Cuerpo sin contraseña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"codigo VALIDATION_ERROR\", () => pm.expect(pm.response.json().code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-06 Cerrar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/cerrar-sesion",
+            "description": "Revoca el token guardado en 01-01."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01-07 Token revocado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "El mismo token ya no identifica."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 — Identidad y permiso",
+      "description": "Vuelve a iniciar sesión. El cambio de contraseña no se ejecuta solo: deja la variable de colección ejecutarCambioContrasena en si y restaura la clave del seed después.",
+      "item": [
+        {
+          "name": "02-01 Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Renueva accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"{{personnelPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\",\"personnelPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"accessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-02 Consultar identidad",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "Usa el token de 02-01."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"correo\", () => pm.expect(pm.response.json().correo).to.eql(pm.variables.get(\"personnelEmail\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-03 Crear caso permitido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "El docente del seed tiene CREAR_CASO."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-04 Sin token",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "No envía Authorization."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-05 Token inválido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token-invalido",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/me",
+            "description": "No reemplaza accessToken."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-06 Iniciar sesión sin permiso",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Guarda noPermAccessToken y conserva accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelNoPermEmail}}\", \"password\": \"{{personnelNoPermPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelNoPermEmail\",\"personnelNoPermPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"noPermAccessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-07 Crear caso denegado",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autorizacion/crear-caso",
+            "description": "El segundo docente no tiene CREAR_CASO."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02-08 Cambiar contraseña",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/contrasena",
+            "description": "Omitida salvo ejecutarCambioContrasena=si. Cambia la clave del seed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"actual\": \"{{personnelPassword}}\", \"nueva\": \"{{personnelPasswordNueva}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.collectionVariables.get(\"ejecutarCambioContrasena\") !== \"si\") {",
+                  "  console.warn(\"PRISALY: cambio de contraseña omitido. No altera el seed.\");",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "const required = [\"accessToken\",\"personnelPassword\",\"personnelPasswordNueva\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 — Administración de identidad",
+      "description": "Cualquier personal autenticado llega a estas rutas. No hay cambio de rol: BD-005.2 admite un solo rol por usuario.",
+      "item": [
+        {
+          "name": "03-01 Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Renueva accessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"{{personnelPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\",\"personnelPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"accessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-02 Listar roles",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/roles",
+            "description": "Catálogo persistido."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-03 Listar permisos",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/permisos",
+            "description": "Guarda el primer idPermiso para asignarlo y quitarlo."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const items = pm.response.json().items || [];",
+                  "pm.test(\"hay permisos\", () => pm.expect(items.length).to.be.above(0));",
+                  "pm.collectionVariables.set(\"flujoPermisoId\", String(items[0].idPermiso));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-04 Alta de docente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/docentes",
+            "description": "Correo nuevo en cada ejecución. No incluye contraseña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nombre\": \"Docente flujo\", \"correo\": \"{{flujoDocenteCorreo}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoDocenteCorreo\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "const stamp = Date.now().toString(16);",
+                  "const id = (prefix) => `${prefix}-0000-4000-8000-${stamp.padStart(12, \"0\").slice(-12)}`;",
+                  "if (!pm.collectionVariables.get(\"flujoCasoId\")) pm.collectionVariables.set(\"flujoCasoId\", id(\"11111111\"));",
+                  "if (!pm.collectionVariables.get(\"flujoEscenarioId\")) pm.collectionVariables.set(\"flujoEscenarioId\", id(\"22222222\"));",
+                  "if (!pm.collectionVariables.get(\"flujoPreguntaId\")) pm.collectionVariables.set(\"flujoPreguntaId\", id(\"33333333\"));",
+                  "if (!pm.collectionVariables.get(\"flujoOpcionId\")) pm.collectionVariables.set(\"flujoOpcionId\", id(\"44444444\"));",
+                  "if (!pm.collectionVariables.get(\"flujoCriterioId\")) pm.collectionVariables.set(\"flujoCriterioId\", id(\"55555555\"));",
+                  "if (!pm.collectionVariables.get(\"flujoDocenteCorreo\")) pm.collectionVariables.set(\"flujoDocenteCorreo\", `docente.flujo.${stamp}@prisaly.local`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"flujoDocenteId\", pm.response.json().idUsuario);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-05 Asignar permiso",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{flujoDocenteId}}/permisos/{{flujoPermisoId}}",
+            "description": "Sobre el docente recién creado."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoDocenteId\",\"flujoPermisoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "03-06 Quitar permiso",
+          "request": {
+            "method": "DELETE",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/admin/usuarios/{{flujoDocenteId}}/permisos/{{flujoPermisoId}}",
+            "description": "Revoca la asignación anterior."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoDocenteId\",\"flujoPermisoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 — Caso académico",
+      "description": "Crea un borrador, le agrega contenido y una rúbrica con criterio, publica y archiva. Publicar exige pregunta, una opción correcta y rúbrica con criterio. Las escrituras reenvían el ETag anterior.",
+      "item": [
+        {
+          "name": "04-01 Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "Docente con CREAR_CASO.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"{{personnelPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\",\"personnelPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"accessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-02 Crear borrador",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "UUID nuevo de esta ejecución.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idCaso\": \"{{flujoCasoId}}\",\n  \"titulo\": \"Caso del flujo\",\n  \"tiempoEstimadoSegundos\": 300,\n  \"historia\": null,\n  \"desarrolloSituacional\": null\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "const stamp = Date.now().toString(16);",
+                  "const id = (prefix) => `${prefix}-0000-4000-8000-${stamp.padStart(12, \"0\").slice(-12)}`;",
+                  "if (!pm.collectionVariables.get(\"flujoCasoId\")) pm.collectionVariables.set(\"flujoCasoId\", id(\"11111111\"));",
+                  "if (!pm.collectionVariables.get(\"flujoEscenarioId\")) pm.collectionVariables.set(\"flujoEscenarioId\", id(\"22222222\"));",
+                  "if (!pm.collectionVariables.get(\"flujoPreguntaId\")) pm.collectionVariables.set(\"flujoPreguntaId\", id(\"33333333\"));",
+                  "if (!pm.collectionVariables.get(\"flujoOpcionId\")) pm.collectionVariables.set(\"flujoOpcionId\", id(\"44444444\"));",
+                  "if (!pm.collectionVariables.get(\"flujoCriterioId\")) pm.collectionVariables.set(\"flujoCriterioId\", id(\"55555555\"));",
+                  "if (!pm.collectionVariables.get(\"flujoDocenteCorreo\")) pm.collectionVariables.set(\"flujoDocenteCorreo\", `docente.flujo.${stamp}@prisaly.local`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"borrador\", () => pm.expect(pm.response.json().estado).to.eql(\"BORRADOR\"));",
+                  "pm.collectionVariables.set(\"flujoCasoId\", pm.response.json().idCaso);",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-03 Consultar caso",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}",
+            "description": "Guarda el ETag para la siguiente escritura."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "pm.test(\"etag\", () => pm.expect(etag).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-04 Agregar escenario",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/escenarios",
+            "description": "If-Match del GET anterior.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idEscenario\": \"{{flujoEscenarioId}}\",\n  \"titulo\": \"Escenario del flujo\",\n  \"contexto\": \"Contexto de prueba\",\n  \"instrucciones\": \"Instrucciones de prueba\",\n  \"orden\": 1\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\",\"flujoEscenarioId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "const stamp = Date.now().toString(16);",
+                  "const id = (prefix) => `${prefix}-0000-4000-8000-${stamp.padStart(12, \"0\").slice(-12)}`;",
+                  "if (!pm.collectionVariables.get(\"flujoCasoId\")) pm.collectionVariables.set(\"flujoCasoId\", id(\"11111111\"));",
+                  "if (!pm.collectionVariables.get(\"flujoEscenarioId\")) pm.collectionVariables.set(\"flujoEscenarioId\", id(\"22222222\"));",
+                  "if (!pm.collectionVariables.get(\"flujoPreguntaId\")) pm.collectionVariables.set(\"flujoPreguntaId\", id(\"33333333\"));",
+                  "if (!pm.collectionVariables.get(\"flujoOpcionId\")) pm.collectionVariables.set(\"flujoOpcionId\", id(\"44444444\"));",
+                  "if (!pm.collectionVariables.get(\"flujoCriterioId\")) pm.collectionVariables.set(\"flujoCriterioId\", id(\"55555555\"));",
+                  "if (!pm.collectionVariables.get(\"flujoDocenteCorreo\")) pm.collectionVariables.set(\"flujoDocenteCorreo\", `docente.flujo.${stamp}@prisaly.local`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-05 Agregar pregunta",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/escenarios/{{flujoEscenarioId}}/preguntas",
+            "description": "Una pregunta de selección.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idPregunta\": \"{{flujoPreguntaId}}\",\n  \"enunciado\": \"Pregunta del flujo\",\n  \"textoAyuda\": null,\n  \"orden\": 1\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\",\"flujoEscenarioId\",\"flujoPreguntaId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-06 Agregar opción correcta",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/preguntas/{{flujoPreguntaId}}/opciones",
+            "description": "Una sola opción correcta.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idOpcion\": \"{{flujoOpcionId}}\",\n  \"texto\": \"Opción correcta\",\n  \"esCorrecta\": true,\n  \"explicacion\": \"Es la opción prevista por la prueba\",\n  \"orden\": 1\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\",\"flujoPreguntaId\",\"flujoOpcionId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-07 Consultar contenido",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/contenido",
+            "description": "Lectura del docente dueño."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-08 Guardar rúbrica",
+          "request": {
+            "method": "PUT",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/rubrica",
+            "description": "Un criterio basta para la regla estructural de completitud. No calcula una nota.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rubrica del flujo\",\n  \"descripcion\": \"Criterio estructural de prueba\",\n  \"puntajeTotal\": 100,\n  \"criterios\": [{ \"id\": \"{{flujoCriterioId}}\", \"descripcion\": \"Criterio\", \"puntaje\": 100, \"ponderacion\": 1 }],\n  \"preguntas\": [{ \"idPregunta\": \"{{flujoPreguntaId}}\", \"valorPregunta\": 100, \"criterio\": \"{{flujoCriterioId}}\" }]\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\",\"flujoCriterioId\",\"flujoPreguntaId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-09 Publicar",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/publicar",
+            "description": "Pasa a Publicado solo si la validación académica lo acepta."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"publicado\", () => pm.expect(pm.response.json().estado).to.eql(\"PUBLICADO\"));",
+                  "const etag = pm.response.headers.get(\"ETag\");",
+                  "if (etag) pm.collectionVariables.set(\"etagCaso\", etag);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-10 Archivar",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              },
+              {
+                "key": "If-Match",
+                "value": "{{etagCaso}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}/archivar",
+            "description": "Solo después de publicar."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"etagCaso\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"archivado\", () => pm.expect(pm.response.json().estado).to.eql(\"ARCHIVADO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-11 Sin token",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "No crea el caso.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"idCaso\": \"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa\", \"titulo\": \"Sin sesion\", \"tiempoEstimadoSegundos\": 300, \"historia\": null, \"desarrolloSituacional\": null }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-12 Sin permiso",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Requiere noPermAccessToken de la carpeta 02. Si corres solo esta carpeta, ejecuta antes 02-06.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"idCaso\": \"bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb\", \"titulo\": \"Sin permiso\", \"tiempoEstimadoSegundos\": 300, \"historia\": null, \"desarrolloSituacional\": null }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"codigo FORBIDDEN\", () => pm.expect(pm.response.json().code).to.eql(\"FORBIDDEN\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-13 Cuerpo inválido",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos",
+            "description": "Tiempo estimado en cero.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"idCaso\": \"cccccccc-cccc-4ccc-8ccc-cccccccccccc\", \"titulo\": \"Invalido\", \"tiempoEstimadoSegundos\": 0, \"historia\": null, \"desarrolloSituacional\": null }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"rechazo\", () => pm.expect(pm.response.code).to.be.oneOf([400, 422]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "04-14 Caso de otro docente",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/casos/{{flujoCasoId}}",
+            "description": "El docente sin CREAR_CASO no es el dueño. Requiere noPermAccessToken de 02-06."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\",\"flujoCasoId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"no es el dueño\", () => pm.expect(pm.response.code).to.be.oneOf([403, 404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 — Sesión y convocatoria",
+      "description": "Usa el caso publicado y el estudiante del seed, no el caso archivado de la carpeta 04. La convocatoria se hace en SinIniciar: al pasar a EnCurso ya no se admiten convocatorias. El 201 no prueba el correo.",
+      "item": [
+        {
+          "name": "05-01 Iniciar sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/personal/autenticar",
+            "description": "El docente del seed tiene GESTIONAR_SESION.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"{{personnelEmail}}\", \"password\": \"{{personnelPassword}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"personnelEmail\",\"personnelPassword\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"token\", () => pm.expect(body.accessToken).to.be.a(\"string\").and.not.empty);",
+                  "pm.collectionVariables.set(\"accessToken\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-02 Crear sesión",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones",
+            "description": "Caso publicado del seed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoIdBruno}}\",\n  \"titulo\": \"Sesion del flujo\",\n  \"mensajePersonalizado\": \"Convocatoria de prueba del flujo\",\n  \"fechaInicio\": \"2030-11-10T14:00:00Z\",\n  \"fechaFin\": \"2030-11-10T16:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 3600\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"casoIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"sesionId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-03 Consultar sesión",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}",
+            "description": "La sesión recién creada."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-04 Convocar estudiante",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "201 significa convocatoria aceptada, no correo entregado.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"estudianteId\": \"{{estudianteIdBruno}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionId\",\"estudianteIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"convocatoriaId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-05 Listar convocatorias",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "Incluye la convocatoria anterior."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-06 Pasar a EnCurso",
+          "request": {
+            "method": "PATCH",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/estado",
+            "description": "Después de convocar. EnCurso ya no admite otra convocatoria.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"nuevoEstado\": \"EnCurso\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-07 Sin permiso",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{noPermAccessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones",
+            "description": "Requiere noPermAccessToken.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoIdBruno}}\",\n  \"titulo\": \"Sesion sin permiso\",\n  \"mensajePersonalizado\": \"No debe crearse\",\n  \"fechaInicio\": \"2030-11-10T14:00:00Z\",\n  \"fechaFin\": \"2030-11-10T16:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 3600\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"noPermAccessToken\",\"casoIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"codigo M4-SIN-PERMISO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-SIN-PERMISO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-08 Sin token",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/convocatorias",
+            "description": "No convoca.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"estudianteId\": \"{{estudianteIdBruno}}\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"sesionId\",\"estudianteIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"codigo UNAUTHENTICATED\", () => pm.expect(pm.response.json().code).to.eql(\"UNAUTHENTICATED\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-09 Estudiante inexistente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones",
+            "description": "Se crea otra sesión en SinIniciar para no usar la que ya está EnCurso.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"casoId\": \"{{casoIdBruno}}\",\n  \"titulo\": \"Sesion para estudiante inexistente\",\n  \"mensajePersonalizado\": \"No debe convocar\",\n  \"fechaInicio\": \"2030-12-10T14:00:00Z\",\n  \"fechaFin\": \"2030-12-10T16:00:00Z\",\n  \"tiempoMaximoParticipacionSegundos\": 3600\n}\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"casoIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"sesionAjenaId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-10 Convocar inexistente",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionAjenaId}}/convocatorias",
+            "description": "La clave foránea rechaza un estudiante que no existe.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"estudianteId\": \"99999999-9999-4999-8999-999999999999\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionAjenaId\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"codigo M4-REFERENCIA-NO-VALIDA\", () => pm.expect(pm.response.json().code).to.eql(\"M4-REFERENCIA-NO-VALIDA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "05-11 Ruta de acceso retirada",
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/m4/sesiones/{{sesionId}}/acceso/{{estudianteIdBruno}}",
+            "description": "Responde 410. No abre la participación del estudiante."
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [\"accessToken\",\"sesionId\",\"estudianteIdBruno\"];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 410\", () => pm.response.to.have.status(410));",
+                  "pm.test(\"codigo M4-ACCESO-LEGADO-RETIRADO\", () => pm.expect(pm.response.json().code).to.eql(\"M4-ACCESO-LEGADO-RETIRADO\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 — Acceso estudiantil bloqueado",
+      "description": "El flag productivo sigue apagado. Estas peticiones no guardan cookie ni identificadores.",
+      "item": [
+        {
+          "name": "06-01 Validar bloqueado",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/validar",
+            "description": "Cuerpo válido y DD-02 apagada.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"challengeId\": \"challenge-flujo\", \"codigo\": \"12345678\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 501\", () => pm.response.to.have.status(501));",
+                  "pm.test(\"codigo ESTUDIANTE_ACCESS_PENDING_CONTRACT\", () => pm.expect(pm.response.json().code).to.eql(\"ESTUDIANTE_ACCESS_PENDING_CONTRACT\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06-02 Validar inválido",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/validar",
+            "description": "El código no tiene ocho dígitos.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"challengeId\": \"challenge-flujo\", \"codigo\": \"12\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"codigo VALIDATION_ERROR\", () => pm.expect(pm.response.json().code).to.eql(\"VALIDATION_ERROR\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06-03 Activar bloqueado",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/activar",
+            "description": "No crea la contraseña.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"challengeId\": \"11111111-1111-4111-8111-111111111111\", \"codigo\": \"12345678\", \"contrasena\": \"contrasena-flujo-segura\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 501\", () => pm.response.to.have.status(501));",
+                  "pm.test(\"codigo ESTUDIANTE_ACCESS_PENDING_CONTRACT\", () => pm.expect(pm.response.json().code).to.eql(\"ESTUDIANTE_ACCESS_PENDING_CONTRACT\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "06-04 Autenticar bloqueado",
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "noauth"
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": "{{baseUrl}}/v1/acceso-estudiante/autenticar",
+            "description": "No abre sesión estudiantil.",
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"correo\": \"estudiante.flujo@prisaly.local\", \"contrasena\": \"contrasena-flujo-segura\" }\n",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const required = [];",
+                  "const missing = required.filter((key) => !String(pm.variables.get(key) ?? \"\").trim());",
+                  "if (missing.length) {",
+                  "  console.warn(\"PRISALY: faltan variables: \" + missing.join(\", \"));",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"HTTP 501\", () => pm.response.to.have.status(501));",
+                  "pm.test(\"codigo ESTUDIANTE_ACCESS_PENDING_CONTRACT\", () => pm.expect(pm.response.json().code).to.eql(\"ESTUDIANTE_ACCESS_PENDING_CONTRACT\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "07 — Flujos que el backend no permite",
+      "description": "No hay peticiones de éxito. El estudiante no tiene sesión productiva ni HTTP de participación. M5 no publica intentos. M6 no publica evaluación. M7 no tiene API de avisos ni entrega de correo. No hay alta pública del estudiante ni envío del código.",
+      "item": []
+    }
+  ]
+}

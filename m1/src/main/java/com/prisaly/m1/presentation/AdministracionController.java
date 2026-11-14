@@ -54,6 +54,7 @@ public class AdministracionController {
 
     public record AsignacionPermisoUsuario(UUID idUsuario, Integer idPermiso, boolean habilitado) { }
 
+    /** Crea un docente activo. La contraseña inicial la genera el servicio, no el cuerpo. */
     @PostMapping("/docentes")
     public ResponseEntity<UsuarioDocente> altaDocente(@Valid @RequestBody DocenteAltaRequest request) {
         Usuario creado = servicio.altaDocente(request.nombre().trim(), request.correo());
@@ -61,27 +62,32 @@ public class AdministracionController {
                 .body(new UsuarioDocente(creado.getIdUsuario(), creado.getNombre(), creado.getCorreo(), creado.getEstado()));
     }
 
+    /** Catálogo de roles. No asigna ni cambia el rol de nadie. */
     @GetMapping("/roles")
     public Listado<RolResumen> roles() {
         return new Listado<>(servicio.roles().stream().map(r -> new RolResumen(r.getIdRol(), r.getNombre())).toList());
     }
 
+    /** Catálogo de permisos, incluido el código que luego se asigna. */
     @GetMapping("/permisos")
     public Listado<PermisoResumen> permisos() {
         return new Listado<>(servicio.permisos().stream().map(PermisoResumen::de).toList());
     }
 
+    /** Permisos habilitados de un usuario. Exige administrador. */
     @GetMapping("/usuarios/{idUsuario}/permisos")
     public Listado<PermisoResumen> permisosDeUsuario(@PathVariable UUID idUsuario) {
         return new Listado<>(servicio.permisosDeUsuario(idUsuario).stream().map(PermisoResumen::de).toList());
     }
 
+    /** Habilita un permiso ya existente. No cambia el rol. */
     @PutMapping("/usuarios/{idUsuario}/permisos/{idPermiso}")
     public AsignacionPermisoUsuario asignar(@PathVariable UUID idUsuario, @PathVariable Integer idPermiso) {
         AsignacionPermiso a = servicio.asignar(idUsuario, idPermiso);
         return new AsignacionPermisoUsuario(a.getIdUsuario(), a.getIdPermiso(), a.isHabilitado());
     }
 
+    /** Quita un permiso habilitado. Responde 204 sin cuerpo. */
     @DeleteMapping("/usuarios/{idUsuario}/permisos/{idPermiso}")
     public ResponseEntity<Void> revocar(@PathVariable UUID idUsuario, @PathVariable Integer idPermiso) {
         servicio.revocar(idUsuario, idPermiso);

@@ -27,11 +27,13 @@ public final class CasoPublicacionController {
         this.concurrency = concurrency.orElse(null);
     }
 
+    /** Publica el borrador si tiene pregunta, una opción correcta y rúbrica con criterio. */
     @PostMapping("/publicar")
     public ResponseEntity<Map<String, String>> publicar(@PathVariable("idCaso") String caso, @RequestHeader HttpHeaders headers) {
         return responder(service.publicar(IdentificadorCanonico.uuid(caso), () -> fingerprint(headers)));
     }
 
+    /** Pasa un caso publicado a ARCHIVADO. No borra el contenido. */
     @PostMapping("/archivar")
     public ResponseEntity<Map<String, String>> archivar(@PathVariable("idCaso") String caso, @RequestHeader HttpHeaders headers) {
         return responder(service.archivar(IdentificadorCanonico.uuid(caso), () -> fingerprint(headers)));

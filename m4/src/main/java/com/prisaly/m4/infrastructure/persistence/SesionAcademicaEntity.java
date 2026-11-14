@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
+/** Fila de Sesion: caso, docente, fechas, estado y duración máxima de la participación. */
 @Entity
 @Table(name = "\"Sesion\"", schema = "public")
 public class SesionAcademicaEntity {

@@ -33,12 +33,14 @@ public final class CasoContenidoController {
         this.concurrency = concurrency.orElse(null);
     }
 
+    /** Agrega un escenario al borrador. Exige el ETag vigente en If-Match. */
     @PostMapping(value = "/escenarios", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> escenario(@PathVariable("idCaso") String caso,
             @RequestHeader HttpHeaders headers, @RequestBody String body) {
         return ejecutar(caso, headers, () -> CasoContenidoRequest.escenario(body));
     }
 
+    /** Agrega una pregunta a un escenario del borrador. */
     @PostMapping(value = "/escenarios/{idEscenario}/preguntas", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> pregunta(@PathVariable("idCaso") String caso,
             @PathVariable("idEscenario") String escenario, @RequestHeader HttpHeaders headers,
@@ -47,6 +49,7 @@ public final class CasoContenidoController {
         return ejecutar(caso, headers, () -> CasoContenidoRequest.pregunta(idEscenario, body));
     }
 
+    /** Agrega una opción a una pregunta. La publicación exige exactamente una correcta. */
     @PostMapping(value = "/preguntas/{idPregunta}/opciones", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, String>> opcion(@PathVariable("idCaso") String caso,
             @PathVariable("idPregunta") String pregunta, @RequestHeader HttpHeaders headers,

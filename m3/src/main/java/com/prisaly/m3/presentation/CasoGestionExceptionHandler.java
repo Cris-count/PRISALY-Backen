@@ -6,6 +6,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Errores de consulta, contenido, rúbrica y publicación.
+ * Traduce la falta de If-Match, el caso ajeno y las reglas de publicación a su estado HTTP.
+ */
 @RestControllerAdvice(assignableTypes = {CasoGestionController.class, CasoContenidoController.class,
         CasoContenidoConsultaController.class, CasoRubricaController.class, CasoPublicacionController.class})
 public final class CasoGestionExceptionHandler {
@@ -28,6 +32,9 @@ public final class CasoGestionExceptionHandler {
                     "INCOMPLETE_RUBRIC", "INCONSISTENT_OPTIONS", "INVALID_QUESTION" -> error(409, ex.code());
             case "SCENARIO_ID_IN_USE", "SCENARIO_ORDER_IN_USE", "QUESTION_ID_IN_USE", "QUESTION_ORDER_IN_USE",
                     "OPTION_ID_IN_USE", "CONTENT_CONFLICT" -> error(409, ex.code());
+            // Under-lock draft checks: a business rejection, never a server failure (like RUBRIC_SAVE_REQUIRES_DRAFT).
+            case "SCENARIO_ADD_REQUIRES_DRAFT", "QUESTION_ADD_REQUIRES_DRAFT", "OPTION_ADD_REQUIRES_DRAFT" ->
+                    error(409, ex.code());
             case "STALE_CASE" -> error(412, ex.code());
             case "EVALUABLE_CONTENT_LOCKED", "ARCHIVED_CASE_OPERATION_PENDING", "CASE_NOT_EDITABLE" -> error(409, ex.code());
             case "INVALID_ESTIMATED_TIME" -> error(400, "INVALID_CASE_REQUEST");

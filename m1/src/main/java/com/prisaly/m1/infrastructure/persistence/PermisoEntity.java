@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+/** Fila del catálogo Permiso: código operativo (CREAR_CASO, GESTIONAR_SESION) y su nombre. */
 @Entity
 @Table(name = "Permiso")
 public class PermisoEntity {

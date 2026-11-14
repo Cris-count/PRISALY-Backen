@@ -11,8 +11,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Claims Pendiente rows, sends SMTP outside the claim transaction, updates only while lease is held.
- * Delivery is at-least-once; SMTP acceptance does not prove mailbox delivery.
+ * Worker de correo. Reclama filas Pendiente, llama al {@link ProveedorCorreoPort} fuera
+ * de esa transacción y actualiza el estado solo mientras conserva el arriendo.
+ * Puede entregar más de una vez. Que SMTP acepte el mensaje no prueba que llegó al buzón.
  */
 public class ProcesarEnviosPendientesService {
 

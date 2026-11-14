@@ -5,6 +5,7 @@ import com.prisaly.m4.domain.model.Convocatoria;
 import java.time.Instant;
 import java.util.UUID;
 
+/** Convocatoria creada o listada. Un 201 de este cuerpo no significa que el correo se envió. */
 public record ConvocatoriaResponse(
         UUID id,
         UUID sesionId,

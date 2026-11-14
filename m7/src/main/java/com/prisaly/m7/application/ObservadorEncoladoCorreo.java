@@ -4,7 +4,10 @@ import com.prisaly.m7.domain.ConvocatoriaNotificable;
 import com.prisaly.m7.domain.EnvioCorreoConvocatoria;
 import java.util.Objects;
 
-/** Encola el correo de la convocatoria en la misma transacción del aviso. */
+/**
+ * Observador adicional. En la misma transacción deja una fila de correo pendiente.
+ * No lo envía: solo encola asunto y cuerpo ya compuestos, recortando el asunto a 255.
+ */
 public final class ObservadorEncoladoCorreo implements ObservadorConvocatoria {
     private static final int LIMITE_ASUNTO = 255;
 

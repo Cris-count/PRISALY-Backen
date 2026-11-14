@@ -22,6 +22,7 @@ public class EstudianteAccessController {
 
     public static final String CODE_ESTUDIANTE_ACCESS_PENDING = "ESTUDIANTE_ACCESS_PENDING_CONTRACT";
 
+    /** Ruta retirada. Siempre responde 501 y no comprueba el código. */
     @PostMapping("/validar")
     public ResponseEntity<ErrorResponse> validar(@Valid @RequestBody ValidarAccesoEstudianteRequest request) {
         return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED)

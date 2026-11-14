@@ -8,7 +8,11 @@ import com.prisaly.m6.application.port.ConsultaCalificacionPort;
 import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 
-/** Explicit internal composition only; never calculates, writes or publishes a grade. */
+/**
+ * Compone la preparación de una evaluación sin calcular ni guardar una nota.
+ * Mismo criterio que el proxy: si no hay autorizador o el acceso no es AUTORIZADO, se niega.
+ * Si el intento ya tiene calificación, no arma otra evaluación.
+ */
 public final class PrepararEvaluacionProtegida {
     private final AutorizacionEvaluacionPort autorizacion;
     private final ConsultaCalificacionPort calificaciones;

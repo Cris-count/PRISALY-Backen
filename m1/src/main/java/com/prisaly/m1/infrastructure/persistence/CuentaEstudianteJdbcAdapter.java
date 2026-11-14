@@ -14,6 +14,11 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Persistencia JDBC de la cuenta estudiantil: vínculo con Usuario, códigos de activación
+ * y sesiones. Guarda HMAC, nunca el código ni el token en claro. La activación y el cambio
+ * de contraseña ocurren en la misma transacción.
+ */
 @Repository
 public class CuentaEstudianteJdbcAdapter implements CuentaEstudiantePort {
 

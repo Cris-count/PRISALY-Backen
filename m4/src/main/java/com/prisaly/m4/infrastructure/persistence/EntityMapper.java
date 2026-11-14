@@ -2,6 +2,11 @@ package com.prisaly.m4.infrastructure.persistence;
 
 import com.prisaly.m4.domain.model.*;
 
+/**
+ * Mapeo entre el agregado {@link com.prisaly.m4.domain.model.SesionAcademica} y la fila JPA.
+ * Copia campos. No decide transiciones: al reconstruir el agregado, el estado vuelve a
+ * pasar por {@link com.prisaly.m4.domain.state.SesionStateFactory}.
+ */
 public final class EntityMapper {
     private EntityMapper() {}
 

@@ -14,6 +14,11 @@ import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 
+/**
+ * Adaptador SMTP de {@link ProveedorCorreoPort}. Traduce las excepciones de JavaMail
+ * a un resultado clasificado (autenticación, envío o mensaje inválido) para que el worker
+ * decida reintento. No registra el aviso ni cambia el estado de la convocatoria.
+ */
 public class JavaMailProveedorCorreoAdapter implements ProveedorCorreoPort {
 
     private final JavaMailSender mailSender;

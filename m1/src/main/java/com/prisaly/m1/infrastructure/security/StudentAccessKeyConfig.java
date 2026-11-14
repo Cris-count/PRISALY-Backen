@@ -7,6 +7,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Carga la clave HMAC de activación y sesión estudiantil.
+ * El bean solo se crea si el acceso estudiantil está habilitado y el secreto está definido.
+ */
 @Configuration
 public class StudentAccessKeyConfig {
 

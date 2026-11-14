@@ -2,10 +2,9 @@ package com.prisaly.m6.domain.strategy;
 
 import com.prisaly.m6.api.SolicitudEvaluacion;
 /**
- * Structural Strategy contract only. No default strategy or academic algorithm.
- * The caller must supply an explicitly selected implementation after DD-03 and
- * the academic input contract are approved. Implementations must accept a non-null
- * request and return a non-null result; identifiers alone are not evaluation data.
+ * Patrón Strategy. El caso de uso no calcula la nota: recibe una estrategia ya elegida
+ * y le pasa la misma solicitud. Aquí no hay algoritmo académico ni estrategia por defecto;
+ * quien llama debe entregar una implementación explícita cuando el contrato esté aprobado.
  */
 @FunctionalInterface
 public interface EstrategiaEvaluacion {

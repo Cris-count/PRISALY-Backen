@@ -12,6 +12,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+/** Errores exclusivos de crear un caso: sin sesión, cuerpo inválido o regla de dominio. */
 @RestControllerAdvice(assignableTypes = CasoCreationController.class)
 public final class CasoCreationExceptionHandler {
     public record ErrorResponse(String code, String message) { }

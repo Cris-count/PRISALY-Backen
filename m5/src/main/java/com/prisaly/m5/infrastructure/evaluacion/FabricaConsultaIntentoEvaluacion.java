@@ -10,7 +10,11 @@ import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 import org.springframework.transaction.PlatformTransactionManager;
 
-/** Explicit APP composition only. Does not invent an institutional provider or publish a raw reader. */
+/**
+ * Fábrica de composición. Arma la consulta de un intento para M6 juntando autorización,
+ * identidad del estudiante, programación de M4 y el repositorio de intentos.
+ * No publica un lector directo de tablas ni inventa un proveedor institucional.
+ */
 public record FabricaConsultaIntentoEvaluacion(AutorizacionEvaluacionPort autorizacion,
         AccesoProtegidoParticipacion protegida, RepositorioIntentos repositorio,
         IdentidadEstudianteActual identidad, ProgramacionParticipacionPort programacion,

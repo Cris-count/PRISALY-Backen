@@ -13,6 +13,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Implementación del puerto {@link IdentityAccessPort}. Lee el UUID que dejó el filtro Bearer
+ * y lo contrasta con el usuario activo y sus permisos. No acepta la cookie del estudiante
+ * ni un id enviado en el cuerpo. hasPermission compara el código habilitado, no el nombre del rol.
+ */
 @Service
 public class IdentityAccessService implements IdentityAccessPort {
 
@@ -30,6 +35,7 @@ public class IdentityAccessService implements IdentityAccessPort {
         this.usuarioPermisoRepository = usuarioPermisoRepository;
     }
 
+    /** Usuario activo de la petición actual. Falla si no hay token de personal válido. */
     @Override
     @Transactional(readOnly = true)
     public AuthenticatedUser currentUser() {
@@ -46,6 +52,7 @@ public class IdentityAccessService implements IdentityAccessPort {
 
     @Override
     @Transactional(readOnly = true)
+    /** Carga el usuario y rechaza cuentas inexistentes o inactivas. */
     public AuthenticatedUser requireUser(UUID userId) {
         Usuario usuario = usuarioRepository.buscarPorId(userId)
                 .orElseThrow(() -> new IdentityDomainException(CODE_USER_NOT_FOUND, "User not found"));
@@ -57,6 +64,7 @@ public class IdentityAccessService implements IdentityAccessPort {
 
     @Override
     @Transactional(readOnly = true)
+    /** Indica si ese usuario activo tiene el código de permiso habilitado. */
     public boolean hasPermission(UUID userId, String permissionCode) {
         AuthenticatedUser user = requireUser(userId);
         return user.permissionCodes().contains(permissionCode);
@@ -64,6 +72,7 @@ public class IdentityAccessService implements IdentityAccessPort {
 
     @Override
     @Transactional(readOnly = true)
+    /** Compara el único rol del usuario, sin distinguir mayúsculas. */
     public boolean hasRole(UUID userId, String roleName) {
         AuthenticatedUser user = requireUser(userId);
         return user.roleName().equalsIgnoreCase(roleName);

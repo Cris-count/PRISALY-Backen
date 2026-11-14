@@ -5,6 +5,7 @@ import com.prisaly.m4.domain.model.*;
 import java.time.Instant;
 import java.util.UUID;
 
+/** Sesión que ve el docente por HTTP. No incluye el hash del código de autorización. */
 public record SesionResponse(
         UUID id,
         UUID casoId,

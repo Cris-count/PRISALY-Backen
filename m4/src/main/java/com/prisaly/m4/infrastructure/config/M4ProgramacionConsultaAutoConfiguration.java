@@ -21,6 +21,10 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Arma los beans con los que M5 pregunta a M4 si una sesión y una convocatoria existen.
+ * Si falta la base, la consulta queda no disponible en lugar de autorizar.
+ */
 @AutoConfiguration
 public class M4ProgramacionConsultaAutoConfiguration {
     @Bean

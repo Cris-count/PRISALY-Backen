@@ -26,13 +26,11 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Controlador REST de sesiones de M4. Las convocatorias se atienden en ConvocatoriaController.
- *
- * <p>Los endpoints usan el prefijo {@code /m4/sesiones} que se combina con el context-path {@code
- * /api} configurado en application.yml, resultando en rutas como {@code /api/m4/sesiones}.
- *
- * <p>NOTA: Los nombres de rutas son propuestos. Si ARQ-008.3 define rutas diferentes, deben
- * ajustarse.
+ * Controlador REST de sesiones. Traduce HTTP al servicio de aplicación y no aplica el patrón State:
+ * crear, editar y cambiar estado delegan en {@link com.prisaly.m4.application.service.SesionAcademicaService}.
+ * El docente sale del token; la cabecera X-Docente-Id no sustituye esa identidad.
+ * Las convocatorias viven en {@link ConvocatoriaController}.
+ * La ruta pública queda {@code /api/m4/sesiones} por el context-path.
  */
 @RestController
 @RequestMapping("/m4/sesiones")
@@ -44,8 +42,7 @@ public class SesionController {
         this.service = service;
     }
 
-    // ─── Crear sesión ─────────────────────────────────────────
-
+    /** Crea una sesión SinIniciar sobre un caso publicado del docente autenticado. */
     @PostMapping
     public ResponseEntity<SesionResponse> crearSesion(
             @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
@@ -65,8 +62,7 @@ public class SesionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(SesionResponse.from(sesion));
     }
 
-    // ─── Consultar sesión ─────────────────────────────────────
-
+    /** Devuelve una sesión si el docente autenticado es su dueño. */
     @GetMapping("/{sesionId}")
     public ResponseEntity<SesionResponse> consultarSesion(@PathVariable UUID sesionId) {
 
@@ -74,8 +70,7 @@ public class SesionController {
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
-    // ─── Listar sesiones ──────────────────────────────────────
-
+    /** Lista las sesiones del docente autenticado. */
     @GetMapping
     public ResponseEntity<List<SesionResponse>> listarSesiones(
             @RequestParam(required = false) UUID docenteId) {
@@ -87,8 +82,7 @@ public class SesionController {
         return ResponseEntity.ok(sesiones);
     }
 
-    // ─── Actualizar sesión ────────────────────────────────────
-
+    /** Edita título, mensaje, fechas y lugar mientras el estado lo permite. */
     @PutMapping("/{sesionId}")
     public ResponseEntity<SesionResponse> actualizarSesion(
             @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
@@ -105,8 +99,7 @@ public class SesionController {
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
-    // ─── Cambiar estado ───────────────────────────────────────
-
+    /** Pasa la sesión a EnCurso o Finalizado. EnCurso ya no admite convocatorias nuevas. */
     @PatchMapping("/{sesionId}/estado")
     public ResponseEntity<SesionResponse> cambiarEstado(
             @RequestHeader(value = "X-Docente-Id", required = false) UUID docenteId,
@@ -121,8 +114,7 @@ public class SesionController {
         return ResponseEntity.ok(SesionResponse.from(sesion));
     }
 
-    // Ruta heredada retirada: no es un contrato de acceso estudiantil.
-
+    /** Ruta retirada. Responde 410 y no autoriza al estudiante. */
     @GetMapping("/{sesionId}/acceso/{estudianteId}")
     public ResponseEntity<Boolean> verificarAcceso(
             @PathVariable UUID sesionId, @PathVariable UUID estudianteId) {

@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+/** Busca cuentas por id o por correo, sin distinguir mayúsculas en el correo. */
 public interface UsuarioRepository extends JpaRepository<UsuarioEntity, UUID> {
 
     Optional<UsuarioEntity> findByCorreoIgnoreCase(String correo);

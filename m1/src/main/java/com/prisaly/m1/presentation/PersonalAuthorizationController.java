@@ -26,6 +26,7 @@ public class PersonalAuthorizationController {
         this.identityAccessPort = identityAccessPort;
     }
 
+    /** Confirma que el personal autenticado puede crear casos. Si no, responde 403. */
     @GetMapping("/autorizacion/crear-caso")
     public Map<String, Object> requireCrearCaso() {
         AuthenticatedUser user = identityAccessPort.currentUser();

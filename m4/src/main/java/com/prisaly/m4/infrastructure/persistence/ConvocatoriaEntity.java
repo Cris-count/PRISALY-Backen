@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
 
+/** Fila de Convocatoria: qué estudiante fue citado a qué sesión y en qué estado de autorización. */
 @Entity
 @Table(name = "\"Convocatoria\"", schema = "public")
 public class ConvocatoriaEntity {

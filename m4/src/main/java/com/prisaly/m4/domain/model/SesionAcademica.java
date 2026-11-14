@@ -8,7 +8,12 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.UUID;
 
-/** Agregado M4 conciliado con BD-005.2; State sin versión persistente inventada. */
+/**
+ * Agregado de la sesión. Es el contexto del patrón State: guarda el estado de la base
+ * y delega iniciar, cerrar, editar y convocar en {@code stateHandler}.
+ * El handler no se persiste; al cargar la fila, {@link com.prisaly.m4.domain.state.SesionStateFactory}
+ * lo vuelve a armar. No hay columna de versión inventada: el contrato es BD-005.2.
+ */
 public class SesionAcademica {
     private UUID id, casoId, docenteId;
     private String titulo, descripcion, lugarFisico, codigoAutorizacionHash;

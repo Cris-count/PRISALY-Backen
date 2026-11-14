@@ -8,6 +8,11 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
+ * Patrón Command. Cada record es una operación explícita sobre un campo del caso
+ * (escenario, pregunta, opción o rúbrica). Omitir el comando no escribe null:
+ * null solo se acepta en campos que el contrato marca como anulables.
+ * Dueño, estado y fechas de auditoría no son comandos.
+ *
  * Explicit single-field operations. Omission means no command, not a null value.
  * Null is an assignment and is accepted only for documented nullable fields.
  * Ownership, activity, editing/lifecycle states and audit dates are not commands.

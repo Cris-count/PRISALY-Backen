@@ -12,7 +12,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-/** Adaptador de persistencia para convocatorias. */
+/**
+ * Patrón Adapter. Implementa a la vez el repositorio interno de M4 y el puerto
+ * {@link ConvocatoriasSesionPort} que otros módulos usan para saber si un estudiante fue citado.
+ */
 @Repository
 public class ConvocatoriaRepositoryAdapter implements ConvocatoriaRepository, ConvocatoriasSesionPort {
 

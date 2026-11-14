@@ -20,6 +20,7 @@ public class PersonalSessionController {
         this.identityAccessPort = identityAccessPort;
     }
 
+    /** Devuelve el perfil del token actual. No reemite el accessToken. */
     @GetMapping("/me")
     public PersonalAutenticarResponse me() {
         AuthenticatedUser user = identityAccessPort.currentUser();

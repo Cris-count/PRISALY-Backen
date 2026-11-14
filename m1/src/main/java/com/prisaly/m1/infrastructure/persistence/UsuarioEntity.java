@@ -10,6 +10,10 @@ import jakarta.persistence.Table;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+/**
+ * Cuenta persistida: correo, hash de contraseña, estado y un rol.
+ * Sirve tanto al personal como al estudiante vinculado. El hash no se expone en las respuestas.
+ */
 @Entity
 @Table(name = "Usuario")
 public class UsuarioEntity {

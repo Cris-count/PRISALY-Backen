@@ -8,8 +8,10 @@ import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 
 /**
- * Fail-closed composition of M6's consumer port over M1 identity.
- * No ratified evaluation permission exists, so this adapter never returns AUTORIZADO.
+ * Patrón Adapter, cerrado en negativo. Traduce el puerto de autorización de M6
+ * a la identidad de M1. No existe todavía un permiso de evaluación ratificado,
+ * así que verificarAcceso() responde DENEGADO aunque el personal esté activo.
+ * Un fallo inesperado de identidad responde NO_DISPONIBLE, nunca AUTORIZADO.
  */
 public final class M6EvaluacionAuthorizationAdapter implements AutorizacionEvaluacionPort {
     private final IdentityAccessPort identity;

@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+/** Clave compuesta de la asignación usuario-permiso. Identifica el par, no el permiso suelto. */
 public final class UsuarioPermisoId implements Serializable {
 
     private UUID idUsuario;

@@ -35,11 +35,13 @@ public final class CasoRubricaController {
         this.concurrency = concurrency.orElse(null);
     }
 
+    /** Rúbrica actual del caso, con sus criterios. */
     @GetMapping
     public ResponseEntity<RubricaResponse> consultar(@PathVariable("idCaso") String id) {
         return responder(codec(), read.consultarContenido(id));
     }
 
+    /** Reemplaza la rúbrica del borrador. Exige If-Match y al menos un criterio para publicar. */
     @PutMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<RubricaResponse> guardar(@PathVariable("idCaso") String value,
             @RequestHeader HttpHeaders headers, @RequestBody String body) {

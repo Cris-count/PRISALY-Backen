@@ -12,6 +12,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
+ * Patrón Adapter. M4 llama a {@link NotificacionPort}; aquí se traduce a
+ * {@link NotificarConvocatoriaService}. Un retorno normal significa aviso y correo encolados,
+ * no que SMTP ya entregó. Si falla, M4 recibe M4-PROVEEDOR-NO-DISPONIBLE sin el detalle técnico.
+ *
  * Proveedor productivo de {@link NotificacionPort}; publicado por {@link M7Configuration} y
  * sustituye al fallback de M4 ({@code @ConditionalOnMissingBean}).
  * Un retorno normal = solicitud registrada (aviso + correo Pendiente), no entrega SMTP.

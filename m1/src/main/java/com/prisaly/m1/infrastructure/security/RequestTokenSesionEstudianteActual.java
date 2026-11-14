@@ -8,6 +8,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
+/**
+ * Lee el token de sesión estudiantil que el filtro dejó en la petición.
+ * Solo existe cuando el acceso estudiantil está habilitado. No mira el Bearer del personal.
+ */
 @Component
 @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "true")
 public class RequestTokenSesionEstudianteActual implements TokenSesionEstudianteActual {

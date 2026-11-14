@@ -37,16 +37,19 @@ public final class CasoContenidoConsultaController {
         this.concurrency = concurrency.orElse(null);
     }
 
+    /** Contenido completo del caso del docente dueño, con ETag para la siguiente escritura. */
     @GetMapping("/contenido")
     public ResponseEntity<CasoContenidoResponse> contenido(@PathVariable("idCaso") String id) {
         return responder(id, CasoContenidoResponse::from);
     }
 
+    /** Lista los escenarios del caso. Un docente ajeno no los ve. */
     @GetMapping("/escenarios")
     public ResponseEntity<List<CasoContenidoResponse.EscenarioContenido>> escenarios(@PathVariable("idCaso") String id) {
         return responder(id, CasoContenidoResponse::escenariosDe);
     }
 
+    /** Un escenario del caso. Falla si el identificador no pertenece a ese caso. */
     @GetMapping("/escenarios/{idEscenario}")
     public ResponseEntity<CasoContenidoResponse.EscenarioContenido> escenario(@PathVariable("idCaso") String id,
             @PathVariable("idEscenario") String elemento) {
@@ -54,6 +57,7 @@ public final class CasoContenidoConsultaController {
         return responder(id, caso -> CasoContenidoResponse.EscenarioContenido.from(escenarioDe(caso, buscado)));
     }
 
+    /** Una pregunta del caso, con su texto y su orden. */
     @GetMapping("/preguntas/{idPregunta}")
     public ResponseEntity<CasoContenidoResponse.PreguntaContenido> pregunta(@PathVariable("idCaso") String id,
             @PathVariable("idPregunta") String elemento) {
@@ -61,6 +65,7 @@ public final class CasoContenidoConsultaController {
         return responder(id, caso -> CasoContenidoResponse.PreguntaContenido.from(preguntaDe(caso, buscado)));
     }
 
+    /** Opciones de una pregunta, incluida cuál es la correcta. Solo para el docente dueño. */
     @GetMapping("/preguntas/{idPregunta}/opciones")
     public ResponseEntity<List<CasoContenidoResponse.OpcionContenido>> opciones(@PathVariable("idCaso") String id,
             @PathVariable("idPregunta") String elemento) {

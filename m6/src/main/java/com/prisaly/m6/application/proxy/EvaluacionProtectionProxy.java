@@ -8,7 +8,13 @@ import com.prisaly.m6.domain.strategy.ResultadoEvaluacion;
 import com.prisaly.m6.api.SolicitudEvaluacion;
 import java.util.Objects;
 
-/** No academic effects: checks access once, then delegates the same request once. */
+/**
+ * Patrón Proxy de protección. Implementa el mismo puerto que el caso de uso real
+ * ({@link EvaluacionCasoUso}) para poder sustituirlo. Antes de delegar consulta
+ * {@link AutorizacionEvaluacionPort} una sola vez. Si falta el autorizador, la decisión
+ * no es AUTORIZADO o la consulta falla, niega el acceso y no llama al delegado.
+ * Un fallo del delegado no se disfraza de denegación.
+ */
 public final class EvaluacionProtectionProxy implements EvaluacionCasoUso {
     private final AutorizacionEvaluacionPort autorizacion;
     private final EvaluacionCasoUso delegado;

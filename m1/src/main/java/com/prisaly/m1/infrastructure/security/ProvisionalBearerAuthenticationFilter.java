@@ -20,7 +20,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * TD-M1-AUTH-PROVISIONAL filter. Reloads active user + permissions on every request.
+ * Filtro de servlet, una vez por petición. Lee el Bearer provisional, recarga usuario
+ * activo y permisos, y deja un principal UUID en el SecurityContext. No es JWT:
+ * el token solo existe en el almacén en memoria de este proceso.
  */
 @Component
 public class ProvisionalBearerAuthenticationFilter extends OncePerRequestFilter {

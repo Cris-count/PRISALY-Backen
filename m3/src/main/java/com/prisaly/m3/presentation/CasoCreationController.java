@@ -13,6 +13,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Crea un caso en borrador. Exige personal autenticado con permiso CREAR_CASO.
+ * El identificador lo aporta el cliente y el dueño sale del token, no del cuerpo.
+ */
 @RestController
 @RequestMapping("/v1/casos")
 public final class CasoCreationController {
@@ -24,6 +28,7 @@ public final class CasoCreationController {
         this.identity = Objects.requireNonNull(identity);
     }
 
+    /** Responde 201 con id y estado BORRADOR solo después de que el caso quedó persistido. */
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<CrearCasoResponse> create(@RequestBody String body) {
         var owner = identity.currentUserId();

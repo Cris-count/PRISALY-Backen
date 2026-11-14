@@ -14,6 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador REST del personal. autenticar() comprueba correo y contraseña y devuelve
+ * un Bearer provisional guardado en memoria, no un JWT. cerrar-sesion borra ese token.
+ * La regla de contraseña y el límite de intentos viven en los servicios, no aquí.
+ */
 @RestController
 @RequestMapping("/v1/personal")
 public class PersonalAuthController {
@@ -27,6 +32,7 @@ public class PersonalAuthController {
         this.autenticacionProtegida = autenticacionProtegida;
     }
 
+    /** Valida correo y contraseña y devuelve el token. Un fallo no revela si el correo existe. */
     @PostMapping("/autenticar")
     public PersonalAutenticarResponse autenticar(@Valid @RequestBody PersonalAutenticarRequest request,
             HttpServletRequest http) {

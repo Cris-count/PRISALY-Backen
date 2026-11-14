@@ -4,6 +4,11 @@ import com.prisaly.m7.domain.AvisoConvocatoria;
 import com.prisaly.m7.domain.ConvocatoriaNotificable;
 import java.util.Objects;
 
+/**
+ * Observador obligatorio de una convocatoria. Compone el texto con
+ * {@link PlantillaConvocatoria} y lo guarda por {@link RegistroAvisoPort}.
+ * No abre SMTP; el envío lo hace después {@link ProcesarEnviosPendientesService}.
+ */
 public final class ObservadorRegistroAviso implements ObservadorConvocatoria {
     private final RegistroAvisoPort registro;
     private final String texto;

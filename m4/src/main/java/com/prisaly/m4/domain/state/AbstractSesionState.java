@@ -5,8 +5,9 @@ import com.prisaly.m4.domain.model.SesionAcademica;
 import com.prisaly.m4.domain.rule.SesionOperacionNoPermitidaException;
 
 /**
- * Clase base abstracta con comportamiento por defecto: rechazar toda operación.
- * Las subclases habilitan selectivamente las transiciones permitidas.
+ * Patrón State, parte común. Niega abrir, iniciar, cerrar, cancelar, editar y convocar.
+ * Cada estado concreto sobrescribe solo lo que sí puede hacer. Así un estado nuevo
+ * no hereda un permiso por accidente.
  */
 abstract class AbstractSesionState implements SesionState {
 

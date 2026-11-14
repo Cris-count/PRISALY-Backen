@@ -9,8 +9,8 @@ import java.util.Objects;
 import java.util.UUID;
 
 /**
- * Adaptación al contrato público M3. No importa entidades ni repositorios JPA M3. No escribe una
- * marca F3-03 manualmente. El contrato disponible no confirma atomicidad ni persistencia del
+ * Patrón Adapter hacia el puerto público de casos de M3. No importa entidades ni repositorios JPA de M3.
+ * No escribe la marca F3-03 a mano. El contrato disponible no confirma atomicidad ni persistencia del
  * bloqueo por programación; por ello no puede completar F3-03 ni convertir un booleano del agregado
  * en prueba de que se programó una sesión en las tablas oficiales.
  */

@@ -13,7 +13,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * Copia la cookie estudiantil a la petición. No escribe el SecurityContext del personal.
+ * Filtro de servlet, solo si el acceso estudiantil está habilitado. Copia la cookie
+ * prisaly_estudiante a un atributo de la petición para que M5 la lea. No la trata
+ * como Bearer ni la mete en el SecurityContext del personal.
  */
 @Component
 @ConditionalOnProperty(name = "prisaly.m1.student-access.enabled", havingValue = "true")
