@@ -99,8 +99,8 @@ class RecorridoCandidatoM4M5QaHttpIT {
         UUID convBeto = RecorridoParticipacionQa.convocar(jdbc, enCurso, beto);
 
         // 1. Authentication (DD-02 B, code delivered to Mailpit).
-        String cookieAna = QA.login(http, port, json, worker, correoA);
-        String cookieBeto = QA.login(http, port, json, worker, correoB);
+        String cookieAna = QA.login(http, port, json, worker, jdbc, correoA);
+        String cookieBeto = QA.login(http, port, json, worker, jdbc, correoB);
 
         // 2. Discovery: only Ana's own AUTHORIZED convocations (retired and others' are absent).
         var lista = RecorridoParticipacionQa.enviar(http, port, "GET", "/v1/estudiantes/convocatorias", null, cookieAna);
@@ -184,7 +184,7 @@ class RecorridoCandidatoM4M5QaHttpIT {
         UUID[] c = RecorridoParticipacionQa.caso(catalog, jdbc);
         UUID sesion = RecorridoParticipacionQa.sesion(jdbc, c[0], c[1], true, 1800);
         UUID conv = RecorridoParticipacionQa.convocar(jdbc, sesion, estudiante);
-        String cookie = QA.login(http, port, json, worker, correo);
+        String cookie = QA.login(http, port, json, worker, jdbc, correo);
         var pool = Executors.newFixedThreadPool(2);
         var salida = new CountDownLatch(1);
         List<Future<java.net.http.HttpResponse<String>>> tareas = new ArrayList<>();

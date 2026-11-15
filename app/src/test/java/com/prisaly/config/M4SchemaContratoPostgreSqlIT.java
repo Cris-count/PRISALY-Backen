@@ -87,6 +87,34 @@ class M4SchemaContratoPostgreSqlIT {
         assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016", jdbc.queryForObject(
                 "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
     }
+    // DC-BE-SIM-INCREMENTO-A-15: the QA-only narrative candidate V017 is recognized only with its own contracts and the
+    // shipped production contract rejects its extra table (the candidate can never pass as the productive schema).
+    @Test void simASeReconoceSoloConSuContratoYElProductivoLaRechaza() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_SIM_A));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_DD02B);
+        rechaza(M4SchemaContract.V013_DD02B_SIM_A);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,017", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
+    @Test void dd02bConSimASeReconoceSoloConElContratoCombinado() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/dd02b-propuesta", "classpath:db/sim-propuesta");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_DD02B_SIM_A));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_DD02B);
+        rechaza(M4SchemaContract.V013_SIM_A);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016,017", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
+    @Test void elTriggerDelGuionAlteradoSeDetectaComoEstructuraIncompatible() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta");
+        flyway.clean(); flyway.migrate();
+        jdbc.execute("DROP TRIGGER tr_guion_bloqueo_sim ON public.\"GuionNarrativoCaso\"");
+        rechaza(M4SchemaContract.V013_SIM_A);
+    }
     @Test void ausenciaDeLaTablaV013SeDetecta() {
         jdbc.execute("DROP TABLE \"InicializacionAdministrador\"");
         rechaza(M4SchemaContract.V013);

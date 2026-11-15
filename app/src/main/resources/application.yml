@@ -52,6 +52,11 @@ prisaly:
       nombre: ${PRISALY_INICIALIZACION_ADMIN_NOMBRE:}
       archivo-credencial: ${PRISALY_INICIALIZACION_ADMIN_ARCHIVO:}
   m3:
+    # DC-BE-SIM-INCREMENTO-A-15: candidate narrative script (M3). OFF: no bean, no port towards M5 and no teacher
+    # route. Turning it on also requires the QA-only V017 schema (db/sim-propuesta) and is NOT an approved extension.
+    narrativa:
+      publicacion:
+        enabled: false
     # Institutional read policy for M3 case reads (DC-M3-RES-02), I1 (DC-I1-F4-IMPLEMENTACION-FINAL-01):
     #   permiso CONSULTAR_CASO        -> authorized by Dirección Central (existing permission, none created);
     #   estados-visibles (D2)         -> communicated as approved: the owner reads Borrador, Publicado, Archivado;
