@@ -27,6 +27,10 @@ class M4SchemaReferenceIT {
             exportar(output, M4SchemaContract.V013_DD02, "classpath:db/migration", "classpath:db/dd02-propuesta");
             // DD-02 alternative B (DC-DD02-B4-B5-01): optional candidates V014-V016.
             exportar(output, M4SchemaContract.V013_DD02B, "classpath:db/migration", "classpath:db/dd02b-propuesta");
+            // DC-BE-SIM-INCREMENTO-A-15: QA-only narrative candidate V017, alone and combined with DD-02 B.
+            exportar(output, M4SchemaContract.V013_SIM_A, "classpath:db/migration", "classpath:db/sim-propuesta");
+            exportar(output, M4SchemaContract.V013_DD02B_SIM_A, "classpath:db/migration", "classpath:db/dd02b-propuesta",
+                    "classpath:db/sim-propuesta");
         } finally {
             M4SchemaFixture.borrar(historico);
         }

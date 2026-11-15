@@ -45,7 +45,7 @@ class InicioProductivoM4M5QaHttpIT {
         UUID[] c = RecorridoParticipacionQa.caso(catalog, jdbc);
         UUID sesion = RecorridoParticipacionQa.sesion(jdbc, c[0], c[1], true, 1800);
         UUID conv = RecorridoParticipacionQa.convocar(jdbc, sesion, estudiante);
-        String cookie = QA.login(http, port, json, worker, correo);
+        String cookie = QA.login(http, port, json, worker, jdbc, correo);
 
         var lista = RecorridoParticipacionQa.enviar(http, port, "GET", "/v1/estudiantes/convocatorias", null, cookie);
         assertEquals(200, lista.statusCode(), lista.body());
@@ -81,7 +81,7 @@ class InicioProductivoM4M5QaHttpIT {
         UUID[] c = RecorridoParticipacionQa.caso(catalog, jdbc);
         UUID sesion = RecorridoParticipacionQa.sesion(jdbc, c[0], c[1], true, 1800);
         RecorridoParticipacionQa.convocar(jdbc, sesion, estudiante);
-        String cookie = QA.login(http, port, json, worker, correo);
+        String cookie = QA.login(http, port, json, worker, jdbc, correo);
         var sinOrigen = http.send(java.net.http.HttpRequest.newBuilder(
                         java.net.URI.create("http://localhost:" + port + "/api/v1/estudiantes/sesiones/" + sesion + "/intentos"))
                 .header("Cookie", cookie).POST(java.net.http.HttpRequest.BodyPublishers.noBody()).build(),

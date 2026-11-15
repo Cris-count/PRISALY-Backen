@@ -106,11 +106,15 @@ final class RecorridoParticipacionQa {
 
     /** DD-02 B login through Mailpit: solicitar → M7 worker → SMTP → capture mailbox → validar. Returns the cookie pair. */
     String login(HttpClient http, int port, ObjectMapper json, ConfiguracionCodigoAccesoM7.TrabajoEntregas worker,
-            String correo) throws Exception {
+            JdbcTemplate jdbc, String correo) throws Exception {
         var solicitud = enviar(http, port, "POST", "/v1/acceso-estudiante/solicitar", "{\"correo\":\"" + correo + "\"}", null);
         assertEquals(202, solicitud.statusCode(), solicitud.body());
         String challenge = json.readTree(solicitud.body()).get("challengeId").asText();
+        esperarEntregaReclamable(jdbc, challenge);
         assertTrue(worker.ejecutarAhora() >= 1, "M7 delivered the code over SMTP");
+        assertEquals("ENVIADA", jdbc.queryForObject(
+                "SELECT \"estado\" FROM \"EntregaCodigoAcceso\" WHERE \"challengeId\"=?::uuid", String.class, challenge),
+                "this challenge's delivery was sent over SMTP");
         String codigo = codigoDelBuzon(http, json, correo);
         var validacion = enviar(http, port, "POST", "/v1/acceso-estudiante/validar",
                 "{\"challengeId\":\"" + challenge + "\",\"codigo\":\"" + codigo + "\"}", null);
@@ -118,6 +122,26 @@ final class RecorridoParticipacionQa {
         String setCookie = validacion.headers().firstValue("Set-Cookie").orElseThrow();
         assertTrue(setCookie.contains("HttpOnly") && setCookie.contains("SameSite=Strict") && setCookie.contains("Path=/api"), setCookie);
         return setCookie.split(";", 2)[0];
+    }
+
+    /**
+     * DC-BE-SIM-A15-CORRECCION-01. The M7 outbox stamps {@code proximoIntento} with PostgreSQL {@code now()}, while the
+     * worker reclaims with the JVM clock ({@code "proximoIntento" <= ahora}). The PostgreSQL container clock runs a few
+     * milliseconds ahead of the JVM, so right after the 202 the fresh delivery may not be reclaimable yet and a manual
+     * cycle legitimately returns 0. Synchronize on that exact condition (bounded) instead of racing it; production
+     * behavior is unchanged.
+     */
+    private static void esperarEntregaReclamable(JdbcTemplate jdbc, String challenge) throws InterruptedException {
+        java.time.Instant proximo = jdbc.queryForObject(
+                "SELECT \"proximoIntento\" FROM \"EntregaCodigoAcceso\" WHERE \"challengeId\"=?::uuid",
+                java.time.OffsetDateTime.class, challenge).toInstant();
+        long limite = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(5);
+        while (!java.time.Instant.now().isAfter(proximo)) {
+            if (System.nanoTime() > limite) {
+                throw new AssertionError("The JVM clock did not reach proximoIntento within 5 s (clock skew too large)");
+            }
+            Thread.sleep(5);
+        }
     }
 
     private String codigoDelBuzon(HttpClient http, ObjectMapper json, String correo) throws Exception {
