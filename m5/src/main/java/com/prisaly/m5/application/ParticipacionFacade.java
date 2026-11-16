@@ -103,6 +103,7 @@ public final class ParticipacionFacade implements OperacionesParticipacion {
 
     @Override
     public ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo) {
+        fases.ifPresent(f -> f.alFinalizar(intento)); // D-SIM-4 (DC-BE-SIM-B2B-B3-32)
         return finalizacion.finalizar(intento, motivo);
     }
 

@@ -79,6 +79,11 @@ prisaly:
     exploracion:
       fases:
         enabled: false
+        # DC-BE-SIM-B2B-B3-32 (B3): HTTP exposure of the student phase routes P1-P4 (narrativa, fase, cuestionario,
+        # completitud). OFF: the routes do not exist (404). Turning it on with fases.enabled=false fails startup
+        # (M5-FASES-HTTP-REQUIERE-FASES): exposing routes never bypasses the unavailable phases.
+        http:
+          enabled: false
   m4:
     consulta-bd0052:
       enabled: true

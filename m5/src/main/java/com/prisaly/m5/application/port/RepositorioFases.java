@@ -55,8 +55,11 @@ public interface RepositorioFases {
     void crear(ReferenciaIntento intento, UUID idGuion);
 
     /**
-     * Pasa de {@code Exploracion} a {@code Cuestionario} con la hora del servidor y la devuelve. Requiere la fila
-     * {@code "Intento"} ya bloqueada por {@link #bloquear} en la misma transacción.
+     * Pasa de {@code Exploracion} a {@code Cuestionario} en una sola sentencia, con <b>un único</b> instante de PostgreSQL:
+     * ese instante es a la vez la condición ({@code instante <= limiteTemporal}) y la fecha persistida, que se devuelve.
+     * Vacío si en ese instante el límite ya había vencido: no se escribe nada y la fase sigue en exploración
+     * (DC-BE-SIM-B2B-B3-CORRECCION-34, QA33-03). Requiere la fila {@code "Intento"} ya bloqueada por {@link #bloquear} en la
+     * misma transacción.
      */
-    Instant marcarCuestionario(ReferenciaIntento intento);
+    Optional<Instant> marcarCuestionario(ReferenciaIntento intento);
 }

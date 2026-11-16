@@ -71,18 +71,33 @@ public final class RepositorioFasesJdbc implements RepositorioFases {
                 id(intento), Objects.requireNonNull(idGuion, "idGuion"));
     }
 
+    /**
+     * QA33-03: el CTE {@code reloj} evalúa {@code clock_timestamp()} una sola vez, así que la comparación con el límite y
+     * la fecha grabada son el mismo instante. Si el límite vence entre la lectura bloqueada y esta sentencia, no se
+     * actualiza ninguna fila y la fase sigue en {@code Exploracion}.
+     */
     @Override
-    public Instant marcarCuestionario(ReferenciaIntento intento) {
+    public Optional<Instant> marcarCuestionario(ReferenciaIntento intento) {
         exigirTransaccion();
+        UUID id = id(intento);
         List<OffsetDateTime> fechas = jdbc.queryForList("""
-                UPDATE public."FaseIntento" SET "fase" = 'Cuestionario', "fechaInicioCuestionario" = clock_timestamp()
-                WHERE "idIntento" = ? AND "fase" = 'Exploracion'
-                RETURNING "fechaInicioCuestionario\"""", OffsetDateTime.class, id(intento));
-        if (fechas.size() != 1) {
-            // La fila del intento está bloqueada por el llamador: no puede haber cambiado entre la lectura y la escritura.
+                WITH reloj AS (SELECT clock_timestamp() AS "ahora")
+                UPDATE public."FaseIntento" f
+                SET "fase" = 'Cuestionario', "fechaInicioCuestionario" = reloj."ahora"
+                FROM reloj, public."Intento" i
+                WHERE f."idIntento" = ? AND f."fase" = 'Exploracion'
+                  AND i."idIntento" = f."idIntento" AND reloj."ahora" <= i."limiteTemporal"
+                RETURNING f."fechaInicioCuestionario\"""", OffsetDateTime.class, id);
+        if (fechas.size() == 1) {
+            return Optional.of(fechas.get(0).toInstant());
+        }
+        // La fila del intento está bloqueada por el llamador, así que la fase no pudo cambiar: solo el límite explica que
+        // no se haya actualizado nada. Cualquier otra situación es una incoherencia de persistencia.
+        List<String> fase = jdbc.queryForList("SELECT \"fase\" FROM public.\"FaseIntento\" WHERE \"idIntento\" = ?", String.class, id);
+        if (!fase.equals(List.of("Exploracion"))) {
             throw new PersistenciaIntentoException("La fase no estaba en exploración al marcar el cuestionario");
         }
-        return fechas.get(0).toInstant();
+        return Optional.empty();
     }
 
     private Optional<IntentoConFase> consultar(String sql, ReferenciaIntento intento) {

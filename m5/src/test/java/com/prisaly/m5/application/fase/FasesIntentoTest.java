@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.prisaly.m3.api.ContenidoCasoEstudiantilPort;
 import com.prisaly.m5.application.ContenidoIntento;
 import com.prisaly.m5.application.IntentoNoEncontradoException;
+import com.prisaly.m5.application.LimiteTemporalVencidoException;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ResultadoInicio;
@@ -56,13 +57,17 @@ class FasesIntentoTest {
             filas.put(i.valor(), new IntentoConFase(f.estado(), f.limiteTemporal(), f.ahora(),
                     Optional.of(new Fase(idGuion, FaseAcademica.EXPLORACION, ahora, Optional.empty()))));
         }
-        @Override public Instant marcarCuestionario(ReferenciaIntento i) {
-            escrituras.add("cuestionario");
+        /** Como el UPDATE real: {@code ahora} es el instante de la escritura, que decide el límite y se graba. */
+        @Override public Optional<Instant> marcarCuestionario(ReferenciaIntento i) {
             IntentoConFase f = filas.get(i.valor());
+            if (ahora.isAfter(f.limiteTemporal())) {
+                return Optional.empty();
+            }
+            escrituras.add("cuestionario");
             Fase previa = f.fase().orElseThrow();
             filas.put(i.valor(), new IntentoConFase(f.estado(), f.limiteTemporal(), f.ahora(),
                     Optional.of(new Fase(previa.idGuion(), FaseAcademica.CUESTIONARIO, previa.fechaInicioExploracion(), Optional.of(ahora)))));
-            return ahora;
+            return Optional.of(ahora);
         }
     }
 
@@ -73,7 +78,7 @@ class FasesIntentoTest {
         @Override public Optional<UUID> publicadoParaConvocatoria(ReferenciaConvocatoria c) { return guionDelCaso; }
         @Override public Optional<VersionGuion> version(UUID id) { return Optional.ofNullable(versiones.get(id)); }
     };
-    final FasesIntento servicio = new FasesIntento(fases, guiones, PuntosDecisionFase.noRatificados());
+    final FasesIntento servicio = new FasesIntento(fases, guiones, new PoliticasFaseAprobadas());
 
     void intento(EstadoIntento estado, Duration limiteDesdeAhora, FaseAcademica fase) {
         Optional<RepositorioFases.Fase> f = switch (fase) {
@@ -161,6 +166,18 @@ class FasesIntentoTest {
         assertEquals(List.of("cuestionario"), fases.escrituras);
     }
 
+    @Test @DisplayName("D-SIM-3 (QA33-03): lectura bloqueada antes del límite y escritura después → LIMITE_TEMPORAL_VENCIDO, sin escribir")
+    void limiteVencidoEntreLecturaYEscritura() {
+        intento(EstadoIntento.EN_CURSO, Duration.ofSeconds(1), FaseAcademica.EXPLORACION); // leída en T0, límite T0+1 s
+        fases.ahora = T0.plusSeconds(2); // instante de la escritura, ya vencido
+        var vencido = assertThrows(LimiteTemporalVencidoException.class, () -> servicio.iniciarCuestionario(intento));
+        assertEquals(PoliticasFaseAprobadas.MENSAJE_LIMITE, vencido.getMessage());
+        assertEquals(List.of(), fases.escrituras);
+        assertEquals(FaseAcademica.EXPLORACION, servicio.consultar(intento).fase());
+        fases.ahora = T0.plusSeconds(1); // exactamente en el límite: se admite y se graba ese instante
+        assertEquals(T0.plusSeconds(1), servicio.iniciarCuestionario(intento).fechaInicioCuestionario());
+    }
+
     @Test @DisplayName("P3 rechaza el intento finalizado y el intento sin fases, sin escribir")
     void cuestionarioRechazos() {
         intento(EstadoIntento.FINALIZADO, Duration.ofMinutes(30), FaseAcademica.EXPLORACION);
@@ -170,28 +187,87 @@ class FasesIntentoTest {
         assertEquals(List.of(), fases.escrituras);
     }
 
-    @Test @DisplayName("P3 tras el límite: D-SIM-3 no ratificada falla cerrado y no escribe; ya iniciado sigue siendo idempotente")
-    void cuestionarioTrasElLimiteDependeDeDSim3() {
+    @Test @DisplayName("D-SIM-3: tras el límite la entrada se rechaza (LIMITE_TEMPORAL_VENCIDO) sin escribir; ya iniciado sigue siendo idempotente")
+    void cuestionarioTrasElLimiteRechazado() {
         intento(EstadoIntento.EN_CURSO, Duration.ofSeconds(-1), FaseAcademica.EXPLORACION);
-        var pendiente = assertThrows(DecisionFaseNoRatificadaException.class, () -> servicio.iniciarCuestionario(intento));
-        assertEquals(DecisionFasePendiente.D_SIM_3, pendiente.decision());
+        var vencido = assertThrows(LimiteTemporalVencidoException.class, () -> servicio.iniciarCuestionario(intento));
+        assertEquals(PoliticasFaseAprobadas.MENSAJE_LIMITE, vencido.getMessage());
         assertEquals(List.of(), fases.escrituras);
+        assertEquals(1, fases.bloqueos, "el límite se compara con la fila del intento bloqueada");
+        // Exactamente en el límite todavía se admite (mismo criterio que las respuestas: vencido solo si ahora > límite).
+        intento(EstadoIntento.EN_CURSO, Duration.ZERO, FaseAcademica.EXPLORACION);
+        assertFalse(servicio.iniciarCuestionario(intento).yaIniciado());
+        fases.escrituras.clear();
         intento(EstadoIntento.EN_CURSO, Duration.ofSeconds(-1), FaseAcademica.CUESTIONARIO);
         assertTrue(servicio.iniciarCuestionario(intento).yaIniciado());
         assertEquals(List.of(), fases.escrituras);
     }
 
-    @Test @DisplayName("una decisión ratificada en el futuro se aplica sustituyendo solo su punto de decisión")
-    void puntoDeDecisionSustituible() {
+    @Test @DisplayName("cada decisión se consulta solo en su situación exacta y en un único punto")
+    void cadaDecisionEnSuPunto() {
         List<String> consultados = new ArrayList<>();
-        var permitirTodo = new PuntosDecisionFase() {
+        var registro = new PuntosDecisionFase() {
+            @Override public void preguntasSinCuestionario(ReferenciaIntento i, EstadoIntento e) { consultados.add("D-SIM-2 " + e); }
             @Override public void entradaAlCuestionarioTrasElLimite(ReferenciaIntento i) { consultados.add("D-SIM-3"); }
+            @Override public void finalizacionDesdeExploracion(ReferenciaIntento i) { consultados.add("D-SIM-4"); }
             @Override public void narrativaDeIntentoFinalizado(ReferenciaIntento i) { consultados.add("D-SIM-10"); }
         };
-        var otro = new FasesIntento(fases, guiones, permitirTodo);
+        var otro = new FasesIntento(fases, guiones, registro);
+        versiones.put(guion, new GuionesDelIntento.VersionGuion(guion, 1, "c".repeat(64), "{}"));
+        intento(EstadoIntento.EN_CURSO, Duration.ofMinutes(30), FaseAcademica.EXPLORACION);
+        otro.exigirPreguntasVisibles(intento);
+        otro.alFinalizar(intento);
+        otro.narrativa(intento);
         intento(EstadoIntento.EN_CURSO, Duration.ofSeconds(-1), FaseAcademica.EXPLORACION);
-        assertFalse(otro.iniciarCuestionario(intento).yaIniciado());
-        assertEquals(List.of("D-SIM-3"), consultados);
+        // QA33-03: el límite lo decide la escritura; una política que no rechazara no puede persistir la entrada tardía.
+        assertThrows(IllegalStateException.class, () -> otro.iniciarCuestionario(intento));
+        intento(EstadoIntento.FINALIZADO, Duration.ofMinutes(30), FaseAcademica.EXPLORACION);
+        otro.exigirPreguntasVisibles(intento);
+        otro.alFinalizar(intento);
+        otro.narrativa(intento);
+        intento(EstadoIntento.EN_CURSO, Duration.ofMinutes(30), FaseAcademica.CUESTIONARIO);
+        otro.exigirPreguntasVisibles(intento);
+        otro.alFinalizar(intento);
+        intento(EstadoIntento.EN_CURSO, Duration.ofMinutes(30), FaseAcademica.SIN_FASES);
+        otro.exigirPreguntasVisibles(intento);
+        otro.alFinalizar(intento);
+        assertEquals(List.of("D-SIM-2 EN_CURSO", "D-SIM-4", "D-SIM-3", "D-SIM-2 FINALIZADO", "D-SIM-10"), consultados);
+    }
+
+    // --- D-SIM-2: preguntas ocultas ---------------------------------------------------------------------------
+
+    @Test @DisplayName("D-SIM-2: preguntas ocultas en exploración y tras finalizar sin cuestionario; visibles en cuestionario y SIN_FASES")
+    void preguntasOcultasSinCuestionario() {
+        intento(EstadoIntento.EN_CURSO, Duration.ofMinutes(30), FaseAcademica.EXPLORACION);
+        assertThrows(CuestionarioNoIniciadoException.class, () -> servicio.exigirPreguntasVisibles(intento));
+        intento(EstadoIntento.FINALIZADO, Duration.ofMinutes(30), FaseAcademica.EXPLORACION);
+        assertThrows(CuestionarioNoIniciadoException.class, () -> servicio.exigirPreguntasVisibles(intento));
+        for (EstadoIntento estado : EstadoIntento.values()) {
+            intento(estado, Duration.ofMinutes(30), FaseAcademica.CUESTIONARIO);
+            servicio.exigirPreguntasVisibles(intento);
+            intento(estado, Duration.ofMinutes(30), FaseAcademica.SIN_FASES);
+            servicio.exigirPreguntasVisibles(intento);
+        }
+        servicio.exigirPreguntasVisibles(new ReferenciaIntento(UUID.randomUUID().toString()));
+        assertEquals(0, fases.bloqueos, "es una lectura en la instantánea, sin bloqueo");
+        assertEquals(List.of(), fases.escrituras);
+    }
+
+    // --- D-SIM-4: finalización desde exploración ----------------------------------------------------------------
+
+    @Test @DisplayName("D-SIM-4: finalizar desde exploración está permitido y no escribe ni cambia la fase")
+    void finalizacionDesdeExploracionPermitida() {
+        for (FaseAcademica fase : FaseAcademica.values()) {
+            for (EstadoIntento estado : EstadoIntento.values()) {
+                intento(estado, Duration.ofMinutes(30), fase);
+                servicio.alFinalizar(intento);
+                assertEquals(fase, servicio.consultar(intento).fase());
+            }
+        }
+        intento(EstadoIntento.EN_CURSO, Duration.ofSeconds(-1), FaseAcademica.EXPLORACION);
+        servicio.alFinalizar(intento); // vencido: no se cierra ni se rechaza por tiempo aquí
+        servicio.alFinalizar(new ReferenciaIntento(UUID.randomUUID().toString()));
+        assertEquals(List.of(), fases.escrituras);
     }
 
     // --- P1: narrativa -----------------------------------------------------------------------------------------
@@ -208,7 +284,7 @@ class FasesIntentoTest {
         assertThrows(ExploracionCerradaException.class, () -> servicio.narrativa(intento));
     }
 
-    @Test @DisplayName("P1: sin fases o sin guion disponible, NARRATIVA_NO_DISPONIBLE; intento finalizado, D-SIM-10 pendiente")
+    @Test @DisplayName("P1: sin fases o sin guion disponible, NARRATIVA_NO_DISPONIBLE; D-SIM-10: finalizado, EXPLORACION_CERRADA")
     void narrativaNoDisponibleYFinalizado() {
         intento(EstadoIntento.EN_CURSO, Duration.ofMinutes(30), FaseAcademica.SIN_FASES);
         assertThrows(NarrativaNoDisponibleException.class, () -> servicio.narrativa(intento));
@@ -217,9 +293,10 @@ class FasesIntentoTest {
         versiones.put(guion, new GuionesDelIntento.VersionGuion(guion, 1, "b".repeat(64), "{}"));
         for (FaseAcademica fase : List.of(FaseAcademica.EXPLORACION, FaseAcademica.CUESTIONARIO)) {
             intento(EstadoIntento.FINALIZADO, Duration.ofMinutes(30), fase);
-            var pendiente = assertThrows(DecisionFaseNoRatificadaException.class, () -> servicio.narrativa(intento));
-            assertEquals(DecisionFasePendiente.D_SIM_10, pendiente.decision());
+            assertThrows(ExploracionCerradaException.class, () -> servicio.narrativa(intento));
+            assertEquals(fase, servicio.consultar(intento).fase(), "no reabre ni modifica la fase");
         }
+        assertEquals(List.of(), fases.escrituras);
     }
 
     // --- P4: completitud ---------------------------------------------------------------------------------------

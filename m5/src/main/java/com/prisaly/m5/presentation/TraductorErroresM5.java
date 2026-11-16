@@ -1,5 +1,10 @@
 package com.prisaly.m5.presentation;
 
+import com.prisaly.m5.application.fase.CuestionarioNoIniciadoException;
+import com.prisaly.m5.application.fase.ExploracionCerradaException;
+import com.prisaly.m5.application.fase.FasesNoDisponiblesException;
+import com.prisaly.m5.application.fase.NarrativaNoDisponibleException;
+import com.prisaly.m5.application.fase.SinFasesException;
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
 import com.prisaly.m5.application.ConvocatoriaNoEncontradaException;
 import com.prisaly.m5.application.ContenidoIntentoNoDisponibleException;
@@ -47,6 +52,22 @@ public final class TraductorErroresM5 {
     public static Optional<ErrorHttp> traducir(Throwable error) {
         if (error instanceof ContenidoIntentoNoDisponibleException e) {
             return error(409, "CONTENIDO_INTENTO_NO_DISPONIBLE", e.getMessage());
+        }
+        // DC-BE-SIM-B2B-B3-32 (Incremento B): fases académicas. Todas son 409 sin escritura; ninguna revela preguntas.
+        if (error instanceof ExploracionCerradaException e) {
+            return error(409, "EXPLORACION_CERRADA", e.getMessage()); // D-SIM-10 y R4
+        }
+        if (error instanceof CuestionarioNoIniciadoException e) {
+            return error(409, "CUESTIONARIO_NO_INICIADO", e.getMessage()); // R2 y D-SIM-2
+        }
+        if (error instanceof SinFasesException e) {
+            return error(409, "INTENTO_SIN_FASES", e.getMessage());
+        }
+        if (error instanceof NarrativaNoDisponibleException e) {
+            return error(409, "NARRATIVA_NO_DISPONIBLE", e.getMessage());
+        }
+        if (error instanceof FasesNoDisponiblesException e) {
+            return error(409, "FASES_NO_DISPONIBLES", e.getMessage());
         }
         if (error instanceof ConsultaProgramacionNoDisponibleException) {
             return error(

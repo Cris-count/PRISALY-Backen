@@ -189,6 +189,19 @@ class ContenidoIntentoEstudianteHttpIT {
         assertEquals(antes,despues.body());
     }
 
+    /** DC-BE-SIM-B2B-B3-32: con los interruptores de producción las rutas de fases P1–P4 no existen y /contenido no cambia. */
+    @Test void rutasDeFasesNoPublicadasConLosValoresDeProduccion() throws Exception {
+        cadena(0);
+        String antes = get(ruta(), cookieA, null).body();
+        for (String r : new String[]{"narrativa", "fase", "completitud"}) {
+            assertEquals(404, get("/v1/estudiantes/intentos/" + intentoA + "/" + r, cookieA, null).statusCode(), r);
+        }
+        var cuestionario = send("POST", "/v1/estudiantes/intentos/" + intentoA + "/cuestionario", cookieA, "");
+        assertEquals(404, cuestionario.statusCode(), cuestionario.body());
+        assertEquals(0, cantidad("SELECT count(*) FROM information_schema.tables WHERE table_name='FaseIntento'"));
+        assertEquals(antes, get(ruta(), cookieA, null).body());
+    }
+
     private static void observar(String caso, HttpResponse<String> r) {
         System.out.println("RECORRIDO-OBSERVADO " + caso + " " + r.statusCode() + " " + r.body());
     }
