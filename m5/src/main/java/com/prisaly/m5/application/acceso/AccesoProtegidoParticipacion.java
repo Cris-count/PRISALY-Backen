@@ -11,6 +11,11 @@ import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ReferenciaSesion;
 import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
+import com.prisaly.m5.application.fase.CompletitudIntento;
+import com.prisaly.m5.application.fase.EntradaCuestionario;
+import com.prisaly.m5.application.fase.EstadoFase;
+import com.prisaly.m5.application.fase.FasesNoDisponiblesException;
+import com.prisaly.m5.application.fase.NarrativaIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
 import com.prisaly.m5.domain.respuesta.Respuesta;
@@ -33,6 +38,8 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
     private final OperacionesParticipacion operaciones;
     private final ConsultaContenidoIntento contenido;
     private final Function<Supplier<ContenidoIntento>, ContenidoIntento> lecturaContenido;
+    /** Disponibilidad de las operaciones candidatas P1–P4 (DC-BE-SIM-B1-B2A-CORRECCION-26, QA-B25-01). */
+    private final boolean operacionesCandidatas;
 
     public AccesoProtegidoParticipacion(ControlAccesoIntentos control, OperacionesParticipacion operaciones) {
         this(control, operaciones,
@@ -40,10 +47,22 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
                 Supplier::get);
     }
 
-    /** El ensamblaje aporta la frontera transaccional; aplicación permanece libre de Spring. */
+    /** El ensamblaje aporta la frontera transaccional; aplicación permanece libre de Spring. Sin operaciones candidatas. */
     public AccesoProtegidoParticipacion(ControlAccesoIntentos control, OperacionesParticipacion operaciones,
             ConsultaContenidoIntento contenido,
             Function<Supplier<ContenidoIntento>, ContenidoIntento> lecturaContenido) {
+        this(control, operaciones, contenido, lecturaContenido, false);
+    }
+
+    /**
+     * @param operacionesCandidatas {@code true} solo si el ensamblaje construyó las fases académicas
+     *     ({@code prisaly.m5.exploracion.fases.enabled=true}); con {@code false} P1–P4 fallan cerradas antes de
+     *     resolver la identidad, leer contenido o abrir una transacción.
+     */
+    public AccesoProtegidoParticipacion(ControlAccesoIntentos control, OperacionesParticipacion operaciones,
+            ConsultaContenidoIntento contenido,
+            Function<Supplier<ContenidoIntento>, ContenidoIntento> lecturaContenido,
+            boolean operacionesCandidatas) {
         if (control == null || operaciones == null || contenido == null || lecturaContenido == null) {
             throw new DatoAplicacionInvalidoException("El acceso protegido requiere control y operaciones");
         }
@@ -51,6 +70,7 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
         this.operaciones = operaciones;
         this.contenido = contenido;
         this.lecturaContenido = lecturaContenido;
+        this.operacionesCandidatas = operacionesCandidatas;
     }
 
     /** Identidad/titularidad y lectura académica comparten el snapshot abierto por el ensamblaje. */
@@ -115,5 +135,54 @@ public final class AccesoProtegidoParticipacion implements OperacionesParticipac
     public ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo) {
         control.verificar(intento);
         return operaciones.finalizarIntento(intento, motivo);
+    }
+
+    // DC-BE-SIM-B1-B2A-24 (Incremento B, B2a): las cuatro operaciones candidatas pasan por el mismo control de identidad
+    // (M1) y titularidad (M4) antes de delegar. No hay ruta HTTP que las publique.
+    // DC-BE-SIM-B1-B2A-CORRECCION-26 (QA-B25-01): y antes de eso, por la guarda del interruptor. P4 se compone aquí y no
+    // en la fachada, así que no le alcanzaban los rechazos de la fachada sin fases.
+
+    private void exigirOperacionesCandidatas() {
+        if (!operacionesCandidatas) {
+            throw new FasesNoDisponiblesException();
+        }
+    }
+
+    @Override
+    public EstadoFase consultarFase(ReferenciaIntento intento) {
+        exigirOperacionesCandidatas();
+        control.verificar(intento);
+        return operaciones.consultarFase(intento);
+    }
+
+    @Override
+    public EntradaCuestionario iniciarCuestionario(ReferenciaIntento intento) {
+        exigirOperacionesCandidatas();
+        control.verificar(intento);
+        return operaciones.iniciarCuestionario(intento);
+    }
+
+    @Override
+    public NarrativaIntento consultarNarrativa(ReferenciaIntento intento) {
+        exigirOperacionesCandidatas();
+        control.verificar(intento);
+        return operaciones.consultarNarrativa(intento);
+    }
+
+    /**
+     * Completitud informativa: titularidad, contenido autorizado y respuestas se leen en la misma instantánea que
+     * {@link #consultarContenido}, así que el recuento no puede mezclar dos estados del intento.
+     */
+    @Override
+    public CompletitudIntento consultarCompletitud(ReferenciaIntento intento) {
+        exigirOperacionesCandidatas();
+        ResumenIntento[] respuestas = new ResumenIntento[1];
+        ContenidoIntento autorizado = lecturaContenido.apply(() -> {
+            var estudiante = control.verificar(intento);
+            ContenidoIntento leido = contenido.consultar(intento, estudiante);
+            respuestas[0] = operaciones.consultarIntento(intento);
+            return leido;
+        });
+        return CompletitudIntento.de(autorizado, respuestas[0]);
     }
 }

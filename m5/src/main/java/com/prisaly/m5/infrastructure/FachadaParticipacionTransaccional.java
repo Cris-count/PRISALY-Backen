@@ -7,6 +7,9 @@ import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ResultadoInicio;
 import com.prisaly.m5.application.ResumenIntento;
+import com.prisaly.m5.application.fase.EntradaCuestionario;
+import com.prisaly.m5.application.fase.EstadoFase;
+import com.prisaly.m5.application.fase.NarrativaIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
 import com.prisaly.m5.domain.respuesta.Respuesta;
@@ -100,6 +103,24 @@ public class FachadaParticipacionTransaccional implements OperacionesParticipaci
     @Override
     public ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo) {
         return en(escritura, () -> fachada.finalizarIntento(intento, motivo));
+    }
+
+    /** DC-BE-SIM-B1-B2A-24: lectura de la fase en una instantánea REPEATABLE READ de solo lectura. */
+    @Override
+    public EstadoFase consultarFase(ReferenciaIntento intento) {
+        return en(lectura, () -> fachada.consultarFase(intento));
+    }
+
+    /** Transición al cuestionario: una única transacción de escritura con la fila {@code "Intento"} bloqueada. */
+    @Override
+    public EntradaCuestionario iniciarCuestionario(ReferenciaIntento intento) {
+        return en(escritura, () -> fachada.iniciarCuestionario(intento));
+    }
+
+    /** Fase y guion en la misma instantánea de solo lectura (el puerto de M3 exige transacción). */
+    @Override
+    public NarrativaIntento consultarNarrativa(ReferenciaIntento intento) {
+        return en(lectura, () -> fachada.consultarNarrativa(intento));
     }
 
     private static <T> T en(TransactionTemplate plantilla, Supplier<T> operacion) {

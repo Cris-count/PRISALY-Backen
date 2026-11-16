@@ -1,5 +1,10 @@
 package com.prisaly.m5.application;
 
+import com.prisaly.m5.application.fase.CompletitudIntento;
+import com.prisaly.m5.application.fase.EntradaCuestionario;
+import com.prisaly.m5.application.fase.EstadoFase;
+import com.prisaly.m5.application.fase.FasesNoDisponiblesException;
+import com.prisaly.m5.application.fase.NarrativaIntento;
 import com.prisaly.m5.domain.intento.MotivoFinalizacion;
 import com.prisaly.m5.domain.respuesta.ReferenciaPregunta;
 import com.prisaly.m5.domain.respuesta.Respuesta;
@@ -38,4 +43,27 @@ public interface OperacionesParticipacion {
     }
 
     ResumenIntento finalizarIntento(ReferenciaIntento intento, MotivoFinalizacion motivo);
+
+    // DC-BE-SIM-B1-B2A-24 (Incremento B, B2a): operaciones internas candidatas, sin ruta publicada. Las composiciones
+    // sin fases habilitadas fallan cerradas, como consultarContenido.
+
+    /** Fase persistida del intento (P2). */
+    default EstadoFase consultarFase(ReferenciaIntento intento) {
+        throw new FasesNoDisponiblesException();
+    }
+
+    /** Entrada explícita e idempotente al cuestionario (P3). */
+    default EntradaCuestionario iniciarCuestionario(ReferenciaIntento intento) {
+        throw new FasesNoDisponiblesException();
+    }
+
+    /** Guion publicado que corresponde al intento (P1). */
+    default NarrativaIntento consultarNarrativa(ReferenciaIntento intento) {
+        throw new FasesNoDisponiblesException();
+    }
+
+    /** Completitud informativa (P4), en la misma instantánea que el contenido autorizado. */
+    default CompletitudIntento consultarCompletitud(ReferenciaIntento intento) {
+        throw new ContenidoIntentoNoDisponibleException();
+    }
 }

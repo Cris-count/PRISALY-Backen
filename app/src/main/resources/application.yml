@@ -73,6 +73,12 @@ prisaly:
     inicio-finalizacion:
       publicacion:
         enabled: false
+    # DC-BE-SIM-B1-B2A-24 (Incremento B, B1-B2a): candidate attempt phases (exploration / questionnaire). OFF: no phase
+    # code is assembled and M5 never touches "FaseIntento". Turning it on also requires the QA-only V017+V018 schema
+    # (db/sim-propuesta + db/sim-propuesta-b) and the M3 narrative; it publishes no route and ratifies no decision.
+    exploracion:
+      fases:
+        enabled: false
   m4:
     consulta-bd0052:
       enabled: true

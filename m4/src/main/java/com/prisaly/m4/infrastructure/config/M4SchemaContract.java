@@ -33,12 +33,19 @@ public final class M4SchemaContract {
     public static final String V013_SIM_A = "bd0052-v013-sim-a";
     public static final String V013_DD02B_SIM_A = "bd0052-v013-dd02b-sim-a";
     private static final Set<String> TABLAS_SIM_A = Set.of("GuionNarrativoCaso");
+    /**
+     * DC-BE-SIM-B1-B2A-24: QA-only candidate attempt phase table V018 ({@code db/sim-propuesta-b}) on top of V017, alone
+     * or with DD-02 B. Selecting these contracts is NOT an approved academic extension nor a production schema.
+     */
+    public static final String V013_SIM_AB = "bd0052-v013-sim-ab";
+    public static final String V013_DD02B_SIM_AB = "bd0052-v013-dd02b-sim-ab";
+    private static final Set<String> TABLAS_SIM_B = Set.of("FaseIntento");
     /** Contract of the canonical migration set shipped with the application. */
     public static final String VIGENTE = V013;
     public static final String TABLA_INICIALIZACION = "InicializacionAdministrador";
     private static final Set<String> TABLAS_DD02 = Set.of("ActivacionCuentaEstudiante", "SesionEstudiante");
     private static final Set<String> CONOCIDOS = Set.of(HISTORICO, DD02, V013, V013_DD02, V013_DD02B,
-            V013_SIM_A, V013_DD02B_SIM_A);
+            V013_SIM_A, V013_DD02B_SIM_A, V013_SIM_AB, V013_DD02B_SIM_AB);
     public static final Set<String> TABLAS_HISTORICAS = Set.of(
             "Rol", "Permiso", "Usuario", "UsuarioPermiso", "Estudiante", "Caso", "Escenario",
             "Pregunta", "OpcionRespuesta", "Sesion", "Convocatoria", "Participacion", "Intento",
@@ -50,11 +57,18 @@ public final class M4SchemaContract {
         Set<String> esperadas = new TreeSet<>(TABLAS_HISTORICAS);
         if (DD02.equals(contrato) || V013_DD02.equals(contrato)) esperadas.addAll(TABLAS_DD02);
         if (V013.equals(contrato) || V013_DD02.equals(contrato) || V013_DD02B.equals(contrato)
-                || V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)) {
+                || V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)
+                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
             esperadas.add(TABLA_INICIALIZACION);
         }
-        if (V013_DD02B.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)) esperadas.addAll(TABLAS_DD02B);
-        if (V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)) esperadas.addAll(TABLAS_SIM_A);
+        if (V013_DD02B.equals(contrato) || V013_DD02B_SIM_A.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
+            esperadas.addAll(TABLAS_DD02B);
+        }
+        if (V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)
+                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
+            esperadas.addAll(TABLAS_SIM_A);
+        }
+        if (V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) esperadas.addAll(TABLAS_SIM_B);
         Set<String> presentes = new TreeSet<>(jdbc.queryForList("""
                 SELECT table_name FROM information_schema.tables
                 WHERE table_schema='public' AND table_type='BASE TABLE'
