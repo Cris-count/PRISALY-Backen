@@ -31,6 +31,11 @@ class M4SchemaReferenceIT {
             exportar(output, M4SchemaContract.V013_SIM_A, "classpath:db/migration", "classpath:db/sim-propuesta");
             exportar(output, M4SchemaContract.V013_DD02B_SIM_A, "classpath:db/migration", "classpath:db/dd02b-propuesta",
                     "classpath:db/sim-propuesta");
+            // DC-BE-SIM-B1-B2A-24: QA-only attempt phase candidate V018 (db/sim-propuesta-b) on top of V017, alone and with DD-02 B.
+            exportar(output, M4SchemaContract.V013_SIM_AB, "classpath:db/migration", "classpath:db/sim-propuesta",
+                    "classpath:db/sim-propuesta-b");
+            exportar(output, M4SchemaContract.V013_DD02B_SIM_AB, "classpath:db/migration", "classpath:db/dd02b-propuesta",
+                    "classpath:db/sim-propuesta", "classpath:db/sim-propuesta-b");
         } finally {
             M4SchemaFixture.borrar(historico);
         }

@@ -101,6 +101,10 @@ class ParticipacionFacadeTest {
             Class<?> esperado = switch (metodo.getName()) {
                 case "iniciarOReanudar" -> ResultadoInicio.class;
                 case "guardarRespuesta" -> com.prisaly.m5.domain.respuesta.Respuesta.class;
+                // DC-BE-SIM-B1-B2A-24: candidate phase operations return immutable records, never the aggregate.
+                case "consultarFase" -> com.prisaly.m5.application.fase.EstadoFase.class;
+                case "iniciarCuestionario" -> com.prisaly.m5.application.fase.EntradaCuestionario.class;
+                case "consultarNarrativa" -> com.prisaly.m5.application.fase.NarrativaIntento.class;
                 default -> ResumenIntento.class;
             };
             assertEquals(esperado, metodo.getReturnType(), metodo.getName());
@@ -108,6 +112,7 @@ class ParticipacionFacadeTest {
         Set<String> operaciones = publicos.stream().map(Method::getName).collect(Collectors.toSet());
 
         assertEquals(Set.of("iniciarOReanudar", "consultarIntento", "registrarRespuesta", "actualizarRespuesta",
-                "guardarRespuesta", "finalizarIntento"), operaciones);
+                "guardarRespuesta", "finalizarIntento", "consultarFase", "iniciarCuestionario", "consultarNarrativa"),
+                operaciones);
     }
 }

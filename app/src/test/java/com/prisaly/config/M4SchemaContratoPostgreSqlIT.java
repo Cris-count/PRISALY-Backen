@@ -109,6 +109,42 @@ class M4SchemaContratoPostgreSqlIT {
         assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016,017", jdbc.queryForObject(
                 "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
     }
+    // DC-BE-SIM-B1-B2A-24: the QA-only phase candidate V018 (db/sim-propuesta-b) is recognized only with its own
+    // contracts; the production, DD-02 B and Increment A contracts reject the extra table.
+    @Test void simAbSeReconoceSoloConSuContratoYElProductivoLaRechaza() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta", "classpath:db/sim-propuesta-b");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_SIM_AB));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_SIM_A);
+        rechaza(M4SchemaContract.V013_DD02B);
+        rechaza(M4SchemaContract.V013_DD02B_SIM_AB);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,017,018", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
+    @Test void dd02bConSimAbSeReconoceSoloConElContratoCombinado() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/dd02b-propuesta",
+                "classpath:db/sim-propuesta", "classpath:db/sim-propuesta-b");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_DD02B_SIM_AB));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_DD02B);
+        rechaza(M4SchemaContract.V013_DD02B_SIM_A);
+        rechaza(M4SchemaContract.V013_SIM_AB);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016,017,018", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
+    @Test void elTriggerDeLaFaseAlteradoSeDetectaComoEstructuraIncompatible() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta", "classpath:db/sim-propuesta-b");
+        flyway.clean(); flyway.migrate();
+        jdbc.execute("DROP TRIGGER tr_fase_intento_sim ON public.\"FaseIntento\"");
+        rechaza(M4SchemaContract.V013_SIM_AB);
+    }
+    @Test void v018SinV017NoMigra() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta-b");
+        flyway.clean();
+        assertThrows(Exception.class, flyway::migrate, "V018 depends on GuionNarrativoCaso (V017)");
+    }
     @Test void elTriggerDelGuionAlteradoSeDetectaComoEstructuraIncompatible() {
         var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/sim-propuesta");
         flyway.clean(); flyway.migrate();
