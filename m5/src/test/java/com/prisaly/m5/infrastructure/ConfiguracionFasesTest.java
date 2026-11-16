@@ -21,7 +21,7 @@ import com.prisaly.m5.application.acceso.Titularidad;
 import com.prisaly.m5.application.fase.CompletitudIntento;
 import com.prisaly.m5.application.fase.FasesIntento;
 import com.prisaly.m5.application.fase.FasesNoDisponiblesException;
-import com.prisaly.m5.application.fase.PuntosDecisionFase;
+import com.prisaly.m5.application.fase.PoliticasFaseAprobadas;
 import com.prisaly.m5.application.inicio.ElegibilidadNoRatificada;
 import com.prisaly.m5.application.inicio.LimiteTemporalNoRatificado;
 import com.prisaly.m5.application.port.GuionesDelIntento;
@@ -105,7 +105,7 @@ class ConfiguracionFasesTest {
         var fixture = new Fixture(Titularidad.PROPIO);
         RepositorioFases filas = Mockito.mock(RepositorioFases.class);
         AccesoProtegidoParticipacion acceso = fixture.ensamblar(Optional.of(new FasesIntento(filas,
-                Mockito.mock(GuionesDelIntento.class), PuntosDecisionFase.noRatificados())));
+                Mockito.mock(GuionesDelIntento.class), new PoliticasFaseAprobadas())));
 
         CompletitudIntento completitud = acceso.consultarCompletitud(fixture.ref);
 
@@ -120,11 +120,13 @@ class ConfiguracionFasesTest {
         assertTrue(exterior.isReadOnly());
         assertTrue(fixture.definiciones.stream().skip(1)
                 .allMatch(d -> d.getPropagationBehavior() == TransactionDefinition.PROPAGATION_REQUIRED));
-        Mockito.verifyNoInteractions(filas); // intentos SIN_FASES: P4 no depende de la fila de fase
+        // Intento SIN_FASES (sin fila): D-SIM-2 solo lee la fase en la instantánea; no la exige, no bloquea ni escribe.
+        Mockito.verify(filas).leer(fixture.ref);
+        Mockito.verifyNoMoreInteractions(filas);
 
         var ajeno = new Fixture(Titularidad.AJENO);
         AccesoProtegidoParticipacion deOtro = ajeno.ensamblar(Optional.of(new FasesIntento(filas,
-                Mockito.mock(GuionesDelIntento.class), PuntosDecisionFase.noRatificados())));
+                Mockito.mock(GuionesDelIntento.class), new PoliticasFaseAprobadas())));
         assertThrows(AccesoIntentoDenegadoException.class, () -> deOtro.consultarCompletitud(ajeno.ref));
         assertEquals(0, ajeno.contenido.get(), "sin titularidad no se lee el contenido");
         assertEquals(0, ajeno.repositorio.get(), "sin titularidad no se leen las respuestas");

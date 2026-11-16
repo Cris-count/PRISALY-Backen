@@ -13,6 +13,7 @@ import com.prisaly.m4.api.ProgramacionInicioCoordinadoPort;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m4.infrastructure.config.M4SchemaAutoConfiguration;
 import com.prisaly.m4.infrastructure.config.M4SchemaContract;
+import com.prisaly.m5.application.LimiteTemporalVencidoException;
 import com.prisaly.m5.application.ReferenciaConvocatoria;
 import com.prisaly.m5.application.ReferenciaIntento;
 import com.prisaly.m5.application.ResultadoInicio;
@@ -24,8 +25,6 @@ import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
 import com.prisaly.m5.application.fase.CompletitudIntento;
 import com.prisaly.m5.application.fase.CuestionarioNoIniciadoException;
-import com.prisaly.m5.application.fase.DecisionFaseNoRatificadaException;
-import com.prisaly.m5.application.fase.DecisionFasePendiente;
 import com.prisaly.m5.application.fase.EntradaCuestionario;
 import com.prisaly.m5.application.fase.EstadoFase;
 import com.prisaly.m5.application.fase.ExploracionCerradaException;
@@ -33,10 +32,11 @@ import com.prisaly.m5.application.fase.FaseAcademica;
 import com.prisaly.m5.application.fase.FasesIntento;
 import com.prisaly.m5.application.fase.NarrativaIntento;
 import com.prisaly.m5.application.fase.NarrativaNoDisponibleException;
-import com.prisaly.m5.application.fase.PuntosDecisionFase;
+import com.prisaly.m5.application.fase.PoliticasFaseAprobadas;
 import com.prisaly.m5.application.fase.SinFasesException;
 import com.prisaly.m5.application.inicio.ElegibilidadInicio;
 import com.prisaly.m5.application.port.GuionesDelIntento;
+import com.prisaly.m5.application.port.RepositorioFases;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.application.port.RepositorioParticipaciones;
 import com.prisaly.m5.domain.intento.EstadoIntento;
@@ -48,6 +48,8 @@ import com.prisaly.m5.infrastructure.contenido.ConsultaContenidoIntentoTransacci
 import com.prisaly.m5.infrastructure.persistencia.RepositorioFasesJdbc;
 import com.prisaly.m5.infrastructure.programacion.CoordinacionInicioDesdeM4;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.sql.SQLException;
 import java.time.Duration;
 import java.time.Instant;
@@ -87,7 +89,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
  * Los guiones son datos de prueba, no contenido aprobado.
  */
 @SpringBootTest(classes = PrisalyApplication.class)
-@DisplayName("Fases académicas del intento (Incremento B, B1-B2a) en PostgreSQL 16.15")
+@DisplayName("Fases académicas del intento (Incremento B, B1-B2a-B2b) en PostgreSQL 16.15")
 class FasesIntentoPostgreSqlIT {
 
     static final PostgreSQLContainer postgres = new PostgreSQLContainer("postgres:16.15");
@@ -324,7 +326,7 @@ class FasesIntentoPostgreSqlIT {
             @Override public Optional<VersionGuion> version(UUID id) { return Optional.empty(); }
         };
         var acceso = acceso(Duration.ofMinutes(30), Optional.of(
-                new FasesIntento(new RepositorioFasesJdbc(jdbc), ajeno, PuntosDecisionFase.noRatificados())));
+                new FasesIntento(new RepositorioFasesJdbc(jdbc), ajeno, new PoliticasFaseAprobadas())));
         como(c);
         Exception e = assertThrows(Exception.class, () -> acceso.iniciarOReanudar(c.referencia()));
         assertEquals("23514", sqlState(e), String.valueOf(e));
@@ -425,26 +427,90 @@ class FasesIntentoPostgreSqlIT {
         }
     }
 
-    @Test @DisplayName("P3 tras el límite: D-SIM-3 sin ratificar falla cerrado y la fase sigue en exploración; finalizado: INTENTO_FINALIZADO")
+    void esperarVencimiento(AccesoProtegidoParticipacion acceso, ReferenciaIntento intento) throws InterruptedException {
+        long hasta = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
+        while (true) {
+            EstadoFase f = acceso.consultarFase(intento);
+            if (f.ahoraServidor().isAfter(f.limiteTemporal())) { return; }
+            assertTrue(System.nanoTime() < hasta, "el límite de prueba no venció");
+            Thread.sleep(100);
+        }
+    }
+
+    @Test @DisplayName("D-SIM-3: tras el límite (reloj de PostgreSQL) P3 responde LIMITE_TEMPORAL_VENCIDO sin escribir; finalizado: INTENTO_FINALIZADO")
     void cuestionarioTrasElLimiteYFinalizado() throws Exception {
         Cadena c = cadena(true);
         AccesoProtegidoParticipacion acceso = acceso(Duration.ofSeconds(1));
         ReferenciaIntento intento = iniciar(acceso, c);
-        long hasta = System.nanoTime() + TimeUnit.SECONDS.toNanos(10);
-        while (!acceso.consultarFase(intento).ahoraServidor().isAfter(acceso.consultarFase(intento).limiteTemporal())) {
-            assertTrue(System.nanoTime() < hasta, "el límite de prueba de 1 s no venció");
-            Thread.sleep(100);
-        }
-        var pendiente = assertThrows(DecisionFaseNoRatificadaException.class, () -> acceso.iniciarCuestionario(intento));
-        assertEquals(DecisionFasePendiente.D_SIM_3, pendiente.decision());
+        esperarVencimiento(acceso, intento);
+        assertThrows(LimiteTemporalVencidoException.class, () -> acceso.iniciarCuestionario(intento));
+        assertThrows(LimiteTemporalVencidoException.class, () -> acceso.iniciarCuestionario(intento));
         assertEquals(FaseAcademica.EXPLORACION, acceso.consultarFase(intento).fase());
+        assertEquals(EstadoIntento.EN_CURSO, acceso.consultarFase(intento).estadoIntento(), "no hay cierre automático por vencimiento");
+        assertEquals(null, jdbc.queryForObject("SELECT \"fechaInicioCuestionario\" FROM \"FaseIntento\" WHERE \"idIntento\"=?::uuid",
+                OffsetDateTime.class, intento.valor()));
         acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
         assertThrows(IntentoFinalizadoException.class, () -> acceso.iniciarCuestionario(intento));
     }
 
+    @Test @DisplayName("D-SIM-3: una entrada confirmada antes del límite no se revierte con reintentos posteriores al vencimiento")
+    void reintentoTrasElLimiteConservaLaEntrada() throws Exception {
+        Cadena c = cadena(true);
+        AccesoProtegidoParticipacion acceso = acceso(Duration.ofSeconds(1));
+        ReferenciaIntento intento = iniciar(acceso, c);
+        EntradaCuestionario entrada = acceso.iniciarCuestionario(intento);
+        assertFalse(entrada.yaIniciado());
+        esperarVencimiento(acceso, intento);
+        for (int i = 0; i < 3; i++) {
+            EntradaCuestionario reintento = acceso.iniciarCuestionario(intento);
+            assertTrue(reintento.yaIniciado());
+            assertEquals(entrada.fechaInicioCuestionario(), reintento.fechaInicioCuestionario());
+        }
+        assertEquals(FaseAcademica.CUESTIONARIO, acceso.consultarFase(intento).fase());
+    }
+
+    @Test @DisplayName("D-SIM-3 en carrera con el vencimiento: a lo sumo una entrada, nunca posterior al límite; el resto vencido o idempotente")
+    void cuestionarioEnCarreraConElLimite() throws Exception {
+        for (int ronda = 0; ronda < 4; ronda++) {
+            Cadena c = cadena(true);
+            AccesoProtegidoParticipacion acceso = acceso(Duration.ofMillis(700));
+            ReferenciaIntento intento = iniciar(acceso, c);
+            ExecutorService hilos = Executors.newFixedThreadPool(8);
+            CountDownLatch salida = new CountDownLatch(1);
+            List<Future<String>> resultados = new ArrayList<>();
+            try {
+                for (int i = 0; i < 8; i++) {
+                    long espera = 250L * i; // 0 a 1750 ms: unos antes y otros después del límite de 700 ms
+                    resultados.add(hilos.submit(() -> {
+                        salida.await();
+                        Thread.sleep(espera);
+                        try { return acceso.iniciarCuestionario(intento).yaIniciado() ? "idempotente" : "entrada"; }
+                        catch (LimiteTemporalVencidoException vencido) { return "vencido"; }
+                    }));
+                }
+                salida.countDown();
+                List<String> todos = new ArrayList<>();
+                for (var r : resultados) { todos.add(r.get(30, TimeUnit.SECONDS)); }
+                long entradas = todos.stream().filter("entrada"::equals).count();
+                assertTrue(entradas <= 1, todos.toString());
+                Boolean dentro = jdbc.queryForObject("""
+                        SELECT f."fechaInicioCuestionario" IS NULL OR f."fechaInicioCuestionario" <= i."limiteTemporal"
+                        FROM "FaseIntento" f JOIN "Intento" i ON i."idIntento" = f."idIntento" WHERE f."idIntento"=?::uuid""",
+                        Boolean.class, intento.valor());
+                assertTrue(dentro, "una entrada confirmada nunca es posterior al límite");
+                if (entradas == 0) {
+                    assertFalse(todos.contains("idempotente"), todos.toString());
+                    assertEquals(FaseAcademica.EXPLORACION, acceso.consultarFase(intento).fase());
+                }
+            } finally {
+                hilos.shutdownNow();
+            }
+        }
+    }
+
     // --- B2a: P1, recuperación, P4 y titularidad -------------------------------------------------------------------
 
-    @Test @DisplayName("P1 sirve la versión fijada con su huella; se cierra en el cuestionario (R4); finalizado: D-SIM-10 pendiente")
+    @Test @DisplayName("P1 sirve la versión fijada con su huella; se cierra en el cuestionario (R4); D-SIM-10: finalizado, EXPLORACION_CERRADA")
     void narrativaDelIntento() {
         Cadena c = cadena(true);
         AccesoProtegidoParticipacion acceso = acceso();
@@ -458,8 +524,15 @@ class FasesIntentoPostgreSqlIT {
         acceso.iniciarCuestionario(intento);
         assertThrows(ExploracionCerradaException.class, () -> acceso.consultarNarrativa(intento));
         acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
-        var pendiente = assertThrows(DecisionFaseNoRatificadaException.class, () -> acceso.consultarNarrativa(intento));
-        assertEquals(DecisionFasePendiente.D_SIM_10, pendiente.decision());
+        assertThrows(ExploracionCerradaException.class, () -> acceso.consultarNarrativa(intento));
+        // Finalizado desde la exploración: también cerrada, sin reabrir ni cambiar la fase.
+        Cadena e = cadena(true);
+        ReferenciaIntento explorado = iniciar(acceso, e);
+        acceso.consultarNarrativa(explorado);
+        acceso.finalizarIntento(explorado, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        assertThrows(ExploracionCerradaException.class, () -> acceso.consultarNarrativa(explorado));
+        assertEquals(FaseAcademica.EXPLORACION, acceso.consultarFase(explorado).fase());
+        assertEquals(EstadoIntento.FINALIZADO, acceso.consultarFase(explorado).estadoIntento());
     }
 
     @Test @DisplayName("recuperación: otro ensamblado (recarga o nueva sesión) lee la misma fase, fecha y versión desde el servidor")
@@ -478,20 +551,154 @@ class FasesIntentoPostgreSqlIT {
         assertEquals(c.guion().orElseThrow(), antes.idGuion());
     }
 
-    @Test @DisplayName("P4 informa el recuento sobre el contenido autorizado de M3, sin criterio ni aciertos")
+    @Test @DisplayName("P4 informa el recuento sobre el contenido autorizado de M3, sin criterio ni aciertos; D-SIM-2: nada en exploración")
     void completitud() {
         Cadena c = cadena(true);
         AccesoProtegidoParticipacion acceso = acceso();
         ReferenciaIntento intento = iniciar(acceso, c);
+        assertThrows(CuestionarioNoIniciadoException.class, () -> acceso.consultarCompletitud(intento));
+        acceso.iniciarCuestionario(intento);
         CompletitudIntento inicial = acceso.consultarCompletitud(intento);
         assertEquals(2, inicial.preguntasPresentables());
         assertEquals(0, inicial.respondidas());
         assertEquals(List.of(c.p1(), c.p2()), inicial.sinResponder());
-        acceso.iniciarCuestionario(intento);
         acceso.guardarRespuesta(intento, new ReferenciaPregunta(c.p1().toString()), new ValorRespuesta(c.o1().toString()), 0);
         CompletitudIntento despues = acceso.consultarCompletitud(intento);
         assertEquals(1, despues.respondidas());
         assertEquals(List.of(c.p2()), despues.sinResponder());
+    }
+
+    @Test @DisplayName("D-SIM-2: contenido y P4 ocultos en exploración y tras finalizar sin cuestionario; visibles tras entrar; SIN_FASES intacto")
+    void preguntasOcultasSinCuestionario() {
+        AccesoProtegidoParticipacion acceso = acceso();
+        // En exploración.
+        Cadena c = cadena(true);
+        ReferenciaIntento explorado = iniciar(acceso, c);
+        assertThrows(CuestionarioNoIniciadoException.class, () -> acceso.consultarContenido(explorado));
+        assertThrows(CuestionarioNoIniciadoException.class, () -> acceso.consultarCompletitud(explorado));
+        // Finalizado desde la exploración: siguen ocultas.
+        acceso.finalizarIntento(explorado, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        assertThrows(CuestionarioNoIniciadoException.class, () -> acceso.consultarContenido(explorado));
+        assertThrows(CuestionarioNoIniciadoException.class, () -> acceso.consultarCompletitud(explorado));
+        assertEquals(0, respuestas(explorado));
+        // Tras entrar al cuestionario: el contenido es el mismo que antes de las fases; también después de finalizar.
+        Cadena q = cadena(true);
+        ReferenciaIntento cuestionario = iniciar(acceso, q);
+        acceso.iniciarCuestionario(cuestionario);
+        var contenido = acceso.consultarContenido(cuestionario);
+        assertEquals(2, contenido.caso().escenarios().get(0).preguntas().size());
+        acceso.finalizarIntento(cuestionario, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        assertEquals(contenido, acceso.consultarContenido(cuestionario));
+        assertEquals(2, acceso.consultarCompletitud(cuestionario).preguntasPresentables());
+        // SIN_FASES (caso sin guion) con las fases activas: sin cambios.
+        Cadena s = cadena(false);
+        ReferenciaIntento sinFases = iniciar(acceso, s);
+        assertEquals(2, acceso.consultarContenido(sinFases).caso().escenarios().get(0).preguntas().size());
+        assertEquals(2, acceso.consultarCompletitud(sinFases).preguntasPresentables());
+        // Un intento ajeno sigue siendo 403 antes de mirar la fase (no revela si está en exploración).
+        como(s);
+        assertThrows(AccesoIntentoDenegadoException.class, () -> acceso.consultarContenido(explorado));
+    }
+
+    @Test @DisplayName("D-SIM-4: finalizar desde exploración es posible, idempotente, conserva la fase y no califica; titularidad intacta")
+    void finalizacionDesdeExploracion() {
+        AccesoProtegidoParticipacion acceso = acceso();
+        Cadena c = cadena(true);
+        Cadena otro = cadena(true);
+        ReferenciaIntento intento = iniciar(acceso, c);
+        como(otro);
+        assertThrows(AccesoIntentoDenegadoException.class, () -> acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        actual.set(Optional.empty());
+        assertThrows(EstudianteNoIdentificadoException.class, () -> acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        como(c);
+        assertEquals(EstadoIntento.EN_CURSO, acceso.consultarFase(intento).estadoIntento());
+        var fin = acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        assertEquals(EstadoIntento.FINALIZADO, fin.estado());
+        var repetido = acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE);
+        assertEquals(fin.tiempos().orElseThrow().fin(), repetido.tiempos().orElseThrow().fin(), "idempotente: mismo cierre");
+        assertEquals("Exploracion", jdbc.queryForObject("SELECT \"fase\" FROM \"FaseIntento\" WHERE \"idIntento\"=?::uuid",
+                String.class, intento.valor()));
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"Calificacion\" WHERE \"idIntento\"=?::uuid", Integer.class,
+                intento.valor()), "sin calificación automática");
+        // Sin nuevas interacciones académicas.
+        assertThrows(IntentoFinalizadoException.class, () -> acceso.iniciarCuestionario(intento));
+        assertThrows(RuntimeException.class, () -> acceso.guardarRespuesta(intento, new ReferenciaPregunta(c.p1().toString()),
+                new ValorRespuesta(c.o1().toString()), 0));
+        assertEquals(0, respuestas(intento));
+    }
+
+    @Test @DisplayName("finalizar frente a P3 concurrente: estado final coherente (cuestionario antes del fin, o exploración finalizada)")
+    void finalizacionFrenteACuestionarioConcurrente() throws Exception {
+        for (int ronda = 0; ronda < 6; ronda++) {
+            Cadena c = cadena(true);
+            AccesoProtegidoParticipacion acceso = acceso();
+            ReferenciaIntento intento = iniciar(acceso, c);
+            ExecutorService hilos = Executors.newFixedThreadPool(2);
+            CountDownLatch salida = new CountDownLatch(1);
+            try {
+                Future<Boolean> entrada = hilos.submit(() -> {
+                    salida.await();
+                    try { acceso.iniciarCuestionario(intento); return true; }
+                    catch (IntentoFinalizadoException finalizado) { return false; }
+                });
+                Future<?> fin = hilos.submit(() -> { salida.await(); return acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE); });
+                salida.countDown();
+                boolean entro = entrada.get(30, TimeUnit.SECONDS);
+                fin.get(30, TimeUnit.SECONDS);
+                EstadoFase f = acceso.consultarFase(intento);
+                assertEquals(EstadoIntento.FINALIZADO, f.estadoIntento());
+                assertEquals(entro ? FaseAcademica.CUESTIONARIO : FaseAcademica.EXPLORACION, f.fase());
+                if (entro) {
+                    Boolean antes = jdbc.queryForObject("""
+                            SELECT f."fechaInicioCuestionario" <= i."fin" FROM "FaseIntento" f
+                            JOIN "Intento" i ON i."idIntento" = f."idIntento" WHERE f."idIntento"=?::uuid""", Boolean.class, intento.valor());
+                    assertTrue(antes);
+                }
+            } finally {
+                hilos.shutdownNow();
+            }
+        }
+    }
+
+    @Test @DisplayName("D-SIM-3 (QA33-03): si el límite vence entre la lectura bloqueada y la escritura, P3 se rechaza y la fase sigue en exploración")
+    void vencimientoEntreLecturaYEscritura() throws Exception {
+        Cadena c = cadena(true);
+        ReferenciaIntento intento = iniciar(acceso(Duration.ofSeconds(3)), c);
+        RepositorioFases real = new RepositorioFasesJdbc(jdbc);
+        AtomicReference<Boolean> leidaAntesDelLimite = new AtomicReference<>();
+        // Decorador exclusivo del ensayo: tras la lectura bloqueada real, pausa (con el bloqueo tomado) hasta que el reloj de
+        // PostgreSQL supere el límite; después delega la escritura real sin cambios. Fuerza la ventana de forma reproducible.
+        RepositorioFases conPausa = (RepositorioFases) Proxy.newProxyInstance(RepositorioFases.class.getClassLoader(),
+                new Class<?>[] {RepositorioFases.class}, (p, m, a) -> {
+                    Object r;
+                    try { r = m.invoke(real, a); } catch (InvocationTargetException e) { throw e.getCause(); }
+                    if (m.getName().equals("bloquear")) {
+                        var fila = ((Optional<?>) r).map(RepositorioFases.IntentoConFase.class::cast).orElseThrow();
+                        leidaAntesDelLimite.set(!fila.ahora().isAfter(fila.limiteTemporal()));
+                        long hasta = System.nanoTime() + TimeUnit.SECONDS.toNanos(15);
+                        while (!Boolean.TRUE.equals(jdbc.queryForObject(
+                                "SELECT clock_timestamp() > \"limiteTemporal\" FROM \"Intento\" WHERE \"idIntento\"=?::uuid",
+                                Boolean.class, intento.valor()))) {
+                            assertTrue(System.nanoTime() < hasta, "el límite del ensayo no venció");
+                            Thread.sleep(50);
+                        }
+                    }
+                    return r;
+                });
+        GuionesDelIntento sinUso = new GuionesDelIntento() {
+            @Override public Optional<UUID> publicadoParaConvocatoria(ReferenciaConvocatoria x) { return Optional.empty(); }
+            @Override public Optional<VersionGuion> version(UUID id) { return Optional.empty(); }
+        };
+        AccesoProtegidoParticipacion acceso = acceso(Duration.ofSeconds(3),
+                Optional.of(new FasesIntento(conPausa, sinUso, new PoliticasFaseAprobadas())));
+        como(c);
+        assertThrows(LimiteTemporalVencidoException.class, () -> acceso.iniciarCuestionario(intento));
+        assertTrue(leidaAntesDelLimite.get(), "la lectura bloqueada ocurrió antes del límite: la ventana se ejerció");
+        assertEquals("Exploracion", jdbc.queryForObject("SELECT \"fase\" FROM \"FaseIntento\" WHERE \"idIntento\"=?::uuid",
+                String.class, intento.valor()));
+        assertEquals(null, jdbc.queryForObject("SELECT \"fechaInicioCuestionario\" FROM \"FaseIntento\" WHERE \"idIntento\"=?::uuid",
+                OffsetDateTime.class, intento.valor()));
+        assertEquals(EstadoIntento.EN_CURSO, acceso.consultarFase(intento).estadoIntento(), "sin cierre automático");
     }
 
     @Test @DisplayName("titularidad: las cuatro operaciones pasan por el Proxy; sin identidad o con un intento ajeno no se delega")

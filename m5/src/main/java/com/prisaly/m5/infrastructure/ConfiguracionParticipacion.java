@@ -5,7 +5,7 @@ import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m3.api.ContenidoCasoEstudiantilPort;
 import com.prisaly.m3.api.GuionNarrativoEstudiantilPort;
 import com.prisaly.m5.application.fase.FasesIntento;
-import com.prisaly.m5.application.fase.PuntosDecisionFase;
+import com.prisaly.m5.application.fase.PoliticasFaseAprobadas;
 import com.prisaly.m5.infrastructure.contenido.GuionesDelIntentoDesdeM3;
 import com.prisaly.m5.infrastructure.persistencia.RepositorioFasesJdbc;
 import org.springframework.beans.factory.annotation.Value;
@@ -110,8 +110,8 @@ public class ConfiguracionParticipacion {
 
     /**
      * Fases académicas candidatas. Deshabilitadas: vacío (M5 exactamente como antes). Habilitadas sin el guion de M3,
-     * sin la consulta de M4 o sin JDBC: el arranque falla cerrado. Las decisiones D-SIM-3 y D-SIM-10 quedan sin ratificar
-     * ({@link PuntosDecisionFase#noRatificados()}): este ensamblado nunca elige una alternativa.
+     * sin la consulta de M4 o sin JDBC: el arranque falla cerrado. Las decisiones D-SIM-2, D-SIM-3, D-SIM-4 y D-SIM-10
+     * son las resueltas por Dirección Central ({@link PoliticasFaseAprobadas}, DC-BE-SIM-B2B-B3-32), en este único lugar.
      */
     static Optional<FasesIntento> fases(boolean habilitadas, IdentidadEstudianteActual identidad,
             ProgramacionParticipacionPort programacion, GuionNarrativoEstudiantilPort guiones, JdbcTemplate jdbc) {
@@ -123,7 +123,7 @@ public class ConfiguracionParticipacion {
                     + " (prisaly.m3.narrativa.publicacion.enabled=true), la consulta de programación de M4 y JDBC");
         }
         return Optional.of(new FasesIntento(new RepositorioFasesJdbc(jdbc),
-                new GuionesDelIntentoDesdeM3(guiones, programacion, identidad), PuntosDecisionFase.noRatificados()));
+                new GuionesDelIntentoDesdeM3(guiones, programacion, identidad), new PoliticasFaseAprobadas()));
     }
 
     private static ConsultaContenidoIntento consultaContenido(RepositorioIntentos repositorio,
@@ -185,6 +185,12 @@ public class ConfiguracionParticipacion {
                         new IniciarIntentoServicio(
                                 participaciones, repositorio, elegibilidad, limiteTemporal),
                         fases);
+        // D-SIM-2 (DC-BE-SIM-B2B-B3-32): con fases, toda lectura de preguntas (GET /contenido y la completitud P4) pasa
+        // antes por la fase del intento, en la misma instantánea y después de la titularidad. Sin fases, sin cambios.
+        ConsultaContenidoIntento preguntas = fases.<ConsultaContenidoIntento>map(f -> (intento, estudiante) -> {
+            f.exigirPreguntasVisibles(intento);
+            return contenido.consultar(intento, estudiante);
+        }).orElse(contenido);
         TransactionTemplate lecturaContenido = new TransactionTemplate(transacciones);
         lecturaContenido.setReadOnly(true);
         lecturaContenido.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
@@ -192,7 +198,7 @@ public class ConfiguracionParticipacion {
         return new AccesoProtegidoParticipacion(
                 new ControlAccesoIntentos(identidad, titularidad),
                 new FachadaParticipacionTransaccional(fachada, transacciones, coordinacion),
-                contenido,
+                preguntas,
                 accion -> java.util.Objects.requireNonNull(lecturaContenido.execute(estado -> accion.get())),
                 fases.isPresent()); // QA-B25-01: P1–P4 solo existen si se construyeron las fases
     }

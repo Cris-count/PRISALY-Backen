@@ -8,12 +8,19 @@ package com.prisaly.m5.application;
  * grabaría como {@code "Respuesta"."fechaActualizacion"}. La operación no escribe nada y las
  * respuestas ya persistidas se conservan. No finaliza el intento ni decide qué ocurre con un
  * intento incompleto: eso sigue siendo una decisión académica pendiente.
+ *
+ * <p>DC-BE-SIM-B2B-B3-32 (D-SIM-3): la entrada al cuestionario tras el límite usa el mismo código con su propio
+ * mensaje ({@code PoliticasFaseAprobadas}).
  */
 public final class LimiteTemporalVencidoException extends ParticipacionAplicacionException {
 
     private static final long serialVersionUID = 1L;
 
     public LimiteTemporalVencidoException() {
-        super("El límite temporal del intento venció: no se admiten cambios en las respuestas");
+        this("El límite temporal del intento venció: no se admiten cambios en las respuestas");
+    }
+
+    public LimiteTemporalVencidoException(String mensaje) {
+        super(mensaje);
     }
 }
