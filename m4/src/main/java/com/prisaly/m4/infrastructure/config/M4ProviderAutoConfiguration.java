@@ -3,6 +3,7 @@ package com.prisaly.m4.infrastructure.config;
 import com.prisaly.m1.application.port.IdentityAccessPort;
 import com.prisaly.m3.application.port.CasoRepositoryPort;
 import com.prisaly.m4.application.port.CasoAcademicoPort;
+import com.prisaly.m4.application.port.CierreParticipacionesPort;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
 import com.prisaly.m4.application.port.ParticipacionesPort;
@@ -63,6 +64,15 @@ public class M4ProviderAutoConfiguration {
     @Bean
     @ConditionalOnMissingBean(ParticipacionesPort.class)
     ParticipacionesPort participacionesNoDisponibles() {
+        return sesionId -> {
+            throw noDisponible("M5");
+        };
+    }
+
+    /** V1-c: sin el proveedor M5 una sesión no se cierra (falla cerrado, igual que el historial). */
+    @Bean
+    @ConditionalOnMissingBean(CierreParticipacionesPort.class)
+    CierreParticipacionesPort cierreParticipacionesNoDisponible() {
         return sesionId -> {
             throw noDisponible("M5");
         };

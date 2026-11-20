@@ -26,7 +26,7 @@ Siguen **pendientes** y no se implementan:
 | Operación | Estado |
 |---|---|
 | Reanudar un intento en curso | Disponible, sujeta a DD-02 y a `consulta-bd0052` |
-| Primer inicio | Mecanismo implementado y probado, **bloqueado**: falla con `INICIO_NO_DISPONIBLE` |
+| Primer inicio | **DC-BE-M5-CIERRE-IMPLEMENTACION-45:** políticas E1, L1 y RF-22 ratificadas y ensambladas. El POST sigue sin publicar (`prisaly.m5.inicio-finalizacion.publicacion.enabled=false`) |
 | Endpoints REST | Ninguno |
 
 ## 2. Operación
@@ -65,11 +65,12 @@ producen el mismo error (`CONVOCATORIA_NO_ENCONTRADA`), igual que en M4.
 3. Si la participación tiene un intento finalizado, iniciar sería una repetición:
    `REPETICION_NO_HABILITADA`.
 4. **Primer inicio.**
-   1. Se evalúa la elegibilidad. En producción no está ratificada, así que
-      falla con `INICIO_NO_DISPONIBLE (elegibilidad)`.
-   2. Se toma `inicio = clock_timestamp()` y se calcula el límite. En
-      producción no está ratificado, así que falla con
-      `INICIO_NO_DISPONIBLE (límite temporal)`.
+   1. Se evalúa la elegibilidad E1 (`ElegibilidadInicioDesdeM4`): sesión `EnCurso`,
+      convocatoria propia `Autorizado` y sin retiro, caso `Publicado` y activo. Si no se
+      cumple: 403 `INICIO_NO_AUTORIZADO`, sin escribir.
+   2. Se toma `inicio = clock_timestamp()` y se calcula L1 (`LimiteTemporalDesdeM4`):
+      `min(inicio + tiempoMaximoParticipacion, finPrevisto)`. RF-22: si `inicio` ya alcanzó
+      `finPrevisto`, 403 `INICIO_NO_AUTORIZADO` sin escribir (sin tolerancias).
    3. Se crea la participación si no existe y se bloquea
       (`INSERT ... ON CONFLICT ("idConvocatoria") DO NOTHING` + `FOR UPDATE`).
    4. Se repiten los pasos 2 y 3: otra solicitud pudo crear el intento mientras tanto.
@@ -154,15 +155,23 @@ materializa en producción, porque el primer inicio está bloqueado.
 | `.\mvnw.cmd -pl app -am test` | Sin regresiones |
 | `.\mvnw.cmd -pl app -am -Pdocker-it verify` | El contexto completo arranca con `RepositorioParticipacionesJdbc` |
 
-## 6. Decisiones que siguen bloqueadas
+## 6. Decisiones
+
+DC-BE-M5-CIERRE-IMPLEMENTACION-45 ratificó E1, L1, RF-22, V1-c y DD-14-a:
+
+| Decisión | Efecto |
+|---|---|
+| E1: elegibilidad | Sesión `EnCurso`, convocatoria propia autorizada, caso publicado y activo; si no, 403 `INICIO_NO_AUTORIZADO` |
+| L1 (F3-04) y RF-22 | `min(inicio + máximo, finPrevisto)` con el reloj de PostgreSQL; en o después de `finPrevisto`, 403 sin escribir. La reanudación nunca recalcula el límite |
+| V1-c: vencimiento | Una entrega del estudiante después del límite se registra como `TIEMPO_VENCIDO` con el mismo instante de PostgreSQL que la decidió, y su repetición devuelve ese cierre. El cierre docente de la sesión cierra con `TIEMPO_VENCIDO` solo los intentos ya vencidos; los vigentes conservan estado y límite. Sin proceso periódico. `PUT` y P3 tras el límite siguen en 409 sin cerrar (D-SIM-3) |
+| DD-14-a | Un intento por estudiante y caso (V003–V007): `REPETICION_NO_HABILITADA`, también desde otra convocatoria del mismo caso. RF-25 (repetición excepcional) sigue pendiente |
+
+Siguen abiertas:
 
 | Decisión | Efecto hoy |
 |---|---|
-| Elegibilidad académica | Primer inicio: `INICIO_NO_DISPONIBLE` |
-| `limiteTemporal` (F3-04) | Sin cálculo no hay intento nuevo (columna NOT NULL) |
 | Estados de `Participacion` | Se deja el valor por defecto `'Pendiente'`; no se escriben fechas |
-| DD-14 | `REPETICION_NO_HABILITADA` |
-| Motivos y vencimiento | Sin cambios en la finalización |
+| RF-25 | Sin vía para autorizar un segundo intento |
 | ARQ-008.3 | Sin endpoints; los códigos HTTP son provisionales |
 | DD-02 | Con `DenyingStudentAccessService` todo se deniega |
 | `consulta-bd0052` | Sin la propiedad, la titularidad responde 503 |

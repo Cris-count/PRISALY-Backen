@@ -21,9 +21,13 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * DC-BE-CIERRE-FUNCIONAL-09, fase 4 — <b>ENSAMBLADO PRODUCTIVO</b> (sin políticas sustituidas). DD-02 B y la
- * publicación de los POST se activan SOLO en este contexto QA. Muestra lo que de verdad ocurre hoy con las reglas
- * sin ratificar: el descubrimiento funciona, el primer inicio responde 409 {@code INICIO_NO_DISPONIBLE} sin escribir
- * y la finalización de un intento existente es la operación real, idempotente.
+ * publicación de los POST se activan SOLO en este contexto QA.
+ *
+ * <p>DC-BE-M5-CIERRE-IMPLEMENTACION-45: hasta esta orden el ensamblado productivo usaba las políticas sin ratificar y
+ * esta prueba fijaba su efecto (409 {@code INICIO_NO_DISPONIBLE} en el primer inicio). Dirección Central ratificó E1,
+ * L1 y RF-22, y el ensamblado productivo las usa: ahora la misma prueba fija el comportamiento productivo nuevo
+ * (201 con el límite L1). El inicio en una sesión sin abrir sigue sin escribir nada (403). La finalización y su
+ * idempotencia no cambian.
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 class InicioProductivoM4M5QaHttpIT {
@@ -39,7 +43,7 @@ class InicioProductivoM4M5QaHttpIT {
     final HttpClient http = HttpClient.newHttpClient();
 
     @Test
-    void conLasPoliticasProductivasElPrimerInicioSigueBloqueadoYLaFinalizacionEsReal() throws Exception {
+    void conLasPoliticasProductivasRatificadasElPrimerInicioEsRealYLaFinalizacionTambien() throws Exception {
         String correo = "prod09." + UUID.randomUUID().toString().substring(0, 8) + "@prisaly.test";
         UUID estudiante = RecorridoParticipacionQa.estudiante(catalog, jdbc, correo);
         UUID[] c = RecorridoParticipacionQa.caso(catalog, jdbc);
@@ -51,27 +55,32 @@ class InicioProductivoM4M5QaHttpIT {
         assertEquals(200, lista.statusCode(), lista.body());
         assertTrue(lista.body().contains(conv.toString()));
 
-        var inicio = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/sesiones/" + sesion + "/intentos", null, cookie);
-        assertEquals(409, inicio.statusCode(), inicio.body());
-        assertTrue(inicio.body().contains("INICIO_NO_DISPONIBLE"), inicio.body());
-        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"Participacion\" WHERE \"idConvocatoria\"=?", Integer.class, conv),
-                "the blocked first start writes nothing");
+        // A session not opened by the teacher: E1 rejects the first start and nothing is written.
+        UUID sinAbrir = RecorridoParticipacionQa.sesion(jdbc, c[0], c[1], false, 1800);
+        UUID convSinAbrir = RecorridoParticipacionQa.convocar(jdbc, sinAbrir, estudiante);
+        var rechazo = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/sesiones/" + sinAbrir + "/intentos", null, cookie);
+        assertEquals(403, rechazo.statusCode(), rechazo.body());
+        assertTrue(rechazo.body().contains("INICIO_NO_AUTORIZADO"), rechazo.body());
+        assertEquals(0, jdbc.queryForObject("SELECT count(*) FROM \"Participacion\" WHERE \"idConvocatoria\"=?", Integer.class, convSinAbrir),
+                "a rejected first start writes nothing");
 
-        // An attempt that already exists (fixture) resumes and closes with the real production assembly.
-        UUID participacion = UUID.randomUUID(), intento = UUID.randomUUID();
-        jdbc.update("INSERT INTO \"Participacion\" (\"idParticipacion\",\"idConvocatoria\") VALUES (?,?)", participacion, conv);
-        jdbc.update("INSERT INTO \"Intento\" (\"idIntento\",\"idParticipacion\",\"numeroIntento\",\"inicio\",\"limiteTemporal\",\"estado\")"
-                + " VALUES (?,?,1,now(),now()+interval '30 minutes','EnCurso')", intento, participacion);
+        // The open session: real first start with the ratified policies (L1 = inicio + 1800 s, before finPrevisto).
+        var inicio = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/sesiones/" + sesion + "/intentos", null, cookie);
+        assertEquals(201, inicio.statusCode(), inicio.body());
+        String intento = json.readTree(inicio.body()).get("intento").get("idIntento").asText();
+        assertEquals(java.time.Duration.ofSeconds(1800), java.time.Duration.between(
+                java.time.Instant.parse(json.readTree(inicio.body()).get("intento").get("inicio").asText()),
+                java.time.Instant.parse(json.readTree(inicio.body()).get("intento").get("limiteTemporal").asText())));
         var reanudacion = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/sesiones/" + sesion + "/intentos", null, cookie);
         assertEquals(200, reanudacion.statusCode(), reanudacion.body());
-        assertEquals(intento.toString(), json.readTree(reanudacion.body()).get("intento").get("idIntento").asText());
+        assertEquals(intento, json.readTree(reanudacion.body()).get("intento").get("idIntento").asText());
 
         var fin = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/intentos/" + intento + "/finalizar", null, cookie);
         assertEquals(200, fin.statusCode(), fin.body());
         var repetido = RecorridoParticipacionQa.enviar(http, port, "POST", "/v1/estudiantes/intentos/" + intento + "/finalizar", null, cookie);
         assertEquals(200, repetido.statusCode(), repetido.body());
         assertEquals(json.readTree(fin.body()).get("fin").asText(), json.readTree(repetido.body()).get("fin").asText());
-        assertEquals("Finalizado", jdbc.queryForObject("SELECT \"estado\" FROM \"Intento\" WHERE \"idIntento\"=?", String.class, intento));
+        assertEquals("Finalizado", jdbc.queryForObject("SELECT \"estado\" FROM \"Intento\" WHERE \"idIntento\"=?::uuid", String.class, intento));
     }
 
     @Test

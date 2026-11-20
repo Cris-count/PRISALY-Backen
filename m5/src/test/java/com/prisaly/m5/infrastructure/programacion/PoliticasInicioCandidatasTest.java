@@ -19,7 +19,10 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 
-/** CIERRE-07 P3: candidate start policies over the M4 contract. Candidates, not ratified rules, and not assembled. */
+/**
+ * Start policies over the M4 contract: candidates in CIERRE-07 P3, ratified by DC-BE-M5-CIERRE-IMPLEMENTACION-45 (E1, L1,
+ * RF-22) and now assembled by {@code ConfiguracionParticipacion}.
+ */
 class PoliticasInicioCandidatasTest {
     static final Instant APERTURA = Instant.parse("2026-11-13T14:00:00Z");
     final UUID convocatoria = UUID.randomUUID();
@@ -50,7 +53,7 @@ class PoliticasInicioCandidatasTest {
 
     @Test
     void elegibleSoloConSesionEnCursoConvocatoriaVigenteYCasoPublicadoActivo() {
-        assertEquals(Resultado.ELEGIBLE, new ElegibilidadCandidataDesdeM4(devuelve(Optional.of(valido()))).evaluar(ref()));
+        assertEquals(Resultado.ELEGIBLE, new ElegibilidadInicioDesdeM4(devuelve(Optional.of(valido()))).evaluar(ref()));
         var noElegibles = new ContextoProgramacion[] {
             contexto("SinIniciar", "Autorizado", Optional.empty(), "Publicado", true, Duration.ofMinutes(30), APERTURA.plusSeconds(7200)),
             contexto("Finalizado", "Autorizado", Optional.empty(), "Publicado", true, Duration.ofMinutes(30), APERTURA.plusSeconds(7200)),
@@ -59,21 +62,21 @@ class PoliticasInicioCandidatasTest {
             contexto("EnCurso", "Autorizado", Optional.empty(), "Archivado", true, Duration.ofMinutes(30), APERTURA.plusSeconds(7200)),
             contexto("EnCurso", "Autorizado", Optional.empty(), "Publicado", false, Duration.ofMinutes(30), APERTURA.plusSeconds(7200))};
         for (var c : noElegibles) {
-            assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadCandidataDesdeM4(devuelve(Optional.of(c))).evaluar(ref()), c.toString());
+            assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadInicioDesdeM4(devuelve(Optional.of(c))).evaluar(ref()), c.toString());
         }
-        assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadCandidataDesdeM4(devuelve(Optional.empty())).evaluar(ref()));
-        assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadCandidataDesdeM4(devuelve(Optional.empty()))
+        assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadInicioDesdeM4(devuelve(Optional.empty())).evaluar(ref()));
+        assertEquals(Resultado.NO_ELEGIBLE, new ElegibilidadInicioDesdeM4(devuelve(Optional.empty()))
                 .evaluar(new ReferenciaConvocatoria("no-es-uuid")));
     }
 
     @Test
     void sinIngresoTardioLaHoraDeInicioNoCambiaLaElegibilidad() {
-        // RF-22 not ratified: a context observed long after the real start is still eligible.
+        // RF-22 is decided by the limit (inicio < finPrevisto), not by E1: E1 has no tolerance window of its own.
         var tarde = new ContextoProgramacion(convocatoria, UUID.randomUUID(), UUID.randomUUID(), UUID.randomUUID(), "EnCurso",
                 "Autorizado", Optional.empty(), "Publicado", true, APERTURA, APERTURA.plusSeconds(7200),
                 Optional.of(APERTURA), Optional.empty(), Duration.ofMinutes(30), Duration.ofMinutes(1),
                 APERTURA.plusSeconds(7000));
-        assertEquals(Resultado.ELEGIBLE, new ElegibilidadCandidataDesdeM4(devuelve(Optional.of(tarde))).evaluar(ref()));
+        assertEquals(Resultado.ELEGIBLE, new ElegibilidadInicioDesdeM4(devuelve(Optional.of(tarde))).evaluar(ref()));
     }
 
     @Test
@@ -85,28 +88,43 @@ class PoliticasInicioCandidatasTest {
             }
         };
         assertThrows(com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException.class,
-                () -> new ElegibilidadCandidataDesdeM4(caido).evaluar(ref()));
+                () -> new ElegibilidadInicioDesdeM4(caido).evaluar(ref()));
         assertThrows(com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException.class,
-                () -> new LimiteIndividualCandidatoDesdeM4(caido).calcular(ref(), APERTURA));
+                () -> new LimiteTemporalDesdeM4(caido).calcular(ref(), APERTURA));
     }
 
     @Test
     void limiteIndividualEsInicioMasMaximoAcotadoPorElFinPrevisto() {
-        var limite = new LimiteIndividualCandidatoDesdeM4(devuelve(Optional.of(valido())));
+        var limite = new LimiteTemporalDesdeM4(devuelve(Optional.of(valido())));
         Instant inicio = APERTURA.plusSeconds(600);
         assertEquals(Optional.of(inicio.plus(Duration.ofMinutes(30))), limite.calcular(ref(), inicio));
         // Started 100 minutes in: 30 more minutes would pass the 120-minute planned end, so the end bounds it.
         Instant tarde = APERTURA.plusSeconds(6000);
         assertEquals(Optional.of(APERTURA.plusSeconds(7200)), limite.calcular(ref(), tarde));
-        // At or after the planned end there is no valid limit (ck_intento_tiempos): no attempt is created.
-        assertEquals(Optional.empty(), limite.calcular(ref(), APERTURA.plusSeconds(7200)));
+        // Exactly when inicio + maximo == finPrevisto both bounds coincide.
+        assertEquals(Optional.of(APERTURA.plusSeconds(7200)), limite.calcular(ref(), APERTURA.plusSeconds(5400)));
+        // One microsecond before the planned end a start is still allowed, bounded by the end (RF-22, no tolerance).
+        Instant casiFin = APERTURA.plusSeconds(7200).minusNanos(1_000);
+        assertEquals(Optional.of(APERTURA.plusSeconds(7200)), limite.calcular(ref(), casiFin));
         assertEquals(Optional.empty(), limite.calcular(ref(), null));
-        assertEquals(Optional.empty(), new LimiteIndividualCandidatoDesdeM4(devuelve(Optional.empty())).calcular(ref(), inicio));
     }
 
     @Test
-    void lasCandidatasNoSeEnsamblanNiSonComponentes() throws Exception {
-        for (Class<?> tipo : new Class<?>[] {ElegibilidadCandidataDesdeM4.class, LimiteIndividualCandidatoDesdeM4.class}) {
+    void rf22EnElFinPrevistoOPosteriorElInicioSeRechazaComoNoAutorizado() {
+        // DC-45: at or after finPrevisto the ratified rule rejects (403 INICIO_NO_AUTORIZADO), it is not a pending decision.
+        var limite = new LimiteTemporalDesdeM4(devuelve(Optional.of(valido())));
+        assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
+                () -> limite.calcular(ref(), APERTURA.plusSeconds(7200)));
+        assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
+                () -> limite.calcular(ref(), APERTURA.plusSeconds(9000)));
+        // Without the context the eligibility has just read, the limit fails closed (503), never invents one.
+        assertThrows(com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException.class,
+                () -> new LimiteTemporalDesdeM4(devuelve(Optional.empty())).calcular(ref(), APERTURA.plusSeconds(600)));
+    }
+
+    @Test
+    void lasPoliticasRatificadasSeEnsamblanSoloEnConfiguracionParticipacionYNoSonComponentes() throws Exception {
+        for (Class<?> tipo : new Class<?>[] {ElegibilidadInicioDesdeM4.class, LimiteTemporalDesdeM4.class}) {
             for (Annotation a : tipo.getAnnotations()) {
                 assertFalse(a.annotationType().getName().startsWith("org.springframework"), tipo + " " + a);
             }
@@ -114,8 +132,11 @@ class PoliticasInicioCandidatasTest {
         Path fuente = Path.of("src/main/java", ConfiguracionParticipacion.class.getName().replace('.', '/') + ".java");
         if (!Files.exists(fuente)) { fuente = Path.of("m5").resolve(fuente); }
         String ensamblado = Files.readString(fuente, StandardCharsets.UTF_8);
-        assertTrue(ensamblado.contains("new ElegibilidadNoRatificada()"));
-        assertTrue(ensamblado.contains("new LimiteTemporalNoRatificado()"));
-        assertFalse(ensamblado.contains("Candidat"), "production assembly must not use the candidates");
+        // DC-45: the production assembly uses the ratified policies and no longer the fail-safe placeholders.
+        assertTrue(ensamblado.contains("new ElegibilidadInicioDesdeM4(autenticada)"));
+        assertTrue(ensamblado.contains("new LimiteTemporalDesdeM4(autenticada)"));
+        assertFalse(ensamblado.contains("new ElegibilidadNoRatificada()"));
+        assertFalse(ensamblado.contains("new LimiteTemporalNoRatificado()"));
+        assertFalse(ensamblado.contains("Candidat"), "production assembly must not use test-only candidates");
     }
 }

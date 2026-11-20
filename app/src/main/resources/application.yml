@@ -68,8 +68,8 @@ prisaly:
       requiere-activo: false
   m5:
     # DC-BE-CIERRE-FUNCIONAL-09 (fase 3): POST /v1/estudiantes/sesiones/{idSesion}/intentos y
-    # POST /v1/estudiantes/intentos/{idIntento}/finalizar quedan SIN publicar hasta que se autoricen
-    # las reglas de elegibilidad y de tiempo individual. Activarlo no ratifica ninguna regla.
+    # POST /v1/estudiantes/intentos/{idIntento}/finalizar quedan SIN publicar. DC-BE-M5-CIERRE-IMPLEMENTACION-45
+    # ratificó e implementó E1, L1, RF-22, V1-c y DD-14-a; publicarlos sigue requiriendo activación expresa.
     inicio-finalizacion:
       publicacion:
         enabled: false

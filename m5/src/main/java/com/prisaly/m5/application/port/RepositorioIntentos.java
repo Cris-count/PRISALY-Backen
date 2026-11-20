@@ -49,4 +49,32 @@ public interface RepositorioIntentos {
 
     /** Persiste el estado actual del intento identificado por la referencia. */
     void guardar(ReferenciaIntento referencia, Intento intento);
+
+    /**
+     * V1-c (DC-BE-M5-CIERRE-IMPLEMENTACION-45): instante del servidor PostgreSQL leído con la fila del intento ya
+     * bloqueada, junto con su límite persistido. El vencimiento se decide con este instante y el cierre se graba con
+     * él mismo ({@link #guardar(ReferenciaIntento, Intento, java.time.Instant)}), así que un cierre persistido como
+     * entrega nunca es posterior al límite. Implementaciones sin esta lectura: no disponible (falla cerrado).
+     */
+    default InstanteDeCierre instanteDeCierre(ReferenciaIntento referencia) {
+        throw new UnsupportedOperationException("Lectura del reloj de cierre no disponible");
+    }
+
+    /** Persiste como {@link #guardar(ReferenciaIntento, Intento)}, usando {@code instante} para las marcas. */
+    default void guardar(ReferenciaIntento referencia, Intento intento, java.time.Instant instante) {
+        throw new UnsupportedOperationException("Guardado con instante de cierre no disponible");
+    }
+
+    /** Instante de PostgreSQL y límite persistido del intento bloqueado. */
+    record InstanteDeCierre(java.time.Instant ahora, java.time.Instant limiteTemporal) {
+        public InstanteDeCierre {
+            java.util.Objects.requireNonNull(ahora, "ahora");
+            java.util.Objects.requireNonNull(limiteTemporal, "limiteTemporal");
+        }
+
+        /** Mismo criterio que la regla A1 de las respuestas: vencido si el instante es posterior al límite. */
+        public boolean vencido() {
+            return ahora.isAfter(limiteTemporal);
+        }
+    }
 }

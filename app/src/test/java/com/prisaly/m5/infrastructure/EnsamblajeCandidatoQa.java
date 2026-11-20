@@ -11,15 +11,16 @@ import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.application.port.RepositorioParticipaciones;
 import com.prisaly.m5.infrastructure.contenido.ConsultaContenidoIntentoTransaccional;
 import com.prisaly.m5.infrastructure.programacion.CoordinacionInicioDesdeM4;
-import com.prisaly.m5.infrastructure.programacion.ElegibilidadCandidataDesdeM4;
-import com.prisaly.m5.infrastructure.programacion.LimiteIndividualCandidatoDesdeM4;
+import com.prisaly.m5.infrastructure.programacion.ElegibilidadInicioDesdeM4;
+import com.prisaly.m5.infrastructure.programacion.LimiteTemporalDesdeM4;
 
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
  * <b>Solo pruebas QA</b> (DC-BE-CIERRE-FUNCIONAL-09, fase 4). Reutiliza el ensamblado real de
- * {@link ConfiguracionParticipacion} sustituyendo únicamente las dos políticas por las <b>candidatas no
- * ratificadas</b> ({@link ElegibilidadCandidataDesdeM4}, {@link LimiteIndividualCandidatoDesdeM4}). Todo lo
+ * {@link ConfiguracionParticipacion} con las dos políticas explícitas ({@link ElegibilidadInicioDesdeM4},
+ * {@link LimiteTemporalDesdeM4}), candidatas hasta DC-BE-M5-CIERRE-IMPLEMENTACION-45 y ratificadas desde entonces
+ * (el ensamblado productivo usa las mismas). Todo lo
  * demás (Proxy, control de titularidad, transacciones, coordinación con M4, contenido M3) es el código productivo.
  * Vive en {@code app/src/test}: no se empaqueta ni puede activarse en producción.
  */
@@ -34,7 +35,7 @@ public final class EnsamblajeCandidatoQa {
             ProgramacionInicioCoordinadoPort coordinacion, ProgramacionAutenticadaPort autenticada,
             ProgramacionParticipacionPort programacion, ContenidoCasoEstudiantilPort contenido) {
         return ConfiguracionParticipacion.ensamblar(repositorio, participaciones, transacciones, identidad, titularidad,
-                new ElegibilidadCandidataDesdeM4(autenticada), new LimiteIndividualCandidatoDesdeM4(autenticada),
+                new ElegibilidadInicioDesdeM4(autenticada), new LimiteTemporalDesdeM4(autenticada),
                 new CoordinacionInicioDesdeM4(coordinacion, identidad),
                 new ConsultaContenidoIntentoTransaccional(repositorio, programacion, contenido));
     }

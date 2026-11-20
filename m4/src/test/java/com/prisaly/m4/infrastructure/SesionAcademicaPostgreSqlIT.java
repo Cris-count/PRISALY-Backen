@@ -785,7 +785,8 @@ class SesionAcademicaPostgreSqlIT {
                         casos,
                         (s, e) -> llamadas.incrementAndGet(),
                         applicationContext.getBean(
-                                com.prisaly.m4.application.port.RelojAcademicoPort.class));
+                                com.prisaly.m4.application.port.RelojAcademicoPort.class),
+                        sesionId -> 0);
         assertThrows(
                 org.springframework.dao.DataIntegrityViolationException.class,
                 () ->

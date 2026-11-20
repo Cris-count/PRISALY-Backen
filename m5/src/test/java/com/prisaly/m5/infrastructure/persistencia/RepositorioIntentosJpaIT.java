@@ -829,15 +829,15 @@ class RepositorioIntentosJpaIT {
 
         assertEquals(EstadoIntento.FINALIZADO, cerrado.estado());
         assertEquals(antes, respuestasPersistidas());
-        // C3/D13: el reintento idéntico devuelve el mismo cierre; otro motivo sigue en conflicto.
+        // C3/D13: el reintento idéntico devuelve el mismo cierre.
         assertEquals(
                 cerrado,
                 fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.TIEMPO_VENCIDO));
-        assertThrows(
-                TransicionIntentoInvalidaException.class,
-                () ->
-                        fachada.finalizarIntento(
-                                cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        // DC-BE-M5-CIERRE-IMPLEMENTACION-45 (V1-c): una entrega del estudiante tras el límite es un cierre por tiempo,
+        // así que sobre un intento ya cerrado por tiempo es un reintento y devuelve ese cierre (antes: conflicto D13).
+        assertEquals(
+                cerrado,
+                fachada.finalizarIntento(cadena.intento(), MotivoFinalizacion.ENTREGA_ESTUDIANTE));
         assertEquals("TIEMPO_VENCIDO", filaIntento().get("motivoFinalizacion"));
     }
 

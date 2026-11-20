@@ -83,7 +83,7 @@ class FasesIntentoEstudianteHttpIT {
     private final HttpClient http = HttpClient.newHttpClient();
 
     /** Intento A (con fases salvo que se indique), su dueño y un segundo estudiante de la misma sesión. */
-    UUID intento, pregunta1, pregunta2, opcion1;
+    UUID intento, pregunta1, pregunta2, opcion1, casoActual, docenteActual;
     String cookie, cookieOtro, bearerDocente;
 
     enum Modo { CON_FASES, SIN_FASES, VENCIDO }
@@ -96,6 +96,8 @@ class FasesIntentoEstudianteHttpIT {
         String correoDocente = "doc" + s + "@fases.prisaly.test";
         UUID docente = catalog.registerUser("Docente fases", correoDocente, CLAVE, rolDocente).getIdUsuario();
         UUID caso = UUID.randomUUID(), escenario = UUID.randomUUID();
+        casoActual = caso;
+        docenteActual = docente;
         pregunta1 = UUID.randomUUID(); pregunta2 = UUID.randomUUID(); opcion1 = UUID.randomUUID();
         jdbc.update("INSERT INTO \"Caso\" (\"idCaso\",\"idDocente\",\"nombre\",\"historia\",\"tiempoEstimadoSegundos\",\"estado\") VALUES (?,?,?,'Historia fases',600,'Publicado')",
                 caso, docente, "Caso fases " + s);
@@ -212,6 +214,53 @@ class FasesIntentoEstudianteHttpIT {
         assertEquals("EnCurso", fase.get("estadoIntento").asText(), "sin cierre automático por vencimiento");
         assertTrue(fase.get("fechaInicioCuestionario").isNull());
         sinPreguntas(error(get("contenido"), 409, "CUESTIONARIO_NO_INICIADO"));
+    }
+
+    @Test @DisplayName("DC-45: inicio real con fases (E1/L1) abre la exploración; tras el límite P3 sigue en 409 sin cerrar (D-SIM-3) y finalizar desde exploración registra TIEMPO_VENCIDO (D-SIM-4 + V1-c)")
+    void inicioRealConFasesYVencimiento() throws Exception {
+        cadena(Modo.CON_FASES);
+        String s = UUID.randomUUID().toString().substring(0, 8);
+        UUID usuarioC = estudianteConCuenta("c" + s);
+        UUID sesionC = UUID.randomUUID();
+        jdbc.update("""
+                INSERT INTO "Sesion" ("idSesion","idCaso","idDocenteProgramador","nombreEspacioAcademico",
+                  "inicioPrevisto","finPrevisto","tiempoMaximoParticipacionSegundos")
+                VALUES (?,?,?,'Espacio fases 45',now()-interval '1 hour',now()+interval '1 hour',3)""", sesionC, casoActual, docenteActual);
+        jdbc.update("UPDATE \"Sesion\" SET \"estado\"='EnCurso', \"fechaInicioReal\"=clock_timestamp() WHERE \"idSesion\"=?", sesionC);
+        jdbc.update("INSERT INTO \"Convocatoria\" (\"idConvocatoria\",\"idSesion\",\"idEstudiante\") VALUES (?,?,?)",
+                UUID.randomUUID(), sesionC, idEstudiante(usuarioC));
+        cookie = AccesoEstudianteQa.login(http, port, jdbc, cifrador, "c" + s + "@fases.prisaly.test");
+
+        var inicio = http.send(HttpRequest.newBuilder(uri("/v1/estudiantes/sesiones/" + sesionC + "/intentos"))
+                .header("Cookie", cookie).header("Origin", AccesoEstudianteQa.ORIGIN)
+                .POST(HttpRequest.BodyPublishers.noBody()).build(), HttpResponse.BodyHandlers.ofString());
+        assertEquals(201, inicio.statusCode(), inicio.body());
+        intento = UUID.fromString(json.readTree(inicio.body()).get("intento").get("idIntento").asText());
+        assertEquals("Exploracion", jdbc.queryForObject("SELECT \"fase\" FROM \"FaseIntento\" WHERE \"idIntento\"=?", String.class, intento),
+                "the real start opens the exploration in the same transaction");
+        assertEquals("EXPLORACION", ok(get("fase")).get("fase").asText());
+        sinPreguntas(error(get("contenido"), 409, "CUESTIONARIO_NO_INICIADO")); // D-SIM-2
+
+        long hasta = System.nanoTime() + java.util.concurrent.TimeUnit.SECONDS.toNanos(20);
+        while (!Boolean.TRUE.equals(jdbc.queryForObject(
+                "SELECT clock_timestamp() > \"limiteTemporal\" FROM \"Intento\" WHERE \"idIntento\"=?", Boolean.class, intento))) {
+            assertTrue(System.nanoTime() < hasta, "PostgreSQL clock did not pass the limit");
+            Thread.sleep(100);
+        }
+        error(post("cuestionario", cookie, AccesoEstudianteQa.ORIGIN), 409, "LIMITE_TEMPORAL_VENCIDO"); // D-SIM-3
+        JsonNode fase = ok(get("fase"));
+        assertEquals("EXPLORACION", fase.get("fase").asText());
+        assertEquals("EnCurso", fase.get("estadoIntento").asText(), "D-SIM-3: P3 does not close the attempt");
+
+        var fin = post("finalizar", cookie, AccesoEstudianteQa.ORIGIN); // D-SIM-4 from exploration, after the limit
+        assertEquals(200, fin.statusCode(), fin.body());
+        assertEquals("TIEMPO_VENCIDO", json.readTree(fin.body()).get("motivoFinalizacion").asText());
+        var repetido = post("finalizar", cookie, AccesoEstudianteQa.ORIGIN);
+        assertEquals(200, repetido.statusCode(), repetido.body());
+        assertEquals(json.readTree(fin.body()).get("fin").asText(), json.readTree(repetido.body()).get("fin").asText());
+        error(get("narrativa"), 409, "EXPLORACION_CERRADA"); // D-SIM-10
+        assertEquals("Exploracion", jdbc.queryForObject("SELECT \"fase\" FROM \"FaseIntento\" WHERE \"idIntento\"=?", String.class, intento));
+        assertEquals(0, cantidad("SELECT count(*) FROM \"Respuesta\" WHERE \"idIntento\"=?", intento));
     }
 
     @Test @DisplayName("SIN_FASES: fase informada, /contenido y P4 como antes, P1 y P3 con su error tipado, respuestas sin cambios")

@@ -10,28 +10,30 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * <b>Candidata</b> de elegibilidad de primer inicio (DC-CLAUDE-BE-CIERRE-07, prioridad 3), <b>no ratificada</b>.
- * No es un bean y el ensamblado de producción ({@code ConfiguracionParticipacion}) sigue usando
- * {@code ElegibilidadNoRatificada}: activarla exige ratificar la regla y cambiar ese ensamblado.
+ * <b>E1 — elegibilidad del primer inicio, ratificada</b> por Dirección Central (DC-BE-M5-CIERRE-IMPLEMENTACION-45).
+ * Hasta esa orden era la candidata {@code ElegibilidadCandidataDesdeM4} (DC-CLAUDE-BE-CIERRE-07); la regla es la misma.
+ * La ensambla {@code ConfiguracionParticipacion}.
  *
- * <p>Solo usa el contrato vigente de M4 ({@link ProgramacionAutenticadaPort}, identidad de M1) y datos persistidos:
+ * <p>Solo usa el contrato vigente de M4 ({@link ProgramacionAutenticadaPort}, que resuelve al estudiante por la
+ * identidad de M1, así que nunca devuelve datos de otro estudiante) y datos persistidos:
  * <ul>
- *   <li>la sesión está {@code EnCurso};</li>
- *   <li>la convocatoria está {@code Autorizado} y sin {@code fechaRetiro};</li>
- *   <li>el caso está {@code Publicado} y activo.</li>
+ *   <li>la sesión está {@code EnCurso} (abierta por el docente);</li>
+ *   <li>la convocatoria es del estudiante, está {@code Autorizado} y no tiene {@code fechaRetiro};</li>
+ *   <li>el caso está {@code Publicado} y activo (el contenido estudiantil de M3 no se sirve de un caso inactivo).</li>
  * </ul>
- * <b>No aplica ingreso tardío</b> (RF-22 sin ratificar): no compara el instante de inicio con
- * {@code fechaInicioReal}, {@code inicioPrevisto} ni {@code tiempoEstimadoCaso}. Si la consulta no devuelve
- * contexto, la respuesta es {@code NO_ELEGIBLE}; un fallo técnico de M4 se propaga (falla cerrado).
+ * La identidad válida la exige antes el proxy de M5, y las restricciones de intentos (V003–V007) las garantiza
+ * PostgreSQL al insertar. El plazo (RF-22) y el límite (L1) se deciden en {@link LimiteTemporalDesdeM4} con el
+ * instante de inicio que se persiste. Sin contexto: {@code NO_ELEGIBLE} (403); un fallo técnico de M4 se propaga
+ * (falla cerrado).
  */
-public final class ElegibilidadCandidataDesdeM4 implements ElegibilidadInicio {
+public final class ElegibilidadInicioDesdeM4 implements ElegibilidadInicio {
 
     static final String SESION_EN_CURSO = "EnCurso";
     static final String CONVOCATORIA_AUTORIZADA = "Autorizado";
 
     private final ProgramacionAutenticadaPort programacion;
 
-    public ElegibilidadCandidataDesdeM4(ProgramacionAutenticadaPort programacion) {
+    public ElegibilidadInicioDesdeM4(ProgramacionAutenticadaPort programacion) {
         this.programacion = Objects.requireNonNull(programacion, "programacion");
     }
 
@@ -42,7 +44,7 @@ public final class ElegibilidadCandidataDesdeM4 implements ElegibilidadInicio {
             return Resultado.NO_ELEGIBLE;
         }
         Optional<ContextoProgramacion> contexto = programacion.consultarConvocatoria(id.get());
-        return contexto.filter(ElegibilidadCandidataDesdeM4::cumple).isPresent()
+        return contexto.filter(ElegibilidadInicioDesdeM4::cumple).isPresent()
                 ? Resultado.ELEGIBLE : Resultado.NO_ELEGIBLE;
     }
 
