@@ -48,10 +48,10 @@ import tools.jackson.databind.ObjectMapper;
  *
  * <p>Autenticación DD-02 B (Mailpit) → {@code GET /v1/estudiantes/convocatorias} → {@code POST …/sesiones/{id}/intentos}
  * → {@code GET …/intentos/{id}/contenido} → {@code PUT …/respuestas/{idPregunta}} → {@code POST …/finalizar}, sobre la
- * APP real y PostgreSQL 16.15. Lo único sustituido es la política de inicio: {@link EnsamblajeCandidatoQa} cambia
- * {@code ElegibilidadNoRatificada}/{@code LimiteTemporalNoRatificado} por las candidatas. Un resultado verde aquí NO
- * demuestra una operación productiva: con el ensamblado productivo el primer inicio sigue en 409
- * ({@link InicioProductivoM4M5QaHttpIT}).
+ * APP real y PostgreSQL 16.15. {@link EnsamblajeCandidatoQa} ensambla las políticas de inicio de forma explícita.
+ * DC-BE-M5-CIERRE-IMPLEMENTACION-45: esas políticas (E1, L1) son ahora las ratificadas y el ensamblado productivo usa
+ * las mismas, así que este recorrido coincide con el productivo; el ensamblado productivo sin sustituciones se prueba
+ * en {@link InicioProductivoM4M5QaHttpIT} y {@link PoliticasInicioVencimientoM5HttpIT}.
  */
 @SpringBootTest(classes = PrisalyApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Import(RecorridoCandidatoM4M5QaHttpIT.PoliticasCandidatasSoloQa.class)

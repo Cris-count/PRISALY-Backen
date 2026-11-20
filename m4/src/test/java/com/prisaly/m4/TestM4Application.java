@@ -27,6 +27,15 @@ public class TestM4Application {
                                 id));
     }
 
+    /**
+     * DC-BE-M5-CIERRE-IMPLEMENTACION-45: doble explícito del cierre de intentos (M5 no existe en este contexto). El
+     * cierre real por tiempo, con M5, se prueba en app ({@code PoliticasInicioVencimientoM5HttpIT}).
+     */
+    @org.springframework.context.annotation.Bean
+    com.prisaly.m4.application.port.CierreParticipacionesPort cierreDePrueba() {
+        return sesionId -> 0;
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(TestM4Application.class, args);
     }

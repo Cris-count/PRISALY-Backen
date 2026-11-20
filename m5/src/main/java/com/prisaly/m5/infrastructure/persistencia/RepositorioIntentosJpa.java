@@ -97,13 +97,49 @@ public class RepositorioIntentosJpa implements RepositorioIntentos {
     @Override
     @Transactional(propagation = Propagation.MANDATORY)
     public void guardar(ReferenciaIntento referencia, Intento intento) {
-        UUID id = MapeoIntento.idDe(referencia).orElseThrow(
-                () -> new PersistenciaIntentoException("La referencia no es un idIntento uuid: " + referencia.valor()));
-        IntentoEntity entidad = intentos.bloquearPorId(id).orElseThrow(() -> new PersistenciaIntentoException(
-                "El intento " + id + " no existe: crear intentos corresponde al caso de uso de inicio"));
+        UUID id = idDe(referencia);
+        IntentoEntity entidad = bloquear(id);
         // Después del bloqueo de la fila: la marca es posterior a cualquier
         // escritura confirmada sobre el intento.
-        OffsetDateTime ahora = ahoraEnBaseDeDatos();
+        guardarEn(id, entidad, intento, ahoraEnBaseDeDatos());
+    }
+
+    /**
+     * V1-c: el instante lo leyó {@link #instanteDeCierre} en esta misma transacción, con la fila ya bloqueada, así que
+     * sigue siendo posterior a cualquier escritura confirmada sobre el intento.
+     */
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void guardar(ReferenciaIntento referencia, Intento intento, java.time.Instant instante) {
+        if (instante == null) {
+            throw new PersistenciaIntentoException("El instante de cierre es obligatorio");
+        }
+        UUID id = idDe(referencia);
+        guardarEn(id, bloquear(id), intento, instante.atOffset(java.time.ZoneOffset.UTC));
+    }
+
+    /** V1-c: bloquea la fila del intento y lee después {@code clock_timestamp()} y su límite persistido. */
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public InstanteDeCierre instanteDeCierre(ReferenciaIntento referencia) {
+        if (TransactionSynchronizationManager.isCurrentTransactionReadOnly()) {
+            throw new PersistenciaIntentoException("El instante de cierre exige una transacción de escritura");
+        }
+        IntentoEntity entidad = bloquear(idDe(referencia));
+        return new InstanteDeCierre(ahoraEnBaseDeDatos().toInstant(), entidad.getLimiteTemporal().toInstant());
+    }
+
+    private static UUID idDe(ReferenciaIntento referencia) {
+        return MapeoIntento.idDe(referencia).orElseThrow(
+                () -> new PersistenciaIntentoException("La referencia no es un idIntento uuid: " + referencia.valor()));
+    }
+
+    private IntentoEntity bloquear(UUID id) {
+        return intentos.bloquearPorId(id).orElseThrow(() -> new PersistenciaIntentoException(
+                "El intento " + id + " no existe: crear intentos corresponde al caso de uso de inicio"));
+    }
+
+    private void guardarEn(UUID id, IntentoEntity entidad, Intento intento, OffsetDateTime ahora) {
         // A1 (DC-CLAUDE-BE-EJECUCION-04): ninguna respuesta cambia después del límite del intento.
         // Se decide con la fila bloqueada y con el mismo instante que se grabaría, así que una
         // respuesta y un vencimiento concurrentes quedan serializados y no hay escrituras parciales.

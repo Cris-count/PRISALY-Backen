@@ -25,8 +25,7 @@ import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.Titularidad;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
-import com.prisaly.m5.application.inicio.DecisionPendiente;
-import com.prisaly.m5.application.inicio.InicioNoDisponibleException;
+import com.prisaly.m5.application.inicio.InicioNoAutorizadoException;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.application.port.RepositorioParticipaciones;
 import com.prisaly.m5.domain.intento.EstadoIntento;
@@ -382,9 +381,9 @@ class ConfiguracionParticipacionTest {
 
     @Test
     @DisplayName(
-            "ensamblado productivo: el primer inicio falla por elegibilidad no ratificada, revierte"
-                    + " y no escribe")
-    void primerInicioBloqueadoEnProduccion() {
+            "DC-45: ensamblado productivo sin el contrato autenticado de M4: el primer inicio falla"
+                    + " cerrado (503), revierte y no escribe")
+    void primerInicioSinContratoDeM4FallaCerrado() {
         RepositorioIntentosEnMemoria repositorio = new RepositorioIntentosEnMemoria();
         RepositorioParticipacionesEnMemoria participaciones =
                 new RepositorioParticipacionesEnMemoria(repositorio);
@@ -396,13 +395,50 @@ class ConfiguracionParticipacionTest {
                         transacciones,
                         identidad(Optional.of(ANA)),
                         titularConvocatoria())) {
-            InicioNoDisponibleException error =
-                    assertThrows(
-                            InicioNoDisponibleException.class,
-                            () ->
-                                    ctx.getBean(OperacionesParticipacion.class)
-                                            .iniciarOReanudar(CONVOCATORIA));
-            assertEquals(DecisionPendiente.ELEGIBILIDAD_ACADEMICA, error.decision());
+            assertThrows(
+                    ConsultaProgramacionNoDisponibleException.class,
+                    () -> ctx.getBean(OperacionesParticipacion.class).iniciarOReanudar(CONVOCATORIA));
+            assertEquals(1, transacciones.abiertas.get());
+            assertEquals(1, transacciones.revertidas.get());
+            assertEquals(0, transacciones.confirmadas.get());
+            assertEquals(List.of(), participaciones.escrituras());
+            assertTrue(participaciones.participacionDe(CONVOCATORIA).isEmpty());
+        }
+    }
+
+    @Test
+    @DisplayName(
+            "DC-45: el ensamblado productivo usa E1 ratificada: con la sesión sin iniciar el primer inicio"
+                    + " se rechaza como no autorizado, revierte y no escribe")
+    void primerInicioRechazadoPorE1EnProduccion() {
+        RepositorioIntentosEnMemoria repositorio = new RepositorioIntentosEnMemoria();
+        RepositorioParticipacionesEnMemoria participaciones =
+                new RepositorioParticipacionesEnMemoria(repositorio);
+        TransaccionesContadas transacciones = new TransaccionesContadas();
+        com.prisaly.m4.api.ProgramacionAutenticadaPort autenticada =
+                new com.prisaly.m4.api.ProgramacionAutenticadaPort() {
+                    public Optional<ContextoProgramacion> consultarSesion(UUID s) {
+                        throw new AssertionError("not used");
+                    }
+
+                    public Optional<ContextoProgramacion> consultarConvocatoria(UUID c) {
+                        return Optional.of(new ContextoProgramacion(c, UUID.randomUUID(), UUID.randomUUID(),
+                                UUID.randomUUID(), "SinIniciar", "Autorizado", Optional.empty(), "Publicado", true,
+                                Instant.EPOCH, Instant.EPOCH.plusSeconds(3600), Optional.empty(), Optional.empty(),
+                                Duration.ofMinutes(30), Duration.ofMinutes(20), Instant.EPOCH));
+                    }
+                };
+        try (var ctx =
+                contexto(
+                        repositorio,
+                        participaciones,
+                        transacciones,
+                        identidad(Optional.of(ANA)),
+                        titularConvocatoria(),
+                        autenticada)) {
+            assertThrows(
+                    InicioNoAutorizadoException.class,
+                    () -> ctx.getBean(OperacionesParticipacion.class).iniciarOReanudar(CONVOCATORIA));
             assertEquals(1, transacciones.abiertas.get());
             assertEquals(1, transacciones.revertidas.get());
             assertEquals(0, transacciones.confirmadas.get());

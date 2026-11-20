@@ -29,6 +29,6 @@ public class M1ContractsTestConfiguration {
     @Bean SesionAcademicaService servicio(SesionRepository sesiones, ConvocatoriaRepository convocatorias,
             IdentidadPort identidad, CasoAcademicoPort casos, NotificacionPort notificaciones) {
         return new SesionAcademicaService(sesiones, convocatorias, identidad, casos, notificaciones,
-                mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
+                mock(com.prisaly.m4.application.port.RelojAcademicoPort.class), sesionId -> 0);
     }
 }

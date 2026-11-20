@@ -29,7 +29,7 @@ class AutorizacionM4ServiceTest {
         service =
                 new SesionAcademicaService(
                         sesiones, convocatorias, identidad, casos, mock(NotificacionPort.class),
-                        mock(com.prisaly.m4.application.port.RelojAcademicoPort.class));
+                        mock(com.prisaly.m4.application.port.RelojAcademicoPort.class), sesionId -> 0);
         when(identidad.docenteActual()).thenReturn(actual);
     }
 

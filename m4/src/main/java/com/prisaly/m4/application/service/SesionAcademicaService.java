@@ -1,6 +1,7 @@
 package com.prisaly.m4.application.service;
 
 import com.prisaly.m4.application.port.CasoAcademicoPort;
+import com.prisaly.m4.application.port.CierreParticipacionesPort;
 import com.prisaly.m4.application.port.ConvocatoriaRepository;
 import com.prisaly.m4.application.port.IdentidadPort;
 import com.prisaly.m4.application.port.NotificacionPort;
@@ -36,6 +37,7 @@ public class SesionAcademicaService {
     private final CasoAcademicoPort casoAcademicoPort;
     private final NotificacionPort notificacionPort;
     private final RelojAcademicoPort relojAcademico;
+    private final CierreParticipacionesPort cierreParticipaciones;
 
     public SesionAcademicaService(
             SesionRepository sesionRepository,
@@ -43,13 +45,16 @@ public class SesionAcademicaService {
             IdentidadPort identidadPort,
             CasoAcademicoPort casoAcademicoPort,
             NotificacionPort notificacionPort,
-            RelojAcademicoPort relojAcademico) {
+            RelojAcademicoPort relojAcademico,
+            CierreParticipacionesPort cierreParticipaciones) {
         this.sesionRepository = sesionRepository;
         this.convocatoriaRepository = convocatoriaRepository;
         this.identidadPort = identidadPort;
         this.casoAcademicoPort = casoAcademicoPort;
         this.notificacionPort = notificacionPort;
         this.relojAcademico = java.util.Objects.requireNonNull(relojAcademico, "relojAcademico");
+        this.cierreParticipaciones =
+                java.util.Objects.requireNonNull(cierreParticipaciones, "cierreParticipaciones");
     }
 
     // ─── CrearSesion ──────────────────────────────────────────
@@ -279,7 +284,13 @@ public class SesionAcademicaService {
                             "No se puede transicionar directamente a " + nuevoEstado);
         }
 
-        return sesionRepository.guardar(sesion);
+        SesionAcademica guardada = sesionRepository.guardar(sesion);
+        if (nuevoEstado == EstadoSesion.FINALIZADO) {
+            // V1-c (DC-BE-M5-CIERRE-IMPLEMENTACION-45): misma transacción y misma fila de sesión bloqueada. Solo los
+            // intentos ya vencidos se cierran con TIEMPO_VENCIDO; los vigentes conservan estado y límite.
+            cierreParticipaciones.cerrarIntentosVencidos(sesionId);
+        }
+        return guardada;
     }
 
     // ─── ConvocarEstudiantes ──────────────────────────────────

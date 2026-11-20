@@ -29,6 +29,7 @@ class SesionAcademicaServiceTest {
     private static final Instant T1 = Instant.parse("2030-11-05T09:00:30.654321Z"),
             T2 = T1.plusSeconds(1800);
     private RelojAcademicoPort reloj;
+    private CierreParticipacionesPort cierre;
 
     @BeforeEach
     void configurar() {
@@ -39,7 +40,8 @@ class SesionAcademicaServiceTest {
         notificaciones = mock(NotificacionPort.class);
         reloj = mock(RelojAcademicoPort.class);
         when(reloj.ahora()).thenReturn(T1, T2);
-        service = new SesionAcademicaService(repo, conv, identidad, casos, notificaciones, reloj);
+        cierre = mock(CierreParticipacionesPort.class);
+        service = new SesionAcademicaService(repo, conv, identidad, casos, notificaciones, reloj, cierre);
         when(identidad.tienePermiso(any(), any())).thenReturn(true);
         when(casos.estaPublicado(any())).thenReturn(true);
         when(repo.guardar(any())).thenAnswer(i -> i.getArgument(0));
@@ -174,6 +176,29 @@ class SesionAcademicaServiceTest {
         assertEquals(T1, s.getFechaInicioReal());
         assertEquals(T2, s.getFechaFinReal());
         verify(reloj, times(2)).ahora();
+    }
+
+    @Test
+    void v1cSoloElCierreDeSesionPideCerrarLosIntentosVencidosDespuesDeGuardarla() {
+        var s = sesion();
+        service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        verify(cierre, never()).cerrarIntentosVencidos(any());
+        service.cambiarEstado(docente, s.getId(), EstadoSesion.FINALIZADO);
+        var orden = inOrder(repo, cierre);
+        orden.verify(repo, times(2)).guardar(s);
+        orden.verify(cierre).cerrarIntentosVencidos(s.getId());
+        verifyNoMoreInteractions(cierre);
+    }
+
+    @Test
+    void v1cSiElCierreDeIntentosFallaLaSesionNoSeDaPorCerrada() {
+        var s = sesion();
+        service.cambiarEstado(docente, s.getId(), EstadoSesion.EN_CURSO);
+        when(cierre.cerrarIntentosVencidos(s.getId()))
+                .thenThrow(new ReglaNegocioException("M4-PROVEEDOR-NO-DISPONIBLE", "M5 no disponible"));
+        // The exception reaches the transactional boundary, which rolls the session closing back (no partial close).
+        assertThrows(ReglaNegocioException.class,
+                () -> service.cambiarEstado(docente, s.getId(), EstadoSesion.FINALIZADO));
     }
 
     @Test

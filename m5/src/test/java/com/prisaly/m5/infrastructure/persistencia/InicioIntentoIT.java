@@ -57,8 +57,6 @@ import com.prisaly.m5.application.acceso.EstudianteNoIdentificadoException;
 import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.IdentificadorEstudiante;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
-import com.prisaly.m5.application.inicio.DecisionPendiente;
-import com.prisaly.m5.application.inicio.InicioNoDisponibleException;
 import com.prisaly.m5.application.inicio.LimiteTemporalInicio;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.application.port.RepositorioParticipaciones;
@@ -76,9 +74,10 @@ import com.prisaly.m5.infrastructure.programacion.TitularidadIntentosDesdeM4;
  *
  * <p>Dos ensamblados:
  * <ul>
- *   <li>{@code produccion}: el bean de {@link ConfiguracionParticipacion}, con
- *       elegibilidad y límite NO ratificados. Debe bloquear el primer inicio y
- *       permitir la reanudación.</li>
+ *   <li>{@code produccion}: el bean de {@link ConfiguracionParticipacion}, con E1, L1 y
+ *       RF-22 ratificados (DC-BE-M5-CIERRE-IMPLEMENTACION-45) sobre el contrato autenticado de
+ *       M4. Con las sesiones del fixture sin iniciar, E1 rechaza el primer inicio; la
+ *       reanudación no consulta las políticas.</li>
  *   <li>{@link #accesoConPoliticasDePrueba}: el mismo mecanismo con
  *       {@link PoliticasInicioDePrueba}, dobles que permiten ejercitar la
  *       creación. No son reglas académicas.</li>
@@ -196,14 +195,13 @@ class InicioIntentoIT {
     }
 
     @Test
-    @DisplayName("ensamblado productivo: el primer inicio falla por elegibilidad no ratificada y no escribe")
-    void primerInicioBloqueadoEnProduccion() {
+    @DisplayName("DC-45 ensamblado productivo: con la sesión sin iniciar E1 rechaza el primer inicio y no escribe")
+    void primerInicioRechazadoPorE1EnProduccion() {
         autenticar(ana);
 
-        InicioNoDisponibleException error = assertThrows(InicioNoDisponibleException.class,
+        assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
                 () -> produccion.iniciarOReanudar(ana.referenciaConvocatoria()));
 
-        assertEquals(DecisionPendiente.ELEGIBILIDAD_ACADEMICA, error.decision());
         assertEquals(0, participacionesDe(ana.convocatoria()));
     }
 
@@ -291,8 +289,9 @@ class InicioIntentoIT {
         var cierre = acceso.finalizarIntento(intento, MotivoFinalizacion.TIEMPO_VENCIDO);
         assertEquals(EstadoIntento.FINALIZADO, cierre.estado());
         assertEquals(cierre, acceso.finalizarIntento(intento, MotivoFinalizacion.TIEMPO_VENCIDO));
-        assertThrows(com.prisaly.m5.domain.intento.TransicionIntentoInvalidaException.class,
-                () -> acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE));
+        // DC-BE-M5-CIERRE-IMPLEMENTACION-45 (V1-c): a student delivery after the limit IS a TIEMPO_VENCIDO closing, so on
+        // an attempt already closed by time it is a retry and returns that same closing (before: 409 by D13).
+        assertEquals(cierre, acceso.finalizarIntento(intento, MotivoFinalizacion.ENTREGA_ESTUDIANTE));
         assertThrows(RepeticionNoHabilitadaException.class, () -> acceso.iniciarOReanudar(ana.referenciaConvocatoria()));
 
         Map<String, Object> fila = filaIntento(inicio);
@@ -323,8 +322,8 @@ class InicioIntentoIT {
         AccesoProtegidoParticipacion acceso = new AccesoProtegidoParticipacion(
                 new ControlAccesoIntentos(identidad, titularidad),
                 FachadaSinControlDePrueba.ensamblar(repositorio, participaciones, transacciones,
-                        new com.prisaly.m5.infrastructure.programacion.ElegibilidadCandidataDesdeM4(autenticada),
-                        new com.prisaly.m5.infrastructure.programacion.LimiteIndividualCandidatoDesdeM4(autenticada)));
+                        new com.prisaly.m5.infrastructure.programacion.ElegibilidadInicioDesdeM4(autenticada),
+                        new com.prisaly.m5.infrastructure.programacion.LimiteTemporalDesdeM4(autenticada)));
 
         // Session not started yet: not eligible, nothing written.
         assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
@@ -348,10 +347,9 @@ class InicioIntentoIT {
         autenticar(luis);
         assertThrows(RuntimeException.class, () -> acceso.iniciarOReanudar(ana.referenciaConvocatoria()));
         assertEquals(1, intentosDe(ana.convocatoria()));
-        // Production assembly still refuses a first start: the candidates are not wired.
-        var pendiente = assertThrows(InicioNoDisponibleException.class,
+        // DC-45: the production assembly now wires the same ratified policies; Luis's session is not started (E1).
+        assertThrows(com.prisaly.m5.application.inicio.InicioNoAutorizadoException.class,
                 () -> produccion.iniciarOReanudar(luis.referenciaConvocatoria()));
-        assertEquals(DecisionPendiente.ELEGIBILIDAD_ACADEMICA, pendiente.decision());
         assertEquals(0, intentosDe(luis.convocatoria()));
     }
 
@@ -609,6 +607,25 @@ class InicioIntentoIT {
         @Bean
         ProgramacionParticipacionPort programacionParticipacion(JdbcTemplate jdbc) {
             return new ProgramacionParticipacionJdbcAdapter(jdbc);
+        }
+
+        /**
+         * DC-45: contrato autenticado de M4 para el ensamblado productivo. Sustituye a {@code ProgramacionAutenticadaM1Adapter}
+         * (DD-02 no está activo en este contexto): el estudiante sale solo de la identidad de prueba, como en producción
+         * sale de M1.
+         */
+        @Bean
+        com.prisaly.m4.api.ProgramacionAutenticadaPort programacionAutenticada(
+                ProgramacionParticipacionPort programacion, AccesoEstudianteM4M5IT.IdentidadDePrueba identidad) {
+            return new com.prisaly.m4.api.ProgramacionAutenticadaPort() {
+                public Optional<ContextoProgramacion> consultarSesion(UUID s) {
+                    return identidad.actual().flatMap(e -> programacion.consultarSesion(s, UUID.fromString(e.valor())));
+                }
+
+                public Optional<ContextoProgramacion> consultarConvocatoria(UUID c) {
+                    return identidad.actual().flatMap(e -> programacion.consultarConvocatoria(c, UUID.fromString(e.valor())));
+                }
+            };
         }
     }
 }

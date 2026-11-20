@@ -107,6 +107,18 @@ public final class ParticipacionFacade implements OperacionesParticipacion {
         return finalizacion.finalizar(intento, motivo);
     }
 
+    /**
+     * V1-c (DC-BE-M5-CIERRE-IMPLEMENTACION-45): cierre docente de un intento ya vencido, con el mismo punto D-SIM-4 que
+     * la finalización. No pertenece a {@link OperacionesParticipacion}: no lo invoca ningún estudiante, solo el
+     * proveedor del cierre de sesión de M4, dentro de su transacción y tras su autorización.
+     *
+     * @return {@code true} si cerró el intento; {@code false} si ya estaba finalizado o sigue vigente
+     */
+    public boolean cerrarSiVencido(ReferenciaIntento intento) {
+        fases.ifPresent(f -> f.alFinalizar(intento));
+        return finalizacion.cerrarSiVencido(intento);
+    }
+
     @Override
     public EstadoFase consultarFase(ReferenciaIntento intento) {
         return fases.orElseThrow(FasesNoDisponiblesException::new).consultar(intento);

@@ -25,10 +25,10 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
  * <p><b>Ensamblaje preparado, no publicado</b> (DC-BE-CIERRE-FUNCIONAL-09, fase 3). La clase solo se registra
  * con {@code prisaly.m5.inicio-finalizacion.publicacion.enabled=true}; el valor productivo es {@code false},
  * así que por defecto los POST no existen (404/405). Aun publicados, siguen exigiendo la identidad estudiantil
- * real de M1 (DD-02) y la titularidad, y el primer inicio sigue bloqueado mientras el ensamblado de
- * producción use {@code ElegibilidadNoRatificada} y {@code LimiteTemporalNoRatificado} (respuesta 409
- * {@code INICIO_NO_DISPONIBLE}). La finalización repetida con el mismo motivo es idempotente (D13/C3).
- * No debe activarse sin la autorización de las reglas de elegibilidad y tiempo individual.
+ * real de M1 (DD-02) y la titularidad. Desde DC-BE-M5-CIERRE-IMPLEMENTACION-45 el primer inicio aplica las políticas
+ * ratificadas E1, L1 y RF-22 (403 {@code INICIO_NO_AUTORIZADO} si no se cumplen) y la finalización aplica V1-c (una
+ * entrega después del límite queda como {@code TIEMPO_VENCIDO}). La finalización repetida es idempotente (D13/C3).
+ * Publicarlos en producción sigue requiriendo la activación expresa de Dirección Central.
  *
  * <p>Solo depende del proxy {@link AccesoProtegidoParticipacion}. Los errores los traduce
  * {@code ManejadorErroresM5} con el cuerpo común {@code {code, message}} (D09).

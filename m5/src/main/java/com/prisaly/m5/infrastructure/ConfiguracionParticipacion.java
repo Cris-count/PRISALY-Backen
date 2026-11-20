@@ -1,6 +1,13 @@
 package com.prisaly.m5.infrastructure;
 
 import com.prisaly.m4.api.ConsultaProgramacionNoDisponibleException;
+import com.prisaly.m4.api.ConvocatoriasSesionPort;
+import com.prisaly.m4.api.ProgramacionAutenticadaPort;
+import com.prisaly.m4.api.ReglaNegocioException;
+import com.prisaly.m4.application.port.CierreParticipacionesPort;
+import com.prisaly.m5.infrastructure.programacion.CierreIntentosVencidosDesdeM5;
+import com.prisaly.m5.infrastructure.programacion.ElegibilidadInicioDesdeM4;
+import com.prisaly.m5.infrastructure.programacion.LimiteTemporalDesdeM4;
 import com.prisaly.m4.api.ProgramacionParticipacionPort;
 import com.prisaly.m3.api.ContenidoCasoEstudiantilPort;
 import com.prisaly.m3.api.GuionNarrativoEstudiantilPort;
@@ -22,9 +29,7 @@ import com.prisaly.m5.application.acceso.ControlAccesoIntentos;
 import com.prisaly.m5.application.acceso.IdentidadEstudianteActual;
 import com.prisaly.m5.application.acceso.TitularidadIntentos;
 import com.prisaly.m5.application.inicio.ElegibilidadInicio;
-import com.prisaly.m5.application.inicio.ElegibilidadNoRatificada;
 import com.prisaly.m5.application.inicio.LimiteTemporalInicio;
-import com.prisaly.m5.application.inicio.LimiteTemporalNoRatificado;
 import com.prisaly.m5.application.port.RepositorioIntentos;
 import com.prisaly.m5.application.port.RepositorioParticipaciones;
 import com.prisaly.m5.application.servicio.ActualizarRespuestaServicio;
@@ -55,13 +60,17 @@ import java.util.function.Consumer;
  * de {@link TitularidadIntentos} (M4), el contexto no se crea.
  *
  * <p>El proxy verifica identidad/titularidad antes de delegar. D-06 revalida la convocatoria dentro
- * de la transacción de inicio y reserva Sesion y Convocatoria antes de Participacion/Intento. Las
- * políticas académicas no ratificadas siguen denegando el primer inicio.
+ * de la transacción de inicio y reserva Sesion y Convocatoria antes de Participacion/Intento.
  *
- * <p><b>Primer inicio:</b> la elegibilidad y el límite temporal siguen pendientes de Dirección
- * Técnica. Este ensamblado usa {@link ElegibilidadNoRatificada} y {@link
- * LimiteTemporalNoRatificado}, que no son beans y no pueden sustituirse desde fuera: el primer
- * inicio falla de forma segura sin escribir, y la reanudación de un intento en curso sí funciona.
+ * <p><b>Primer inicio (DC-BE-M5-CIERRE-IMPLEMENTACION-45):</b> las políticas ratificadas por Dirección Central
+ * se ensamblan solo aquí y no son beans, así que no pueden sustituirse desde fuera:
+ * {@link ElegibilidadInicioDesdeM4} (E1) y {@link LimiteTemporalDesdeM4} (L1 y RF-22), ambas sobre el contrato
+ * {@link ProgramacionAutenticadaPort} de M4. Sin ese contrato, el primer inicio falla cerrado (503). La reanudación
+ * no consulta ninguna de las dos y nunca amplía el límite. La repetición (DD-14-a) la sigue garantizando PostgreSQL
+ * (V003–V007): un intento por estudiante y caso. La publicación de los POST sigue tras su interruptor.
+ *
+ * <p><b>V1-c:</b> {@link #cierreIntentosVencidosM5} provee a M4 el cierre por tiempo de los intentos vencidos al
+ * cerrar el docente la sesión, con la misma fachada (y el mismo punto D-SIM-4) que la finalización.
  */
 @Configuration(proxyBeanMethods = false)
 public class ConfiguracionParticipacion {
@@ -87,6 +96,7 @@ public class ConfiguracionParticipacion {
             ObjectProvider<ContenidoCasoEstudiantilPort> contenido,
             ObjectProvider<GuionNarrativoEstudiantilPort> guiones,
             ObjectProvider<JdbcTemplate> jdbc,
+            ObjectProvider<ProgramacionAutenticadaPort> autenticada,
             @Value("${" + PROPIEDAD_FASES + ":false}") boolean fasesHabilitadas) {
         return ensamblar(
                 repositorio,
@@ -94,8 +104,8 @@ public class ConfiguracionParticipacion {
                 transacciones,
                 identidad,
                 titularidad,
-                new ElegibilidadNoRatificada(),
-                new LimiteTemporalNoRatificado(),
+                elegibilidad(autenticada.getIfAvailable()),
+                limiteTemporal(autenticada.getIfAvailable()),
                 new CoordinacionInicioDesdeM4(
                         coordinacion.getIfAvailable(
                                 () ->
@@ -106,6 +116,68 @@ public class ConfiguracionParticipacion {
                 consultaContenido(repositorio, programacion, contenido),
                 fases(fasesHabilitadas, identidad, programacion.getIfAvailable(), guiones.getIfAvailable(),
                         jdbc.getIfAvailable()));
+    }
+
+    /**
+     * V1-c (DC-BE-M5-CIERRE-IMPLEMENTACION-45): proveedor del puerto de M4 para el cierre docente de sesiones. Usa una
+     * fachada con las mismas políticas y fases que {@link #accesoProtegidoParticipacion}, sin proxy estudiantil: lo
+     * invoca M4 dentro de su transacción, después de autorizar al docente propietario de la sesión. Sin el contrato de
+     * convocatorias de M4 o sin JDBC, el cierre de sesión falla cerrado.
+     */
+    @Bean
+    CierreParticipacionesPort cierreIntentosVencidosM5(
+            RepositorioIntentos repositorio,
+            RepositorioParticipaciones participaciones,
+            IdentidadEstudianteActual identidad,
+            ObjectProvider<ConvocatoriasSesionPort> convocatorias,
+            ObjectProvider<ProgramacionAutenticadaPort> autenticada,
+            ObjectProvider<ProgramacionParticipacionPort> programacion,
+            ObjectProvider<GuionNarrativoEstudiantilPort> guiones,
+            ObjectProvider<JdbcTemplate> jdbc,
+            @Value("${" + PROPIEDAD_FASES + ":false}") boolean fasesHabilitadas) {
+        ConvocatoriasSesionPort deLaSesion = convocatorias.getIfAvailable();
+        JdbcTemplate plantilla = jdbc.getIfAvailable();
+        if (deLaSesion == null || plantilla == null) {
+            return sesionId -> {
+                throw new ReglaNegocioException("M4-PROVEEDOR-NO-DISPONIBLE",
+                        "El cierre de intentos de M5 no está disponible");
+            };
+        }
+        ParticipacionFacade fachada = fachada(repositorio, participaciones,
+                elegibilidad(autenticada.getIfAvailable()), limiteTemporal(autenticada.getIfAvailable()),
+                fases(fasesHabilitadas, identidad, programacion.getIfAvailable(), guiones.getIfAvailable(), plantilla));
+        return new CierreIntentosVencidosDesdeM5(deLaSesion, plantilla, fachada::cerrarSiVencido);
+    }
+
+    /** E1 ratificada; sin el contrato de M4 falla cerrado (503), nunca autoriza. */
+    static ElegibilidadInicio elegibilidad(ProgramacionAutenticadaPort autenticada) {
+        if (autenticada == null) {
+            return convocatoria -> {
+                throw new ConsultaProgramacionNoDisponibleException();
+            };
+        }
+        return new ElegibilidadInicioDesdeM4(autenticada);
+    }
+
+    /** L1 y RF-22 ratificados; sin el contrato de M4 falla cerrado (503), nunca crea un intento. */
+    static LimiteTemporalInicio limiteTemporal(ProgramacionAutenticadaPort autenticada) {
+        if (autenticada == null) {
+            return (convocatoria, inicio) -> {
+                throw new ConsultaProgramacionNoDisponibleException();
+            };
+        }
+        return new LimiteTemporalDesdeM4(autenticada);
+    }
+
+    static ParticipacionFacade fachada(RepositorioIntentos repositorio, RepositorioParticipaciones participaciones,
+            ElegibilidadInicio elegibilidad, LimiteTemporalInicio limiteTemporal, Optional<FasesIntento> fases) {
+        return new ParticipacionFacade(
+                new ConsultarIntentoServicio(repositorio),
+                new RegistrarRespuestaServicio(repositorio),
+                new ActualizarRespuestaServicio(repositorio),
+                new FinalizarIntentoServicio(repositorio),
+                new IniciarIntentoServicio(participaciones, repositorio, elegibilidad, limiteTemporal),
+                fases);
     }
 
     /**
@@ -176,15 +248,7 @@ public class ConfiguracionParticipacion {
             Consumer<ReferenciaConvocatoria> coordinacion,
             ConsultaContenidoIntento contenido,
             Optional<FasesIntento> fases) {
-        ParticipacionFacade fachada =
-                new ParticipacionFacade(
-                        new ConsultarIntentoServicio(repositorio),
-                        new RegistrarRespuestaServicio(repositorio),
-                        new ActualizarRespuestaServicio(repositorio),
-                        new FinalizarIntentoServicio(repositorio),
-                        new IniciarIntentoServicio(
-                                participaciones, repositorio, elegibilidad, limiteTemporal),
-                        fases);
+        ParticipacionFacade fachada = fachada(repositorio, participaciones, elegibilidad, limiteTemporal, fases);
         // D-SIM-2 (DC-BE-SIM-B2B-B3-32): con fases, toda lectura de preguntas (GET /contenido y la completitud P4) pasa
         // antes por la fase del intento, en la misma instantánea y después de la titularidad. Sin fases, sin cambios.
         ConsultaContenidoIntento preguntas = fases.<ConsultaContenidoIntento>map(f -> (intento, estudiante) -> {

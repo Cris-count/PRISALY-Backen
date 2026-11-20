@@ -105,6 +105,8 @@ class ParticipacionFacadeTest {
                 case "consultarFase" -> com.prisaly.m5.application.fase.EstadoFase.class;
                 case "iniciarCuestionario" -> com.prisaly.m5.application.fase.EntradaCuestionario.class;
                 case "consultarNarrativa" -> com.prisaly.m5.application.fase.NarrativaIntento.class;
+                // DC-BE-M5-CIERRE-IMPLEMENTACION-45 (V1-c): teacher closing reports only whether it closed.
+                case "cerrarSiVencido" -> boolean.class;
                 default -> ResumenIntento.class;
             };
             assertEquals(esperado, metodo.getReturnType(), metodo.getName());
@@ -112,7 +114,8 @@ class ParticipacionFacadeTest {
         Set<String> operaciones = publicos.stream().map(Method::getName).collect(Collectors.toSet());
 
         assertEquals(Set.of("iniciarOReanudar", "consultarIntento", "registrarRespuesta", "actualizarRespuesta",
-                "guardarRespuesta", "finalizarIntento", "consultarFase", "iniciarCuestionario", "consultarNarrativa"),
+                "guardarRespuesta", "finalizarIntento", "consultarFase", "iniciarCuestionario", "consultarNarrativa",
+                "cerrarSiVencido"),
                 operaciones);
     }
 }
