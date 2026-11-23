@@ -1,0 +1,15 @@
+[
+  "package.json",
+  ".env.example",
+  ".gitignore",
+  "ops/local/.dockerignore",
+  "ops/local/Dockerfile.backend",
+  "ops/local/Dockerfile.frontend",
+  "ops/local/Healthcheck.java",
+  "ops/local/README.md",
+  "ops/local/backend-entrypoint.sh",
+  "ops/local/check.mjs",
+  "ops/local/compose.yaml",
+  "ops/local/control.mjs",
+  "ops/local/nginx.conf"
+]

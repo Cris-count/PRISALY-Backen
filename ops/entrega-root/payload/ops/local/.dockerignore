@@ -1,0 +1,7 @@
+*
+!Dockerfile.backend
+!Dockerfile.frontend
+!backend-entrypoint.sh
+!nginx.conf
+!.build/
+!.build/**
