@@ -1,0 +1,8 @@
+# DC-OPS-70: artefactos y configuración local; nunca secretos versionados.
+/.env
+/ops/local/.env
+/ops/local/.secrets/
+/ops/local/.build/
+/ops/local/evidencias/
+/ops/local/.installed.json
+/ops/local/.install-backups/

@@ -1,0 +1,7 @@
+payload/ops/local/.env
+payload/ops/local/.secrets/
+payload/ops/local/.build/
+payload/ops/local/evidencias/
+payload/ops/local/.installed.json
+payload/ops/local/.install-backups/
+*.log

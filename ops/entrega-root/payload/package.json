@@ -1,0 +1,12 @@
+{
+  "name": "prisaly-orquestacion-local",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "up": "node ops/local/control.mjs up",
+    "down": "node ops/local/control.mjs down",
+    "status": "node ops/local/control.mjs status",
+    "check": "node ops/local/check.mjs"
+  },
+  "engines": { "node": ">=22" }
+}
