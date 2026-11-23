@@ -18,7 +18,8 @@ import java.util.UUID;
  *       question has no association, because M3 does not require one) and the rubric's opaque
  *       {@code definicionEvaluacion} document ({@link #definicionEvaluacionRubrica()}, PD-06).</li>
  *   <li>Every question of the case is listed in the order supplied by the academic context, with the
- *       scenario's {@code activo} flag and the question's {@code visible} flag; no question is filtered out.</li>
+ *       scenario's {@code activo} flag and the question's {@code visible} flag and {@code estadoEdicion}
+ *       (DC-57: it was lost before); no question is filtered out.</li>
  *   <li>The selected option is empty when the question was not answered.</li>
  * </ul>
  * No score, weight, scale, rounding, eligibility or "last attempt" rule is implied by this type.
@@ -41,11 +42,20 @@ public record EntradaEvaluacion(SolicitudEvaluacion solicitud, UUID idCaso, List
 
     /** One question of the case as persisted, with its optional association weight and the recorded answer. */
     public record PreguntaEvaluable(UUID idPregunta, UUID idEscenario, boolean escenarioActivo, boolean visible,
-            Optional<BigDecimal> valorPregunta, List<OpcionEvaluable> opciones, Optional<UUID> opcionSeleccionada) {
+            String estadoEdicion, Optional<BigDecimal> valorPregunta, List<OpcionEvaluable> opciones,
+            Optional<UUID> opcionSeleccionada) {
+
+        /** Exact editing-state catalogue of M3 ({@code Pregunta.estadoEdicion}, V001). */
+        public static final String LISTA = "Lista";
+        public static final String BORRADOR = "Borrador";
 
         public PreguntaEvaluable {
             Objects.requireNonNull(idPregunta, "idPregunta");
             Objects.requireNonNull(idEscenario, "idEscenario");
+            if (!LISTA.equals(Objects.requireNonNull(estadoEdicion, "estadoEdicion"))
+                    && !BORRADOR.equals(estadoEdicion)) {
+                throw new IllegalArgumentException("Unknown question editing state");
+            }
             Objects.requireNonNull(valorPregunta, "valorPregunta");
             opciones = List.copyOf(Objects.requireNonNull(opciones, "opciones"));
             Objects.requireNonNull(opcionSeleccionada, "opcionSeleccionada");
@@ -58,6 +68,16 @@ public record EntradaEvaluacion(SolicitudEvaluacion solicitud, UUID idCaso, List
             if (opcionSeleccionada.isPresent() && !ids.contains(opcionSeleccionada.get())) {
                 throw new IllegalArgumentException("The selected option does not belong to the question");
             }
+        }
+
+        /**
+         * DC-BE-M6-CORRECCION-QA-57: the question could be delivered to the student. Same condition as M3's
+         * {@code ContenidoCasoEstudiantilPort} ({@code ContenidoCasoEstudiantilJdbcAdapter}): scenario active,
+         * question visible and in editing state {@code Lista}. Pinned against the real M3 adapter by
+         * {@code AccesibilidadM3M6ContratoIT}. It is a persisted fact, not a grading decision.
+         */
+        public boolean accesibleAlEstudiante() {
+            return escenarioActivo && visible && LISTA.equals(estadoEdicion);
         }
     }
 

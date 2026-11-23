@@ -36,6 +36,19 @@ class EntradaEvaluacionMapperTest {
                 entrada.preguntas().get(0).opciones());
     }
 
+    // DC-BE-M6-CORRECCION-QA-57 (QA56-L1, Codex): the mapper dropped estadoEdicion, so a Borrador question
+    // reached S1 as accessible. Reproduces the defect (failed before the fix) and pins the pass-through.
+    @Test
+    void conservaEstadoEdicionYNoPresentaUnaPreguntaEnBorradorComoAccesible() {
+        assertEquals(List.of("Lista", "Lista", "Lista"), EntradaEvaluacionMapper.mapear(f.solicitud(), f.preparado())
+                .preguntas().stream().map(EntradaEvaluacion.PreguntaEvaluable::estadoEdicion).toList());
+        f.estadoPregunta1 = "Borrador";
+        var p1 = EntradaEvaluacionMapper.mapear(f.solicitud(), f.preparado()).preguntas().get(0);
+        assertEquals("Borrador", p1.estadoEdicion());
+        assertTrue(p1.visible() && p1.escenarioActivo(), "visible and in an active scenario, as in Codex's case");
+        assertFalse(p1.accesibleAlEstudiante(), "a Borrador question is never accessible");
+    }
+
     @Test
     void preguntaSinResponderTieneSeleccionVaciaYLaRespondidaConservaLaOpcion() {
         var entrada = EntradaEvaluacionMapper.mapear(f.solicitud(), f.preparado());
@@ -109,12 +122,12 @@ class EntradaEvaluacionMapperTest {
     void elDominioRechazaSeleccionesYDuplicadosInconsistentes() {
         UUID opcion = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () -> new EntradaEvaluacion.PreguntaEvaluable(
-                UUID.randomUUID(), UUID.randomUUID(), true, true, Optional.empty(),
+                UUID.randomUUID(), UUID.randomUUID(), true, true, "Lista", Optional.empty(),
                 List.of(new OpcionEvaluable(opcion, true)), Optional.of(UUID.randomUUID())));
         assertThrows(IllegalArgumentException.class, () -> new EntradaEvaluacion.PreguntaEvaluable(
-                UUID.randomUUID(), UUID.randomUUID(), true, true, Optional.empty(),
+                UUID.randomUUID(), UUID.randomUUID(), true, true, "Lista", Optional.empty(),
                 List.of(new OpcionEvaluable(opcion, true), new OpcionEvaluable(opcion, false)), Optional.empty()));
-        var pregunta = new EntradaEvaluacion.PreguntaEvaluable(UUID.randomUUID(), UUID.randomUUID(), true, true,
+        var pregunta = new EntradaEvaluacion.PreguntaEvaluable(UUID.randomUUID(), UUID.randomUUID(), true, true, "Lista",
                 Optional.empty(), List.of(), Optional.empty());
         assertThrows(IllegalArgumentException.class, () -> new EntradaEvaluacion(f.solicitud(), f.caso,
                 List.of(pregunta, pregunta), Optional.empty()));

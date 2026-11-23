@@ -22,6 +22,8 @@ final class ContextoPreparadoPrueba {
     final UUID opcion2a = UUID.randomUUID(), opcion3a = UUID.randomUUID();
     final BigDecimal valorPregunta1 = new BigDecimal("2.50");
     final String definicion = "{\"criterios\":[\"fixture\"]}";
+    /** DC-57: editing state of the first question (M3 catalogue), to reproduce the lost Borrador. */
+    String estadoPregunta1 = "Lista";
 
     SolicitudEvaluacion solicitud() {
         return new SolicitudEvaluacion(intento, rubrica);
@@ -34,7 +36,7 @@ final class ContextoPreparadoPrueba {
 
     ContextoEvaluacionPreparado preparado(List<IntentoEvaluacion.RespuestaReferencia> respuestas,
             String definicionEvaluacion, Set<ContextoAcademico.RubricaPregunta> asociaciones) {
-        var p1 = new ContextoAcademico.Pregunta(pregunta1, escenario1, "P1", null, "Lista", true, 1, null, null,
+        var p1 = new ContextoAcademico.Pregunta(pregunta1, escenario1, "P1", null, estadoPregunta1, true, 1, null, null,
                 List.of(opcion(opcion1a, pregunta1, false), opcion(opcion1b, pregunta1, true)));
         var p2 = new ContextoAcademico.Pregunta(pregunta2, escenario1, "P2", null, "Lista", false, 2, null, null,
                 List.of(opcion(opcion2a, pregunta2, true)));
