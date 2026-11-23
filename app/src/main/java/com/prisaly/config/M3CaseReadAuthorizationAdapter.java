@@ -31,6 +31,15 @@ public final class M3CaseReadAuthorizationAdapter implements AutorizacionConsult
         return conIdentidad(usuario, user -> identity.hasPermission(user.userId(), politica.permiso().orElseThrow()));
     }
 
+    /** DC-67 candidate listing: the same ratified read permission as {@link #verificarAcceso}, without a case. */
+    @Override
+    public Decision verificarListado(UUID usuario) {
+        if (usuario == null || !politica.ratificada()) {
+            return Decision.DENEGADO;
+        }
+        return conIdentidad(usuario, user -> identity.hasPermission(user.userId(), politica.permiso().orElseThrow()));
+    }
+
     @Override
     public Decision verificarVisibilidad(UUID usuario, UUID caso, CasoEstado estado, boolean activo) {
         if (usuario == null || caso == null || !politica.visible(estado, activo)) {
