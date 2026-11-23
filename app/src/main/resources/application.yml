@@ -62,6 +62,10 @@ prisaly:
     #   estados-visibles (D2)         -> communicated as approved: the owner reads Borrador, Publicado, Archivado;
     #   requiere-activo=false (D3)    -> communicated as approved: the owner also reads own inactive cases.
     # Ownership is still enforced by M3. Writes keep their own M1 permissions; F4-H1-alcance remains pending.
+    # DC-BE-CIERRE-FUNCIONAL-NOCTURNO-67 (OBS-53-02): CANDIDATE GET /v1/casos, the teacher's own visible cases under the
+    # read policy below. OFF: no bean, no route (404). Publishing it requires Dirección Central authorization.
+    listado:
+      enabled: false
     lectura:
       permiso: CONSULTAR_CASO
       estados-visibles: BORRADOR,PUBLICADO,ARCHIVADO

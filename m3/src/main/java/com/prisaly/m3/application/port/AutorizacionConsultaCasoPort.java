@@ -12,4 +12,12 @@ public interface AutorizacionConsultaCasoPort {
 
     /** Explicit resource visibility, after ownership verification, without academic content. */
     Decision verificarVisibilidad(UUID usuario, UUID caso, CasoEstado estado, boolean activo);
+
+    /**
+     * DC-BE-CIERRE-FUNCIONAL-NOCTURNO-67 (candidate listing): institutional eligibility to list the user's own cases,
+     * the same permission as {@link #verificarAcceso} but without a case. Fails closed unless an adapter overrides it.
+     */
+    default Decision verificarListado(UUID usuario) {
+        return Decision.DENEGADO;
+    }
 }
