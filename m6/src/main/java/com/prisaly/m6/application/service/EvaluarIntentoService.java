@@ -1,6 +1,7 @@
 package com.prisaly.m6.application.service;
 
 import com.prisaly.m6.api.SolicitudEvaluacion;
+import com.prisaly.m6.application.EvaluacionExistenteException;
 import com.prisaly.m6.application.EvaluacionNoDisponibleException;
 import com.prisaly.m6.application.port.EvaluacionCasoUso;
 import com.prisaly.m6.application.port.RegistroCalificacionPort;
@@ -62,7 +63,7 @@ public final class EvaluarIntentoService implements EvaluacionCasoUso {
         ResultadoEvaluacion resultado = Objects.requireNonNull(estrategia.evaluar(entrada),
                 "The strategy must return a result");
         registro.registrar(solicitud.idIntento(), solicitud.idRubrica(), resultado, versionPolitica)
-                .orElseThrow(() -> new IllegalStateException("The attempt was graded concurrently; nothing was overwritten"));
+                .orElseThrow(() -> new EvaluacionExistenteException("The attempt was graded concurrently; nothing was overwritten"));
         return resultado;
     }
 }

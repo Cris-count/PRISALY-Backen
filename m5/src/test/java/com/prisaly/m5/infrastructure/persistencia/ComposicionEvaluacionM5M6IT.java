@@ -269,8 +269,8 @@ class ComposicionEvaluacionM5M6IT {
         var preparacion = new PrepararEvaluacionProtegida(autorizador, notasDesdeBd(), new PrepararContextoEvaluacionService(
                 lector(autorizador, solicitud, cadena.estudiante(), programacionReal()), capacidades(),
                 contextoDesdeBd(solicitud.idRubrica())));
-        var candidata = new com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata();
-        String id = com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata.IDENTIFICADOR;
+        var candidata = new com.prisaly.m6.domain.strategy.EstrategiaPonderadaS1();
+        String id = com.prisaly.m6.domain.strategy.EstrategiaPonderadaS1.IDENTIFICADOR;
         return new EvaluacionProtectionProxy(autorizador,
                 new EvaluarIntentoService(preparacion, Map.of(id, candidata), id, new CalificacionJdbcWriter(jdbc)));
     }
@@ -290,8 +290,8 @@ class ComposicionEvaluacionM5M6IT {
         var fila = jdbc.queryForMap("SELECT \"valor\", \"versionPolitica\", \"detalleEvaluacion\"::text AS detalle"
                 + " FROM \"Calificacion\" WHERE \"idIntento\"=?", cadena.idIntento());
         assertEquals(new BigDecimal("1.67"), fila.get("valor"));
-        assertEquals(com.prisaly.m6.domain.strategy.EstrategiaPonderadaCandidata.IDENTIFICADOR, fila.get("versionPolitica"));
-        assertTrue(((String) fila.get("detalle")).contains("\"ratificada\": false"), (String) fila.get("detalle"));
+        assertEquals(com.prisaly.m6.domain.strategy.EstrategiaPonderadaS1.IDENTIFICADOR, fila.get("versionPolitica"));
+        assertTrue(((String) fila.get("detalle")).contains("\"ratificada\": true"), (String) fila.get("detalle"));
         assertEquals(Boolean.TRUE, jdbc.queryForObject(
                 "SELECT (\"detalleEvaluacion\"->>'pesoTotal')::numeric = 3.00 FROM \"Calificacion\" WHERE \"idIntento\"=?",
                 Boolean.class, cadena.idIntento()));

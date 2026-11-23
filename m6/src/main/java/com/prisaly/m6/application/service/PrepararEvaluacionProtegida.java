@@ -1,11 +1,13 @@
 package com.prisaly.m6.application.service;
 
 import com.prisaly.m6.application.AccesoEvaluacionDenegadoException;
+import com.prisaly.m6.application.EvaluacionExistenteException;
 import com.prisaly.m6.application.integration.ContextoEvaluacionPreparado;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort;
 import com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso;
 import com.prisaly.m6.application.port.ConsultaCalificacionPort;
 import com.prisaly.m6.api.SolicitudEvaluacion;
+import com.prisaly.m6.domain.strategy.EvaluacionRechazadaException;
 import java.util.Objects;
 
 /** Explicit internal composition only; never calculates, writes or publishes a grade. */
@@ -33,13 +35,14 @@ public final class PrepararEvaluacionProtegida {
         }
         if (decision != DecisionAcceso.AUTORIZADO) { throw new AccesoEvaluacionDenegadoException(); }
         if (Objects.requireNonNull(calificaciones.findByIntentoId(solicitud.idIntento())).isPresent()) {
-            throw new IllegalStateException("El intento ya tiene calificacion; no se prepara una reevaluacion");
+            throw new EvaluacionExistenteException("El intento ya tiene calificacion; no se prepara una reevaluacion");
         }
         var preparado = preparacion.preparar(solicitud.idIntento());
         var rubrica = preparado.contextoAcademico().rubrica();
         if (rubrica == null || !solicitud.idRubrica().equals(rubrica.idRubrica())
                 || !preparado.intento().idCaso().equals(rubrica.idCaso())) {
-            throw new IllegalStateException("La rubrica solicitada no corresponde al contexto recuperado");
+            throw new EvaluacionRechazadaException("RUBRICA_NO_CORRESPONDE",
+                    "La rubrica solicitada no corresponde al contexto recuperado");
         }
         return preparado;
     }

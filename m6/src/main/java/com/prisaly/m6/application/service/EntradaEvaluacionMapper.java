@@ -79,7 +79,7 @@ final class EntradaEvaluacionMapper {
                 List<OpcionEvaluable> opciones = pregunta.opciones().stream()
                         .map(o -> new OpcionEvaluable(o.idOpcion(), o.esCorrecta())).toList();
                 preguntas.add(new PreguntaEvaluable(pregunta.idPregunta(), escenario.idEscenario(),
-                        escenario.activo(), pregunta.visible(),
+                        escenario.activo(), pregunta.visible(), pregunta.estadoEdicion(),
                         Optional.ofNullable(valorPorPregunta.get(pregunta.idPregunta())), opciones,
                         Optional.ofNullable(seleccionPorPregunta.get(pregunta.idPregunta()))));
             }

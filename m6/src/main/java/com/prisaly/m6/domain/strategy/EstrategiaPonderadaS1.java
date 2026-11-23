@@ -5,37 +5,39 @@ import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
- * <b>Candidate</b> weighted strategy (DC-CLAUDE-BE-EJECUCION-04, priority B). The rules below are the
- * evaluation <b>proposal under test</b> supplied by Dirección Central, <b>not ratified academic policy</b>
- * (PF-01, D19, D20 and REG-NC remain pending). It is not a Spring bean, it is not supplied to
- * {@code EvaluarIntentoService} by any production assembler, and its identifier is not selected anywhere.
+ * Ratified weighted strategy S1 (DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55, ACTA-M6-POLITICAS-55, resolutions M6-R1 to
+ * M6-R5 and M6-R11). Before DC-55 this class was the unratified candidate {@code EstrategiaPonderadaCandidata}.
+ * It is not a Spring bean: only the switch-guarded APP assembly supplies it to {@code EvaluarIntentoService}.
  *
- * <p>Proposal implemented:
  * <ul>
- *   <li>Per-question weight: {@code RubricaPregunta.valorPregunta} ({@link EntradaEvaluacion.PreguntaEvaluable#valorPregunta()}).</li>
+ *   <li>Per-question weight configured by the teacher: {@code RubricaPregunta.valorPregunta}.</li>
  *   <li>Correct answer = 100% of the weight; incorrect or unanswered = 0.</li>
  *   <li>Scale 0–5: {@code 5 × obtained weight / total weight}, rounded once with {@link RoundingMode#HALF_UP}
  *       to two decimals.</li>
+ *   <li>Formative evaluation, recorded in the detail document.</li>
  *   <li>One immutable grade per attempt is guaranteed by the insert-only writer and V003, not here.</li>
  * </ul>
  *
- * <p>Preconditions, checked <b>before</b> computing; any failure throws {@link EvaluacionRechazadaException}
- * and no result exists, so no invalid grade can be recorded:
+ * <p>Preconditions, checked <b>before</b> computing and in this order; any failure throws
+ * {@link EvaluacionRechazadaException} and no result exists, so no invalid grade can be recorded:
  * <ul>
  *   <li>{@code SIN_PREGUNTAS}: the input has no questions.</li>
- *   <li>{@code PESOS_INCOMPLETOS}: some question has no {@code RubricaPregunta} weight. Every question in the
- *       input counts; none is excluded by its {@code visible}/{@code escenarioActivo} flags, because no rule to
- *       exclude them is ratified, so an incomplete rubric is refused rather than guessed.</li>
+ *   <li>{@code PREGUNTAS_NO_ACCESIBLES} (correction C1, M6-R5; DC-BE-M6-CORRECCION-QA-57): some question was not
+ *       accessible to the student ({@link EntradaEvaluacion.PreguntaEvaluable#accesibleAlEstudiante()}: not visible,
+ *       in editing state {@code Borrador}, or in an inactive scenario). M3 delivers a case only if <b>all</b> its
+ *       questions are accessible, so in that case no content reached the student and the rubric would require
+ *       evaluating inaccessible content. It is <b>never</b> silently excluded from the numerator or the
+ *       denominator: the whole evaluation is rejected.</li>
+ *   <li>{@code PESOS_INCOMPLETOS}: some question has no {@code RubricaPregunta} weight (incomplete rubric).</li>
  *   <li>{@code PESOS_INCONSISTENTES}: some weight is not positive.</li>
  *   <li>{@code CLAVE_INCONSISTENTE}: some question does not have exactly one correct option.</li>
  * </ul>
- * The rubric's JSONB {@code definicionEvaluacion} is deliberately ignored: criteria are not interpreted as
- * equivalent weights.
+ * The rubric's JSONB {@code definicionEvaluacion} is deliberately ignored: criteria are not interpreted as weights.
  */
-public final class EstrategiaPonderadaCandidata implements EstrategiaEvaluacion {
+public final class EstrategiaPonderadaS1 implements EstrategiaEvaluacion {
 
-    /** Identifier recorded as {@code Calificacion.versionPolitica} if an assembler ever selects it (≤ 50). */
-    public static final String IDENTIFICADOR = "ponderada-candidata-no-ratificada-v0";
+    /** Identifier recorded as {@code Calificacion.versionPolitica} (≤ 50). */
+    public static final String IDENTIFICADOR = "ponderada-s1-v1";
 
     private static final BigDecimal ESCALA_MAXIMA = new BigDecimal("5");
 
@@ -62,7 +64,8 @@ public final class EstrategiaPonderadaCandidata implements EstrategiaEvaluacion 
                     .append('}');
         }
         BigDecimal valor = obtenido.multiply(ESCALA_MAXIMA).divide(total, 2, RoundingMode.HALF_UP);
-        String documento = "{\"estrategia\":\"" + IDENTIFICADOR + "\",\"ratificada\":false"
+        String documento = "{\"estrategia\":\"" + IDENTIFICADOR + "\",\"ratificada\":true"
+                + ",\"caracter\":\"formativa\""
                 + ",\"escala\":\"0-5\",\"redondeo\":\"HALF_UP,2\""
                 + ",\"pesoTotal\":" + total.toPlainString()
                 + ",\"pesoObtenido\":" + obtenido.toPlainString()
@@ -73,6 +76,15 @@ public final class EstrategiaPonderadaCandidata implements EstrategiaEvaluacion 
     private static void validar(EntradaEvaluacion entrada) {
         if (entrada.preguntas().isEmpty()) {
             throw new EvaluacionRechazadaException("SIN_PREGUNTAS", "The evaluation input has no questions");
+        }
+        // C1: accessibility is checked for every question first, so it is reported even if weights are also missing.
+        // DC-57: accessibility is M3's delivery condition (active scenario, visible, Lista). M3 delivers a case
+        // all-or-nothing, so one inaccessible question means no question of the case reached the student.
+        for (var pregunta : entrada.preguntas()) {
+            if (!pregunta.accesibleAlEstudiante()) {
+                throw new EvaluacionRechazadaException("PREGUNTAS_NO_ACCESIBLES",
+                        "Question " + pregunta.idPregunta() + " was not accessible to the student");
+            }
         }
         for (var pregunta : entrada.preguntas()) {
             if (pregunta.valorPregunta().isEmpty()) {

@@ -40,8 +40,9 @@ class EstrategiaEvaluacionTest {
         }
         assertEquals(List.of("solicitud", "idCaso", "preguntas", "definicionEvaluacionRubrica"),
                 Arrays.stream(EntradaEvaluacion.class.getRecordComponents()).map(c -> c.getName()).toList());
-        assertEquals(List.of("idPregunta", "idEscenario", "escenarioActivo", "visible", "valorPregunta",
-                        "opciones", "opcionSeleccionada"),
+        // DC-BE-M6-CORRECCION-QA-57: estadoEdicion added to the contract (it was lost; QA56-L1).
+        assertEquals(List.of("idPregunta", "idEscenario", "escenarioActivo", "visible", "estadoEdicion",
+                        "valorPregunta", "opciones", "opcionSeleccionada"),
                 Arrays.stream(EntradaEvaluacion.PreguntaEvaluable.class.getRecordComponents())
                         .map(c -> c.getName()).toList());
         // Domain input depends only on java.* and the M6 API, never on application/infrastructure types.
@@ -132,7 +133,7 @@ class EstrategiaEvaluacionTest {
 
     private static EntradaEvaluacion request() {
         UUID opcion = UUID.randomUUID();
-        var pregunta = new EntradaEvaluacion.PreguntaEvaluable(UUID.randomUUID(), UUID.randomUUID(), true, true,
+        var pregunta = new EntradaEvaluacion.PreguntaEvaluable(UUID.randomUUID(), UUID.randomUUID(), true, true, "Lista",
                 Optional.empty(), List.of(new EntradaEvaluacion.OpcionEvaluable(opcion, true)), Optional.of(opcion));
         return new EntradaEvaluacion(new SolicitudEvaluacion(UUID.randomUUID(), UUID.randomUUID()),
                 UUID.randomUUID(), List.of(pregunta), Optional.empty());

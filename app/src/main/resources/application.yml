@@ -87,6 +87,12 @@ prisaly:
   m4:
     consulta-bd0052:
       enabled: true
+  m6:
+    # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
+    # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Release N2 and the
+    # student query are NOT implemented (B2 pending a schema change). Turning it on is not authorized.
+    evaluacion:
+      enabled: false
   m7:
     worker:
       enabled: false
