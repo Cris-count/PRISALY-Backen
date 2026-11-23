@@ -171,7 +171,9 @@ class SesionAcademicaPostgreSqlIT {
                         s.getId()));
         var c = service.convocarEstudiante(docente, s.getId(), estudiante);
         assertEquals(1, cantidad("Convocatoria"));
-        assertEquals(c.getId(), service.consultarConvocatorias(s.getId()).get(0).getId());
+        // DC-67: the unauthorized variant was removed; same assertion through the protected read.
+        identidad.autenticar(docente);
+        assertEquals(c.getId(), service.consultarConvocatoriasAutorizadas(s.getId()).get(0).getId());
         var puerto = new ProgramacionParticipacionJdbcAdapter(jdbc);
         var contexto = puerto.consultarSesion(s.getId(), estudiante).orElseThrow();
         assertEquals(s.getId(), contexto.sesionId());

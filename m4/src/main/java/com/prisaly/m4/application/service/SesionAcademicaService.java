@@ -320,13 +320,9 @@ public class SesionAcademicaService {
     }
 
     // ─── ConsultarConvocatorias ───────────────────────────────
-
-    @Transactional(readOnly = true)
-    public List<Convocatoria> consultarConvocatorias(UUID sesionId) {
-        // Verificar que la sesión existe
-        consultarSesion(sesionId);
-        return convocatoriaRepository.listarPorSesion(sesionId);
-    }
+    // DC-BE-CIERRE-FUNCIONAL-NOCTURNO-67 (DC-62 §7, M4-LATENTE): the unauthorized variant
+    // consultarConvocatorias(UUID) was removed; it had no production caller. The only listing is
+    // consultarConvocatoriasAutorizadas (GESTIONAR_SESION + owner), guarded by ControladoresM4SoloLecturasAutorizadasTest.
 
     // Acceso booleano heredado: permanece retirado.
 
