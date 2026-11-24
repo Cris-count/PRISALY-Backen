@@ -1,0 +1,31 @@
+{
+  "baseSha": "05a3bce4c24ccd069d23be3f44b4fd449d86269c",
+  "branch": "feature/m4-alineado-20261104",
+  "dirtyPatch": true,
+  "sourceFile": "app/src/test/java/com/prisaly/config/HistorialM4M5IT.java",
+  "sourceSha256": "691A962D288C3EE7BD5991C3E9614D2D629D0130E864BAF2AEC79D7352922D93",
+  "compile": "passed",
+  "unitSuites": [
+    {
+      "skipped": 0,
+      "failures": 0,
+      "suite": "M4CoordinacionInicioTest",
+      "tests": 4,
+      "errors": 0
+    },
+    {
+      "skipped": 0,
+      "failures": 0,
+      "suite": "ConsultaIntentoEvaluacionDesdeM5Test",
+      "tests": 11,
+      "errors": 0
+    }
+  ],
+  "integration": {
+    "newMethodsExecuted": 0,
+    "initializationErrors": 1,
+    "suite": "HistorialM4M5IT",
+    "reason": "Could not find a valid Docker environment",
+    "status": "blocked_before_test_methods"
+  }
+}

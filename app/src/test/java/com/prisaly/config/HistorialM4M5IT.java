@@ -204,6 +204,72 @@ class HistorialM4M5IT {
         inicioD06(c -> {}).iniciarOReanudar(new ReferenciaConvocatoria(convocatoria.toString()));
     }
 
+    @Test
+    void lectorM6NoEsperaReservaD06NiVeInicioSinCommit() throws Exception {
+        verificarLectorDuranteInicio(false);
+    }
+
+    @Test
+    void lectorM6NoExponeInicioRevertidoPorD06() throws Exception {
+        verificarLectorDuranteInicio(true);
+    }
+
+    /** Reserva y persistencia reales; identidad/elegibilidad/autorización solo de prueba. */
+    void verificarLectorDuranteInicio(boolean rollback) throws Exception {
+        var persistido = new CountDownLatch(1);
+        var liberar = new CountDownLatch(1);
+        var idIntento = new java.util.concurrent.atomic.AtomicReference<UUID>();
+        var pool = Executors.newFixedThreadPool(2);
+        try {
+            var escritor = pool.submit(() -> new TransactionTemplate(transacciones)
+                    .executeWithoutResult(tx -> {
+                        var resultado = inicioD06(c -> {}).iniciarOReanudar(
+                                new ReferenciaConvocatoria(convocatoria.toString()));
+                        idIntento.set(UUID.fromString(resultado.intento().referencia().valor()));
+                        persistido.countDown();
+                        esperar(liberar);
+                        if (rollback) tx.setRollbackOnly();
+                    }));
+            esperar(persistido);
+            var programacion = contexto.getBean(ProgramacionParticipacionPort.class);
+            com.prisaly.m5.application.acceso.IdentidadEstudianteActual identidad =
+                    () -> Optional.of(new IdentificadorEstudiante(estudiante.toString()));
+            var protegida = new com.prisaly.m5.application.acceso.AccesoProtegidoParticipacion(
+                    new com.prisaly.m5.application.acceso.ControlAccesoIntentos(identidad,
+                            contexto.getBean(TitularidadIntentos.class)), inicioD06(c -> {}));
+            var lector = new com.prisaly.m5.infrastructure.evaluacion.FabricaConsultaIntentoEvaluacion(
+                    s -> com.prisaly.m6.application.port.AutorizacionEvaluacionPort.DecisionAcceso.AUTORIZADO,
+                    protegida, contexto.getBean(RepositorioIntentos.class), identidad,
+                    programacion, transacciones).para(
+                            new com.prisaly.m6.domain.strategy.SolicitudEvaluacion(idIntento.get(), docente));
+
+            // Debe terminar ANTES de liberar los locks, sin leer filas no confirmadas.
+            var lectura = pool.submit(() -> lector.findById(idIntento.get()));
+            assertTrue(lectura.get(5, TimeUnit.SECONDS).isEmpty());
+            assertFalse(escritor.isDone(), "la reserva debe seguir retenida durante la lectura");
+            liberar.countDown();
+            escritor.get(10, TimeUnit.SECONDS);
+
+            var posterior = lector.findById(idIntento.get());
+            if (rollback) {
+                assertTrue(posterior.isEmpty());
+            } else {
+                var dato = posterior.orElseThrow();
+                assertEquals(idIntento.get(), dato.idIntento());
+                assertEquals(caso, dato.idCaso());
+                assertEquals(com.prisaly.m6.application.integration.IntentoEvaluacion.EstadoIntento.EN_CURSO,
+                        dato.estado());
+            }
+            int esperadas = rollback ? 0 : 1;
+            assertEquals(esperadas, jdbc.queryForObject("SELECT count(*) FROM \"Participacion\"", Integer.class));
+            assertEquals(esperadas, jdbc.queryForObject("SELECT count(*) FROM \"Intento\"", Integer.class));
+        } finally {
+            liberar.countDown();
+            pool.shutdownNow();
+            assertTrue(pool.awaitTermination(25, TimeUnit.SECONDS), "hilos de prueba sin finalizar");
+        }
+    }
+
     void esperar(CountDownLatch latch) {
         try {
             assertTrue(latch.await(20, TimeUnit.SECONDS), "barrera no alcanzada");
