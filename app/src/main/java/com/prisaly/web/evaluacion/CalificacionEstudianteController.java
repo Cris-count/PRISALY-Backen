@@ -31,17 +31,30 @@ import tools.jackson.databind.ObjectMapper;
 @ConditionalOnProperty(name = M6LiberacionConfig.PROPIEDAD, havingValue = "true")
 public class CalificacionEstudianteController {
 
+    /**
+     * DC-92 DD-12: + general feedback (once published) and, ONLY with the explicit configuration
+     * {@code prisaly.m6.resultado.detalle-por-pregunta=true}, the per-question detail; otherwise the field is absent.
+     */
+    @com.fasterxml.jackson.annotation.JsonInclude(com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL)
     public record CalificacionEstudianteHttp(UUID idIntento, BigDecimal valor, String escala, String caracter,
-            Instant fechaLiberacion) { }
+            Instant fechaLiberacion, String retroalimentacionGeneral,
+            java.util.List<LiberacionCalificacionM6.DetallePregunta> detallePorPregunta) { }
 
     public record ErrorHttp(String code, String message) { }
 
     private final LiberacionCalificacionM6 liberacion;
     private final ObjectMapper json;
+    private final com.prisaly.m6.application.port.ConsultaRetroalimentacionPort retroalimentacion;
+    private final boolean detallePorPregunta;
 
-    public CalificacionEstudianteController(LiberacionCalificacionM6 liberacion, ObjectMapper json) {
+    public CalificacionEstudianteController(LiberacionCalificacionM6 liberacion, ObjectMapper json,
+            com.prisaly.m6.application.port.ConsultaRetroalimentacionPort retroalimentacion,
+            @org.springframework.beans.factory.annotation.Value("${prisaly.m6.resultado.detalle-por-pregunta:false}")
+            boolean detallePorPregunta) {
         this.liberacion = liberacion;
         this.json = json;
+        this.retroalimentacion = retroalimentacion;
+        this.detallePorPregunta = detallePorPregunta;
     }
 
     @GetMapping(value = "/v1/estudiantes/intentos/{idIntento}/calificacion", produces = MediaType.APPLICATION_JSON_VALUE)
@@ -53,7 +66,9 @@ public class CalificacionEstudianteController {
                             .readValue(l.calificacion().detalleEvaluacion());
                     return ResponseEntity.ok().cacheControl(CacheControl.noStore()).body(new CalificacionEstudianteHttp(
                             idIntento, l.calificacion().valor(), "0-5", detalle.path("caracter").asString("formativa"),
-                            l.fechaLiberacion()));
+                            l.fechaLiberacion(),
+                            liberacion.retroalimentacionGeneral(idIntento, retroalimentacion).orElse(null),
+                            detallePorPregunta ? liberacion.detallePorPregunta(idIntento, l.calificacion().idRubrica()) : null));
                 })
                 .orElseGet(() -> ResponseEntity.status(404).cacheControl(CacheControl.noStore())
                         .body(new ErrorHttp("CALIFICACION_NO_DISPONIBLE", "No hay una calificacion liberada")));

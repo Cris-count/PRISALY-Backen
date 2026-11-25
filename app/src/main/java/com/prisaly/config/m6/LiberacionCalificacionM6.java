@@ -116,6 +116,45 @@ public final class LiberacionCalificacionM6 {
                 fechaLiberacion(c.idCalificacion()).map(f -> new CalificacionLiberada(c, f)));
     }
 
+    /** DC-92 DD-12: one graded question as the titular student may see it once published (explicit configuration). */
+    public record DetallePregunta(UUID idPregunta, String enunciado, String opcionSeleccionada, Boolean correcta,
+            String explicacionSeleccionada, String opcionCorrecta, String explicacionCorrecta) { }
+
+    /**
+     * DC-92 DD-12: general feedback of the attempt's participation (M6 read port). The caller already verified the
+     * titular student and the release; it is never returned before publication.
+     */
+    public Optional<String> retroalimentacionGeneral(UUID idIntento, com.prisaly.m6.application.port.ConsultaRetroalimentacionPort retro) {
+        UUID participacion = jdbc.queryForObject("SELECT \"idParticipacion\" FROM \"Intento\" WHERE \"idIntento\"=?",
+                UUID.class, idIntento);
+        return retro.findByParticipacionId(participacion).map(r -> r.contenido());
+    }
+
+    /**
+     * DC-92 DD-12: per-question detail (selected option, correctness and explanations) of the questions graded by the
+     * grade's rubric. Facts only (M3 option data and M5 answers); no grading logic. Exposed only when the explicit
+     * configuration {@code prisaly.m6.resultado.detalle-por-pregunta=true} is set AND the grade is released.
+     */
+    public java.util.List<DetallePregunta> detallePorPregunta(UUID idIntento, UUID idRubrica) {
+        return jdbc.query("""
+                SELECT p."idPregunta", p."enunciado", sel."texto" AS seleccionada, sel."esCorrecta" AS correcta,
+                       sel."explicacion" AS explicacion_seleccionada,
+                       (SELECT string_agg(o."texto", ' | ' ORDER BY o."orden") FROM "OpcionRespuesta" o
+                         WHERE o."idPregunta" = p."idPregunta" AND o."esCorrecta") AS correcta_texto,
+                       (SELECT string_agg(o."explicacion", ' | ' ORDER BY o."orden") FROM "OpcionRespuesta" o
+                         WHERE o."idPregunta" = p."idPregunta" AND o."esCorrecta") AS correcta_explicacion
+                FROM "RubricaPregunta" rp
+                JOIN "Pregunta" p ON p."idPregunta" = rp."idPregunta"
+                JOIN "Escenario" e ON e."idEscenario" = p."idEscenario"
+                LEFT JOIN "Respuesta" r ON r."idIntento" = ? AND r."idPregunta" = p."idPregunta"
+                LEFT JOIN "OpcionRespuesta" sel ON sel."idOpcion" = r."idOpcionSeleccionada"
+                WHERE rp."idRubrica" = ?
+                ORDER BY e."orden", p."orden"
+                """, (rs, n) -> new DetallePregunta(rs.getObject("idPregunta", UUID.class), rs.getString("enunciado"),
+                rs.getString("seleccionada"), (Boolean) rs.getObject("correcta"), rs.getString("explicacion_seleccionada"),
+                rs.getString("correcta_texto"), rs.getString("correcta_explicacion")), idIntento, idRubrica);
+    }
+
     private static Instant instante(Object valor) {
         if (valor instanceof OffsetDateTime o) return o.toInstant();
         if (valor instanceof java.sql.Timestamp t) return t.toInstant();

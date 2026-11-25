@@ -142,6 +142,14 @@ prisaly:
     # table V019 (db/m6-propuesta, subject to D-ESQ-1); otherwise startup fails. Not authorized.
     liberacion:
       enabled: false
+    # DC-92 DD-12 / RF-26 (ratificadas): registro docente de la retroalimentacion general (POST/PUT/GET
+    # /v1/docente/participaciones/{id}/retroalimentacion). El estudiante la ve solo con la nota liberada (N2).
+    retroalimentacion:
+      enabled: ${PRISALY_M6_RETROALIMENTACION_ENABLED:false}
+    # DC-92 DD-12: "la publicacion de respuestas correctas y explicaciones por pregunta dependera de una configuracion
+    # explicita". false: el estudiante NO recibe el detalle por pregunta aunque la nota este liberada.
+    resultado:
+      detalle-por-pregunta: ${PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA:false}
   m7:
     # OBS-83-M7-02 (DC-86): zone used ONLY to present dates in the convocatoria notice/email (instants stay UTC in
     # PostgreSQL). Default UTC keeps the approved text byte for byte; America/Bogota shows e.g.
