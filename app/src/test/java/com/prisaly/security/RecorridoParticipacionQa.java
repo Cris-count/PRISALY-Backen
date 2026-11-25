@@ -32,11 +32,17 @@ final class RecorridoParticipacionQa {
     final PostgreSQLContainer postgres;
     final GenericContainer<?> mailpit;
 
-    @SuppressWarnings("resource")
     RecorridoParticipacionQa() {
+        this(false);
+    }
+
+    /** {@code caos}: Mailpit with its SMTP fault injection (chaos) API enabled; inert until a trigger is set (DC-96). */
+    @SuppressWarnings("resource")
+    RecorridoParticipacionQa(boolean caos) {
         postgres = new PostgreSQLContainer("postgres:16.15");
-        mailpit = new GenericContainer<>("axllent/mailpit:v1.31.2").withExposedPorts(1025, 8025)
+        GenericContainer<?> buzon = new GenericContainer<>("axllent/mailpit:v1.31.2").withExposedPorts(1025, 8025)
                 .waitingFor(Wait.forListeningPorts(1025, 8025));
+        mailpit = caos ? buzon.withEnv("MP_ENABLE_CHAOS", "true") : buzon;
         postgres.start();
         mailpit.start();
     }
