@@ -131,7 +131,7 @@ final class RecorridoParticipacionQa {
      * cycle legitimately returns 0. Synchronize on that exact condition (bounded) instead of racing it; production
      * behavior is unchanged.
      */
-    private static void esperarEntregaReclamable(JdbcTemplate jdbc, String challenge) throws InterruptedException {
+    static void esperarEntregaReclamable(JdbcTemplate jdbc, String challenge) throws InterruptedException {
         java.time.Instant proximo = jdbc.queryForObject(
                 "SELECT \"proximoIntento\" FROM \"EntregaCodigoAcceso\" WHERE \"challengeId\"=?::uuid",
                 java.time.OffsetDateTime.class, challenge).toInstant();

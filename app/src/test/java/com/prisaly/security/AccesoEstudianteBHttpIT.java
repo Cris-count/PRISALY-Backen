@@ -99,6 +99,10 @@ class AccesoEstudianteBHttpIT {
         assertEquals(202, solicitud.statusCode(), solicitud.body());
         String challenge = json.readTree(solicitud.body()).get("challengeId").asText();
         // Other tests of this shared context may leave pending rows; this challenge's own row is asserted below.
+        // R13 (DC-93): wait until THIS delivery is reclaimable by the JVM clock (PostgreSQL may run ahead), as
+        // RecorridoParticipacionQa already does (DC-BE-SIM-A15-CORRECCION-01); otherwise the worker could deliver only
+        // older rows and the capture mailbox would stay empty for this recipient. Production code is untouched.
+        RecorridoParticipacionQa.esperarEntregaReclamable(jdbc, challenge);
         assertTrue(worker.ejecutarAhora() >= 1, "the code worker delivered through SMTP");
         String codigo = codigoDelBuzon(correo);
         assertEquals("ENVIADA", jdbc.queryForObject("SELECT \"estado\" FROM \"EntregaCodigoAcceso\" WHERE \"challengeId\"=?::uuid", String.class, challenge));
