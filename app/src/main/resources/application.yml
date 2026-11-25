@@ -127,6 +127,9 @@ prisaly:
     # DC-92 DD-13 (ratificada): clasificacion docente de ausencias con historial, sin cero automatico.
     ausencias:
       enabled: ${PRISALY_M4_AUSENCIAS_ENABLED:false}
+    # DC-92 RF-21 (ratificada): retiro con historial, resolucion explicita del intento en curso, bloqueo (E1) y avisos.
+    retiro:
+      enabled: ${PRISALY_M4_RETIRO_ENABLED:false}
   m6:
     # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
     # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Turning it on is not
