@@ -37,7 +37,8 @@ public class EsquemaAccesoEstudianteConfig {
      * Every accepted contract still makes M4 verify the four DD-02 B tables.
      */
     static final java.util.Set<String> PERMITIDOS = java.util.Set.of(M4SchemaContract.V013_DD02B,
-            M4SchemaContract.V013_DD02B_SIM_A, M4SchemaContract.V013_DD02B_SIM_AB, M4SchemaContract.V013_INTEGRAL);
+            M4SchemaContract.V013_DD02B_SIM_A, M4SchemaContract.V013_DD02B_SIM_AB, M4SchemaContract.V013_INTEGRAL,
+            M4SchemaContract.V013_INTEGRAL_DC92);
 
     static void verificar(String contrato) {
         if (!PERMITIDOS.contains(contrato)) {
