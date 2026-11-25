@@ -28,6 +28,7 @@ class ReporteParticipacionDocenteHttpIT extends ReporteParticipacionHttpFixture 
         r.add("spring.datasource.username", postgres::getUsername);
         r.add("spring.datasource.password", postgres::getPassword);
         r.add("prisaly.m7.reportes.participacion.enabled", () -> "true"); // QA only
+        ReporteParticipacionHttpFixture.esquemaDc92(r); // DC-92: DD-11 reads the DC-92 candidate schema
     }
 
     UUID admin;
@@ -56,29 +57,26 @@ class ReporteParticipacionDocenteHttpIT extends ReporteParticipacionHttpFixture 
 
         List<String> regs = registros(r);
         assertEquals(4, regs.size(), regs.toString());
-        assertEquals("id_sesion,espacio_academico,estado_sesion,id_estudiante,nombre_estudiante,correo_estudiante,"
-                + "estado_convocatoria,situacion,estado_participacion,intentos,intentos_finalizados,"
-                + "ultimo_intento_numero,ultimo_intento_estado,ultimo_intento_inicio,ultimo_intento_fin,"
-                + "ultimo_intento_motivo,calificacion,intento_calificado,estado_calificacion", regs.get(0));
+        // DC-92 DD-11: the ten ratified fields, no email.
+        assertEquals("id_estudiante,nombre_estudiante,caso,sesion,fecha_sesion,estado_convocatoria,"
+                + "estado_participacion,numero_intentos,estado_evaluacion,calificacion_publicada", regs.get(0));
         // Raw text: the formula is neutralized with ' and the cell is RFC 4180 quoted.
         assertTrue(texto(r).contains(",\"'=HYPERLINK(\"\"http://x\"\",\"\"y\"\")\","), texto(r));
-        assertTrue(texto(r).contains(s.id() + ",\"'=Espacio, \"\"G1\"\"\",EnCurso,"), texto(r));
+        assertTrue(texto(r).contains(",\"'=Espacio, \"\"G1\"\"\","), texto(r));
+        assertFalse(texto(r).contains("@prisaly.test"), "DD-11: no email in the report");
 
         var hecha = fila(regs, "'=HYPERLINK(\"http://x\",\"y\")");
-        assertEquals(19, hecha.size());
-        assertEquals(List.of("Autorizado", "FINALIZADO", "Pendiente", "1", "1", "1", "Finalizado"), hecha.subList(6, 13));
-        assertEquals("ENTREGA_ESTUDIANTE", hecha.get(15));
-        assertFalse(hecha.get(13).isEmpty() || hecha.get(14).isEmpty(), "ISO-8601 start and end");
-        assertTrue(hecha.get(13).endsWith("Z"));
-        assertEquals(List.of("", "", "NO_HABILITADA"), hecha.subList(16, 19), "M6 off: the grade is not read");
+        assertEquals(10, hecha.size());
+        assertEquals(List.of("Autorizado", "PARTICIPACION_FINALIZADA", "1", "EVALUADA_NO_PUBLICADA", ""), hecha.subList(5, 10),
+                "graded but not released: never shown");
+        assertTrue(hecha.get(4).endsWith("Z"), "ISO-8601 session date");
         assertFalse(texto(r).contains("4.50"));
 
         var curso = fila(regs, "Ana, \"en curso\"");
-        assertEquals(List.of("EN_CURSO", "Pendiente", "1", "0", "1", "EnCurso"), curso.subList(7, 13));
-        assertEquals("", curso.get(14));
+        assertEquals(List.of("PARTICIPACION_INICIADA", "1", "SIN_EVALUAR", ""), curso.subList(6, 10));
 
         var sin = fila(regs, "Zoe Sin Intento");
-        assertEquals(List.of("SIN_PARTICIPACION", "", "0", "0", ""), sin.subList(7, 12));
+        assertEquals(List.of("CONVOCADO", "0", "SIN_INTENTOS", ""), sin.subList(6, 10));
     }
 
     @Test
@@ -90,8 +88,8 @@ class ReporteParticipacionDocenteHttpIT extends ReporteParticipacionHttpFixture 
         convocar(otra, "De Otra Sesion");
         var regs = registros(descargar(a.token(), fin.id()));
         assertEquals(2, regs.size(), regs.toString());
-        assertEquals("AUSENTE", fila(regs, "Ausente Uno").get(7));
-        assertEquals("Finalizado", fila(regs, "Ausente Uno").get(2));
+        assertEquals("AUSENTE_PENDIENTE_REVISION", fila(regs, "Ausente Uno").get(6), "DD-13: no automatic zero");
+        assertEquals("SIN_INTENTOS", fila(regs, "Ausente Uno").get(8));
         assertFalse(String.join("\n", regs).contains("De Otra Sesion"));
 
         Sesion vacia = sesion(a, "Sin convocados", "SinIniciar");

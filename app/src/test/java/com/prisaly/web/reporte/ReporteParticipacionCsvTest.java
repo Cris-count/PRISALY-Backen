@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
-/** DC-BE-CIERRE-FUNCIONAL-72: RFC 4180 escaping, formula-injection neutralization and derived columns. */
+/** DC-72 escaping and formula neutralization (unchanged) + DC-92 DD-11 fixed columns. */
 class ReporteParticipacionCsvTest {
     static final UUID SESION = UUID.fromString("00000000-0000-0000-0000-0000000000aa");
     static final UUID EST = UUID.fromString("00000000-0000-0000-0000-0000000000bb");
@@ -40,64 +40,30 @@ class ReporteParticipacionCsvTest {
     }
 
     @Test
-    void cabeceraFijaBomYFinDeRegistroCrlf() {
-        var csv = new String(ReporteParticipacionCsv.generar(sesion(EstadoSesion.EN_CURSO), List.of(), false),
-                StandardCharsets.UTF_8);
-        assertTrue(csv.startsWith("﻿"));
+    void cabeceraFijaDd11BomYFinDeRegistroCrlf() {
+        var csv = new String(ReporteParticipacionCsv.generar(java.util.List.of()), java.nio.charset.StandardCharsets.UTF_8);
         assertEquals("﻿" + String.join(",", ReporteParticipacionCsv.CABECERA) + "\r\n", csv);
-        assertEquals(19, ReporteParticipacionCsv.CABECERA.size());
-        assertEquals("id_sesion", ReporteParticipacionCsv.CABECERA.get(0));
-        assertEquals("estado_calificacion", ReporteParticipacionCsv.CABECERA.get(18));
+        assertEquals(java.util.List.of("id_estudiante", "nombre_estudiante", "caso", "sesion", "fecha_sesion",
+                "estado_convocatoria", "estado_participacion", "numero_intentos", "estado_evaluacion",
+                "calificacion_publicada"), ReporteParticipacionCsv.CABECERA);
+        assertFalse(ReporteParticipacionCsv.CABECERA.stream().anyMatch(c -> c.contains("correo")), "DD-11: no email");
     }
 
     @Test
-    void situacionDerivadaDeHechosPersistidos() {
-        assertEquals("SIN_PARTICIPACION", ReporteParticipacionCsv.situacion(EstadoSesion.EN_CURSO, fila(0, null, null)));
-        assertEquals("SIN_PARTICIPACION", ReporteParticipacionCsv.situacion(EstadoSesion.SIN_INICIAR, fila(0, null, null)));
-        assertEquals("AUSENTE", ReporteParticipacionCsv.situacion(EstadoSesion.FINALIZADO, fila(0, null, null)));
-        assertEquals("EN_CURSO", ReporteParticipacionCsv.situacion(EstadoSesion.EN_CURSO, fila(1, "EnCurso", null)));
-        assertEquals("FINALIZADO", ReporteParticipacionCsv.situacion(EstadoSesion.FINALIZADO, fila(2, "Finalizado", null)));
-        var retirado = new ReporteParticipacionCsv.Fila(EST, "N", "c@x.test", "Autorizado", Instant.EPOCH, null, 0, 0,
-                null, null, null, null, null, null, null);
-        assertEquals("RETIRADO", ReporteParticipacionCsv.situacion(EstadoSesion.FINALIZADO, retirado));
-    }
-
-    @Test
-    void calificacionSoloSiM6EstaHabilitado() {
-        var f = fila(1, "Finalizado", new BigDecimal("4.50"));
-        var apagado = ReporteParticipacionCsv.celdas(sesion(EstadoSesion.FINALIZADO), f, false);
-        assertEquals(19, apagado.size());
-        assertNull(apagado.get(16));
-        assertNull(apagado.get(17));
-        assertEquals("NO_HABILITADA", apagado.get(18));
-        var encendido = ReporteParticipacionCsv.celdas(sesion(EstadoSesion.FINALIZADO), f, true);
-        assertEquals(List.of("4.50", "1", "CALIFICADA"), encendido.subList(16, 19));
-        var sinNota = ReporteParticipacionCsv.celdas(sesion(EstadoSesion.FINALIZADO), fila(1, "Finalizado", null), true);
-        assertEquals("SIN_CALIFICACION", sinNota.get(18));
-    }
-
-    @Test
-    void registroCompletoConDatosHostiles() {
-        var f = new ReporteParticipacionCsv.Fila(EST, "=cmd|' /C calc'!A0", "a,\"b\"@x.test", "Autorizado", null,
-                "Pendiente", 1, 1, 1, "Finalizado", Instant.parse("2026-11-24T10:00:00Z"),
-                Instant.parse("2026-11-24T10:30:00Z"), "ENTREGA_ESTUDIANTE", null, null);
-        var csv = new String(ReporteParticipacionCsv.generar(
-                new ReporteParticipacionCsv.Sesion(SESION, "@Espacio, grupo \"A\"", EstadoSesion.FINALIZADO),
-                List.of(f), false), StandardCharsets.UTF_8);
+    void soloLaCalificacionPublicadaApareceYLosDatosHostilesSeNeutralizan() {
+        var publicada = fila("=cmd|' /C calc'!A0", "PARTICIPACION_FINALIZADA", "PUBLICADA", new java.math.BigDecimal("4.50"));
+        var csv = new String(ReporteParticipacionCsv.generar(java.util.List.of(publicada)), java.nio.charset.StandardCharsets.UTF_8);
         String[] lineas = csv.split("\r\n");
-        assertEquals(2, lineas.length);
-        assertEquals(SESION + ",\"'@Espacio, grupo \"\"A\"\"\",Finalizado," + EST + ",'=cmd|' /C calc'!A0,"
-                + "\"a,\"\"b\"\"@x.test\",Autorizado,FINALIZADO,Pendiente,1,1,1,Finalizado,2026-11-24T10:00:00Z,"
-                + "2026-11-24T10:30:00Z,ENTREGA_ESTUDIANTE,,,NO_HABILITADA", lineas[1]);
+        assertEquals(EST + ",'=cmd|' /C calc'!A0,\"Caso, \"\"A\"\"\",'@Espacio,2031-03-12T15:00:00Z,Autorizado,"
+                + "PARTICIPACION_FINALIZADA,1,PUBLICADA,4.50", lineas[1]);
+        var oculta = ReporteParticipacionCsv.celdas(fila("Ana", "PARTICIPACION_FINALIZADA", "EVALUADA_NO_PUBLICADA", null));
+        assertNull(oculta.get(9), "an unreleased grade is never written");
     }
 
-    private static ReporteParticipacionCsv.Sesion sesion(EstadoSesion estado) {
-        return new ReporteParticipacionCsv.Sesion(SESION, "Espacio", estado);
-    }
-
-    private static ReporteParticipacionCsv.Fila fila(int intentos, String ultimoEstado, BigDecimal nota) {
-        return new ReporteParticipacionCsv.Fila(EST, "Nombre", "n@x.test", "Autorizado", null,
-                intentos == 0 ? null : "Pendiente", intentos, "Finalizado".equals(ultimoEstado) ? intentos : 0,
-                intentos == 0 ? null : intentos, ultimoEstado, null, null, null, nota, nota == null ? null : 1);
+    private static com.prisaly.config.dc92.VistaParticipacionDc92.Fila fila(String nombre, String participacion,
+            String evaluacion, java.math.BigDecimal nota) {
+        return new com.prisaly.config.dc92.VistaParticipacionDc92.Fila(UUID.randomUUID(), EST, nombre, "Caso, \"A\"",
+                "@Espacio", java.time.Instant.parse("2031-03-12T15:00:00Z"), "Autorizado", null, UUID.randomUUID(), null,
+                1, participacion, UUID.randomUUID(), null, null, evaluacion, nota, null);
     }
 }

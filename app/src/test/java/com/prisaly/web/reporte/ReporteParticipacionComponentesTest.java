@@ -32,10 +32,15 @@ class ReporteParticipacionComponentesTest {
         UUID id = UUID.randomUUID();
         when(sesiones.consultarSesionAutorizada(id))
                 .thenThrow(new ReglaNegocioException("M4-SESION-AJENA", "El docente no es propietario de esta sesión"));
-        var servicio = new ReporteParticipacionService(sesiones, jdbc, true);
+        // DC-92: the constructor verifies the DC-92 schema once; no data query may follow a denied authorization.
+        when(jdbc.queryForObject(org.mockito.ArgumentMatchers.anyString(), org.mockito.ArgumentMatchers.eq(Boolean.class),
+                org.mockito.ArgumentMatchers.<Object>any())).thenReturn(true);
+        var servicio = new ReporteParticipacionService(sesiones, jdbc);
         var ex = assertThrows(ReglaNegocioException.class, () -> servicio.generar(id));
         assertEquals("M4-SESION-AJENA", ex.getCodigo());
-        verifyNoInteractions(jdbc);
+        verify(jdbc, never()).query(org.mockito.ArgumentMatchers.anyString(),
+                org.mockito.ArgumentMatchers.<org.springframework.jdbc.core.RowMapper<Object>>any(),
+                org.mockito.ArgumentMatchers.<Object>any());
     }
 
     @Test

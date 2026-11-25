@@ -41,9 +41,9 @@ class PlataformaContractualQaHttpIT {
 
     @DynamicPropertySource
     static void properties(DynamicPropertyRegistry p) {
-        QA.propiedades(p, true);                                            // DD-02 B + M5 POST publication (QA only)
+        // DC-92: DC-92 candidate schema, DD-02 B, M5 POST, M6 evaluation and N2 (QA only).
+        Dc92Qa.propiedades(QA, p);
         p.add("prisaly.m1.alta-estudiantes.enabled", () -> "true");        // P-78 (QA only)
-        p.add("prisaly.m6.evaluacion.enabled", () -> "true");              // M6 teacher evaluation (QA only)
         p.add("prisaly.m7.reportes.participacion.enabled", () -> "true");  // RF-16 (QA only)
     }
 
@@ -141,20 +141,18 @@ class PlataformaContractualQaHttpIT {
         assertEquals(201, evaluacion.statusCode(), evaluacion.body());
         String valor = jdbc.queryForObject("SELECT \"valor\"::text FROM \"Calificacion\" WHERE \"idIntento\"=?::uuid", String.class, intento);
         assertTrue(evaluacion.body().contains("\"valor\":" + valor), evaluacion.body() + " vs " + valor);
-        assertFalse(json.readTree(evaluacion.body()).get("liberada").asBoolean(), "N2 is not implemented: never released");
+        assertFalse(json.readTree(evaluacion.body()).get("liberada").asBoolean(), "not released yet");
 
-        // ── 8. RF-16: the owner downloads the CSV with Ana FINALIZADO + CALIFICADA and Beto SIN_PARTICIPACION ────────
+        // ── 8. DC-92: N2 release, then RF-16/DD-11 shows the PUBLISHED grade; Beto is still CONVOCADO ──────────────
+        assertEquals(201, personal("POST", "/v1/evaluacion/intentos/" + intento + "/liberacion", tokenDocente, null).statusCode());
         var csv = http.send(HttpRequest.newBuilder(uri("/v1/docente/sesiones/" + sesion + "/reporte-participacion"))
                 .header("Authorization", "Bearer " + tokenDocente).GET().build(), HttpResponse.BodyHandlers.ofByteArray());
         assertEquals(200, csv.statusCode());
         String texto = new String(csv.body(), StandardCharsets.UTF_8);
         String filaAna = linea(texto, ana[1]), filaBeto = linea(texto, beto[1]);
         List<String> a = Arrays.asList(filaAna.split(",", -1)), b = Arrays.asList(filaBeto.split(",", -1));
-        assertEquals("FINALIZADO", a.get(7), filaAna);
-        assertEquals(List.of("1", "1"), a.subList(9, 11), filaAna);
-        assertEquals(List.of(valor, "1", "CALIFICADA"), a.subList(16, 19), filaAna);
-        assertEquals("SIN_PARTICIPACION", b.get(7), filaBeto);
-        assertEquals("SIN_CALIFICACION", b.get(18), filaBeto);
+        assertEquals(List.of("PARTICIPACION_FINALIZADA", "1", "PUBLICADA", valor), a.subList(6, 10), filaAna);
+        assertEquals(List.of("CONVOCADO", "0", "SIN_INTENTOS", ""), b.subList(6, 10), filaBeto);
     }
 
     private UUID[] alta(String tokenAdmin, String nombre, String correo) throws Exception {

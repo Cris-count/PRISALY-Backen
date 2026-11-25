@@ -123,6 +123,21 @@ abstract class ReporteParticipacionHttpFixture {
                 + "'{\"fixture\":\"72\"}'::jsonb,'S1')", intento, s.rubrica(), valor);
     }
 
+    /** DC-92: N2 release of an existing grade by the case owner (fixture insert; the V019 triggers still apply). */
+    void liberar(UUID intento, UUID docente) {
+        jdbc.update("INSERT INTO \"LiberacionCalificacion\" (\"idCalificacion\",\"idDocente\") SELECT \"idCalificacion\", ?"
+                + " FROM \"Calificacion\" WHERE \"idIntento\"=?", docente, intento);
+    }
+
+    /** DC-92 candidate schema (integral + V021-V023) and its M4 contract, for the calling test context only. */
+    static void esquemaDc92(org.springframework.test.context.DynamicPropertyRegistry r) {
+        java.nio.file.Path base = java.nio.file.Path.of("src/main/resources/db").toAbsolutePath();
+        r.add("spring.flyway.locations", () -> "filesystem:" + base.resolve("migration") + ",filesystem:"
+                + base.resolve("dd02b-propuesta") + ",filesystem:" + base.resolve("m6-propuesta") + ",filesystem:"
+                + base.resolve("d05-propuesta") + ",filesystem:" + base.resolve("dc92-propuesta"));
+        r.add("prisaly.m4.schema-contract", () -> "bd0052-v013-integral-dc92");
+    }
+
     // ─── HTTP ─────────────────────────────────────────────────────────────────────────────────────────────────
 
     HttpResponse<byte[]> descargar(String token, Object sesion) throws Exception {
@@ -148,7 +163,7 @@ abstract class ReporteParticipacionHttpFixture {
     /** Record whose student name (column 5) equals {@code nombreCsv}, split on commas outside quotes. */
     static List<String> fila(List<String> registros, String nombreCsv) {
         return registros.stream().skip(1).map(ReporteParticipacionHttpFixture::celdas)
-                .filter(c -> c.get(4).equals(nombreCsv)).findFirst()
+                .filter(c -> c.get(1).equals(nombreCsv)).findFirst()
                 .orElseThrow(() -> new AssertionError("no row for " + nombreCsv + " in " + registros));
     }
 

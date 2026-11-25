@@ -90,6 +90,10 @@ prisaly:
       estados-visibles: BORRADOR,PUBLICADO,ARCHIVADO
       requiere-activo: false
   m5:
+    # DC-92 DD-04 (ratificada): una repeticion excepcional autorizada por el docente creador del caso, con
+    # justificacion, historial y seleccion del intento valido. OFF: M5 sigue rechazando toda repeticion (404 docente).
+    repeticion:
+      enabled: ${PRISALY_M5_REPETICION_ENABLED:false}
     # DC-BE-CIERRE-FUNCIONAL-09 (fase 3): POST /v1/estudiantes/sesiones/{idSesion}/intentos y
     # POST /v1/estudiantes/intentos/{idIntento}/finalizar quedan SIN publicar. DC-BE-M5-CIERRE-IMPLEMENTACION-45
     # ratificó e implementó E1, L1, RF-22, V1-c y DD-14-a; publicarlos sigue requiriendo activación expresa.
@@ -117,6 +121,12 @@ prisaly:
       enabled: ${PRISALY_M4_CIERRE_AUTOMATICO_ENABLED:false}
       margen: ${PRISALY_M4_CIERRE_AUTOMATICO_MARGEN:P1D}
       intervalo-ms: ${PRISALY_M4_CIERRE_AUTOMATICO_INTERVALO_MS:60000}
+    # DC-92 DD-09 (ratificada): GET /v1/docente/sesiones/{id}/participaciones (propietario, nota solo publicada).
+    consulta-participaciones:
+      enabled: ${PRISALY_M4_CONSULTA_PARTICIPACIONES_ENABLED:false}
+    # DC-92 DD-13 (ratificada): clasificacion docente de ausencias con historial, sin cero automatico.
+    ausencias:
+      enabled: ${PRISALY_M4_AUSENCIAS_ENABLED:false}
   m6:
     # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
     # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Turning it on is not
