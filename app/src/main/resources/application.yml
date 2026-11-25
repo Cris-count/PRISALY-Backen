@@ -112,9 +112,15 @@ prisaly:
       enabled: true
   m6:
     # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
-    # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Release N2 and the
-    # student query are NOT implemented (B2 pending a schema change). Turning it on is not authorized.
+    # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Turning it on is not
+    # authorized.
     evaluacion:
+      enabled: false
+    # DC-BE-CIERRE-DEFINITIVO-87: CANDIDATE release N2 (M6-R10) and the student's own query,
+    # POST /v1/evaluacion/intentos/{idIntento}/liberacion and GET /v1/estudiantes/intentos/{idIntento}/calificacion.
+    # OFF: no bean, no route (404), liberada=false. Turning it on requires evaluacion.enabled=true and the candidate
+    # table V019 (db/m6-propuesta, subject to D-ESQ-1); otherwise startup fails. Not authorized.
+    liberacion:
       enabled: false
   m7:
     # OBS-83-M7-02 (DC-86): zone used ONLY to present dates in the convocatoria notice/email (instants stay UTC in

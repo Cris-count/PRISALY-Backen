@@ -38,6 +38,9 @@ class M4SchemaReferenceIT {
                     "classpath:db/sim-propuesta", "classpath:db/sim-propuesta-b");
             // DC-BE-D05-AUTORIZACION-QA-77: QA-only teacher activation candidate V020 (db/d05-propuesta) on V013.
             exportar(output, M4SchemaContract.V013_D05, "classpath:db/migration", "classpath:db/d05-propuesta");
+            // DC-BE-CIERRE-DEFINITIVO-87: integral candidate (DD-02 B V014-V016 + N2 V019 + D-05 V020, no simulator).
+            exportar(output, M4SchemaContract.V013_INTEGRAL, "classpath:db/migration", "classpath:db/dd02b-propuesta",
+                    "classpath:db/m6-propuesta", "classpath:db/d05-propuesta");
         } finally {
             M4SchemaFixture.borrar(historico);
         }

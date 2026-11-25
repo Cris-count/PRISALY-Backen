@@ -46,12 +46,20 @@ public final class M4SchemaContract {
      */
     public static final String V013_D05 = "bd0052-v013-d05";
     private static final Set<String> TABLAS_D05 = Set.of("ActivacionDocente");
+    /**
+     * DC-BE-CIERRE-DEFINITIVO-87 (technical D-ESQ-1 candidate): the integral backend candidate, V001-V009 + V013 plus
+     * DD-02 B (V014-V016, {@code db/dd02b-propuesta}), N2 (V019, {@code db/m6-propuesta}) and D-05 (V020,
+     * {@code db/d05-propuesta}), in that version order; the simulator candidates V017/V018 are excluded. Selecting it
+     * is NOT acceptance of any of those schemas nor a decision on D-ESQ-1.
+     */
+    public static final String V013_INTEGRAL = "bd0052-v013-integral";
+    private static final Set<String> TABLAS_N2 = Set.of("LiberacionCalificacion");
     /** Contract of the canonical migration set shipped with the application. */
     public static final String VIGENTE = V013;
     public static final String TABLA_INICIALIZACION = "InicializacionAdministrador";
     private static final Set<String> TABLAS_DD02 = Set.of("ActivacionCuentaEstudiante", "SesionEstudiante");
     private static final Set<String> CONOCIDOS = Set.of(HISTORICO, DD02, V013, V013_DD02, V013_DD02B,
-            V013_SIM_A, V013_DD02B_SIM_A, V013_SIM_AB, V013_DD02B_SIM_AB, V013_D05);
+            V013_SIM_A, V013_DD02B_SIM_A, V013_SIM_AB, V013_DD02B_SIM_AB, V013_D05, V013_INTEGRAL);
     public static final Set<String> TABLAS_HISTORICAS = Set.of(
             "Rol", "Permiso", "Usuario", "UsuarioPermiso", "Estudiante", "Caso", "Escenario",
             "Pregunta", "OpcionRespuesta", "Sesion", "Convocatoria", "Participacion", "Intento",
@@ -64,10 +72,16 @@ public final class M4SchemaContract {
         if (DD02.equals(contrato) || V013_DD02.equals(contrato)) esperadas.addAll(TABLAS_DD02);
         if (V013.equals(contrato) || V013_DD02.equals(contrato) || V013_DD02B.equals(contrato)
                 || V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)
-                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato) || V013_D05.equals(contrato)) {
+                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato) || V013_D05.equals(contrato)
+                || V013_INTEGRAL.equals(contrato)) {
             esperadas.add(TABLA_INICIALIZACION);
         }
         if (V013_D05.equals(contrato)) esperadas.addAll(TABLAS_D05);
+        if (V013_INTEGRAL.equals(contrato)) {
+            esperadas.addAll(TABLAS_DD02B);
+            esperadas.addAll(TABLAS_N2);
+            esperadas.addAll(TABLAS_D05);
+        }
         if (V013_DD02B.equals(contrato) || V013_DD02B_SIM_A.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
             esperadas.addAll(TABLAS_DD02B);
         }

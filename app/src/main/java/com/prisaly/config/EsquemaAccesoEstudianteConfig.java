@@ -33,10 +33,11 @@ public class EsquemaAccesoEstudianteConfig {
 
     /**
      * DC-BE-SIM-B1-B2A-24: the QA-only narrative contracts that also contain V014-V016 are accepted, so a student QA
-     * run can include V017/V018. Every accepted contract still makes M4 verify the four DD-02 B tables.
+     * run can include V017/V018. DC-BE-CIERRE-DEFINITIVO-87: the integral candidate (V014-V016 + V019 + V020) as well.
+     * Every accepted contract still makes M4 verify the four DD-02 B tables.
      */
-    static final java.util.Set<String> PERMITIDOS = java.util.Set.of(
-            M4SchemaContract.V013_DD02B, M4SchemaContract.V013_DD02B_SIM_A, M4SchemaContract.V013_DD02B_SIM_AB);
+    static final java.util.Set<String> PERMITIDOS = java.util.Set.of(M4SchemaContract.V013_DD02B,
+            M4SchemaContract.V013_DD02B_SIM_A, M4SchemaContract.V013_DD02B_SIM_AB, M4SchemaContract.V013_INTEGRAL);
 
     static void verificar(String contrato) {
         if (!PERMITIDOS.contains(contrato)) {

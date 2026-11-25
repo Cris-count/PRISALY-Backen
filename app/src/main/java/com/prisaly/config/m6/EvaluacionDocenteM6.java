@@ -35,6 +35,11 @@ public final class EvaluacionDocenteM6 {
                 .orElseThrow(() -> new IllegalStateException("La calificacion registrada no puede leerse"));
     }
 
+    /** N2 (DC-87): the same ownership rule as the teacher query, reused by the release; no policy of its own. */
+    boolean esDelDocenteActual(UUID idIntento) {
+        return lector.perteneceAlDocenteActual(Objects.requireNonNull(idIntento, "idIntento"));
+    }
+
     /** Teacher query: denied unless the attempt is of a case of the current active teacher. */
     public Optional<Calificacion> consultar(UUID idIntento) {
         Objects.requireNonNull(idIntento, "idIntento");

@@ -39,10 +39,17 @@ public class EvaluacionDocenteController {
 
     private final EvaluacionDocenteM6 evaluacion;
     private final ObjectMapper json;
+    private final org.springframework.beans.factory.ObjectProvider<com.prisaly.config.m6.LiberacionCalificacionM6> liberacion;
 
-    public EvaluacionDocenteController(EvaluacionDocenteM6 evaluacion, ObjectMapper json) {
+    /**
+     * N2 (DC-87): {@code liberada} reflects a real release only when the candidate N2 is assembled
+     * ({@code prisaly.m6.liberacion.enabled=true}); otherwise it stays {@code false} exactly as in CONTRATOS-HTTP-M6-55.
+     */
+    public EvaluacionDocenteController(EvaluacionDocenteM6 evaluacion, ObjectMapper json,
+            org.springframework.beans.factory.ObjectProvider<com.prisaly.config.m6.LiberacionCalificacionM6> liberacion) {
         this.evaluacion = evaluacion;
         this.json = json;
+        this.liberacion = liberacion;
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -69,7 +76,12 @@ public class EvaluacionDocenteController {
                 .with(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS).readValue(c.detalleEvaluacion());
         String caracter = detalle.path("caracter").asString("formativa");
         return new CalificacionHttp(c.idCalificacion(), c.idIntento(), c.idRubrica(), c.valor(), "0-5", caracter,
-                c.versionPolitica(), c.fechaCalculo(), false, detalle);
+                c.versionPolitica(), c.fechaCalculo(), liberada(c), detalle);
+    }
+
+    private boolean liberada(Calificacion c) {
+        var n2 = liberacion.getIfAvailable();
+        return n2 != null && n2.fechaLiberacion(c.idCalificacion()).isPresent();
     }
 
     /** Missing {@code idRubrica}. */

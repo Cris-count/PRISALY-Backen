@@ -23,7 +23,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  * Error mapping of CONTRATOS-HTTP-M6-55, only for {@link EvaluacionDocenteController}. Messages are fixed texts:
  * no exception message, identifier, capability or SQL detail reaches the response.
  */
-@RestControllerAdvice(assignableTypes = EvaluacionDocenteController.class)
+@RestControllerAdvice(assignableTypes = {EvaluacionDocenteController.class, LiberacionCalificacionController.class})
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(prefix = "prisaly.m6.evaluacion", name = "enabled", havingValue = "true")
 public class EvaluacionDocenteExceptionHandler {
@@ -38,6 +38,12 @@ public class EvaluacionDocenteExceptionHandler {
     @ExceptionHandler(AccesoEvaluacionDenegadoException.class)
     ResponseEntity<ErrorEvaluacionHttp> denegado(AccesoEvaluacionDenegadoException ex) {
         return denegado();
+    }
+
+    /** N2 (DC-87): releasing an attempt without a grade; same body as the teacher query's 404. */
+    @ExceptionHandler(com.prisaly.config.m6.LiberacionCalificacionM6.CalificacionNoEncontradaException.class)
+    ResponseEntity<ErrorEvaluacionHttp> sinCalificacion(RuntimeException ex) {
+        return error(HttpStatus.NOT_FOUND, "CALIFICACION_NO_ENCONTRADA", "El intento no tiene calificacion", null);
     }
 
     @ExceptionHandler(EvaluacionExistenteException.class)
