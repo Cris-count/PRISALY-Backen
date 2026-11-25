@@ -1,6 +1,8 @@
 package com.prisaly.m1.presentation;
 
+import com.prisaly.m1.api.IdentityDomainException;
 import com.prisaly.m1.application.service.AdministracionIdentidadService;
+import com.prisaly.m1.application.service.GestionActivacionDocenteService;
 import com.prisaly.m1.domain.model.AsignacionPermiso;
 import com.prisaly.m1.domain.model.Permiso;
 import com.prisaly.m1.domain.model.Usuario;
@@ -10,6 +12,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,10 +34,18 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/v1/admin")
 public class AdministracionController {
+    private static final Logger auditoria = LoggerFactory.getLogger(AdministracionIdentidadService.LOGGER_AUDITORIA);
     private final AdministracionIdentidadService servicio;
+    private final GestionActivacionDocenteService activacion;
 
-    public AdministracionController(AdministracionIdentidadService servicio) {
+    /**
+     * @param activacion D-05 (DC-77, candidate): present only with {@code prisaly.m1.activacion-docente.enabled=true};
+     *                   then every new teacher receives the activation invitation right after the account commits
+     */
+    public AdministracionController(AdministracionIdentidadService servicio,
+            ObjectProvider<GestionActivacionDocenteService> activacion) {
         this.servicio = servicio;
+        this.activacion = activacion.getIfAvailable();
     }
 
     /** ARQ-008.3 DocenteAltaRequest: nombre and correo only (additionalProperties: false). */
@@ -57,6 +70,17 @@ public class AdministracionController {
     @PostMapping("/docentes")
     public ResponseEntity<UsuarioDocente> altaDocente(@Valid @RequestBody DocenteAltaRequest request) {
         Usuario creado = servicio.altaDocente(request.nombre().trim(), request.correo());
+        if (activacion != null) {
+            // The account is already committed: an invitation failure keeps the 201 (contract unchanged) and is
+            // audited; the administrator re-issues it with POST /v1/admin/docentes/{id}/activacion.
+            try {
+                activacion.emitir(creado.getIdUsuario());
+            } catch (RuntimeException fallo) {
+                String codigo = fallo instanceof IdentityDomainException d ? d.code() : fallo.getClass().getSimpleName();
+                auditoria.warn("AUDITORIA_IDENTIDAD accion=INVITACION_ACTIVACION usuario={} resultado=FALLIDA codigo={}",
+                        creado.getIdUsuario(), codigo);
+            }
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new UsuarioDocente(creado.getIdUsuario(), creado.getNombre(), creado.getCorreo(), creado.getEstado()));
     }

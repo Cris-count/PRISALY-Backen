@@ -87,6 +87,18 @@ class M4SchemaContratoPostgreSqlIT {
         assertEquals("001,002,003,004,005,006,007,008,009,013,014,015,016", jdbc.queryForObject(
                 "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
     }
+    // DC-BE-D05-AUTORIZACION-QA-77: the QA-only teacher activation candidate V020 is recognized only with its own contract;
+    // the shipped production contract rejects its extra table.
+    @Test void d05SeReconoceSoloConSuContratoYElProductivoLaRechaza() {
+        var flyway = M4SchemaFixture.flyway(db, "classpath:db/migration", "classpath:db/d05-propuesta");
+        flyway.clean(); flyway.migrate();
+        assertDoesNotThrow(() -> M4SchemaAutoConfiguration.verificar(jdbc, M4SchemaContract.V013_D05));
+        rechaza(M4SchemaContract.VIGENTE);
+        rechaza(M4SchemaContract.V013_SIM_A);
+        rechaza(M4SchemaContract.V013_DD02B);
+        assertEquals("001,002,003,004,005,006,007,008,009,013,020", jdbc.queryForObject(
+                "SELECT string_agg(version, ',' ORDER BY installed_rank) FROM flyway_schema_history", String.class));
+    }
     // DC-BE-SIM-INCREMENTO-A-15: the QA-only narrative candidate V017 is recognized only with its own contracts and the
     // shipped production contract rejects its extra table (the candidate can never pass as the productive schema).
     @Test void simASeReconoceSoloConSuContratoYElProductivoLaRechaza() {

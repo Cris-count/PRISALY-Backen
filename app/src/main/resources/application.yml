@@ -50,6 +50,19 @@ prisaly:
     # DOCENTE is seeded by PD-01; if the catalog lacks it the operation answers 503 TEACHER_ROLE_NOT_CONFIGURED.
     administracion:
       rol-docente: ${PRISALY_ROL_DOCENTE:DOCENTE}
+    # D-05 (DC-BE-D05-AUTORIZACION-QA-77, CANDIDATE, QA only): teacher activation by one-time token mailed via M7.
+    # OFF: no bean, no route (404) and POST /v1/admin/docentes behaves as before. Turning it on requires the candidate
+    # schema db/d05-propuesta (V020, not in db/migration), spring.mail.* and the values below. vigencia is MANDATORY
+    # and has no default (ISO-8601, PT15M..P7D). Acceptance of the schema and publication need Dirección Central review.
+    activacion-docente:
+      enabled: ${PRISALY_M1_ACTIVACION_DOCENTE_ENABLED:false}
+      vigencia: ${PRISALY_M1_ACTIVACION_DOCENTE_VIGENCIA:}
+      remitente: ${PRISALY_M1_ACTIVACION_DOCENTE_REMITENTE:}
+      enlace: ${PRISALY_M1_ACTIVACION_DOCENTE_ENLACE:}
+      intentos:
+        max-por-token: 5
+        max-por-origen: 10
+        ventana: PT15M
     # P5 / DM1-01 (DC-P5-FASE-B-01): one-shot first-administrator initialization, never via HTTP. Disabled by default.
     # The initial password is read once from a file readable only by the operator, and is never logged.
     inicializacion-admin:

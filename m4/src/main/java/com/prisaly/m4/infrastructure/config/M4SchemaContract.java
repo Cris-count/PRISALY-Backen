@@ -40,12 +40,18 @@ public final class M4SchemaContract {
     public static final String V013_SIM_AB = "bd0052-v013-sim-ab";
     public static final String V013_DD02B_SIM_AB = "bd0052-v013-dd02b-sim-ab";
     private static final Set<String> TABLAS_SIM_B = Set.of("FaseIntento");
+    /**
+     * D-05 (DC-BE-D05-AUTORIZACION-QA-77): QA-only candidate teacher activation table V020 ({@code db/d05-propuesta})
+     * on top of V013. Selecting it is NOT acceptance of the schema nor publication in develop.
+     */
+    public static final String V013_D05 = "bd0052-v013-d05";
+    private static final Set<String> TABLAS_D05 = Set.of("ActivacionDocente");
     /** Contract of the canonical migration set shipped with the application. */
     public static final String VIGENTE = V013;
     public static final String TABLA_INICIALIZACION = "InicializacionAdministrador";
     private static final Set<String> TABLAS_DD02 = Set.of("ActivacionCuentaEstudiante", "SesionEstudiante");
     private static final Set<String> CONOCIDOS = Set.of(HISTORICO, DD02, V013, V013_DD02, V013_DD02B,
-            V013_SIM_A, V013_DD02B_SIM_A, V013_SIM_AB, V013_DD02B_SIM_AB);
+            V013_SIM_A, V013_DD02B_SIM_A, V013_SIM_AB, V013_DD02B_SIM_AB, V013_D05);
     public static final Set<String> TABLAS_HISTORICAS = Set.of(
             "Rol", "Permiso", "Usuario", "UsuarioPermiso", "Estudiante", "Caso", "Escenario",
             "Pregunta", "OpcionRespuesta", "Sesion", "Convocatoria", "Participacion", "Intento",
@@ -58,9 +64,10 @@ public final class M4SchemaContract {
         if (DD02.equals(contrato) || V013_DD02.equals(contrato)) esperadas.addAll(TABLAS_DD02);
         if (V013.equals(contrato) || V013_DD02.equals(contrato) || V013_DD02B.equals(contrato)
                 || V013_SIM_A.equals(contrato) || V013_DD02B_SIM_A.equals(contrato)
-                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
+                || V013_SIM_AB.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato) || V013_D05.equals(contrato)) {
             esperadas.add(TABLA_INICIALIZACION);
         }
+        if (V013_D05.equals(contrato)) esperadas.addAll(TABLAS_D05);
         if (V013_DD02B.equals(contrato) || V013_DD02B_SIM_A.equals(contrato) || V013_DD02B_SIM_AB.equals(contrato)) {
             esperadas.addAll(TABLAS_DD02B);
         }
