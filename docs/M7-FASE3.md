@@ -59,7 +59,7 @@ Credenciales solo por entorno; nunca en Git.
 
 - Entrega **al menos una vez**: si SMTP acepta y el proceso cae antes de actualizar PostgreSQL, el lease vencido puede producir un segundo envío.
 - `Enviado` = aceptación del servidor SMTP, no prueba de llegada al buzón.
-- Sin historial por intento ni `Message-ID` persistido (columnas existentes + logs).
+- Sin historial por intento (columnas existentes + logs). Corrección OBS-83-M7-01 (DC-86): el `Message-ID` **sí** se persiste en el último resultado. Al registrar `Enviado`, la columna existente `ultimoError` guarda `SMTP accepted messageId=<…>` (`ReclamoEnvioJpaAdapter.registrarAceptacion`), y la misma clave aparece en el log `SMTP accepted convocatoria email`. Por tanto, con `estadoEnvio=Enviado` esa columna es una traza de éxito, no un error. Separarla en una columna propia requiere un cambio de esquema no autorizado. Comprobado en QA FE-60 (DC-83): el Message-ID de Mailpit coincide con el persistido.
 - Sin CHECK SQL de catálogo (V010 no autorizada).
 - Un lease abandonado con `numeroIntentos >= 5` se finaliza como `Fallido` en el siguiente ciclo, sin otro SMTP.
 

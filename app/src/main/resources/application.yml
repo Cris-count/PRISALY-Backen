@@ -104,6 +104,10 @@ prisaly:
     evaluacion:
       enabled: false
   m7:
+    # OBS-83-M7-02 (DC-86): zone used ONLY to present dates in the convocatoria notice/email (instants stay UTC in
+    # PostgreSQL). Default UTC keeps the approved text byte for byte; America/Bogota shows e.g.
+    # "2026-11-26 10:00 hora America/Bogota (UTC-05:00)". An unknown zone fails startup.
+    zona-horaria: ${PRISALY_M7_ZONA_HORARIA:UTC}
     worker:
       enabled: false
     # DC-BE-CIERRE-FUNCIONAL-72 (RF-16): CANDIDATE GET /v1/docente/sesiones/{idSesion}/reporte-participacion, CSV of one

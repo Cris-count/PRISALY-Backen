@@ -13,9 +13,19 @@ import java.util.UUID;
 public class ContextoConvocatoriaJpaAdapter implements ContextoConvocatoriaPort {
 
     private final EntityManager em;
+    private final java.time.ZoneId zonaPresentacion;
 
     public ContextoConvocatoriaJpaAdapter(EntityManager em) {
+        this(em, java.time.ZoneOffset.UTC);
+    }
+
+    /**
+     * OBS-83-M7-02 (DC-86): {@code zonaPresentacion} only formats the dates shown in the notice and email. Instants stay
+     * in UTC in PostgreSQL ({@code timestamptz}); nothing is converted or stored in another zone.
+     */
+    public ContextoConvocatoriaJpaAdapter(EntityManager em, java.time.ZoneId zonaPresentacion) {
         this.em = Objects.requireNonNull(em, "em");
+        this.zonaPresentacion = Objects.requireNonNull(zonaPresentacion, "zonaPresentacion");
     }
 
     @Override
@@ -25,8 +35,8 @@ public class ContextoConvocatoriaJpaAdapter implements ContextoConvocatoriaPort 
                         """
                         SELECT c."idConvocatoria", e."idUsuario", u."correo",
                                ca."nombre", s."nombreEspacioAcademico",
-                               to_char(s."inicioPrevisto" AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI'),
-                               to_char(s."finPrevisto" AT TIME ZONE 'UTC', 'YYYY-MM-DD HH24:MI'),
+                               to_char(s."inicioPrevisto" AT TIME ZONE :zona, 'YYYY-MM-DD HH24:MI'),
+                               to_char(s."finPrevisto" AT TIME ZONE :zona, 'YYYY-MM-DD HH24:MI'),
                                s."mensajePersonalizado"
                         FROM "Convocatoria" c
                         JOIN "Sesion" s ON s."idSesion" = c."idSesion"
@@ -36,6 +46,7 @@ public class ContextoConvocatoriaJpaAdapter implements ContextoConvocatoriaPort 
                         WHERE c."idSesion" = :sesion AND c."idEstudiante" = :estudiante
                           AND c."fechaRetiro" IS NULL
                         """)
+                .setParameter("zona", zonaPresentacion.getId())
                 .setParameter("sesion", sesionId)
                 .setParameter("estudiante", estudianteId)
                 .getResultList();
