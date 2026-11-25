@@ -33,6 +33,12 @@ prisaly:
   m1:
     student-access:
       enabled: false
+    # P-78 (DC-BE-D78-1-AUTORIZACION-CONTROLADA-79, CANDIDATE, QA only): administrative student registration
+    # (POST/GET /v1/admin/estudiantes) on the official schema. OFF: no bean, no route (404). The role is PD-01 catalog
+    # data (docs/provision/pd01-p78-rol-estudiante.sql). No credential is created: student access remains DD-02 only.
+    alta-estudiantes:
+      enabled: ${PRISALY_M1_ALTA_ESTUDIANTES_ENABLED:false}
+      rol: ${PRISALY_M1_ALTA_ESTUDIANTES_ROL:ESTUDIANTE}
     # DM1-06 (DC-M1-04): failed personnel logins per account and per origin (TCP peer) in a sliding window.
     # In-memory counters: academic local environment only (lost on restart, not shared between instances).
     autenticacion:

@@ -65,11 +65,11 @@ public class GestionPermisosService {
             throw new IdentityDomainException(PoliticaPermisos.CODE_SELF_ASSIGNMENT,
                     "Assigning and executing must stay separate");
         }
-        if (PoliticaPermisos.esControlado(codigo)) {
-            if (usuarios.esCuentaEstudiante(idUsuario)) {
-                throw new IdentityDomainException(PoliticaPermisos.CODE_STUDENT_NOT_ALLOWED,
-                        "Students cannot receive this permission");
-            }
+        // D-80-1 (DC-81): deny by default. A student account never receives a personnel permission, whatever its code,
+        // including permissions created in the future; the former check covered only the PD-01 controlled set.
+        if (usuarios.esCuentaEstudiante(idUsuario)) {
+            throw new IdentityDomainException(PoliticaPermisos.CODE_STUDENT_NOT_ALLOWED,
+                    "Students cannot receive this permission");
         }
         if (asignaciones.existeHabilitada(idUsuario, idPermiso)) {
             throw duplicada();
@@ -109,7 +109,9 @@ public class GestionPermisosService {
         if (!usuario.isActive()) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_ACTOR_INVALID, "The responsible actor is not active");
         }
-        if (!PoliticaPermisos.ROL_ADMINISTRADOR.equals(usuario.getRol().getNombre())) {
+        // D-80-1: same rule as AdministracionIdentidadService; a student account never acts as an administrator.
+        if (!PoliticaPermisos.ROL_ADMINISTRADOR.equals(usuario.getRol().getNombre())
+                || usuarios.esCuentaEstudiante(actor)) {
             throw new IdentityDomainException(PoliticaPermisos.CODE_ACTOR_NOT_ADMIN,
                     "The responsible actor is not an administrator");
         }

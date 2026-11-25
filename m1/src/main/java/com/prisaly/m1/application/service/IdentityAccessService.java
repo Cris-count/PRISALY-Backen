@@ -70,7 +70,12 @@ public class IdentityAccessService implements IdentityAccessPort {
     }
 
     private AuthenticatedUser toAuthenticatedUser(Usuario usuario) {
-        Set<String> permissions = usuarioPermisoRepository.codigosHabilitados(usuario.getIdUsuario());
+        // D-80-1 (DC-81): effective authorization of a student account carries no personnel permission, even if a
+        // UsuarioPermiso row predates the assignment guard. Every permission check (Bearer filter, /me, hasPermission
+        // used by M3/M4/M6) goes through here. Stored rows are kept untouched so the administrator can revoke them.
+        Set<String> permissions = usuarioRepository.esCuentaEstudiante(usuario.getIdUsuario())
+                ? Set.of()
+                : usuarioPermisoRepository.codigosHabilitados(usuario.getIdUsuario());
         return new AuthenticatedUser(
                 usuario.getIdUsuario(),
                 usuario.getCorreo(),
