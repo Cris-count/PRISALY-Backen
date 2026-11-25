@@ -21,11 +21,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 @ConditionalOnProperty(name = M6LiberacionConfig.PROPIEDAD, havingValue = "true")
 public class M6LiberacionConfig {
     public static final String PROPIEDAD = "prisaly.m6.liberacion.enabled";
+    /** RF-27 candidate (DC-88). Only meaningful with N2 on; with N2 off this configuration does not exist. */
+    public static final String PROPIEDAD_NOTIFICACION = "prisaly.m7.notificacion-calificacion.enabled";
 
     @Bean
     LiberacionCalificacionM6 liberacionCalificacionM6(ObjectProvider<EvaluacionDocenteM6> evaluacion,
             ConsultaCalificacionPort calificaciones, IdentityAccessPort identidad, IdentidadEstudianteActual estudiante,
-            TitularidadIntentos titularidad, JdbcTemplate jdbc) {
+            TitularidadIntentos titularidad, JdbcTemplate jdbc,
+            org.springframework.core.env.Environment entorno,
+            ObjectProvider<org.springframework.transaction.PlatformTransactionManager> transacciones) {
         EvaluacionDocenteM6 m6 = evaluacion.getIfAvailable();
         if (m6 == null) {
             throw new IllegalStateException("M6-LIBERACION-REQUIERE-EVALUACION: " + PROPIEDAD
@@ -36,7 +40,13 @@ public class M6LiberacionConfig {
             throw new IllegalStateException("M6-LIBERACION-REQUIERE-V019: falta la tabla candidata LiberacionCalificacion"
                     + " (db/m6-propuesta, sujeta a D-ESQ-1)");
         }
-        return new LiberacionCalificacionM6(m6, calificaciones, identidad,
-                new ControlAccesoIntentos(estudiante, titularidad), jdbc);
+        var acceso = new ControlAccesoIntentos(estudiante, titularidad);
+        // RF-27 minimal candidate (DC-88): notice + email of the first release, in the release transaction.
+        if (entorno.getProperty(PROPIEDAD_NOTIFICACION, Boolean.class, false)) {
+            return new LiberacionCalificacionM6(m6, calificaciones, identidad, acceso, jdbc,
+                    new NotificacionCalificacionM7(jdbc),
+                    new org.springframework.transaction.support.TransactionTemplate(transacciones.getObject()));
+        }
+        return new LiberacionCalificacionM6(m6, calificaciones, identidad, acceso, jdbc);
     }
 }

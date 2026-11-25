@@ -136,5 +136,10 @@ prisaly:
     reportes:
       participacion:
         enabled: false
+    # DC-BE-CONGELACION-CANDIDATO-88 (RF-27 minimal CANDIDATE): on the FIRST N2 release, one Aviso + one EnvioCorreo
+    # (Pendiente) for the titular student, in the release transaction; no grade value in the text. OFF by default and
+    # inert unless prisaly.m6.liberacion.enabled=true. Contract: RF27-CONTRATO-MINIMO-88. Not authorized.
+    notificacion-calificacion:
+      enabled: false
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}

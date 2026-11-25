@@ -37,7 +37,8 @@ class LiberacionN2ComponentesTest {
         ObjectProvider<EvaluacionDocenteM6> sinM6 = mock(ObjectProvider.class);
         var ex = assertThrows(IllegalStateException.class, () -> new M6LiberacionConfig().liberacionCalificacionM6(sinM6,
                 mock(ConsultaCalificacionPort.class), mock(IdentityAccessPort.class), mock(IdentidadEstudianteActual.class),
-                mock(TitularidadIntentos.class), mock(JdbcTemplate.class)));
+                mock(TitularidadIntentos.class), mock(JdbcTemplate.class),
+                new org.springframework.mock.env.MockEnvironment(), mock(ObjectProvider.class)));
         assertTrue(ex.getMessage().startsWith("M6-LIBERACION-REQUIERE-EVALUACION"), ex.getMessage());
     }
 
@@ -50,7 +51,8 @@ class LiberacionN2ComponentesTest {
         when(jdbc.queryForObject(anyString(), eq(Boolean.class))).thenReturn(false);
         var ex = assertThrows(IllegalStateException.class, () -> new M6LiberacionConfig().liberacionCalificacionM6(conM6,
                 mock(ConsultaCalificacionPort.class), mock(IdentityAccessPort.class), mock(IdentidadEstudianteActual.class),
-                mock(TitularidadIntentos.class), jdbc));
+                mock(TitularidadIntentos.class), jdbc,
+                new org.springframework.mock.env.MockEnvironment(), mock(ObjectProvider.class)));
         assertTrue(ex.getMessage().startsWith("M6-LIBERACION-REQUIERE-V019"), ex.getMessage());
     }
 }

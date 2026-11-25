@@ -45,14 +45,30 @@ public final class LiberacionCalificacionM6 {
     private final IdentityAccessPort identidad;
     private final ControlAccesoIntentos accesoEstudiante;
     private final JdbcTemplate jdbc;
+    /** RF-27 candidate (DC-88): null unless {@code prisaly.m7.notificacion-calificacion.enabled=true}. */
+    private final NotificacionCalificacionM7 notificacion;
+    /** Release (+ RF-27 notice) in one transaction; null keeps the DC-87 behaviour (auto-commit insert). */
+    private final org.springframework.transaction.support.TransactionTemplate transaccion;
 
     LiberacionCalificacionM6(EvaluacionDocenteM6 evaluacion, ConsultaCalificacionPort calificaciones,
             IdentityAccessPort identidad, ControlAccesoIntentos accesoEstudiante, JdbcTemplate jdbc) {
+        this(evaluacion, calificaciones, identidad, accesoEstudiante, jdbc, null, null);
+    }
+
+    LiberacionCalificacionM6(EvaluacionDocenteM6 evaluacion, ConsultaCalificacionPort calificaciones,
+            IdentityAccessPort identidad, ControlAccesoIntentos accesoEstudiante, JdbcTemplate jdbc,
+            NotificacionCalificacionM7 notificacion,
+            org.springframework.transaction.support.TransactionTemplate transaccion) {
         this.evaluacion = Objects.requireNonNull(evaluacion, "evaluacion");
         this.calificaciones = Objects.requireNonNull(calificaciones, "calificaciones");
         this.identidad = Objects.requireNonNull(identidad, "identidad");
         this.accesoEstudiante = Objects.requireNonNull(accesoEstudiante, "accesoEstudiante");
         this.jdbc = Objects.requireNonNull(jdbc, "jdbc");
+        if ((notificacion == null) != (transaccion == null)) {
+            throw new IllegalArgumentException("La notificacion RF-27 requiere su transaccion");
+        }
+        this.notificacion = notificacion;
+        this.transaccion = transaccion;
     }
 
     /** Teacher release: owner only; 404 without a grade; a repeated call returns the first release unchanged. */
@@ -63,6 +79,19 @@ public final class LiberacionCalificacionM6 {
         Calificacion calificacion = calificaciones.findByIntentoId(idIntento)
                 .orElseThrow(CalificacionNoEncontradaException::new);
         UUID docente = identidad.currentUser().userId();
+        if (transaccion == null) {
+            return registrar(calificacion, docente);
+        }
+        return transaccion.execute(estado -> {
+            Liberacion l = registrar(calificacion, docente);
+            if (l.nueva()) {
+                notificacion.notificar(calificacion.idCalificacion(), calificacion.idIntento());
+            }
+            return l;
+        });
+    }
+
+    private Liberacion registrar(Calificacion calificacion, UUID docente) {
         int insertadas = jdbc.update("INSERT INTO \"LiberacionCalificacion\" (\"idCalificacion\",\"idDocente\") VALUES (?,?)"
                 + " ON CONFLICT (\"idCalificacion\") DO NOTHING", calificacion.idCalificacion(), docente);
         var fila = jdbc.queryForMap("SELECT \"idDocente\",\"fechaLiberacion\" FROM \"LiberacionCalificacion\""
