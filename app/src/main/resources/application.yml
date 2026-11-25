@@ -106,5 +106,12 @@ prisaly:
   m7:
     worker:
       enabled: false
+    # DC-BE-CIERRE-FUNCIONAL-72 (RF-16): CANDIDATE GET /v1/docente/sesiones/{idSesion}/reporte-participacion, CSV of one
+    # session owned by the teacher (M4 read policy: GESTIONAR_SESION + owner). OFF: no bean, no route (404). Columns are
+    # provisional (DD-11 not communicated); the grade is read only if prisaly.m6.evaluacion.enabled is on. Publishing it
+    # requires Dirección Central authorization.
+    reportes:
+      participacion:
+        enabled: false
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
