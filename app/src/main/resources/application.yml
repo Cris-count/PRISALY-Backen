@@ -110,6 +110,13 @@ prisaly:
   m4:
     consulta-bd0052:
       enabled: true
+    # DC-92 DD-01 (ratificada): cierre automatico de sesiones EnCurso cuyo finPrevisto + margen ya paso (reloj de
+    # PostgreSQL). Reutiliza el cierre docente y V1-c (solo cierra intentos agotados). OFF por defecto. Margen por
+    # defecto P1D (RF-19 V27). Los inicios ya estan impedidos desde finPrevisto (RF-22/L1).
+    cierre-automatico:
+      enabled: ${PRISALY_M4_CIERRE_AUTOMATICO_ENABLED:false}
+      margen: ${PRISALY_M4_CIERRE_AUTOMATICO_MARGEN:P1D}
+      intervalo-ms: ${PRISALY_M4_CIERRE_AUTOMATICO_INTERVALO_MS:60000}
   m6:
     # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
     # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Turning it on is not
