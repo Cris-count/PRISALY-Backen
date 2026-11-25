@@ -33,6 +33,12 @@ prisaly:
   m1:
     student-access:
       enabled: false
+    # P-78 (DC-BE-D78-1-AUTORIZACION-CONTROLADA-79, CANDIDATE, QA only): administrative student registration
+    # (POST/GET /v1/admin/estudiantes) on the official schema. OFF: no bean, no route (404). The role is PD-01 catalog
+    # data (docs/provision/pd01-p78-rol-estudiante.sql). No credential is created: student access remains DD-02 only.
+    alta-estudiantes:
+      enabled: ${PRISALY_M1_ALTA_ESTUDIANTES_ENABLED:false}
+      rol: ${PRISALY_M1_ALTA_ESTUDIANTES_ROL:ESTUDIANTE}
     # DM1-06 (DC-M1-04): failed personnel logins per account and per origin (TCP peer) in a sliding window.
     # In-memory counters: academic local environment only (lost on restart, not shared between instances).
     autenticacion:
@@ -44,6 +50,19 @@ prisaly:
     # DOCENTE is seeded by PD-01; if the catalog lacks it the operation answers 503 TEACHER_ROLE_NOT_CONFIGURED.
     administracion:
       rol-docente: ${PRISALY_ROL_DOCENTE:DOCENTE}
+    # D-05 (DC-BE-D05-AUTORIZACION-QA-77, CANDIDATE, QA only): teacher activation by one-time token mailed via M7.
+    # OFF: no bean, no route (404) and POST /v1/admin/docentes behaves as before. Turning it on requires the candidate
+    # schema db/d05-propuesta (V020, not in db/migration), spring.mail.* and the values below. vigencia is MANDATORY
+    # and has no default (ISO-8601, PT15M..P7D). Acceptance of the schema and publication need Dirección Central review.
+    activacion-docente:
+      enabled: ${PRISALY_M1_ACTIVACION_DOCENTE_ENABLED:false}
+      vigencia: ${PRISALY_M1_ACTIVACION_DOCENTE_VIGENCIA:}
+      remitente: ${PRISALY_M1_ACTIVACION_DOCENTE_REMITENTE:}
+      enlace: ${PRISALY_M1_ACTIVACION_DOCENTE_ENLACE:}
+      intentos:
+        max-por-token: 5
+        max-por-origen: 10
+        ventana: PT15M
     # P5 / DM1-01 (DC-P5-FASE-B-01): one-shot first-administrator initialization, never via HTTP. Disabled by default.
     # The initial password is read once from a file readable only by the operator, and is never logged.
     inicializacion-admin:
@@ -71,6 +90,10 @@ prisaly:
       estados-visibles: BORRADOR,PUBLICADO,ARCHIVADO
       requiere-activo: false
   m5:
+    # DC-92 DD-04 (ratificada): una repeticion excepcional autorizada por el docente creador del caso, con
+    # justificacion, historial y seleccion del intento valido. OFF: M5 sigue rechazando toda repeticion (404 docente).
+    repeticion:
+      enabled: ${PRISALY_M5_REPETICION_ENABLED:false}
     # DC-BE-CIERRE-FUNCIONAL-09 (fase 3): POST /v1/estudiantes/sesiones/{idSesion}/intentos y
     # POST /v1/estudiantes/intentos/{idIntento}/finalizar quedan SIN publicar. DC-BE-M5-CIERRE-IMPLEMENTACION-45
     # ratificó e implementó E1, L1, RF-22, V1-c y DD-14-a; publicarlos sigue requiriendo activación expresa.
@@ -91,14 +114,60 @@ prisaly:
   m4:
     consulta-bd0052:
       enabled: true
+    # DC-92 DD-01 (ratificada): cierre automatico de sesiones EnCurso cuyo finPrevisto + margen ya paso (reloj de
+    # PostgreSQL). Reutiliza el cierre docente y V1-c (solo cierra intentos agotados). OFF por defecto. Margen por
+    # defecto P1D (RF-19 V27). Los inicios ya estan impedidos desde finPrevisto (RF-22/L1).
+    cierre-automatico:
+      enabled: ${PRISALY_M4_CIERRE_AUTOMATICO_ENABLED:false}
+      margen: ${PRISALY_M4_CIERRE_AUTOMATICO_MARGEN:P1D}
+      intervalo-ms: ${PRISALY_M4_CIERRE_AUTOMATICO_INTERVALO_MS:60000}
+    # DC-92 DD-09 (ratificada): GET /v1/docente/sesiones/{id}/participaciones (propietario, nota solo publicada).
+    consulta-participaciones:
+      enabled: ${PRISALY_M4_CONSULTA_PARTICIPACIONES_ENABLED:false}
+    # DC-92 DD-13 (ratificada): clasificacion docente de ausencias con historial, sin cero automatico.
+    ausencias:
+      enabled: ${PRISALY_M4_AUSENCIAS_ENABLED:false}
+    # DC-92 RF-21 (ratificada): retiro con historial, resolucion explicita del intento en curso, bloqueo (E1) y avisos.
+    retiro:
+      enabled: ${PRISALY_M4_RETIRO_ENABLED:false}
   m6:
     # DC-BE-M6-DESBLOQUEO-IMPLEMENTACION-55: teacher evaluation (S1, owner teacher, one immutable grade) and the
-    # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Release N2 and the
-    # student query are NOT implemented (B2 pending a schema change). Turning it on is not authorized.
+    # teacher query, POST/GET /v1/evaluacion/intentos/{idIntento}. OFF: no bean, no route (404). Turning it on is not
+    # authorized.
     evaluacion:
       enabled: false
+    # DC-BE-CIERRE-DEFINITIVO-87: CANDIDATE release N2 (M6-R10) and the student's own query,
+    # POST /v1/evaluacion/intentos/{idIntento}/liberacion and GET /v1/estudiantes/intentos/{idIntento}/calificacion.
+    # OFF: no bean, no route (404), liberada=false. Turning it on requires evaluacion.enabled=true and the candidate
+    # table V019 (db/m6-propuesta, subject to D-ESQ-1); otherwise startup fails. Not authorized.
+    liberacion:
+      enabled: false
+    # DC-92 DD-12 / RF-26 (ratificadas): registro docente de la retroalimentacion general (POST/PUT/GET
+    # /v1/docente/participaciones/{id}/retroalimentacion). El estudiante la ve solo con la nota liberada (N2).
+    retroalimentacion:
+      enabled: ${PRISALY_M6_RETROALIMENTACION_ENABLED:false}
+    # DC-92 DD-12: "la publicacion de respuestas correctas y explicaciones por pregunta dependera de una configuracion
+    # explicita". false: el estudiante NO recibe el detalle por pregunta aunque la nota este liberada.
+    resultado:
+      detalle-por-pregunta: ${PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA:false}
   m7:
+    # OBS-83-M7-02 (DC-86): zone used ONLY to present dates in the convocatoria notice/email (instants stay UTC in
+    # PostgreSQL). Default UTC keeps the approved text byte for byte; America/Bogota shows e.g.
+    # "2026-11-26 10:00 hora America/Bogota (UTC-05:00)". An unknown zone fails startup.
+    zona-horaria: ${PRISALY_M7_ZONA_HORARIA:UTC}
     worker:
+      enabled: false
+    # DC-BE-CIERRE-FUNCIONAL-72 (RF-16): CANDIDATE GET /v1/docente/sesiones/{idSesion}/reporte-participacion, CSV of one
+    # session owned by the teacher (M4 read policy: GESTIONAR_SESION + owner). OFF: no bean, no route (404). Columns are
+    # provisional (DD-11 not communicated); the grade is read only if prisaly.m6.evaluacion.enabled is on. Publishing it
+    # requires Dirección Central authorization.
+    reportes:
+      participacion:
+        enabled: false
+    # DC-BE-CONGELACION-CANDIDATO-88 (RF-27 minimal CANDIDATE): on the FIRST N2 release, one Aviso + one EnvioCorreo
+    # (Pendiente) for the titular student, in the release transaction; no grade value in the text. OFF by default and
+    # inert unless prisaly.m6.liberacion.enabled=true. Contract: RF27-CONTRATO-MINIMO-88. Not authorized.
+    notificacion-calificacion:
       enabled: false
   cors:
     allowed-origins: ${CORS_ORIGINS:http://localhost:4200}

@@ -33,9 +33,11 @@ public class HttpApiConfig {
     private final ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter;
     private final EstudianteSessionFilter estudianteSessionFilter;
     private final StudentAccessPort studentAccess;
+    private final boolean activacionDocente;
 
     public HttpApiConfig(
             @Value("${prisaly.cors.allowed-origins}") String allowedOrigins,
+            @Value("${prisaly.m1.activacion-docente.enabled:false}") boolean activacionDocente,
             ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter,
             ObjectProvider<EstudianteSessionFilter> estudianteSessionFilter,
             ObjectProvider<StudentAccessPort> studentAccess) {
@@ -46,6 +48,7 @@ public class HttpApiConfig {
         this.provisionalBearerAuthenticationFilter = provisionalBearerAuthenticationFilter;
         this.estudianteSessionFilter = estudianteSessionFilter.getIfAvailable();
         this.studentAccess = studentAccess.getIfAvailable();
+        this.activacionDocente = activacionDocente;
         if (this.estudianteSessionFilter != null) {
             for (String origin : this.allowedOrigins) {
                 URI uri = URI.create(origin);
@@ -102,6 +105,10 @@ public class HttpApiConfig {
                         });
                         auth.requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/**")
                                 .access((identity, context) -> new AuthorizationDecision(trustedOrigin(context.getRequest())));
+                    }
+                    if (activacionDocente) {
+                        // D-05 (DC-77, QA only): the activation token is the credential; the route is rate limited.
+                        auth.requestMatchers(HttpMethod.POST, "/v1/personal/activar").permitAll();
                     }
                     auth
                         // The container's internal error dispatch must render the original failure

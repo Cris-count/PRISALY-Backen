@@ -67,4 +67,26 @@ public interface RepositorioParticipaciones {
      *     exige una autorización de repetición (intento previo sobre el mismo caso)
      */
     ReferenciaIntento crearPrimerIntento(ReferenciaParticipacion participacion, Instant inicio, Instant limiteTemporal);
+
+    /**
+     * DD-04 (DC-92): autorización de repetición {@code Vigente} (no vencida, reloj de PostgreSQL) de la participación
+     * bloqueada, solo si la repetición está habilitada. Por defecto vacío: sin repetición, M5 se comporta como antes.
+     */
+    default Optional<java.util.UUID> autorizacionRepeticionVigente(ReferenciaParticipacion participacion) {
+        return Optional.empty();
+    }
+
+    /** DD-04 (DC-92): número de intentos de la participación, en cualquier estado. */
+    default int contarIntentos(ReferenciaParticipacion participacion) {
+        return tieneIntentos(participacion) ? 1 : 0;
+    }
+
+    /**
+     * DD-04 (DC-92): inserta la repetición autorizada ({@code numeroIntento = numero}, {@code EnCurso}) con la
+     * autorización indicada; V005 la valida y V007 la marca {@code Utilizada} en el mismo INSERT (consumo único).
+     */
+    default ReferenciaIntento crearIntentoRepetido(ReferenciaParticipacion participacion, int numero, Instant inicio,
+            Instant limiteTemporal, java.util.UUID idAutorizacion) {
+        throw new com.prisaly.m5.application.RepeticionNoHabilitadaException();
+    }
 }

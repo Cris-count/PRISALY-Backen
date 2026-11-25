@@ -1,0 +1,489 @@
+openapi: 3.0.3
+info:
+  title: PRISALY Backend - Rutas candidatas integral + G + DC-92
+  version: 1.0.0-candidato-dc96
+  description: >
+    Contrato de las rutas añadidas por los incrementos A (D-05), B (P-78), C (RF-16), F (N2), G (RF-27, sin ruta),
+    H3 (DD-04), H4 (DD-09, DD-11, DD-13), H5 (RF-21) y H6 (DD-12). Documento nuevo: complementa
+    openapi-m3-casos.yaml y no sustituye ningún contrato histórico. TODAS las rutas están APAGADAS por defecto:
+    sin su interruptor (x-prisaly-interruptor) el bean no existe y la ruta responde 404. Activarlas exige la
+    autorización de Dirección Central y, donde se indica, el esquema candidato (D-ESQ-1). El personal se autentica
+    con Bearer (POST /v1/personal/autenticar); el estudiante con la cookie de sesión de DD-02 B.
+    H1 (DD-01, cierre automático) no expone rutas: es un proceso programado (PRISALY_M4_CIERRE_AUTOMATICO_ENABLED).
+servers:
+  - url: /api
+tags:
+  - name: M1 Administracion
+  - name: M1 Activacion docente
+  - name: M6 Evaluacion y liberacion
+  - name: Estudiante
+  - name: Docente DC-92
+  - name: Reportes
+paths:
+  /v1/admin/estudiantes:
+    x-prisaly-interruptor: "PRISALY_M1_ALTA_ESTUDIANTES_ENABLED (false)"
+    x-prisaly-incremento: "B (P-78)"
+    post:
+      tags: [M1 Administracion]
+      summary: "Alta de estudiante por el administrador. Requiere rol administrador y el rol ESTUDIANTE (PD-01)."
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, correo]
+              properties:
+                nombre: { type: string, maxLength: 150 }
+                correo: { type: string, format: email }
+      responses:
+        '201': { description: "Creado (Cache-Control no-store)", content: { application/json: { schema: { $ref: '#/components/schemas/EstudianteRegistrado' } } } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '409': { description: "DUPLICATE_EMAIL", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '503': { description: "STUDENT_ROLE_NOT_CONFIGURED / ROLE_NOT_FOUND", content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    get:
+      tags: [M1 Administracion]
+      summary: "Busca estudiantes por correo exacto."
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: correo, in: query, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: "Listado (no-store)"
+          content:
+            application/json:
+              schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/EstudianteRegistrado' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+  /v1/admin/docentes/{idUsuario}/activacion:
+    x-prisaly-interruptor: "PRISALY_M1_ACTIVACION_DOCENTE_ENABLED (false); requiere V020 (D-ESQ-1)"
+    x-prisaly-incremento: "A (D-05)"
+    parameters: [{ $ref: '#/components/parameters/idUsuario' }]
+    post:
+      tags: [M1 Activacion docente]
+      summary: "Emite (o reemite) la invitación de activación por correo."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '202': { description: "Invitación encolada" }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { description: "USER_NOT_FOUND" }
+        '409': { description: "ACTIVATION_NOT_ALLOWED / ACTIVATION_CONFLICT" }
+        '503': { description: "ACTIVATION_DELIVERY_FAILED" }
+    delete:
+      tags: [M1 Activacion docente]
+      summary: "Revoca la invitación vigente."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '204': { description: "Revocada" }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { description: "USER_NOT_FOUND" }
+  /v1/personal/activar:
+    x-prisaly-interruptor: "PRISALY_M1_ACTIVACION_DOCENTE_ENABLED (false)"
+    x-prisaly-incremento: "A (D-05)"
+    post:
+      tags: [M1 Activacion docente]
+      summary: "El docente fija su contraseña con el token del enlace. Pública y limitada por origen."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, password]
+              properties:
+                token: { type: string, maxLength: 128 }
+                password: { type: string, maxLength: 1024, format: password }
+      responses:
+        '204': { description: "Cuenta activada" }
+        '400': { description: "ACTIVATION_INVALID / VALIDATION_ERROR" }
+        '409': { description: "ACTIVATION_CONFLICT" }
+        '422': { description: "Contraseña que no cumple la política" }
+        '429': { description: "Límite de intentos" }
+  /v1/docente/sesiones/{idSesion}/reporte-participacion:
+    x-prisaly-interruptor: "prisaly.reportes.participacion.enabled (false)"
+    x-prisaly-incremento: "C (RF-16) + H4 (columnas DD-11 / DC-90)"
+    parameters: [{ $ref: '#/components/parameters/idSesion' }]
+    get:
+      tags: [Reportes]
+      summary: "CSV RFC 4180 de la sesión propia (GESTIONAR_SESION + propietario). Nota solo si está publicada (DD-11)."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: "Adjunto CSV UTF-8, no-store, fórmulas neutralizadas"
+          headers:
+            Content-Disposition: { schema: { type: string }, description: attachment; filename=... }
+          content:
+            text/csv: { schema: { type: string } }
+        '400': { $ref: '#/components/responses/Error' }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { description: "M4-SIN-PERMISO / M4-SESION-AJENA" }
+        '404': { description: "M4-SESION-NO-ENCONTRADA" }
+        '503': { description: "Proveedor de programación no disponible" }
+  /v1/docente/sesiones/{idSesion}/participaciones:
+    x-prisaly-interruptor: "PRISALY_M4_CONSULTA_PARTICIPACIONES_ENABLED (false); requiere V021-V023"
+    x-prisaly-incremento: "H4 (DD-09)"
+    parameters: [{ $ref: '#/components/parameters/idSesion' }]
+    get:
+      tags: [Docente DC-92]
+      summary: "Participaciones de una sesión propia, limitadas a sus convocados. Resultado solo si está publicado."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: "Listado (no-store)"
+          content:
+            application/json:
+              schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/FilaParticipacion' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /v1/docente/convocatorias/{idConvocatoria}/ausencia:
+    x-prisaly-interruptor: "PRISALY_M4_AUSENCIAS_ENABLED (false); requiere V022"
+    x-prisaly-incremento: "H4 (DD-13)"
+    parameters: [{ $ref: '#/components/parameters/idConvocatoria' }]
+    post:
+      tags: [Docente DC-92]
+      summary: "Clasifica la ausencia (sin cero automático). Historial de solo inserción."
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [estado]
+              properties:
+                estado: { type: string, enum: [AUSENCIA_JUSTIFICADA, AUSENCIA_NO_JUSTIFICADA] }
+                motivo: { type: string, maxLength: 2000 }
+      responses:
+        '201': { description: "Registrada", content: { application/json: { schema: { $ref: '#/components/schemas/ClasificacionAusencia' } } } }
+        '400': { description: "VALIDACION" }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { description: "TRANSICION_NO_VALIDA (p. ej. la convocatoria tiene participación)" }
+    get:
+      tags: [Docente DC-92]
+      summary: "Historial de clasificaciones de la convocatoria."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: "Historial (no-store)"
+          content:
+            application/json:
+              schema: { type: object, properties: { items: { type: array, items: { $ref: '#/components/schemas/ClasificacionAusencia' } } } }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+  /v1/docente/convocatorias/{idConvocatoria}/retiro:
+    x-prisaly-interruptor: "PRISALY_M4_RETIRO_ENABLED (false); requiere V023"
+    x-prisaly-incremento: "H5 (RF-21)"
+    parameters: [{ $ref: '#/components/parameters/idConvocatoria' }]
+    post:
+      tags: [Docente DC-92]
+      summary: "Retira al estudiante convocado, con resolución explícita del intento en curso y avisos M7."
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                motivo: { type: string, maxLength: 2000 }
+                resolucionIntentoEnCurso: { type: string, enum: [INTENTO_FINALIZADO_POR_RETIRO], description: Obligatoria si hay un intento en curso }
+      responses:
+        '201': { description: "Retirada", content: { application/json: { schema: { $ref: '#/components/schemas/Retiro' } } } }
+        '400': { description: "VALIDACION" }
+        '401': { $ref: '#/components/responses/Error' }
+        '403': { $ref: '#/components/responses/Error' }
+        '404': { $ref: '#/components/responses/Error' }
+        '409': { description: "YA_RETIRADO / INTENTO_EN_CURSO_REQUIERE_RESOLUCION" }
+    get:
+      tags: [Docente DC-92]
+      summary: "Registro del retiro."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: "Retiro (no-store)", content: { application/json: { schema: { $ref: '#/components/schemas/Retiro' } } } }
+        '404': { description: "RETIRO_NO_REGISTRADO" }
+  /v1/docente/participaciones/{idParticipacion}/repeticion:
+    x-prisaly-interruptor: "prisaly.m5.repeticion.enabled (false); requiere V021"
+    x-prisaly-incremento: "H3 (DD-04)"
+    parameters: [{ $ref: '#/components/parameters/idParticipacion' }]
+    post:
+      tags: [Docente DC-92]
+      summary: "Autoriza la única repetición excepcional (solo el creador del caso), con justificación."
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { type: object, required: [motivo], properties: { motivo: { type: string } } }
+      responses:
+        '201':
+          description: "Autorizada"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  idAutorizacion: { type: string, format: uuid }
+                  idParticipacion: { type: string, format: uuid }
+                  idDocenteAutorizador: { type: string, format: uuid }
+                  motivo: { type: string }
+                  fechaAutorizacion: { type: string, format: date-time }
+                  estadoAutorizacion: { type: string }
+        '400': { description: "VALIDACION" }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "PARTICIPACION_NO_ENCONTRADA" }
+        '409': { description: "AUTORIZACION_VIGENTE / REPETICION_AGOTADA" }
+    get:
+      tags: [Docente DC-92]
+      summary: "Historial de intentos, autorizaciones y selecciones; intento válido vigente."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: "Historial (no-store)", content: { application/json: { schema: { $ref: '#/components/schemas/HistorialRepeticion' } } } }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "PARTICIPACION_NO_ENCONTRADA" }
+  /v1/docente/participaciones/{idParticipacion}/intento-valido:
+    x-prisaly-interruptor: "prisaly.m5.repeticion.enabled (false); requiere V021"
+    x-prisaly-incremento: "H3 (DD-04)"
+    parameters: [{ $ref: '#/components/parameters/idParticipacion' }]
+    post:
+      tags: [Docente DC-92]
+      summary: "Selecciona el intento finalizado con validez académica (historial de solo inserción)."
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [idIntento, motivo]
+              properties:
+                idIntento: { type: string, format: uuid }
+                motivo: { type: string }
+      responses:
+        '201': { description: "Seleccionado", content: { application/json: { schema: { $ref: '#/components/schemas/SeleccionIntento' } } } }
+        '400': { description: "VALIDACION" }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "PARTICIPACION_NO_ENCONTRADA" }
+        '422': { description: "INTENTO_NO_SELECCIONABLE" }
+  /v1/docente/participaciones/{idParticipacion}/retroalimentacion:
+    x-prisaly-interruptor: "PRISALY_M6_RETROALIMENTACION_ENABLED (false)"
+    x-prisaly-incremento: "H6 (DD-12)"
+    parameters: [{ $ref: '#/components/parameters/idParticipacion' }]
+    post:
+      tags: [Docente DC-92]
+      summary: "Registra la retroalimentación general (RF-26)."
+      security: [{ bearerAuth: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Retroalimentacion' }
+      responses:
+        '201': { description: "Registrada", content: { application/json: { schema: { $ref: '#/components/schemas/RetroalimentacionGeneral' } } } }
+        '400': { description: "VALIDACION" }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "PARTICIPACION_NO_ENCONTRADA" }
+        '409': { description: "RETROALIMENTACION_EXISTENTE" }
+    put:
+      tags: [Docente DC-92]
+      summary: "Actualiza la retroalimentación general."
+      security: [{ bearerAuth: [] }]
+      requestBody: { $ref: '#/components/requestBodies/Retroalimentacion' }
+      responses:
+        '200': { description: "Actualizada", content: { application/json: { schema: { $ref: '#/components/schemas/RetroalimentacionGeneral' } } } }
+        '400': { description: "VALIDACION" }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "RETROALIMENTACION_NO_ENCONTRADA" }
+    get:
+      tags: [Docente DC-92]
+      summary: "Consulta la retroalimentación general."
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { description: "Retroalimentación (no-store)", content: { application/json: { schema: { $ref: '#/components/schemas/RetroalimentacionGeneral' } } } }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "RETROALIMENTACION_NO_ENCONTRADA" }
+  /v1/evaluacion/intentos/{idIntento}/liberacion:
+    x-prisaly-interruptor: "prisaly.m6.liberacion.enabled (false); requiere prisaly.m6.evaluacion.enabled y V019 (D-ESQ-1)"
+    x-prisaly-incremento: "F (N2) + G (RF-27, prisaly.m7.notificacion-calificacion.enabled)"
+    parameters: [{ $ref: '#/components/parameters/idIntento' }]
+    post:
+      tags: [M6 Evaluacion y liberacion]
+      summary: >
+        Libera la calificación (idempotente). La primera liberación crea, si RF-27 está activo, un Aviso y un
+        EnvioCorreo para el estudiante titular sin el valor de la nota; las siguientes responden 200 sin notificar.
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201': { description: "Primera liberación", content: { application/json: { schema: { $ref: '#/components/schemas/Liberacion' } } } }
+        '200': { description: "Ya estaba liberada (sin nueva notificación)", content: { application/json: { schema: { $ref: '#/components/schemas/Liberacion' } } } }
+        '403': { description: "ACCESO_DENEGADO" }
+        '404': { description: "CALIFICACION_NO_ENCONTRADA" }
+  /v1/estudiantes/intentos/{idIntento}/calificacion:
+    x-prisaly-interruptor: "prisaly.m6.liberacion.enabled (false); detalle por pregunta: PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA (false)"
+    x-prisaly-incremento: "F (N2) + H6 (DD-12)"
+    parameters: [{ $ref: '#/components/parameters/idIntento' }]
+    get:
+      tags: [Estudiante]
+      summary: "El estudiante titular consulta su calificación SOLO tras la publicación; retroalimentación y detalle según DD-12."
+      security: [{ cookieEstudiante: [] }]
+      responses:
+        '200': { description: "Calificación liberada (no-store)", content: { application/json: { schema: { $ref: '#/components/schemas/CalificacionEstudiante' } } } }
+        '400': { description: "VALIDATION_ERROR" }
+        '401': { description: "Sin sesión de estudiante" }
+        '404': { description: "CALIFICACION_NO_DISPONIBLE (no liberada); la titularidad la decide M5 con su propio estado y cuerpo" }
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer }
+    cookieEstudiante: { type: apiKey, in: cookie, name: prisaly_estudiante, description: Cookie de sesión DD-02 B }
+  parameters:
+    idUsuario: { name: idUsuario, in: path, required: true, schema: { type: string, format: uuid } }
+    idSesion: { name: idSesion, in: path, required: true, schema: { type: string, format: uuid } }
+    idConvocatoria: { name: idConvocatoria, in: path, required: true, schema: { type: string, format: uuid } }
+    idParticipacion: { name: idParticipacion, in: path, required: true, schema: { type: string, format: uuid } }
+    idIntento: { name: idIntento, in: path, required: true, schema: { type: string, format: uuid } }
+  requestBodies:
+    Retroalimentacion:
+      required: true
+      content:
+        application/json:
+          schema: { type: object, required: [contenido], properties: { contenido: { type: string } } }
+  responses:
+    Error:
+      description: "Error"
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+    EstudianteRegistrado:
+      type: object
+      properties:
+        idUsuario: { type: string, format: uuid }
+        idEstudiante: { type: string, format: uuid }
+        nombre: { type: string }
+        correo: { type: string }
+        estado: { type: string }
+    FilaParticipacion:
+      type: object
+      properties:
+        idConvocatoria: { type: string, format: uuid }
+        idEstudiante: { type: string, format: uuid }
+        nombreEstudiante: { type: string }
+        caso: { type: string }
+        sesion: { type: string }
+        fechaSesion: { type: string, format: date-time }
+        estadoConvocatoria: { type: string, description: "Convocado, Ausente pendiente de revisión, Ausencia justificada / no justificada, Retirado, ..." }
+        fechaRetiro: { type: string, format: date-time, nullable: true }
+        idParticipacion: { type: string, format: uuid, nullable: true }
+        fechaIngreso: { type: string, format: date-time, nullable: true }
+        numeroIntentos: { type: integer }
+        estadoParticipacion: { type: string, nullable: true }
+        idIntentoConsiderado: { type: string, format: uuid, nullable: true }
+        inicioIntento: { type: string, format: date-time, nullable: true }
+        finIntento: { type: string, format: date-time, nullable: true }
+        estadoEvaluacion: { type: string, nullable: true }
+        calificacionPublicada: { type: number, nullable: true, description: "Solo si la calificación está liberada" }
+        fechaPublicacion: { type: string, format: date-time, nullable: true }
+    ClasificacionAusencia:
+      type: object
+      properties:
+        idClasificacion: { type: string, format: uuid }
+        idConvocatoria: { type: string, format: uuid }
+        estado: { type: string, enum: [AUSENCIA_JUSTIFICADA, AUSENCIA_NO_JUSTIFICADA] }
+        idDocente: { type: string, format: uuid }
+        motivo: { type: string, nullable: true }
+        fechaRegistro: { type: string, format: date-time }
+    Retiro:
+      type: object
+      properties:
+        idConvocatoria: { type: string, format: uuid }
+        idDocente: { type: string, format: uuid }
+        motivo: { type: string, nullable: true }
+        resolucionIntento: { type: string, enum: [SIN_INTENTO_EN_CURSO, INTENTO_FINALIZADO_POR_RETIRO] }
+        idIntentoResuelto: { type: string, format: uuid, nullable: true }
+        fechaRetiro: { type: string, format: date-time }
+    SeleccionIntento:
+      type: object
+      properties:
+        idSeleccion: { type: string, format: uuid }
+        idParticipacion: { type: string, format: uuid }
+        idIntento: { type: string, format: uuid }
+        idDocente: { type: string, format: uuid }
+        motivo: { type: string }
+        fechaSeleccion: { type: string, format: date-time }
+    HistorialRepeticion:
+      type: object
+      properties:
+        idParticipacion: { type: string, format: uuid }
+        intentos:
+          type: array
+          items:
+            type: object
+            properties:
+              idIntento: { type: string, format: uuid }
+              numeroIntento: { type: integer, minimum: 1, maximum: 2 }
+              estado: { type: string }
+              inicio: { type: string, format: date-time }
+              fin: { type: string, format: date-time, nullable: true }
+              motivoFinalizacion: { type: string, nullable: true }
+              idAutorizacion: { type: string, format: uuid, nullable: true }
+        autorizaciones:
+          type: array
+          items:
+            type: object
+            properties:
+              idAutorizacion: { type: string, format: uuid }
+              idDocenteAutorizador: { type: string, format: uuid }
+              motivo: { type: string }
+              fechaAutorizacion: { type: string, format: date-time }
+              estadoAutorizacion: { type: string }
+        selecciones: { type: array, items: { $ref: '#/components/schemas/SeleccionIntento' } }
+        idIntentoValido: { type: string, format: uuid, nullable: true }
+    RetroalimentacionGeneral:
+      type: object
+      properties:
+        idRetroalimentacion: { type: string, format: uuid }
+        idParticipacion: { type: string, format: uuid }
+        idDocente: { type: string, format: uuid }
+        contenido: { type: string }
+        fechaRegistro: { type: string, format: date-time }
+    Liberacion:
+      type: object
+      properties:
+        idCalificacion: { type: string, format: uuid }
+        idIntento: { type: string, format: uuid }
+        valor: { type: number }
+        escala: { type: string }
+        liberada: { type: boolean }
+        idDocenteLiberador: { type: string, format: uuid }
+        fechaLiberacion: { type: string, format: date-time }
+    CalificacionEstudiante:
+      type: object
+      properties:
+        idIntento: { type: string, format: uuid }
+        valor: { type: number }
+        escala: { type: string }
+        caracter: { type: string }
+        fechaLiberacion: { type: string, format: date-time }
+        retroalimentacionGeneral: { type: string, nullable: true }
+        detallePorPregunta:
+          type: array
+          nullable: true
+          description: "Solo con PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA=true"
+          items:
+            type: object
+            properties:
+              idPregunta: { type: string, format: uuid }
+              enunciado: { type: string }
+              opcionSeleccionada: { type: string, nullable: true }
+              correcta: { type: boolean, nullable: true }
+              explicacionSeleccionada: { type: string, nullable: true }
+              opcionCorrecta: { type: string }
+              explicacionCorrecta: { type: string, nullable: true }

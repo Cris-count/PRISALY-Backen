@@ -84,6 +84,75 @@ public class RepositorioParticipacionesJdbc implements RepositorioParticipacione
     static final String CHECK_VIOLATION = "23514";
 
     private final JdbcTemplate jdbc;
+    /** DD-04 (DC-92): {@code prisaly.m5.repeticion.enabled}; {@code false} keeps the pre-DC-92 behaviour. */
+    private boolean repeticionHabilitada;
+
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    void configurarRepeticion(@org.springframework.beans.factory.annotation.Value(
+            "${prisaly.m5.repeticion.enabled:false}") boolean habilitada) {
+        this.repeticionHabilitada = habilitada;
+    }
+
+    static final String AUTORIZACION_VIGENTE = """
+            SELECT "idAutorizacion" FROM public."AutorizacionRepeticion"
+            WHERE "idParticipacion" = ? AND "estadoAutorizacion" = 'Vigente'
+              AND "fechaAutorizacion" <= clock_timestamp()
+              AND ("fechaVencimiento" IS NULL OR "fechaVencimiento" > clock_timestamp())
+            ORDER BY "fechaAutorizacion" DESC LIMIT 1
+            """;
+
+    static final String CREAR_INTENTO_REPETIDO = """
+            INSERT INTO public."Intento"
+              ("idIntento", "idParticipacion", "numeroIntento", "inicio", "limiteTemporal", "estado", "idAutorizacion")
+            VALUES (?, ?, ?, ?, ?, 'EnCurso', ?)
+            """;
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<UUID> autorizacionRepeticionVigente(ReferenciaParticipacion participacion) {
+        if (!repeticionHabilitada) {
+            return Optional.empty();
+        }
+        UUID id = uuid(participacion.valor(), "La participación");
+        try {
+            return jdbc.queryForList(AUTORIZACION_VIGENTE, UUID.class, id).stream().findFirst();
+        } catch (DataAccessException e) {
+            throw new PersistenciaIntentoException("No se pudo consultar la autorización de repetición", e);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public int contarIntentos(ReferenciaParticipacion participacion) {
+        UUID id = uuid(participacion.valor(), "La participación");
+        try {
+            Integer n = jdbc.queryForObject("SELECT count(*) FROM public.\"Intento\" WHERE \"idParticipacion\" = ?",
+                    Integer.class, id);
+            return n == null ? 0 : n;
+        } catch (DataAccessException e) {
+            throw new PersistenciaIntentoException("No se pudieron contar los intentos", e);
+        }
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public ReferenciaIntento crearIntentoRepetido(ReferenciaParticipacion participacion, int numero, Instant inicio,
+            Instant limiteTemporal, UUID idAutorizacion) {
+        UUID idParticipacion = uuid(participacion.valor(), "La participación");
+        UUID idIntento = UUID.randomUUID();
+        try {
+            jdbc.update(CREAR_INTENTO_REPETIDO, idIntento, idParticipacion, numero,
+                    inicio.atOffset(ZoneOffset.UTC), limiteTemporal.atOffset(ZoneOffset.UTC), idAutorizacion);
+        } catch (DataIntegrityViolationException e) {
+            if (esRechazoDeRepeticion(e)) {
+                throw new RepeticionNoHabilitadaException();
+            }
+            throw e;
+        } catch (DataAccessException e) {
+            throw new PersistenciaIntentoException("No se pudo crear el intento repetido", e);
+        }
+        return new ReferenciaIntento(idIntento.toString());
+    }
 
     public RepositorioParticipacionesJdbc(JdbcTemplate jdbc) {
         if (jdbc == null) {

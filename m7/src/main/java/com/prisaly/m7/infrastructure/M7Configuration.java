@@ -37,9 +37,32 @@ public class M7Configuration {
         return outbox;
     }
 
+    /** OBS-83-M7-02 (DC-86): presentation zone of notice/email dates. Default UTC keeps the approved text unchanged. */
+    static final String PROPIEDAD_ZONA = "prisaly.m7.zona-horaria";
+
     @Bean
-    ContextoConvocatoriaPort contextoConvocatoriaM7(EntityManager em) {
-        return new ContextoConvocatoriaJpaAdapter(em);
+    ContextoConvocatoriaPort contextoConvocatoriaM7(EntityManager em, Environment environment) {
+        return new ContextoConvocatoriaJpaAdapter(em, zonaPresentacion(environment));
+    }
+
+    /** Fails at startup on an unknown zone id instead of silently formatting in another zone. */
+    static java.time.ZoneId zonaPresentacion(Environment environment) {
+        String valor = environment.getProperty(PROPIEDAD_ZONA, "UTC").trim();
+        try {
+            java.time.ZoneId zona = java.time.ZoneId.of(valor);
+            return "UTC".equals(valor) || "Z".equals(valor) ? java.time.ZoneOffset.UTC : zona;
+        } catch (java.time.DateTimeException ex) {
+            throw new IllegalStateException(PROPIEDAD_ZONA + " no es una zona horaria válida: " + valor, ex);
+        }
+    }
+
+    /** "UTC" for UTC (the approved text, byte for byte); otherwise e.g. "hora America/Bogota (UTC-05:00)". */
+    static String etiquetaZona(java.time.ZoneId zona) {
+        if (java.time.ZoneOffset.UTC.equals(zona)) {
+            return "UTC";
+        }
+        var desfase = zona.getRules().getOffset(java.time.Instant.now());
+        return "hora " + zona.getId() + " (UTC" + desfase.getId() + ")";
     }
 
     @Bean
@@ -61,7 +84,8 @@ public class M7Configuration {
         String contenido = environment.getProperty(
                 "prisaly.m7.texto-convocatoria",
                 "Has sido convocado a la sesión {nombreSesion} del caso {nombreCaso}. "
-                        + "Inicio: {inicioPrevisto} UTC. Fin: {finPrevisto} UTC. {mensajePersonalizado}");
+                        + "Inicio: {inicioPrevisto} {zonaHoraria}. Fin: {finPrevisto} {zonaHoraria}. {mensajePersonalizado}")
+                .replace("{zonaHoraria}", etiquetaZona(zonaPresentacion(environment)));
         String asunto = environment.getProperty(
                 "prisaly.m7.asunto-convocatoria", "Convocatoria a sesión {nombreSesion}");
         return new NotificarConvocatoriaService(contexto, registroAviso, registroEnvio, contenido, asunto);

@@ -93,7 +93,17 @@ public final class IniciarIntentoServicio {
                 return reanudado.get();
             }
         }
-        ReferenciaIntento nuevo = participaciones.crearPrimerIntento(participacion, inicio, limite);
+        // DD-04 (DC-92): a participation that already has attempts only reaches this point through reanudar() with a
+        // Vigente authorization and fewer than two attempts; the repetition consumes that authorization (V005/V007).
+        int previos = participaciones.contarIntentos(participacion);
+        ReferenciaIntento nuevo;
+        if (previos == 0) {
+            nuevo = participaciones.crearPrimerIntento(participacion, inicio, limite);
+        } else {
+            java.util.UUID autorizacion = participaciones.autorizacionRepeticionVigente(participacion)
+                    .orElseThrow(RepeticionNoHabilitadaException::new);
+            nuevo = participaciones.crearIntentoRepetido(participacion, previos + 1, inicio, limite, autorizacion);
+        }
         return new ResultadoInicio(resumen(nuevo), inicio, limite, false);
     }
 
@@ -106,6 +116,11 @@ public final class IniciarIntentoServicio {
                     resumen(intento.referencia()), intento.inicio(), intento.limiteTemporal(), true));
         }
         if (participaciones.tieneIntentos(participacion)) {
+            // DD-04 (DC-92): a single exceptional repetition, only with a Vigente teacher authorization.
+            if (participaciones.contarIntentos(participacion) < 2
+                    && participaciones.autorizacionRepeticionVigente(participacion).isPresent()) {
+                return Optional.empty();
+            }
             throw new RepeticionNoHabilitadaException();
         }
         return Optional.empty();

@@ -293,6 +293,33 @@ public class SesionAcademicaService {
         return guardada;
     }
 
+    // ─── DD-01 (DC-92): cierre automático ─────────────────────
+
+    /**
+     * DD-01 (DC-90/DC-92, ratificada): cierre automático de una sesión {@code EnCurso} cuyo fin previsto más el margen
+     * ya pasó según el reloj académico (PostgreSQL). Reutiliza el cierre docente: misma fila bloqueada, misma marca
+     * {@code fechaFinReal} y el mismo V1-c, que cierra con {@code TIEMPO_VENCIDO} solo los intentos agotados. Como L1
+     * limita cada intento a {@code min(inicio + máximo, finPrevisto)}, ningún intento autorizado se interrumpe.
+     *
+     * @return {@code true} si esta llamada cerró la sesión; {@code false} si ya no correspondía (otra instancia o el
+     *     docente la cerraron, o el plazo aún no venció): idempotente y seguro ante concurrencia
+     */
+    public boolean cerrarAutomaticamente(UUID sesionId, java.time.Duration margen) {
+        java.util.Objects.requireNonNull(margen, "margen");
+        var sesion = sesionRepository.buscarParaActualizar(sesionId).orElse(null);
+        if (sesion == null || sesion.getEstado() != EstadoSesion.EN_CURSO) {
+            return false;
+        }
+        Instant ahora = relojAcademico.ahora();
+        if (sesion.getFechaFin().plus(margen).isAfter(ahora)) {
+            return false;
+        }
+        sesion.cerrar(ahora);
+        sesionRepository.guardar(sesion);
+        cierreParticipaciones.cerrarIntentosVencidos(sesionId);
+        return true;
+    }
+
     // ─── ConvocarEstudiantes ──────────────────────────────────
 
     public Convocatoria convocarEstudiante(UUID docenteId, UUID sesionId, UUID estudianteId) {
