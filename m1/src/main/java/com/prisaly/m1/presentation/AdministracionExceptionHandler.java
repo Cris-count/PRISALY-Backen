@@ -18,7 +18,7 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
  * these controllers, so the existing routes keep their validated mapping.
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {AdministracionController.class, PersonalContrasenaController.class})
+@RestControllerAdvice(assignableTypes = {AdministracionController.class, PersonalContrasenaController.class, ConsultaUsuariosController.class})
 public class AdministracionExceptionHandler {
 
     @ExceptionHandler(IdentityDomainException.class)
