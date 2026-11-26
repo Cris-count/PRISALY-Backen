@@ -57,6 +57,7 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
             CasoCommandUpdateAdapter.assertOfficialContentGuards(connection);
             assertSchedulingGuards(connection);
             Caso published = validatePublication(before, expectedFingerprint);
+            marcarPreguntasListas(connection, caseId, published);
             try (var statement = connection.prepareStatement("""
                     UPDATE public."Caso" SET "estado" = ?
                     WHERE "idCaso" = ? AND "estado" = ? AND "fechaBloqueoAcademico" IS NULL
@@ -217,5 +218,35 @@ public class CasoPublicationAdapter implements CasoPublicationPort {
         ContenidoEvaluableLock.assertEditable(caso);
         // PUBLICADO is rejected by the existing transition; enum leaves only BORRADOR.
         return CasoPublication.publish(caso);
+    }
+
+    /**
+     * DC-111: inside the publication transaction (case row already locked) every {@code Borrador} question of the case
+     * becomes {@code Lista}. Runs only after {@link #validatePublication} accepted all questions, before the case
+     * itself is published; any failure rolls back both. Options, answers, rubric and associations are untouched.
+     */
+    static void marcarPreguntasListas(Connection connection, UUID caseId, Caso published) throws SQLException {
+        long esperadas = published.escenarios().stream().mapToLong(e -> e.preguntas().size()).sum();
+        try (var statement = connection.prepareStatement("""
+                UPDATE public."Pregunta" p SET "estadoEdicion" = 'Lista'
+                FROM public."Escenario" e
+                WHERE e."idEscenario" = p."idEscenario" AND e."idCaso" = ? AND p."estadoEdicion" = 'Borrador'
+                """)) {
+            statement.setObject(1, caseId);
+            statement.executeUpdate();
+        }
+        try (var statement = connection.prepareStatement("""
+                SELECT count(*) FILTER (WHERE p."estadoEdicion" = 'Lista'), count(*)
+                FROM public."Pregunta" p JOIN public."Escenario" e ON e."idEscenario" = p."idEscenario"
+                WHERE e."idCaso" = ?
+                """)) {
+            statement.setObject(1, caseId);
+            try (var rs = statement.executeQuery()) {
+                rs.next();
+                if (rs.getLong(1) != esperadas || rs.getLong(2) != esperadas) {
+                    throw new IllegalStateException("Publication must leave every validated question Lista");
+                }
+            }
+        }
     }
 }
