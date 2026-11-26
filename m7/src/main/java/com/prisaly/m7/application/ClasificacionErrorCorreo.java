@@ -12,6 +12,11 @@ public final class ClasificacionErrorCorreo {
     public static ClaseErrorCorreo clasificar(String codigo, String detalle) {
         Objects.requireNonNull(codigo, "codigo");
         String texto = ((detalle == null ? "" : detalle) + " " + codigo).toLowerCase(Locale.ROOT);
+        if (contiene(texto, "connection refused", "connection reset", "connection error", "connect",
+                "timed out", "timeout", "no route", "unreachable", "name or service not known",
+                "could not connect", "socket")) {
+            return ClaseErrorCorreo.TRANSITORIO;
+        }
         if (contiene(texto, "authentication", "auth failed", "535", "530", "relay", "sender address rejected", "mailbox unavailable for relay")) {
             return ClaseErrorCorreo.CONFIGURACION;
         }

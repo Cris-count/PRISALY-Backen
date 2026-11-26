@@ -1,0 +1,5 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  // Resuelto desde este directorio de trabajo. No repetir permisos: el jsonc de la raíz se fusiona antes.
+  "skills": ["../.opencode/skills"]
+}
