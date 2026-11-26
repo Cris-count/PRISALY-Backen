@@ -2,6 +2,7 @@ package com.prisaly.security;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -9,6 +10,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.prisaly.PrisalyApplication;
+import com.prisaly.m5.application.port.PortInvestigacion;
+import com.prisaly.m5.presentation.rest.InvestigacionM5Controlador;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,6 +29,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -105,6 +110,29 @@ class EstudianteIntentosM5SecurityIT {
         assertFalse(cuerpo.contains(PREGUNTA), cuerpo);
         assertFalse(cuerpo.toLowerCase().contains("exception"), cuerpo);
         assertFalse(cuerpo.toLowerCase().contains("sql"), cuerpo);
+    }
+
+    @Test
+    void investigacionCandidataDeshabilitadaYContratoActualRegistrado() {
+        assertTrue(context.getBeansOfType(InvestigacionM5Controlador.class).isEmpty());
+        assertTrue(context.getBeansOfType(PortInvestigacion.class).isEmpty());
+
+        var mappings = context.getBean("requestMappingHandlerMapping", RequestMappingHandlerMapping.class)
+                .getHandlerMethods().keySet();
+        assertTrue(mappings.stream().anyMatch(mapping ->
+                mapping.getPatternValues().contains("/v1/estudiantes/intentos/{idIntento}")
+                        && mapping.getMethodsCondition().getMethods().contains(RequestMethod.GET)));
+        assertTrue(mappings.stream().anyMatch(mapping ->
+                mapping.getPatternValues().contains("/v1/estudiantes/intentos/{idIntento}/contenido")
+                        && mapping.getMethodsCondition().getMethods().contains(RequestMethod.GET)));
+        assertTrue(mappings.stream().anyMatch(mapping ->
+                mapping.getPatternValues().contains("/v1/estudiantes/intentos/{idIntento}/respuestas/{idPregunta}")
+                        && mapping.getMethodsCondition().getMethods().contains(RequestMethod.PUT)));
+        assertEquals(0L, jdbc.queryForObject("""
+                SELECT count(*) FROM pg_tables
+                WHERE schemaname = 'public'
+                  AND tablename IN ('NotaIntento', 'PistaIntento', 'EdificioIntento', 'ZonaIntento')
+                """, Long.class));
     }
 
     @Test

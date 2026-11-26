@@ -40,6 +40,10 @@ import com.prisaly.m5.application.servicio.RegistrarRespuestaServicio;
 import com.prisaly.m5.infrastructure.programacion.CoordinacionInicioDesdeM4;
 
 import org.springframework.beans.factory.ObjectProvider;
+import com.prisaly.m5.application.port.PortInvestigacion;
+import com.prisaly.m5.application.servicio.InvestigacionServicio;
+import com.prisaly.m5.infrastructure.persistencia.RepositorioInvestigacionJpa;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -83,6 +87,20 @@ public class ConfiguracionParticipacion {
      */
     public static final String PROPIEDAD_FASES = "prisaly.m5.exploracion.fases.enabled";
     static final String CODIGO_FASES = "M5-FASES-REQUIEREN-NARRATIVA";
+
+    public static final String PROPIEDAD_INVESTIGACION_HTTP = "prisaly.m5.investigacion.http.enabled";
+
+    @Bean
+    @ConditionalOnProperty(name = PROPIEDAD_INVESTIGACION_HTTP, havingValue = "true")
+    PortInvestigacion portInvestigacion(JdbcTemplate jdbc) {
+        return new RepositorioInvestigacionJpa(jdbc);
+    }
+
+    @Bean
+    @ConditionalOnProperty(name = PROPIEDAD_INVESTIGACION_HTTP, havingValue = "true")
+    InvestigacionServicio investigacionServicio(AccesoProtegidoParticipacion acceso, PortInvestigacion port) {
+        return new InvestigacionServicio(acceso, port);
+    }
 
     @Bean
     AccesoProtegidoParticipacion accesoProtegidoParticipacion(

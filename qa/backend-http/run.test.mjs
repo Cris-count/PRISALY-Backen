@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {redact,cleanEnv,ownsContainer,SCENARIOS,spawnPlan} from './run.mjs';
+import {redact,cleanEnv,ownsContainer,SCENARIOS,spawnPlan,isQaArtifact} from './run.mjs';
 test('P2-5: newman uses a shell only on Windows and quotes arguments with spaces',()=>{
  assert.deepEqual(spawnPlan('newman',['run','a b.json'],'linux'),{file:'newman',args:['run','a b.json'],shell:false});
  assert.deepEqual(spawnPlan('git',['status'],'win32'),{file:'git',args:['status'],shell:false});
@@ -25,7 +25,15 @@ test('cleanup requires exact container ID, name and per-run label',()=>{
  assert.ok(!ownsContainer(info,id,'shared','run'));
 });
 test('scenario inventory has unique mandatory IDs and no invented RF/CU',()=>{
- assert.equal(SCENARIOS.length,32);assert.equal(new Set(SCENARIOS.map(s=>s.id)).size,32);
+ assert.equal(SCENARIOS.length,38);assert.equal(new Set(SCENARIOS.map(s=>s.id)).size,38);
  for(const spec of SCENARIOS){assert.equal(spec.rf,null);assert.equal(spec.cu,null);assert.equal(spec.mandatory,true);}
  assert.equal(SCENARIOS.find(s=>s.id==='HTTP-27').expectedStatus,501);
+});
+
+test('preflight accepts only the untracked audit rotation path outside QA',()=>{
+ const audit='app/logs/auditoria/auditoria-permisos.2026-11-12.log.gz';
+ assert.ok(isQaArtifact('?? '+audit));
+ assert.ok(!isQaArtifact(' M '+audit));
+ assert.ok(!isQaArtifact('?? app/logs/other.log.gz'));
+ assert.ok(!isQaArtifact('?? app/src/main/Example.java'));
 });

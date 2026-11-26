@@ -54,6 +54,13 @@ export function ownsContainer(info, id, name, runId) {
     && info.Config?.Labels?.['prisaly.qa.run'] === runId;
 }
 
+export function isQaArtifact(statusLine) {
+  const path = statusLine.slice(3).replaceAll('\\', '/');
+  return path.startsWith('qa/backend-http/')
+    || (statusLine.startsWith('?? ')
+      && /^app\/logs\/auditoria\/auditoria-permisos\.\d{4}-\d{2}-\d{2}\.log\.gz$/.test(path));
+}
+
 export const SCENARIOS = [
   ['HTTP-01','GET','/health',200,null,'Servidor real disponible'],
   ['HTTP-02','GET','/v1/personal/me',401,'UNAUTHENTICATED','Sin credencial'],
@@ -86,12 +93,18 @@ export const SCENARIOS = [
   ['HTTP-29','GET','/v1/estudiantes/intentos/{ausente}',403,'STUDENT_IDENTITY_UNAVAILABLE','Bearer personal no suplanta estudiante'],
   ['HTTP-30','PUT','/v1/estudiantes/intentos/{ausente}/respuestas/{pregunta}',403,'STUDENT_IDENTITY_UNAVAILABLE','Bearer personal; sin escritura'],
   ['HTTP-31','POST','/v1/personal/cerrar-sesion',204,null,'Revocación del Bearer propio'],
-  ['HTTP-32','GET','/v1/personal/me',401,'UNAUTHENTICATED','Bearer revocado']
+  ['HTTP-32','GET','/v1/personal/me',401,'UNAUTHENTICATED','Bearer revocado'],
+  ['HTTP-33','POST','/v1/personal/autenticar',200,null,'Administrador de la base desechable'],
+  ['HTTP-34','GET','/v1/admin/roles',200,null,'Administrador obtiene roles'],
+  ['HTTP-35','GET','/v1/admin/permisos',200,null,'Administrador obtiene permisos'],
+  ['HTTP-36','GET','/v1/admin/roles',403,null,'Docente sin rol de administrador'],
+  ['HTTP-37','GET','/v1/casos/{idCaso}',200,null,'Docente propietario con CONSULTAR_CASO'],
+  ['HTTP-38','GET','/v1/casos/{idCaso}',403,'FORBIDDEN','Personal sin CONSULTAR_CASO']
 ].map(([id,method,path,expectedStatus,expectedCode,precondition]) =>
   ({id,method,path,expectedStatus,expectedCode,precondition,module:path.startsWith('/m4')?'M4':path.startsWith('/v1/casos')?'M3':path.startsWith('/v1/estudiantes')?'M5':'M1/APP',rf:null,cu:null,mandatory:true}));
 
 class Blocked extends Error {}
-export async function main(args = process.argv.slice(2)) {
+export async function main(args = process.argv.slice(2), browserProbe, {browserOnly=false}={}) {
   const opts = {sha:BASE_SHA, preflight:false, buildOnly:false, postman:false};
   for(let i=0;i<args.length;i++) {
     if(args[i] === '--expected-sha' && /^[a-f0-9]{40}$/.test(args[i+1] || '')) opts.sha=args[++i];
@@ -100,6 +113,7 @@ export async function main(args = process.argv.slice(2)) {
     else if(args[i] === '--postman') opts.postman=true;
     else throw new Error('Uso: node qa/backend-http/run.mjs [--expected-sha SHA40] [--preflight-only | --build-only] [--postman]');
   }
+  if(browserOnly && !browserProbe) throw new Error('La prueba exclusiva de navegador requiere un recorrido');
   if(opts.preflight && opts.buildOnly) throw new Error('Elegir solo un modo');
   const runId=randomUUID(), name=`prisaly-http-${runId}`;
   const out=join(HERE,'evidence',new Date().toISOString().replace(/[:.]/g,'-')+'-'+runId.slice(0,8));
@@ -112,9 +126,9 @@ export async function main(args = process.argv.slice(2)) {
   const interrupt=()=>{interrupted=true;app?.kill('SIGTERM');};
   process.on('SIGINT',interrupt);process.on('SIGTERM',interrupt);
   const log=(file,text)=>writeFileSync(join(out,file),redact(text,secrets));
-  function command(command, argv, {input, timeout=30000, extraEnv={}}={}) {
+  function command(command, argv, {input, timeout=30000, extraEnv={}, cwd=ROOT}={}) {
     const plan=spawnPlan(command,argv);
-    const result=spawnSync(plan.file,plan.args,{cwd:ROOT,env:{...env,...extraEnv},input,shell:plan.shell,
+    const result=spawnSync(plan.file,plan.args,{cwd,env:{...env,...extraEnv},input,shell:plan.shell,
       encoding:'utf8',timeout,maxBuffer:32*1024*1024,windowsHide:true});
     return {ok:!result.error&&result.status===0,code:result.status,
       stdout:result.stdout||'', text:(result.stdout||'')+(result.stderr||''),error:result.error?.code};
@@ -139,7 +153,7 @@ export async function main(args = process.argv.slice(2)) {
     const dirtyResult=command('git',['status','--porcelain','--untracked-files=all']);
     if(!dirtyResult.ok) throw new Blocked('No se puede verificar el árbol de trabajo');
     const dirty=dirtyResult.text;
-    const outsideQa=dirty.split('\n').filter(Boolean).filter(line=>!line.slice(3).replaceAll('\\','/').startsWith('qa/backend-http/'));
+    const outsideQa=dirty.split('\n').filter(Boolean).filter(line=>!isQaArtifact(line));
     const sourcePaths=['pom.xml','app','m1','m2','m3','m4','m5','m6','m7','.mvn','mvnw','mvnw.cmd'];
     // HEAD may be the eventual QA commit: product tree must still equal the declared candidate.
     const productDiff=command('git',['diff','--quiet',opts.sha,'HEAD','--',...sourcePaths]);
@@ -165,14 +179,21 @@ export async function main(args = process.argv.slice(2)) {
       report.status='preflight-ready'; blockRemaining('Preflight únicamente; HTTP no ejecutado'); report.exitCode=0;
     } else {
       if(!opts.buildOnly&&!docker.ok) throw new Blocked('Docker Engine no disponible; no se inició APP ni PostgreSQL');
+      const buildRoot=join(out,'build-source');
+      const archive=join(out,'source.tar');
+      mkdirSync(buildRoot);
+      required('git',['archive','--format=tar','--output='+archive,report.sha],{timeout:120000});
+      required('tar',['-xf',archive,'-C',buildRoot],{timeout:120000});
+      unlinkSync(archive);
+      const buildOptions={cwd:buildRoot,timeout:600000};
       const build=process.platform==='win32'
-        ?command(env.ComSpec||env.COMSPEC||'cmd.exe',['/d','/c','mvnw.cmd -B -pl app -am package -DskipTests'],{timeout:600000})
-        :command('sh',['./mvnw','-B','-pl','app','-am','package','-DskipTests'],{timeout:600000});
+        ?command(env.ComSpec||env.COMSPEC||'cmd.exe',['/d','/c','mvnw.cmd -B -pl app -am package -DskipTests'],buildOptions)
+        :command('sh',['./mvnw','-B','-pl','app','-am','package','-DskipTests'],buildOptions);
       log('build.log',build.text);
       if(!build.ok) throw new Blocked('No se pudo construir APP; consultar build.log');
-      const jars=readdirSync(join(ROOT,'app/target')).filter(f=>/^app-.+\.jar$/.test(f));
+      const jars=readdirSync(join(buildRoot,'app/target')).filter(f=>/^app-.+\.jar$/.test(f));
       if(jars.length!==1) throw new Blocked('No se identifica un único JAR APP');
-      const jar=join(ROOT,'app/target',jars[0]); report.jarSha256=hash(readFileSync(jar));
+      const jar=join(buildRoot,'app/target',jars[0]); report.jarSha256=hash(readFileSync(jar));
       if(opts.buildOnly) {report.status='build-only';blockRemaining('Construcción únicamente; HTTP no ejecutado');report.exitCode=0;}
       else {
         const dbPassword=randomBytes(24).toString('hex');secrets.push(dbPassword);
@@ -196,7 +217,8 @@ export async function main(args = process.argv.slice(2)) {
         const jdbc=`jdbc:postgresql://127.0.0.1:${mapping[0].HostPort}/qa_http?sslmode=disable`;
         app=spawn('java',['-jar',jar,'--server.address=127.0.0.1',`--server.port=${port}`,
           '--server.servlet.context-path=/api','--spring.jpa.hibernate.ddl-auto=validate','--spring.flyway.enabled=true',
-          '--prisaly.m1.student-access.enabled=false','--prisaly.m7.worker.enabled=false'],
+          '--prisaly.m1.student-access.enabled=false','--prisaly.m7.worker.enabled=false',
+          '--prisaly.auditoria.permisos.directorio='+join(out,'auditoria')],
           {cwd:ROOT,env:{...env,DATABASE_URL:jdbc,DATABASE_USER:'qa_http',DATABASE_PASSWORD:dbPassword},stdio:['ignore','pipe','pipe'],windowsHide:true});
         // Buffer by line so a credential split across stream chunks cannot leak.
         let appText=''; const chunks=[];
@@ -219,6 +241,20 @@ export async function main(args = process.argv.slice(2)) {
         for(const file of ['bruno/scripts/m1-bruno-seed-local.sql','bruno/scripts/m7-bruno-seed-local.sql','qa/backend-http/fixture.sql']) {
           const content=readFileSync(join(ROOT,file),'utf8');sql(content);
           (report.fixtures??=[]).push({file,sha256:hash(content)});
+        }
+        const runBrowser=async()=>{
+          try {
+            report.browser=await browserProbe({base,sql,published:PUBLISHED,student:STUDENT,
+              correo:'docente.bruno@prisaly.local',password:PUBLIC_PASSWORD});
+          } catch(e) {
+            report.browser={status:'failed',error:redact(e.message,secrets)};
+          }
+        };
+        if(browserOnly) {
+          await runBrowser();
+          report.status=report.browser.status;
+          report.exitCode=report.status==='passed'?0:1;
+          return report.exitCode;
         }
         const tokens={}; let session;
         const draftId=randomUUID();
@@ -275,6 +311,13 @@ export async function main(args = process.argv.slice(2)) {
         await check('HTTP-08','/v1/personal/me',undefined,'invalid-fixture-token');
         await doLogin('HTTP-09','sinperm.bruno@prisaly.local','noperm');
         await doLogin('HTTP-10','other.qa@prisaly.invalid','other');
+        await doLogin('HTTP-33','admin.qa@prisaly.invalid','admin');
+        if(tokens.admin) {
+          await check('HTTP-34','/v1/admin/roles',undefined,'admin',b=>
+            eq(b?.items?.some(r=>r.nombre==='ADMINISTRADOR'),true,'Rol ADMINISTRADOR ausente'));
+          await check('HTTP-35','/v1/admin/permisos',undefined,'admin',b=>
+            eq(b?.items?.some(p=>p.codigo==='CONSULTAR_CASO'),true,'Permiso CONSULTAR_CASO ausente'));
+        }
         await check('HTTP-11','/v1/casos',draftBody);
         await check('HTTP-15','/m4/sesiones');
         await check('HTTP-27','/v1/acceso-estudiante/validar',{challengeId:'absent-fixture',codigo:'00000000'});
@@ -284,6 +327,10 @@ export async function main(args = process.argv.slice(2)) {
           await check('HTTP-13','/v1/casos',draftBody,'owner',b=>[
             ...eq(b?.idCaso,draftId,'ID borrador incorrecto'),...eq(b?.estado,'BORRADOR','Estado borrador incorrecto'),
             ...eq(sql(`SELECT "idDocente"::text FROM "Caso" WHERE "idCaso"='${draftId}';`),OWNER,'Propietario persistido incorrecto')]);
+          await check('HTTP-36','/v1/admin/roles',undefined,'owner');
+          await check('HTTP-37','/v1/casos/'+draftId,undefined,'owner',b=>
+            eq(b?.idCaso,draftId,'Caso consultado distinto del persistido'));
+          if(tokens.noperm) await check('HTTP-38','/v1/casos/'+draftId,undefined,'noperm');
           await check('HTTP-14','/v1/casos',{...draftBody,idCaso:randomUUID(),docenteId:OTHER},'owner');
           for(const [id,caseId] of [['HTTP-17',DRAFT],['HTTP-18',INACTIVE],['HTTP-19',ABSENT]]) await check(id,'/m4/sesiones',{...sessionBody,casoId:caseId},'owner');
           await check('HTTP-20','/m4/sesiones',sessionBody,'owner',b=>[
@@ -291,10 +338,15 @@ export async function main(args = process.argv.slice(2)) {
             ...eq(/^[a-f0-9]{8}(-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(b?.id||''),true,'ID de sesión inválido'),
             ...eq(sql(`SELECT ("fechaBloqueoAcademico" IS NOT NULL)::text FROM "Caso" WHERE "idCaso"='${PUBLISHED}';`),'true','F3-03 no persistido')],b=>{if(/^[a-f0-9-]{36}$/.test(b.id)) session=b.id;});
           if(session) {
-            await check('HTTP-21',`/m4/sesiones/${session}`,undefined,'owner',b=>eq(b?.id,session,'Sesión diferente'));
+            await check('HTTP-21',`/m4/sesiones/${session}`,undefined,'owner',b=>[
+              ...eq(b?.id,session,'Sesión diferente'),
+              ...eq(sql('SELECT "idCaso"::text FROM "Sesion" WHERE "idSesion"=' + "'" + session + "';"),PUBLISHED,'Relación sesión-caso no persistida')]);
             if(tokens.other) await check('HTTP-22',`/m4/sesiones/${session}`,undefined,'other');
             const conv=`/m4/sesiones/${session}/convocatorias`;
-            await check('HTTP-24',conv,{estudianteId:STUDENT},'owner',b=>eq(b?.estudianteId,STUDENT,'Estudiante incorrecto'));
+            await check('HTTP-24',conv,{estudianteId:STUDENT},'owner',b=>[
+              ...eq(b?.estudianteId,STUDENT,'Estudiante incorrecto'),
+              ...eq(sql("SELECT count(*)::text FROM \"Convocatoria\" WHERE \"idSesion\"='" + session
+                + "' AND \"idEstudiante\"='" + STUDENT + "';"),'1','Convocatoria no persistida')]);
             await check('HTTP-25',conv,undefined,'owner',b=>Array.isArray(b)&&b.some(c=>c.estudianteId===STUDENT)?[]:['Convocatoria no aparece']);
             await check('HTTP-26',conv,{estudianteId:STUDENT},'owner');
           }
@@ -308,6 +360,7 @@ export async function main(args = process.argv.slice(2)) {
           await check('HTTP-12','/v1/casos',{...draftBody,idCaso:randomUUID()},'noperm');
           await check('HTTP-16','/m4/sesiones',{...sessionBody,titulo:'Sin permiso'},'noperm');
         }
+        if(browserProbe) await runBrowser();
         blockRemaining('Dependencia HTTP previa fallida; no se fabrican tokens ni IDs');
         if (opts.postman) {
           const privateDir=join(ROOT,'qa/integration/evidence');mkdirSync(privateDir,{recursive:true});
@@ -336,7 +389,9 @@ export async function main(args = process.argv.slice(2)) {
             for(const file of [environment,resultFile]) if(existsSync(file)) unlinkSync(file);
           }
         }
-        report.status=report.scenarios.every(s=>s.status==='passed')&&(!opts.postman||report.postman?.passed)?'passed':'failed';
+        report.status=report.scenarios.every(s=>s.status==='passed')
+          &&(!opts.postman||report.postman?.passed)
+          &&(!browserProbe||report.browser?.status==='passed')?'passed':'failed';
         report.exitCode=report.status==='passed'?0:1;
       }
     }
