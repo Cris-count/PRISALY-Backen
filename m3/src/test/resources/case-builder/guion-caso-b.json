@@ -1,0 +1,14 @@
+{"formato":"prisaly-guion-1","inicio":"hospital",
+ "espacios":[
+  {"idEspacio":"hospital","titulo":"Hospital","recursoVisual":"edificio:hospital"},
+  {"idEspacio":"fiscalia","titulo":"Fiscalía","recursoVisual":"edificio:fiscalia"}],
+ "personajes":[
+  {"idPersonaje":"dra-lopez","nombre":"Dra. López","rol":"Médica de urgencias","recursoVisual":"npc:hosp-npc-doctor"},
+  {"idPersonaje":"fiscal-vega","nombre":"Fiscal Vega","rol":"Fiscal del caso","recursoVisual":"npc:fis-npc-fiscal"}],
+ "intervenciones":[
+  {"idIntervencion":"medica-conversacion","idEspacio":"hospital","idPersonaje":"dra-lopez",
+   "dialogos":[
+    {"idPersonaje":"dra-lopez","texto":"Hola. Atendí a la paciente cuando llegó desde el barrio."},
+    {"idPersonaje":"dra-lopez","texto":"El paciente presenta dificultades de adaptación comunitaria desde su traslado."}]},
+  {"idIntervencion":"fiscal-conversacion","idEspacio":"fiscalia","idPersonaje":"fiscal-vega",
+   "dialogos":[{"idPersonaje":"fiscal-vega","texto":"La junta comunitaria presentó una denuncia formal la semana pasada."}]}]}

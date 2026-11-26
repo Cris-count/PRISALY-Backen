@@ -1,0 +1,16 @@
+{
+  "version": "catalogo-visual-1",
+  "capacidadMaximaPorEdificio": 3,
+  "comun": { "zoneId": "plaza_central" },
+  "edificios": [
+    { "clave": "edificio:hospital", "nombre": "Hospital", "zoneId": "hospital_entrada", "puertaId": "hosp-puerta" },
+    { "clave": "edificio:comisaria", "nombre": "Comisaría", "zoneId": "policia_entrada", "puertaId": "pol-puerta" },
+    { "clave": "edificio:fiscalia", "nombre": "Fiscalía", "zoneId": "fiscalia_entrada", "puertaId": "fis-puerta" }
+  ],
+  "puestos": [
+    { "clave": "npc:hosp-npc-doctor", "edificio": "edificio:hospital", "npcId": "hosp-npc-doctor", "modelo": "medico" },
+    { "clave": "npc:hosp-npc-paciente-01", "edificio": "edificio:hospital", "npcId": "hosp-npc-paciente-01", "modelo": "paciente-acostado" },
+    { "clave": "npc:pol-npc-oficial", "edificio": "edificio:comisaria", "npcId": "pol-npc-oficial", "modelo": "oficial" },
+    { "clave": "npc:fis-npc-fiscal", "edificio": "edificio:fiscalia", "npcId": "fis-npc-fiscal", "modelo": "fiscal" }
+  ]
+}

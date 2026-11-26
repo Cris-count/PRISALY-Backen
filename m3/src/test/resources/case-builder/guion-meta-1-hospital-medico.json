@@ -1,0 +1,9 @@
+{"formato":"prisaly-guion-1","inicio":"hospital",
+ "espacios":[{"idEspacio":"hospital","titulo":"Hospital","recursoVisual":"edificio:hospital"}],
+ "personajes":[{"idPersonaje":"dr-martinez","nombre":"Dr. Martínez","rol":"Médico tratante","recursoVisual":"npc:hosp-npc-doctor"}],
+ "intervenciones":[
+  {"idIntervencion":"medico-conversacion","idEspacio":"hospital","idPersonaje":"dr-martinez",
+   "dialogos":[
+    {"idPersonaje":"dr-martinez","texto":"Buenos días. Soy el médico encargado de la atención del paciente."},
+    {"idPersonaje":"dr-martinez","texto":"Durante la valoración se observaron dificultades emocionales relacionadas con su entorno familiar."},
+    {"idPersonaje":"dr-martinez","texto":"Puedes continuar tu investigación consultando a las instituciones correspondientes."}]}]}

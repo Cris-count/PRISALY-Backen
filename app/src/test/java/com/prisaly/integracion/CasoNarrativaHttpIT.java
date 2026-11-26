@@ -137,6 +137,59 @@ class CasoNarrativaHttpIT {
         assertEquals("CONTENIDO_BLOQUEADO", json.readTree(enviar("POST", caso, "/publicar", autor, null).body()).get("code").asText());
     }
 
+    /**
+     * CB-05A, tramo Backend (DC-CB-03/04). Caso creado por HTTP → narrativa «Hospital + médico» con el catálogo canónico
+     * → nueva consulta → fila real en PostgreSQL con la huella canónica recalculada. Una configuración incompatible se
+     * rechaza sin tocar la fila.
+     */
+    static final String HOSPITAL_MEDICO = """
+            {"formato":"prisaly-guion-1","inicio":"hospital",
+             "espacios":[{"idEspacio":"hospital","titulo":"Hospital","recursoVisual":"edificio:hospital"}],
+             "personajes":[{"idPersonaje":"dr-martinez","nombre":"Dr. Martínez","rol":"Médico tratante","recursoVisual":"npc:hosp-npc-doctor"}],
+             "intervenciones":[{"idIntervencion":"medico-conversacion","idEspacio":"hospital","idPersonaje":"dr-martinez",
+               "dialogos":[{"idPersonaje":"dr-martinez","texto":"Buenos días. Soy el médico encargado de la atención del paciente."},
+                           {"idPersonaje":"dr-martinez","texto":"Durante la valoración se observaron dificultades emocionales relacionadas con su entorno familiar."},
+                           {"idPersonaje":"dr-martinez","texto":"Puedes continuar tu investigación consultando a las instituciones correspondientes."}]}]}""";
+
+    @Test void cb05aHospitalYMedicoPersistenEnPostgreSqlYSeRecuperanIguales() throws Exception {
+        Cuenta autor = docente(true, true, true);
+        UUID caso = UUID.randomUUID();
+        var creado = http.send(HttpRequest.newBuilder(uri("/v1/casos")).header("Authorization", "Bearer " + autor.token())
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString("{\"idCaso\":\"" + caso + "\",\"titulo\":\"CB-05A Hospital y médico\","
+                        + "\"tiempoEstimadoSegundos\":1800,\"historia\":\"Caso de prueba del Case Builder.\"}")).build(),
+                HttpResponse.BodyHandlers.ofString());
+        assertEquals(201, creado.statusCode(), creado.body());
+
+        var guardado = enviar("PUT", caso, "", autor, HOSPITAL_MEDICO);
+        assertEquals(200, guardado.statusCode(), guardado.body());
+        JsonNode g = json.readTree(guardado.body());
+        JsonNode enviado = json.readTree(HOSPITAL_MEDICO);
+        assertEquals(enviado, g.get("definicion"));
+
+        var vista = enviar("GET", caso, "", autor, null);
+        assertEquals(200, vista.statusCode(), vista.body());
+        JsonNode borrador = json.readTree(vista.body()).get("borrador");
+        assertEquals(enviado, borrador.get("definicion"), "nivel 2: la nueva consulta devuelve la narrativa enviada");
+        assertEquals(g.get("hashDefinicion").asText(), borrador.get("hashDefinicion").asText());
+
+        var fila = jdbc.queryForMap("SELECT \"definicion\"::text AS d, \"hashDefinicion\" AS h, \"version\" AS v, \"estado\" AS e "
+                + "FROM \"GuionNarrativoCaso\" WHERE \"idCaso\" = ?", caso);
+        assertEquals(enviado, json.readTree((String) fila.get("d")), "nivel 3: PostgreSQL conserva el documento");
+        String recalculada = java.util.HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(
+                com.prisaly.m3.infrastructure.persistence.jpa.JsonbCanonicalizer.canonicalize((String) fila.get("d"))
+                        .getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+        assertEquals(recalculada, ((String) fila.get("h")).trim(), "nivel 3: la huella persistida es la del documento");
+        assertEquals(1, ((Number) fila.get("v")).intValue());
+        assertEquals("Borrador", fila.get("e"));
+
+        var incompatible = enviar("PUT", caso, "", autor, HOSPITAL_MEDICO.replace("npc:hosp-npc-doctor", "npc:pol-npc-oficial"));
+        assertEquals(422, incompatible.statusCode(), incompatible.body());
+        assertTrue(incompatible.body().contains("PERSONAJE_FUERA_DE_SU_EDIFICIO"), incompatible.body());
+        assertEquals(fila.get("h"), jdbc.queryForObject("SELECT \"hashDefinicion\" FROM \"GuionNarrativoCaso\" WHERE \"idCaso\" = ?",
+                String.class, caso), "el rechazo no modifica la fila");
+    }
+
     private UUID caso(UUID docente) {
         UUID caso = UUID.randomUUID();
         jdbc.update("INSERT INTO \"Caso\" (\"idCaso\",\"idDocente\",\"nombre\",\"tiempoEstimadoSegundos\",\"estado\") VALUES (?,?,?,600,'Publicado')",

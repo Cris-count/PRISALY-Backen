@@ -1,0 +1,3 @@
+# Case Builder (DC-CB-03): el hash SHA-256 del catalogo visual se calcula sobre los bytes exactos.
+# Sin conversion de fin de linea, para que el hash sea el mismo en Windows, Linux y CI.
+m3/src/main/resources/prisaly/catalogo-visual/*.json -text

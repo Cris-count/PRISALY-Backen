@@ -1,0 +1,16 @@
+{"formato":"prisaly-guion-1","inicio":"hospital",
+ "espacios":[
+  {"idEspacio":"hospital","titulo":"Hospital","recursoVisual":"edificio:hospital",
+   "informaciones":[{"idInformacion":"motivo-ingreso","texto":"Ingreso por crisis de ansiedad tras un conflicto familiar."}]},
+  {"idEspacio":"comisaria","titulo":"Comisaría","recursoVisual":"edificio:comisaria"}],
+ "personajes":[
+  {"idPersonaje":"dr-martinez","nombre":"Dr. Martínez","rol":"Médico tratante","recursoVisual":"npc:hosp-npc-doctor"},
+  {"idPersonaje":"oficial-rios","nombre":"Oficial Ríos","rol":"Oficial de guardia","recursoVisual":"npc:pol-npc-oficial"}],
+ "intervenciones":[
+  {"idIntervencion":"medico-conversacion","idEspacio":"hospital","idPersonaje":"dr-martinez",
+   "dialogos":[
+    {"idPersonaje":"dr-martinez","texto":"Buenos días. Soy el médico encargado de la atención del paciente."},
+    {"idPersonaje":"dr-martinez","texto":"Durante la valoración se observaron dificultades emocionales relacionadas con su entorno familiar."},
+    {"idPersonaje":"dr-martinez","texto":"Puedes continuar tu investigación consultando a las instituciones correspondientes."}]},
+  {"idIntervencion":"oficial-conversacion","idEspacio":"comisaria","idPersonaje":"oficial-rios",
+   "dialogos":[{"idPersonaje":"oficial-rios","texto":"Recibimos una llamada de los vecinos la noche anterior al ingreso."}]}]}
