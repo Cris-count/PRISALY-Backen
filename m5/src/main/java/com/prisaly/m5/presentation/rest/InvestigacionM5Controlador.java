@@ -8,8 +8,7 @@ import com.prisaly.m5.presentation.rest.InvestigacionM5Dto.PistaReq;
 import com.prisaly.m5.presentation.rest.InvestigacionM5Dto.PistaRes;
 import com.prisaly.m5.presentation.rest.InvestigacionM5Dto.ZonaReq;
 import com.prisaly.m5.presentation.rest.InvestigacionM5Dto.ZonaRes;
-import com.prisaly.m5.application.servicio.InvestigacionServicio;
-import com.prisaly.m5.infrastructure.ConfiguracionParticipacion;
+import com.prisaly.m5.application.acceso.InvestigacionProtegida;
 import jakarta.validation.Valid;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import java.util.List;
@@ -23,15 +22,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Contrato candidato de investigación. El servicio verifica la titularidad del intento. */
+/**
+ * Contrato candidato de investigación. Depende solo de {@link InvestigacionProtegida}, que resuelve cada intento con el
+ * proxy de acceso protegido (identidad estudiantil y titularidad) antes de operar (DC-111-CIERRE).
+ */
 @RestController
-@ConditionalOnProperty(name = ConfiguracionParticipacion.PROPIEDAD_INVESTIGACION_HTTP, havingValue = "true")
+@ConditionalOnProperty(name = InvestigacionM5Controlador.PROPIEDAD, havingValue = "true")
 @RequestMapping("/v1/estudiantes/intentos/{idIntento}")
 public final class InvestigacionM5Controlador {
 
-    private final InvestigacionServicio investigacion;
+    /** Interruptor de la ruta; mismo nombre que {@code ConfiguracionParticipacion.PROPIEDAD_INVESTIGACION_HTTP}. */
+    public static final String PROPIEDAD = "prisaly.m5.investigacion.http.enabled";
 
-    public InvestigacionM5Controlador(InvestigacionServicio investigacion) {
+    private final InvestigacionProtegida investigacion;
+
+    public InvestigacionM5Controlador(InvestigacionProtegida investigacion) {
         this.investigacion = investigacion;
     }
 
