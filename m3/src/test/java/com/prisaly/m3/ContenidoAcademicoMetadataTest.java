@@ -162,8 +162,15 @@ class ContenidoAcademicoMetadataTest {
         Caso published = CasoPublication.publish(source);
         Caso locked = ContenidoEvaluableLock.lockAfterFirstSessionScheduled(published);
         assertEquals(CasoEstado.PUBLICADO, published.estado());
-        assertEquals(source.escenarios(), published.escenarios());
-        assertEquals(source.escenarios(), locked.escenarios());
+        // DC-111: publication moves every (validated) question from Borrador to Lista; every other value is preserved.
+        List<Escenario> expected = source.escenarios().stream().map(e -> new Escenario(e.id(), e.descripcion(),
+                e.preguntas().stream().map(p -> new Pregunta(p.id(), p.enunciado(), p.opciones(), p.textoAyuda(), "Lista",
+                        p.visible(), p.orden(), p.fechaCreacion(), p.fechaActualizacion())).toList(),
+                e.titulo(), e.contexto(), e.instrucciones(), e.orden(), e.activo())).toList();
+        assertTrue(source.escenarios().stream().flatMap(e -> e.preguntas().stream()).anyMatch(p -> "Borrador".equals(p.estadoEdicion())),
+                "the fixture must include draft questions for this check to be meaningful");
+        assertEquals(expected, published.escenarios());
+        assertEquals(expected, locked.escenarios());
         assertTrue(locked.contenidoEvaluableBloqueado());
         assertNull(locked.fechaBloqueoAcademico());
         assertFalse(source.contenidoEvaluableBloqueado());

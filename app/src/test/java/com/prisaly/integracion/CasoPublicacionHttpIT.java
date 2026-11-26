@@ -233,6 +233,71 @@ class CasoPublicacionHttpIT {
         } finally { logger.detachAppender(lista); }
     }
 
+    /** DC-111: questions are Borrador while drafting and become Lista only when the case is published. */
+    @Test void publicarPasaTodasLasPreguntasValidasAListaConservandoOpcionesYRubrica() throws Exception {
+        Cuenta c = cuenta(PUBLICAR);
+        UUID caso = casoSinRubrica(c), escenario = escenarioDe(caso), segunda = UUID.randomUUID();
+        String etag = post(c, caso + "/escenarios/" + escenario + "/preguntas", etag(caso, c),
+                "{\"idPregunta\":\"" + segunda + "\",\"enunciado\":\"P2\",\"orden\":2}");
+        post(c, caso + "/preguntas/" + segunda + "/opciones", etag,
+                "{\"idOpcion\":\"" + UUID.randomUUID() + "\",\"texto\":\"Si\",\"esCorrecta\":true,\"explicacion\":\"E\",\"orden\":1}");
+        List<UUID> preguntas = preguntasDe(caso);
+        StringBuilder pesos = new StringBuilder();
+        for (UUID p : preguntas) { pesos.append(pesos.isEmpty() ? "" : ",").append("{\"idPregunta\":\"").append(p).append("\",\"valorPregunta\":2.5,\"criterio\":\"c\"}"); }
+        guardarRubrica(c, caso, "{\"nombre\":\"R\",\"criterios\":[{\"id\":\"c\",\"descripcion\":\"D\",\"puntaje\":1}],\"preguntas\":[" + pesos + "]}");
+        assertEquals(List.of("Borrador", "Borrador"), estadosPreguntas(caso), "drafting keeps every question Borrador");
+        int opciones = opcionesDe(caso), asociaciones = asociacionesDe(caso);
+
+        var p = accion(c, caso, "publicar", etag(caso, c));
+        assertEquals(200, p.statusCode(), p.body());
+        assertEquals("Publicado", estado(caso));
+        assertEquals(List.of("Lista", "Lista"), estadosPreguntas(caso), "publication moves every valid question to Lista");
+        assertEquals(opciones, opcionesDe(caso), "options are preserved");
+        assertEquals(asociaciones, asociacionesDe(caso), "rubric associations are preserved");
+        assertEquals(2, asociaciones);
+        assertEquals(p.headers().firstValue("ETag").orElseThrow(), etag(caso, c), "the returned ETag matches the persisted aggregate");
+    }
+
+    /** DC-111: one incomplete question rejects the publication and nothing changes (no partial transition). */
+    @Test void preguntaIncompletaRechazaLaPublicacionSinCambiosParciales() throws Exception {
+        Cuenta c = cuenta(PUBLICAR);
+        UUID caso = casoCompleto(c), escenario = escenarioDe(caso), incompleta = UUID.randomUUID();
+        String etag = post(c, caso + "/escenarios/" + escenario + "/preguntas", etag(caso, c),
+                "{\"idPregunta\":\"" + incompleta + "\",\"enunciado\":\"Sin clave\",\"orden\":2}");
+        post(c, caso + "/preguntas/" + incompleta + "/opciones", etag,
+                "{\"idOpcion\":\"" + UUID.randomUUID() + "\",\"texto\":\"No\",\"esCorrecta\":false,\"explicacion\":\"E\",\"orden\":1}");
+        String antes = etag(caso, c);
+        int opciones = opcionesDe(caso);
+
+        var rechazo = accion(c, caso, "publicar", antes);
+        assertEquals(409, rechazo.statusCode(), rechazo.body());
+        assertTrue(rechazo.body().contains("INCONSISTENT_OPTIONS"), rechazo.body());
+        assertEquals("Borrador", estado(caso));
+        assertEquals(List.of("Borrador", "Borrador"), estadosPreguntas(caso), "the valid question is not promoted alone");
+        assertEquals(opciones, opcionesDe(caso));
+        assertEquals(antes, etag(caso, c), "the aggregate is byte-for-byte unchanged");
+    }
+
+    private UUID escenarioDe(UUID caso) {
+        return jdbc.queryForObject("SELECT \"idEscenario\" FROM \"Escenario\" WHERE \"idCaso\"=? ORDER BY \"orden\" LIMIT 1", UUID.class, caso);
+    }
+    private List<UUID> preguntasDe(UUID caso) {
+        return jdbc.queryForList("SELECT p.\"idPregunta\" FROM \"Pregunta\" p JOIN \"Escenario\" e ON e.\"idEscenario\"=p.\"idEscenario\""
+                + " WHERE e.\"idCaso\"=? ORDER BY p.\"orden\"", UUID.class, caso);
+    }
+    private List<String> estadosPreguntas(UUID caso) {
+        return jdbc.queryForList("SELECT p.\"estadoEdicion\" FROM \"Pregunta\" p JOIN \"Escenario\" e ON e.\"idEscenario\"=p.\"idEscenario\""
+                + " WHERE e.\"idCaso\"=? ORDER BY p.\"orden\"", String.class, caso);
+    }
+    private int opcionesDe(UUID caso) {
+        return jdbc.queryForObject("SELECT count(*) FROM \"OpcionRespuesta\" o JOIN \"Pregunta\" p ON p.\"idPregunta\"=o.\"idPregunta\""
+                + " JOIN \"Escenario\" e ON e.\"idEscenario\"=p.\"idEscenario\" WHERE e.\"idCaso\"=?", Integer.class, caso);
+    }
+    private int asociacionesDe(UUID caso) {
+        return jdbc.queryForObject("SELECT count(*) FROM \"RubricaPregunta\" rp JOIN \"Rubrica\" r ON r.\"idRubrica\"=rp.\"idRubrica\""
+                + " WHERE r.\"idCaso\"=?", Integer.class, caso);
+    }
+
     private void sesion(UUID caso, UUID docente, int dia) {
         Instant inicio = Instant.parse("2030-01-01T10:00:00Z").plusSeconds(86400L * dia);
         jdbc.update("""
