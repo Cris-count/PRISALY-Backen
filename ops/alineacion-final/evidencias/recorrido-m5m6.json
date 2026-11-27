@@ -1,0 +1,440 @@
+[
+  {
+    "paso": "admin acceso rápido QA (login oficial en servidor)",
+    "metodo": "POST",
+    "ruta": "/v1/qa/acceso-rapido/personal/administrador",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "admin perfil",
+    "metodo": "GET",
+    "ruta": "/v1/personal/me",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "admin catálogo de permisos",
+    "metodo": "GET",
+    "ruta": "/v1/admin/permisos",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "admin busca estudiante",
+    "metodo": "GET",
+    "ruta": "/v1/admin/estudiantes?correo=estudiante.dc106@prisaly.test",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "docente acceso rápido QA (login oficial en servidor)",
+    "metodo": "POST",
+    "ruta": "/v1/qa/acceso-rapido/personal/docente",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "docente perfil",
+    "metodo": "GET",
+    "ruta": "/v1/personal/me",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "docente sin acceso a administración",
+    "metodo": "GET",
+    "ruta": "/v1/admin/permisos",
+    "esperado": 403,
+    "estado": 403,
+    "aprobada": true,
+    "codigo": "ADMIN_REQUIRED"
+  },
+  {
+    "paso": "crear caso",
+    "metodo": "POST",
+    "ruta": "/v1/casos",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "leer caso (ETag)",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "escenario",
+    "metodo": "POST",
+    "ruta": "/v1/casos/{id}/escenarios",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "leer caso (ETag)",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "pregunta",
+    "metodo": "POST",
+    "ruta": "/v1/casos/{id}/escenarios/{id}/preguntas",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "leer caso (ETag)",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "opción",
+    "metodo": "POST",
+    "ruta": "/v1/casos/{id}/preguntas/{id}/opciones",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "leer caso (ETag)",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "rúbrica con valor por pregunta",
+    "metodo": "PUT",
+    "ruta": "/v1/casos/{id}/rubrica",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "leer caso (ETag)",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "publicar caso",
+    "metodo": "POST",
+    "ruta": "/v1/casos/{id}/publicar",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "programar sesión",
+    "metodo": "POST",
+    "ruta": "/m4/sesiones",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "convocar estudiante",
+    "metodo": "POST",
+    "ruta": "/m4/sesiones/{id}/convocatorias",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante no puede usar ruta docente sin token",
+    "metodo": "GET",
+    "ruta": "/v1/casos/{id}",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "estudiante solicita código",
+    "metodo": "POST",
+    "ruta": "/v1/acceso-estudiante/solicitar",
+    "esperado": 202,
+    "estado": 202,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante valida código",
+    "metodo": "POST",
+    "ruta": "/v1/acceso-estudiante/validar",
+    "esperado": 204,
+    "estado": 204,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante consulta sus convocatorias",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/convocatorias",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante sin acceso a rutas de personal",
+    "metodo": "GET",
+    "ruta": "/v1/personal/me",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "inicio antes de abrir la sesión (E1)",
+    "metodo": "POST",
+    "ruta": "/v1/estudiantes/sesiones/{id}/intentos",
+    "esperado": 403,
+    "estado": 403,
+    "aprobada": true,
+    "codigo": "INICIO_NO_AUTORIZADO"
+  },
+  {
+    "paso": "docente abre la sesión",
+    "metodo": "PATCH",
+    "ruta": "/m4/sesiones/{id}/estado",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 iniciar intento",
+    "metodo": "POST",
+    "ruta": "/v1/estudiantes/sesiones/{id}/intentos",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 reanudar intento",
+    "metodo": "POST",
+    "ruta": "/v1/estudiantes/sesiones/{id}/intentos",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 consultar intento",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5/M3 contenido del caso para el estudiante",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/contenido",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 responder",
+    "metodo": "PUT",
+    "ruta": "/v1/estudiantes/intentos/{id}/respuestas/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 intento ajeno inexistente",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}",
+    "esperado": [
+      403,
+      404
+    ],
+    "estado": 404,
+    "aprobada": true,
+    "codigo": "INTENTO_NO_ENCONTRADO"
+  },
+  {
+    "paso": "M6 evaluar intento en curso",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 409,
+    "estado": 409,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 finalizar",
+    "metodo": "POST",
+    "ruta": "/v1/estudiantes/intentos/{id}/finalizar",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 finalizar (idempotente)",
+    "metodo": "POST",
+    "ruta": "/v1/estudiantes/intentos/{id}/finalizar",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 estudiante no puede evaluar",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "M6 administrador no evalúa intentos ajenos",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 403,
+    "estado": 403,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 rúbrica inexistente",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": [
+      404,
+      422
+    ],
+    "estado": 422,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 docente evalúa",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 evaluar de nuevo (inmutable)",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 409,
+    "estado": 409,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 docente consulta calificación",
+    "metodo": "GET",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "nota NO publicada: estudiante no la ve",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": 404,
+    "estado": 404,
+    "aprobada": true,
+    "codigo": "CALIFICACION_NO_DISPONIBLE"
+  },
+  {
+    "paso": "estudiante no consulta calificación sin cookie",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "docente no usa la ruta del estudiante",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "liberar: estudiante no puede",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}/liberacion",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "liberar: administrador no puede",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}/liberacion",
+    "esperado": 403,
+    "estado": 403,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "DD-09 docente consulta participaciones",
+    "metodo": "GET",
+    "ruta": "/v1/docente/sesiones/{id}/participaciones",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  }
+]

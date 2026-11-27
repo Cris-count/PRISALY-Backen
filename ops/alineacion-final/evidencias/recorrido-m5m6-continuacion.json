@@ -1,0 +1,212 @@
+[
+  {
+    "paso": "admin acceso rápido QA",
+    "metodo": "POST",
+    "ruta": "/v1/qa/acceso-rapido/personal/administrador",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "docente acceso rápido QA",
+    "metodo": "POST",
+    "ruta": "/v1/qa/acceso-rapido/personal/docente",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante solicita código",
+    "metodo": "POST",
+    "ruta": "/v1/acceso-estudiante/solicitar",
+    "esperado": 202,
+    "estado": 202,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "estudiante valida código",
+    "metodo": "POST",
+    "ruta": "/v1/acceso-estudiante/validar",
+    "esperado": 204,
+    "estado": 204,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M5 recuperación del intento finalizado",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 docente consulta calificación",
+    "metodo": "GET",
+    "ruta": "/v1/evaluacion/intentos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "DD-09 docente consulta participaciones",
+    "metodo": "GET",
+    "ruta": "/v1/docente/sesiones/{id}/participaciones",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "DD-12 docente registra retroalimentación",
+    "metodo": "POST",
+    "ruta": "/v1/docente/participaciones/{id}/retroalimentacion",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "DD-12 estudiante no registra retroalimentación",
+    "metodo": "POST",
+    "ruta": "/v1/docente/participaciones/{id}/retroalimentacion",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "nota aún NO publicada tras la retroalimentación",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": 404,
+    "estado": 404,
+    "aprobada": true,
+    "codigo": "CALIFICACION_NO_DISPONIBLE"
+  },
+  {
+    "paso": "M6 docente libera calificación",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}/liberacion",
+    "esperado": 201,
+    "estado": 201,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "M6 liberar de nuevo (idempotente)",
+    "metodo": "POST",
+    "ruta": "/v1/evaluacion/intentos/{id}/liberacion",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "RESULTADO: estudiante consulta su calificación",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "titularidad: intento ajeno o inexistente",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}/calificacion",
+    "esperado": [
+      403,
+      404
+    ],
+    "estado": 404,
+    "aprobada": true,
+    "codigo": "INTENTO_NO_ENCONTRADO"
+  },
+  {
+    "paso": "M5 intento finalizado protegido (responder)",
+    "metodo": "PUT",
+    "ruta": "/v1/estudiantes/intentos/{id}/respuestas/{id}",
+    "esperado": [
+      409,
+      422
+    ],
+    "estado": 409,
+    "aprobada": true,
+    "codigo": "INTENTO_FINALIZADO"
+  },
+  {
+    "paso": "M5 recuperación tras finalizar (lectura)",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/intentos/{id}",
+    "esperado": 200,
+    "estado": 200,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "resultado",
+    "valor": "5.0",
+    "escala": "0-5",
+    "fechaLiberacion": "2026-11-27T15:18:42.600753Z",
+    "aprobada": true
+  },
+  {
+    "paso": "persistencia",
+    "intento_estado_bd": "Finalizado",
+    "calificacion_bd": "5.00",
+    "liberacion_bd": "true",
+    "avisos_rf27_bd": "1",
+    "aprobada": true
+  },
+  {
+    "paso": "logout docente",
+    "metodo": "POST",
+    "ruta": "/v1/personal/cerrar-sesion",
+    "esperado": 204,
+    "estado": 204,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "logout admin",
+    "metodo": "POST",
+    "ruta": "/v1/personal/cerrar-sesion",
+    "esperado": 204,
+    "estado": 204,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "token admin revocado",
+    "metodo": "GET",
+    "ruta": "/v1/personal/me",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  },
+  {
+    "paso": "logout estudiante",
+    "metodo": "POST",
+    "ruta": "/v1/acceso-estudiante/cerrar-sesion",
+    "esperado": 204,
+    "estado": 204,
+    "aprobada": true,
+    "codigo": null
+  },
+  {
+    "paso": "cookie estudiante revocada",
+    "metodo": "GET",
+    "ruta": "/v1/estudiantes/convocatorias",
+    "esperado": 401,
+    "estado": 401,
+    "aprobada": true,
+    "codigo": "UNAUTHENTICATED"
+  }
+]

@@ -1,0 +1,14 @@
+[
+ [
+  "M4/DD-09",
+  "Participaciones sesión dd98c974 (SinIniciar)",
+  "OK",
+  "GET 200, 1 filas"
+ ],
+ [
+  "M7/DD-09",
+  "Reporte CSV",
+  "OK",
+  "GET reporte 200, 2 líneas"
+ ]
+]

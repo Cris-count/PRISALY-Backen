@@ -1,0 +1,14 @@
+# Solo para el PRIMER arranque sobre una base vacía: crea el administrador QA con el inicializador oficial (V013).
+# ACTUALIZAR-PRISALY.ps1 lo añade únicamente si el volumen de PostgreSQL del proyecto no existía.
+services:
+  backend:
+    environment:
+      PRISALY_INICIALIZACION_ADMIN: 'true'
+      PRISALY_INICIALIZACION_ADMIN_CORREO: administrador.dc106@prisaly.test
+      PRISALY_INICIALIZACION_ADMIN_NOMBRE: Administrador QA
+      PRISALY_INICIALIZACION_ADMIN_ARCHIVO: /run/secrets/admin_bootstrap
+    secrets:
+      - admin_bootstrap
+secrets:
+  admin_bootstrap:
+    file: ./secretos/admin-bootstrap

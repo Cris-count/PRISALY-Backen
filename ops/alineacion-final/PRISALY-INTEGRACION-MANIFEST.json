@@ -1,0 +1,109 @@
+{
+  "manifiesto": "PRISALY-INTEGRACION-MANIFEST",
+  "canonico": "Cris-count/PRISALY-Backen @ integracion/alineacion-final : ops/alineacion-final/PRISALY-INTEGRACION-MANIFEST.json",
+  "referenciaDesdeFrontend": "Cris-count/PRISALY-Front @ integracion/alineacion-final : docs/integracion/ALINEACION-FINAL.md",
+  "fechaIntegracion": "2026-11-27",
+  "ordenes": ["DC-ALINEACION-INTEGRAL-01", "DC-ALINEACION-INTEGRAL-02", "DC-HANDOFF-NICOLAS-01"],
+  "repositorios": {
+    "backend": "https://github.com/Cris-count/PRISALY-Backen",
+    "frontend": "https://github.com/Cris-count/PRISALY-Front"
+  },
+  "ramaPublicada": "integracion/alineacion-final",
+  "backend": {
+    "shaCodigo": "eb88ad451e6ea9d6561bbd3c4a3a20b7460783c7",
+    "nota": "eb88ad4 = b23c217c429ee53a1567850308acfdb0d95a8fc8 (código de la imagen validada) + un commit solo documental. La rama añade encima únicamente ops/alineacion-final (sin cambios de código).",
+    "imagenValidada": "prisaly-cierre-backend:local (sha256:05bcede6026ce2597c023dabf832e3a5136110a4e8cdd9bfc955d57e41eaf0e4)",
+    "imagenReproducible": "prisaly-alineacion-backend:<shaCodigo> (ACTUALIZAR-PRISALY.ps1)",
+    "java": "21",
+    "openapi": ["docs/api/openapi-m3-casos.yaml (1.0.0-candidato)", "docs/api/openapi-candidatos-dc92.yaml (1.0.0-candidato-dc96)"]
+  },
+  "frontend": {
+    "shaCodigo": "66d9e7108d4a33950629dfff4f0dbe361496029e",
+    "base": "bb2db400409356b741ec5f2230d598d3645ab07a (trabajo/presentacion-20261127, contiene fbe6a02 y CB-05A)",
+    "incorporado": [
+      "69e6a65667ea7c35d2201918a1dd74cc964e79f0 recuperar conexión Unreal con reintentos acotados (cherry-pick de 35c5694, Nicolás)",
+      "38a980dfee6be9fa9d16be4b4e63739038ef1a01 pruebas de la reconexión (cherry-pick de 837e687, Nicolás)",
+      "fc4ca5579881c99b35e70685a97697e0f7e9773c listado M3 de casos propios en el panel docente",
+      "66d9e7108d4a33950629dfff4f0dbe361496029e cierre del bloque de pruebas FE-UX-09 tras el cherry-pick"
+    ],
+    "perfilAngular": "dc106-qa",
+    "imagenValidada": "prisaly-alineacion-frontend:qa (sha256:0c2b887bb31c4319e4bd36e3e0958898e3f1ecc9c50f01ce9c34bd771b78364f)",
+    "imagenReproducible": "prisaly-alineacion-frontend:<shaCodigo>"
+  },
+  "infraestructura": {
+    "postgres": "postgres:16.15",
+    "mailpit": "axllent/mailpit:v1.31.2",
+    "nginx": "nginx:1.28-alpine",
+    "jre": "eclipse-temurin:21-jre",
+    "compose": "ops/alineacion-final/compose.yaml (+ compose.bootstrap.yaml solo con base nueva)",
+    "puertos": {"portal": 18175, "mailpit": 18030, "smtp": 11030}
+  },
+  "postgres": {"usuario": "prisaly_ops70", "baseDatos": "prisaly_ops70"},
+  "flyway": {
+    "locations": "classpath:db/migration,classpath:db/dd02b-propuesta,classpath:db/m6-propuesta,classpath:db/d05-propuesta,classpath:db/dc92-propuesta",
+    "outOfOrder": false,
+    "contratoEsquemaM4": "bd0052-v013-integral-dc92",
+    "historialEsperado": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "013", "014", "015", "016", "019", "020", "021", "022", "023"],
+    "incompatiblesOPendientes": {
+      "V017 sim-propuesta (GuionNarrativoCaso)": "Rechazada por Flyway sobre una base en V023 (outOfOrder=false): 'Detected resolved migration not applied to database: 017'",
+      "V018 sim-propuesta-b (FaseIntento)": "Igual que V017; depende de V017",
+      "V024 dc116-propuesta (NotaIntento, PistaIntento, EdificioIntento, ZonaIntento)": "Se aplica limpia sobre V023, pero el guard M4 la rechaza (tablas adicionales) con cualquier contrato existente",
+      "candidato": "ops/alineacion-final/conciliacion/ (V024 + V025/V026 = V017/V018 sin cambios): se aplican limpias en base aislada; falta un contrato M4 nuevo (decisión DC)"
+    }
+  },
+  "featureFlagsBackend": {
+    "PRISALY_M1_STUDENT_ACCESS_ENABLED": "true",
+    "PRISALY_M1_ALTA_ESTUDIANTES_ENABLED": "true",
+    "PRISALY_M1_ACTIVACION_DOCENTE_ENABLED": "true",
+    "PRISALY_M3_LISTADO_ENABLED": "true",
+    "PRISALY_M3_NARRATIVA_PUBLICACION_ENABLED": "false (esquema incompatible)",
+    "PRISALY_M4_CONSULTA_PARTICIPACIONES_ENABLED": "true",
+    "PRISALY_M4_AUSENCIAS_ENABLED": "true",
+    "PRISALY_M4_RETIRO_ENABLED": "true",
+    "PRISALY_M5_INICIOFINALIZACION_PUBLICACION_ENABLED": "true (es la que consume el código: prisaly.m5.inicio-finalizacion.publicacion.enabled)",
+    "PRISALY_M5_INICIO_FINALIZACION_PUBLICACION_ENABLED": "false (no corresponde a ninguna propiedad; se ignora)",
+    "PRISALY_M5_REPETICION_ENABLED": "true",
+    "PRISALY_M5_EXPLORACION_FASES_ENABLED": "false (requiere contrato sim-ab)",
+    "PRISALY_M5_EXPLORACION_FASES_HTTP_ENABLED": "false",
+    "PRISALY_M6_EVALUACION_ENABLED": "true",
+    "PRISALY_M6_LIBERACION_ENABLED": "true",
+    "PRISALY_M6_RETROALIMENTACION_ENABLED": "true",
+    "PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA": "false",
+    "PRISALY_M7_WORKER_ENABLED": "true",
+    "PRISALY_M7_CODIGO_ACCESO_WORKER_ENABLED": "true",
+    "PRISALY_M7_NOTIFICACIONCALIFICACION_ENABLED": "true",
+    "PRISALY_M7_REPORTES_PARTICIPACION_ENABLED": "true",
+    "PRISALY_QA_ACCESO_RAPIDO_ENABLED": "true (solo QA local; el arranque falla con perfil prod o cookie segura)"
+  },
+  "secretos": "Solo nombres y formatos en ops/alineacion-final/secretos/README.md; valores generados localmente por ACTUALIZAR-PRISALY.ps1",
+  "unreal": {
+    "protocolo": "v1 (Frontend public/simulador-unreal/protocolo/v1, 23 esquemas; catalogo.json sha256 006006334d9e36bd489447ea53063024c3f39a619529893507178599656158f9)",
+    "clientePixelStreaming": "@epicgames-ps/lib-pixelstreamingfrontend-ue5.8@0.1.4",
+    "senalizacion": "player ws://127.0.0.1:8898, streamer 8899, streamerId PRISALY-LAB-03, sesión visual ses-lab-ps2-0001; WS solo en loopback, WSS en remoto",
+    "reconexion": "reintentos acotados [1000, 3000, 8000] ms + estado.restaurar (Nicolás, PR #35)",
+    "estado": "Cliente probado con dobles (119/119). SIN prueba real con el motor."
+  },
+  "funcionalidades": {
+    "M1": "Probado: acceso administrador/docente (acceso rápido QA sobre login oficial), alta de docente + activación D-05 + permisos, alta de estudiante, código DD-02 B, consulta de usuarios y roles, cierre de sesión y revocación",
+    "M3": "Probado: listado de casos propios (nuevo), creación, contenido, rúbrica y publicación (Borrador→Lista DC-111). Pendiente: narrativa (esquema)",
+    "M4": "Probado: programación, convocatoria, apertura de sesión (PATCH oficial), participaciones DD-09, CSV",
+    "M5": "Probado: E1 antes de abrir (403), iniciar 201, reanudar 200, contenido sin corrección, respuesta, titularidad, finalizar idempotente, intento finalizado protegido (409 INTENTO_FINALIZADO), recuperación. Pendiente: fases P1–P4 e investigación persistida",
+    "M6": "Probado: rechazo en curso (409), evaluación 201 inmutable, permisos (401/403), retroalimentación DD-12, liberación 201 idempotente, resultado del estudiante 5.0/0-5. Detalle por pregunta apagado",
+    "M7": "Probado: correo de código, convocatoria y «Calificación disponible» (RF-27) en Mailpit; reporte CSV"
+  },
+  "pruebas": {
+    "recorridoM5M6": "71/71 pasos HTTP (ops/alineacion-final/evidencias/recorrido-m5m6*.json)",
+    "frontendVisorUnreal": "119/119 (ng test focalizado)",
+    "frontendFocalizadas": "18/18 (capacidades, casos, administración de estudiantes)",
+    "buildFrontend": "ng build --configuration dc106-qa sin errores; 32 bundles",
+    "ensayoMigracionesAislado": "ops/alineacion-final/conciliacion/DIAGNOSTICO-V017-V018-V024.md",
+    "noEjecutadas": "suites completas Maven/Angular"
+  },
+  "bloqueos": [
+    "Contrato M4 combinado (integral-dc92 + dc116 + sim) y permisos de EsquemaFasesIntentoConfig/M3: decisión DC antes de activar narrativa, fases o investigación persistida",
+    "Unreal: prueba real con MUNDO-24 y Pixel Streaming 2 pendiente",
+    "Asignación de instancia visual por estudiante: no existe servicio",
+    "Rama feature/cb02b-investigacion-a1 (catálogo visual, núcleo A1) sin integrar: depende de la narrativa"
+  ],
+  "rollback": "ops/alineacion-final/ROLLBACK.md"
+}
