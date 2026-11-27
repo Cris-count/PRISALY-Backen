@@ -3,7 +3,11 @@
   "canonico": "Cris-count/PRISALY-Backen @ integracion/alineacion-final : ops/alineacion-final/PRISALY-INTEGRACION-MANIFEST.json",
   "referenciaDesdeFrontend": "Cris-count/PRISALY-Front @ integracion/alineacion-final : docs/integracion/ALINEACION-FINAL.md",
   "fechaIntegracion": "2026-11-27",
-  "ordenes": ["DC-ALINEACION-INTEGRAL-01", "DC-ALINEACION-INTEGRAL-02", "DC-HANDOFF-NICOLAS-01"],
+  "ordenes": [
+    "DC-ALINEACION-INTEGRAL-01",
+    "DC-ALINEACION-INTEGRAL-02",
+    "DC-HANDOFF-NICOLAS-01"
+  ],
   "repositorios": {
     "backend": "https://github.com/Cris-count/PRISALY-Backen",
     "frontend": "https://github.com/Cris-count/PRISALY-Front"
@@ -15,7 +19,10 @@
     "imagenValidada": "prisaly-cierre-backend:local (sha256:05bcede6026ce2597c023dabf832e3a5136110a4e8cdd9bfc955d57e41eaf0e4)",
     "imagenReproducible": "prisaly-alineacion-backend:<shaCodigo> (ACTUALIZAR-PRISALY.ps1)",
     "java": "21",
-    "openapi": ["docs/api/openapi-m3-casos.yaml (1.0.0-candidato)", "docs/api/openapi-candidatos-dc92.yaml (1.0.0-candidato-dc96)"]
+    "openapi": [
+      "docs/api/openapi-m3-casos.yaml (1.0.0-candidato)",
+      "docs/api/openapi-candidatos-dc92.yaml (1.0.0-candidato-dc96)"
+    ]
   },
   "frontend": {
     "shaCodigo": "66d9e7108d4a33950629dfff4f0dbe361496029e",
@@ -36,14 +43,40 @@
     "nginx": "nginx:1.28-alpine",
     "jre": "eclipse-temurin:21-jre",
     "compose": "ops/alineacion-final/compose.yaml (+ compose.bootstrap.yaml solo con base nueva)",
-    "puertos": {"portal": 18175, "mailpit": 18030, "smtp": 11030}
+    "puertos": {
+      "portal": 18175,
+      "mailpit": 18030,
+      "smtp": 11030
+    }
   },
-  "postgres": {"usuario": "prisaly_ops70", "baseDatos": "prisaly_ops70"},
+  "postgres": {
+    "usuario": "prisaly_ops70",
+    "baseDatos": "prisaly_ops70"
+  },
   "flyway": {
     "locations": "classpath:db/migration,classpath:db/dd02b-propuesta,classpath:db/m6-propuesta,classpath:db/d05-propuesta,classpath:db/dc92-propuesta",
     "outOfOrder": false,
     "contratoEsquemaM4": "bd0052-v013-integral-dc92",
-    "historialEsperado": ["001", "002", "003", "004", "005", "006", "007", "008", "009", "013", "014", "015", "016", "019", "020", "021", "022", "023"],
+    "historialEsperado": [
+      "001",
+      "002",
+      "003",
+      "004",
+      "005",
+      "006",
+      "007",
+      "008",
+      "009",
+      "013",
+      "014",
+      "015",
+      "016",
+      "019",
+      "020",
+      "021",
+      "022",
+      "023"
+    ],
     "incompatiblesOPendientes": {
       "V017 sim-propuesta (GuionNarrativoCaso)": "Rechazada por Flyway sobre una base en V023 (outOfOrder=false): 'Detected resolved migration not applied to database: 017'",
       "V018 sim-propuesta-b (FaseIntento)": "Igual que V017; depende de V017",
@@ -97,7 +130,8 @@
     "frontendFocalizadas": "18/18 (capacidades, casos, administración de estudiantes)",
     "buildFrontend": "ng build --configuration dc106-qa sin errores; 32 bundles",
     "ensayoMigracionesAislado": "ops/alineacion-final/conciliacion/DIAGNOSTICO-V017-V018-V024.md",
-    "noEjecutadas": "suites completas Maven/Angular"
+    "noEjecutadas": "suites completas Maven/Angular",
+    "actualizarPrisaly": "Probado en Windows/PowerShell 5.1 en paralelo al QA (puertos 18275/18130/11130): -SoloPreparar (fetch, SHA, worktrees, Maven y ng build, imágenes); base nueva (Flyway 001–023, PD-01, administrador creado, login 200, roles ADMINISTRADOR/DOCENTE/ESTUDIANTE); base existente (historial idéntico, reutiliza imágenes); -Detener conserva volúmenes"
   },
   "bloqueos": [
     "Contrato M4 combinado (integral-dc92 + dc116 + sim) y permisos de EsquemaFasesIntentoConfig/M3: decisión DC antes de activar narrativa, fases o investigación persistida",

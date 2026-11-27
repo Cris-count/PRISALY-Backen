@@ -60,6 +60,7 @@ powershell -ExecutionPolicy Bypass -File $env:TEMP\ops\alineacion-final\ACTUALIZ
 - **M5:** E1, iniciar, reanudar, contenido sin corrección, responder, titularidad, finalizar (idempotente), intento finalizado protegido y recuperación.
 - **M6:** evaluación inmutable, permisos, retroalimentación DD-12, liberación idempotente y resultado del estudiante.
 - **M7:** correos de código, convocatoria y «Calificación disponible».
+- **Script:** `ACTUALIZAR-PRISALY.ps1` probado en el equipo de Ingrid: base nueva, base existente y `-Detener`.
 - **Evidencia:** recorrido HTTP 71/71 en `ops/alineacion-final/evidencias/`; visor Unreal 119/119 con dobles del canal.
 
 ## Pendientes estructurales (no integrados)
