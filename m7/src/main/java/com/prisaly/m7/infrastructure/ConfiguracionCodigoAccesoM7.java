@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -61,13 +62,13 @@ public class ConfiguracionCodigoAccesoM7 {
     @Bean
     @ConditionalOnProperty(prefix = "prisaly.m7.codigo-acceso.worker", name = "enabled", havingValue = "true")
     TrabajoEntregas trabajoEntregasCodigoAccesoM7(EntregaCodigoAccesoRepositorio repositorio,
-            CifradorCodigoAccesoAesGcm cifrador, JavaMailSender mailSender, RevocacionCodigoAccesoPort revocacion,
+            CifradorCodigoAccesoAesGcm cifrador, ObjectProvider<JavaMailSender> mailSender, RevocacionCodigoAccesoPort revocacion,
             Environment environment) {
         String remitente = M7WorkerConfiguration.requerido(environment, "prisaly.m7.correo.remitente");
         int lote = M7WorkerConfiguration.enteroRequerido(environment, "prisaly.m7.codigo-acceso.worker.lote");
         // Not a ProveedorCorreoPort bean: it must not collide with the convocation worker's provider.
         return new TrabajoEntregas(new ProcesarEntregasCodigoAccesoService(repositorio, cifrador,
-                new JavaMailProveedorCorreoAdapter(mailSender), revocacion, remitente, lote, Clock.systemUTC()));
+                FabricaProveedorCorreo.crear(environment, mailSender), revocacion, remitente, lote, Clock.systemUTC()));
     }
 
     /** D-B2.4: payload erased at expiry even without the worker; final metadata deleted after N days. */

@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,8 +30,9 @@ public class M7WorkerConfiguration {
     }
 
     @Bean
-    ProveedorCorreoPort proveedorCorreoM7(JavaMailSender mailSender) {
-        return new JavaMailProveedorCorreoAdapter(mailSender);
+    ProveedorCorreoPort proveedorCorreoM7(Environment environment, ObjectProvider<JavaMailSender> mailSender) {
+        // DC-DEPLOY-03: SMTP por defecto; HTTPS (API transaccional) con prisaly.m7.correo.transporte=http.
+        return FabricaProveedorCorreo.crear(environment, mailSender);
     }
 
     @Bean
