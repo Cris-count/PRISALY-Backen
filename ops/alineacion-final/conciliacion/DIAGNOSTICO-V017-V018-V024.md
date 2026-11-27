@@ -31,8 +31,10 @@ Ensayo en PostgreSQL 16.15 desechable (contenedor sin volumen, eliminado al term
 
 ## Archivos
 
-- `candidato-migraciones/V025__sim_guion_narrativo.sql` — sha256 `3a5c7c6f542bf55935d93de608837aaca2e32b2a7af2b6a4f31df3214f73cf1f`.
-- `candidato-migraciones/V026__sim_fase_intento.sql` — sha256 `7c62950801ef57553d10a571805850de8c776622bc58dfc5a27ab26f9116b66d`.
+- `candidato-migraciones/V025__sim_guion_narrativo.sql` — sha256 `319d7f71bc55bfb3162ed8a8cb0cb2d9f159c40bf50dd234d4bcf0d6d446d364`, idéntico al versionado de `db/sim-propuesta/V017`.
+- `candidato-migraciones/V026__sim_fase_intento.sql` — sha256 `b5f9eb780aed740859bc9b1b9dbaa8962dd9e50d57c1b32a07eb07a83f454002`, idéntico al versionado de `db/sim-propuesta-b/V018`.
+
+Hashes calculados sobre el contenido versionado (finales de línea LF).
 - `ensayo-aislado.sh` — arranque de la imagen contra la base desechable `alin02-pg` (uso: `run <dir> <nombre> <locations> <contrato> [montaje]`).
 
 Estas migraciones están fuera del classpath (`ops/`): no se aplican por accidente.

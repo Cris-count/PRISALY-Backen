@@ -22,7 +22,10 @@ param(
   [string]$Ejecucion = (Join-Path $env:LOCALAPPDATA 'prisaly-alineacion'),
   [switch]$SoloPreparar,
   [switch]$Detener,
-  [switch]$Reconstruir
+  [switch]$Reconstruir,
+  [int]$PuertoWeb = 18175,
+  [int]$PuertoMailpit = 18030,
+  [int]$PuertoSmtp = 11030
 )
 # Continue: en PowerShell 5.1 el stderr de git/docker (progreso) no debe abortar; cada llamada nativa comprueba $LASTEXITCODE.
 $ErrorActionPreference = 'Continue'
@@ -118,7 +121,7 @@ Secreto 'admin-bootstrap' (Aleatorio 24)
 if (-not (Test-Path (Join-Path $sec 'qa-admin.txt'))) { Copy-Item (Join-Path $sec 'admin-bootstrap') (Join-Path $sec 'qa-admin.txt') }
 Secreto 'qa-docente.txt' ''
 $envFile = Join-Path $Ejecucion '.env'
-@("WEB_PORT=18175", "MAILPIT_PORT=18030", "SMTP_PORT=11030", "PRISALY_BACKEND_SHA=$shaBack", "PRISALY_FRONTEND_SHA=$shaFront") | Set-Content -Encoding ascii $envFile
+@("WEB_PORT=$PuertoWeb", "MAILPIT_PORT=$PuertoMailpit", "SMTP_PORT=$PuertoSmtp", "PRISALY_BACKEND_SHA=$shaBack", "PRISALY_FRONTEND_SHA=$shaFront") | Set-Content -Encoding ascii $envFile
 "Secretos en $sec (generados solo si faltaban)."
 
 # 8-9. Imágenes: reutilizar si ya existen para el mismo SHA
@@ -178,8 +181,8 @@ docker @dc ps --format 'table {{.Service}}\t{{.Status}}'
 
 # 13. URL
 Paso 'Listo'
-"Portal:  http://localhost:18175/acceso"
-"Mailpit: http://localhost:18030"
-"API:     http://localhost:18175/api/health"
+"Portal:  http://localhost:$PuertoWeb/acceso$(if ($PuertoWeb -ne 18175) { ' (acceso rápido QA solo funciona en 18175: su Origin está fijado)' })"
+"Mailpit: http://localhost:$PuertoMailpit"
+"API:     http://localhost:$PuertoWeb/api/health"
 "Detener: powershell -File `"$PSCommandPath`" -Backend `"$Backend`" -Front `"$Front`" -Detener"
 if ($baseNueva) { 'Administrador QA: administrador.dc106@prisaly.test (botón «Administrador QA»). Docente y estudiantes: crearlos desde el panel de administración (ver HANDOFF-NICOLAS.md).' }
