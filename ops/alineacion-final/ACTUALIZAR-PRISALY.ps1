@@ -177,6 +177,27 @@ if ($baseNueva) { "Base nueva: Flyway aplicará $($m.flyway.historialEsperado -j
 Paso 'Arranque'
 docker @dc up -d --wait backend frontend
 if ($LASTEXITCODE -ne 0) { docker @dc logs --tail 60 backend; Alto 'Backend o Frontend no quedaron saludables (logs arriba).' }
+if ($baseNueva) {
+  # PD-01: datos iniciales oficiales e idempotentes (roles y catálogo de permisos; no crean usuarios ni asignan
+  # permisos), tomados del mismo SHA. Después se reinicia el Backend para que el inicializador oficial cree el
+  # administrador QA.
+  Paso 'Aprovisionamiento PD-01 (base nueva)'
+  if (-not $psql) { $psql = @('exec', '-T', 'postgres', 'psql', '-U', $m.postgres.usuario, '-d', $m.postgres.baseDatos, '-At', '-c') }
+  foreach ($sql in 'pd01-inicializacion.sql', 'pd01-p78-rol-estudiante.sql') {
+    docker @dc cp (Join-Path $wtB "docs\provision\$sql") "postgres:/tmp/$sql" | Out-Null
+    docker @dc exec -T postgres psql -v ON_ERROR_STOP=1 -q -U $m.postgres.usuario -d $m.postgres.baseDatos -f "/tmp/$sql" | Out-Null
+    if ($LASTEXITCODE -ne 0) { Alto "Falló el aprovisionamiento $sql." }
+    "$sql aplicado"
+  }
+  docker @dc restart backend | Out-Null
+  docker @dc up -d --wait backend; if ($LASTEXITCODE -ne 0) { Alto 'El Backend no volvió a quedar saludable tras el aprovisionamiento.' }
+  $consulta = Join-Path $Ejecucion 'contar-administradores.sql'
+  [IO.File]::WriteAllText($consulta, 'select count(*) from "Usuario" u join "Rol" r on r."idRol" = u."idRol" where r.nombre = ''ADMINISTRADOR'';')
+  docker @dc cp $consulta 'postgres:/tmp/contar-administradores.sql' | Out-Null
+  $admin = ((docker @dc exec -T postgres psql -At -U $m.postgres.usuario -d $m.postgres.baseDatos -f /tmp/contar-administradores.sql) | Out-String).Trim()
+  if ($admin -ne '1') { docker @dc logs --tail 40 backend; Alto "El administrador QA no se creó (administradores: $admin)." }
+  'Administrador QA creado por el inicializador oficial.'
+}
 docker @dc ps --format 'table {{.Service}}\t{{.Status}}'
 
 # 13. URL
