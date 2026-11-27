@@ -64,6 +64,24 @@ Dominio público generado por Railway. Healthcheck `GET /salud`.
 6. **frontend:** variable `BACKEND_INTERNO`, desplegar y generar dominio (*Settings → Networking → Generate Domain*).
 7. Volver al backend y comprobar que `CORS_ORIGINS` resuelve al dominio generado (redeploy si se creó después).
 
+## Migraciones posteriores (DC-DEPLOY-04)
+
+Sin tocar `DATABASE_USER`/`DATABASE_PASSWORD` (la app sigue con `prisaly_app`):
+
+1. Backup: `railway ssh --service Postgres -- sh -c 'pg_dump -U "$PGUSER" -d "$PGDATABASE" --no-owner' > respaldo.sql`.
+2. Variables: `SPRING_FLYWAY_ENABLED=true`, `SPRING_FLYWAY_USER=${{Postgres.PGUSER}}`,
+   `SPRING_FLYWAY_PASSWORD=${{Postgres.PGPASSWORD}}`, `SPRING_FLYWAY_LOCATIONS=<ubicaciones del contrato>` y
+   `PRISALY_M4_SCHEMACONTRACT=<contrato>`. Redesplegar: Flyway migra con el propietario.
+3. El primer arranque falla con `M4-ESQUEMA-PENDIENTE … faltantes=[…]` aunque las tablas existan:
+   `information_schema.tables` solo muestra a `prisaly_app` las tablas sobre las que tiene privilegios. Aplicar por SSH
+   los dos `GRANT … ON ALL TABLES/SEQUENCES IN SCHEMA public TO prisaly_app` de `rol-aplicacion.sql`.
+4. `SPRING_FLYWAY_ENABLED=false`, borrar `SPRING_FLYWAY_USER`/`_PASSWORD` y `railway redeploy` (borrar variables no
+   redespliega).
+
+Staging, 27/11/2026: contrato `bd0052-v013-integral-dc92` (`db/migration`, `dd02b-propuesta`, `m6-propuesta`,
+`d05-propuesta`, `dc92-propuesta`; historial 001–009, 013, 014–016, 019–023). V017/V018 no aplicadas: ningún contrato
+las combina con V020.
+
 ## Rollback y recuperación
 
 - **Aplicación:** *Deployments → … → Rollback* a la imagen anterior (retención: 72 h en Hobby, 120 h en Pro); pasado
