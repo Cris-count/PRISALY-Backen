@@ -1,0 +1,31 @@
+# DC-DEPLOY-01 · Backend de PRISALY para Railway (Staging).
+# Etapa 1: Maven Wrapper del repositorio, solo el módulo ejecutable `app` y sus dependencias (m1..m7).
+# Etapa 2: JRE 21 sin herramientas de build, usuario sin privilegios. Sin secretos: todo llega por variables.
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /workspace
+COPY . .
+# En copias de Windows el wrapper puede llegar con CRLF.
+RUN sed -i 's/\r$//' mvnw && chmod +x mvnw \
+ && ./mvnw -B -q -pl app -am -DskipTests package
+
+FROM eclipse-temurin:21-jre
+ARG RAILWAY_GIT_COMMIT_SHA=sin-identificar
+LABEL org.opencontainers.image.revision=$RAILWAY_GIT_COMMIT_SHA
+RUN groupadd --system prisaly && useradd --system --gid prisaly --uid 10001 --home-dir /app prisaly \
+ && mkdir -p /app/logs/auditoria && chown -R prisaly:prisaly /app
+WORKDIR /app
+COPY --from=build --chown=prisaly:prisaly /workspace/app/target/app-*.jar /app/app.jar
+COPY --chown=prisaly:prisaly deploy/railway/arranque-backend.sh /app/arranque.sh
+RUN sed -i 's/\r$//' /app/arranque.sh && chmod 0755 /app/arranque.sh
+USER prisaly
+# Plan Free de Railway: 0,5 GB de RAM por servicio. JVM compacta (Serial GC, heap al 55 %, pilas de 512 KB) y salida
+# limpia si se agota la memoria (Railway reinicia el servicio).
+# Para que el servicio pueda dormirse (el plan Free cobra solo mientras está despierto), el pool no conserva
+# conexiones inactivas con PostgreSQL: sin tráfico saliente durante 5-10 min, Railway lo suspende.
+ENV JAVA_TOOL_OPTIONS="-XX:+UseSerialGC -XX:MaxRAMPercentage=55 -Xss512k -XX:ReservedCodeCacheSize=64m -XX:MaxMetaspaceSize=160m -XX:+ExitOnOutOfMemoryError" \
+    SPRING_DATASOURCE_HIKARI_MINIMUMIDLE=0 \
+    SPRING_DATASOURCE_HIKARI_MAXIMUMPOOLSIZE=5 \
+    SPRING_DATASOURCE_HIKARI_IDLETIMEOUT=60000 \
+    SPRING_DATASOURCE_HIKARI_KEEPALIVETIME=0 \
+    PRISALY_AUDITORIA_DIR=/app/logs/auditoria
+ENTRYPOINT ["/app/arranque.sh"]
