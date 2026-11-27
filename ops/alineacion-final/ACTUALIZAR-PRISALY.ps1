@@ -81,8 +81,8 @@ foreach ($w in @(@($Backend, $wtB, $shaBack), @($Front, $wtF, $shaFront))) {
   if (Test-Path $w[1]) {
     $sucio = & git.exe -C $w[1] status --porcelain --untracked-files=no
     if ($sucio) { Alto "El worktree $($w[1]) tiene cambios; no se sobrescribe." }
-    Invoke-GitP $w[1] checkout --detach $w[2] | Out-Null
-  } else { Invoke-GitP $w[0] worktree add --detach $w[1] $w[2] | Out-Null }
+    Invoke-GitP $w[1] -c core.longpaths=true checkout --detach $w[2] | Out-Null
+  } else { Invoke-GitP $w[0] worktree prune | Out-Null; Invoke-GitP $w[0] -c core.longpaths=true worktree add --detach $w[1] $w[2] | Out-Null; Invoke-GitP $w[1] config core.longpaths true | Out-Null }
   "$($w[1]) -> $(Invoke-GitP $w[1] rev-parse --short HEAD)"
 }
 # Configuración de ejecución tomada de la rama publicada (no del worktree de código).
