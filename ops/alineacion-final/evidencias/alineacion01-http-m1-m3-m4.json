@@ -1,0 +1,62 @@
+[
+ [
+  "M1",
+  "Acceso administrador",
+  "OK",
+  "login 200, /me 200 rol ADMINISTRADOR"
+ ],
+ [
+  "M1",
+  "Consulta catálogo roles",
+  "OK",
+  "GET /v1/admin/roles 200, 3 roles"
+ ],
+ [
+  "M1",
+  "Consulta de usuarios (b23c217)",
+  "OK",
+  "GET /v1/admin/usuarios 200 {\"items\":[{\"idUsuario\":\"250ba832-254f-4422-955f-27be84fd1f91\",\"idEstudiante\":null,\"nombre\":\"Administrador QA DC106\",\"cor"
+ ],
+ [
+  "M1",
+  "Acceso docente",
+  "OK",
+  "/me 200 rol DOCENTE, 6 permisos"
+ ],
+ [
+  "M3",
+  "Listado de casos del docente",
+  "OK",
+  "GET /v1/casos 200, 1 casos propios"
+ ],
+ [
+  "M3",
+  "Listado: admin sin permiso de caso",
+  "OK",
+  "admin GET /v1/casos 403 {\"code\":\"FORBIDDEN\",\"message\":\"Access denied\"}"
+ ],
+ [
+  "M3",
+  "Consulta de caso (constructor)",
+  "OK",
+  "GET caso 200 ETag sí estado PUBLICADO"
+ ],
+ [
+  "M3",
+  "Contenido del caso",
+  "OK",
+  "GET contenido 200"
+ ],
+ [
+  "M4",
+  "Programación (sesiones del docente)",
+  "OK",
+  "GET sesiones 200 [{\"id\":\"dd98c974-f45c-4497-a7a0-ec6546c65348\",\"casoId\":\"db9f5c89-f45a-4f98-a30f-962d534bc41e\",\"docen"
+ ],
+ [
+  "M1",
+  "Acceso estudiante (DD-02 B)",
+  "OK",
+  "acceso rápido estudiante 204"
+ ]
+]

@@ -1,0 +1,209 @@
+# PRISALY · integracion/alineacion-final · Compose consolidado del entorno QA validado (DC-ALINEACION-INTEGRAL-01/02).
+# Generado con `docker compose config` del entorno prisaly-dc105-local y saneado: sin rutas absolutas ni valores de secretos.
+# Las imágenes las construye ACTUALIZAR-PRISALY.ps1 desde los SHA del manifiesto. Proyecto recomendado: -p prisaly-alineacion.
+# Flags: solo QA local. NO usar en producción (acceso rápido QA, cookie no segura, límites por origen ampliados).
+networks:
+  edge:
+    ipam: {}
+  local:
+    ipam: {}
+    internal: true
+secrets:
+  codigo_qa:
+    file: ./secretos/codigo.key
+  outbox_qa:
+    file: ./secretos/outbox.key
+  postgres_password:
+    file: ./secretos/postgres-password
+  qa_admin:
+    file: ./secretos/qa-admin.txt
+  qa_docente:
+    file: ./secretos/qa-docente.txt
+  sesion_qa:
+    file: ./secretos/sesion.key
+services:
+  backend:
+    command: null
+    depends_on:
+      mailpit:
+        condition: service_healthy
+        required: true
+      postgres:
+        condition: service_healthy
+        required: true
+    entrypoint: null
+    environment:
+      APP_PORT: '8080'
+      CORS_ORIGINS: http://localhost:18175,http://127.0.0.1:18175,http://localhost:4200,http://127.0.0.1:4200
+      DATABASE_URL: jdbc:postgresql://postgres:5432/prisaly_ops70?sslmode=disable
+      DATABASE_USER: prisaly_ops70
+      PRISALY_AUDITORIA_DIR: /var/log/prisaly/auditoria
+      PRISALY_INICIALIZACION_ADMIN: 'false'
+      PRISALY_M1_ACTIVACION_DOCENTE_ENABLED: 'true'
+      PRISALY_M1_ACTIVACION_DOCENTE_ENLACE: http://localhost:18175/activacion-docente
+      PRISALY_M1_ACTIVACION_DOCENTE_REMITENTE: no-reply@prisaly.test
+      PRISALY_M1_ACTIVACION_DOCENTE_VIGENCIA: PT24H
+      PRISALY_M1_ALTA_ESTUDIANTES_ENABLED: 'true'
+      PRISALY_M1_STUDENTACCESS_LIMITES_SOLICITUDESPORORIGEN: '200'
+      PRISALY_M1_STUDENTACCESS_LIMITES_VALIDACIONESFALLIDASPORORIGEN: '200'
+      PRISALY_M1_STUDENT_ACCESS_ENABLED: 'true'
+      PRISALY_M3_LISTADO_ENABLED: 'true'
+      PRISALY_M3_NARRATIVA_PUBLICACION_ENABLED: 'false'
+      PRISALY_M4_AUSENCIAS_ENABLED: 'true'
+      PRISALY_M4_CONSULTA_PARTICIPACIONES_ENABLED: 'true'
+      PRISALY_M4_RETIRO_ENABLED: 'true'
+      PRISALY_M5_EXPLORACION_FASES_ENABLED: 'false'
+      PRISALY_M5_EXPLORACION_FASES_HTTP_ENABLED: 'false'
+      PRISALY_M5_INICIOFINALIZACION_PUBLICACION_ENABLED: 'true'
+      PRISALY_M5_INICIO_FINALIZACION_PUBLICACION_ENABLED: 'false'
+      PRISALY_M5_REPETICION_ENABLED: 'true'
+      PRISALY_M6_EVALUACION_ENABLED: 'true'
+      PRISALY_M6_LIBERACION_ENABLED: 'true'
+      PRISALY_M6_RESULTADO_DETALLE_POR_PREGUNTA: 'false'
+      PRISALY_M6_RETROALIMENTACION_ENABLED: 'true'
+      PRISALY_M7_CODIGO_ACCESO_WORKER_ENABLED: 'true'
+      PRISALY_M7_CODIGO_ACCESO_WORKER_INTERVALO_MS: '1000'
+      PRISALY_M7_CODIGO_ACCESO_WORKER_LOTE: '20'
+      PRISALY_M7_CORREO_REMITENTE: no-reply@prisaly.test
+      PRISALY_M7_NOTIFICACIONCALIFICACION_ENABLED: 'true'
+      PRISALY_M7_REPORTES_PARTICIPACION_ENABLED: 'true'
+      PRISALY_M7_WORKER_ENABLED: 'true'
+      PRISALY_M7_WORKER_INTERVALOMS: '5000'
+      PRISALY_M7_WORKER_LEASESEGUNDOS: '60'
+      PRISALY_M7_WORKER_LOTE: '10'
+      PRISALY_QA_ACCESO_RAPIDO_ENABLED: 'true'
+      PRISALY_QA_ACCESO_RAPIDO_MAILPIT: http://mailpit:8025
+      PRISALY_QA_ACCESO_RAPIDO_ORIGEN: http://localhost:18175
+      SPRING_APPLICATION_JSON: '{"prisaly.m4.schema-contract":"bd0052-v013-integral-dc92","prisaly.m1.student-access.enabled":true,"prisaly.m1.student-access.cookie-segura":false}'
+      SPRING_CONFIG_IMPORT: optional:configtree:/run/secrets/
+      SPRING_FLYWAY_LOCATIONS: classpath:db/migration,classpath:db/dd02b-propuesta,classpath:db/m6-propuesta,classpath:db/d05-propuesta,classpath:db/dc92-propuesta
+      SPRING_FLYWAY_OUT_OF_ORDER: 'false'
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: '1025'
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: 'false'
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_CONNECTIONTIMEOUT: '5000'
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: 'false'
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_TIMEOUT: '5000'
+    healthcheck:
+      test:
+      - CMD
+      - java
+      - -cp
+      - /app/health
+      - Healthcheck
+      - http://127.0.0.1:8080/api/health
+      timeout: 6s
+      interval: 5s
+      retries: 30
+      start_period: 20s
+    image: prisaly-alineacion-backend:${PRISALY_BACKEND_SHA:-local}
+    labels:
+      com.prisaly.instance: dc105-local
+    networks:
+      local: null
+    secrets:
+    - source: postgres_password
+      target: /run/secrets/postgres_password
+    - source: codigo_qa
+      target: prisaly.m1.student-access.claves.codigo
+    - source: sesion_qa
+      target: prisaly.m1.student-access.claves.sesion
+    - source: outbox_qa
+      target: prisaly.m7.codigo-acceso.clave-cifrado
+    - source: qa_admin
+      target: qa_admin
+    - source: qa_docente
+      target: qa_docente
+    volumes:
+    - type: volume
+      source: audit_data
+      target: /var/log/prisaly
+      volume: {}
+  frontend:
+    command: null
+    depends_on:
+      backend:
+        condition: service_healthy
+        required: true
+    entrypoint: null
+    healthcheck:
+      test:
+      - CMD
+      - wget
+      - -q
+      - -O
+      - /dev/null
+      - http://127.0.0.1/
+      timeout: 3s
+      interval: 5s
+      retries: 15
+    image: prisaly-alineacion-frontend:${PRISALY_FRONTEND_SHA:-local}
+    labels:
+      com.prisaly.instance: dc105-local
+    networks:
+      edge: null
+      local: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 80
+      published: ${WEB_PORT:-18175}
+      protocol: tcp
+  mailpit:
+    command: null
+    entrypoint: null
+    healthcheck:
+      test:
+      - CMD
+      - /mailpit
+      - readyz
+      timeout: 3s
+      interval: 3s
+      retries: 20
+    image: axllent/mailpit:v1.31.2
+    labels:
+      com.prisaly.instance: dc105-local
+    networks:
+      edge: null
+      local: null
+    ports:
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 8025
+      published: ${MAILPIT_PORT:-18030}
+      protocol: tcp
+    - mode: ingress
+      host_ip: 127.0.0.1
+      target: 1025
+      published: ${SMTP_PORT:-11030}
+      protocol: tcp
+  postgres:
+    command: null
+    entrypoint: null
+    environment:
+      POSTGRES_DB: prisaly_ops70
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+      POSTGRES_USER: prisaly_ops70
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"
+      timeout: 3s
+      interval: 3s
+      retries: 30
+    image: postgres:16.15
+    labels:
+      com.prisaly.instance: dc105-local
+    networks:
+      local: null
+    secrets:
+    - source: postgres_password
+      target: /run/secrets/postgres_password
+    volumes:
+    - type: volume
+      source: pg_data
+      target: /var/lib/postgresql/data
+      volume: {}
+volumes:
+  audit_data: {}
+  pg_data: {}
