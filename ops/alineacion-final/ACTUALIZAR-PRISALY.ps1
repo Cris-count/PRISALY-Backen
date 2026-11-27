@@ -24,10 +24,11 @@ param(
   [switch]$Detener,
   [switch]$Reconstruir
 )
-$ErrorActionPreference = 'Stop'
+# Continue: en PowerShell 5.1 el stderr de git/docker (progreso) no debe abortar; cada llamada nativa comprueba $LASTEXITCODE.
+$ErrorActionPreference = 'Continue'
 function Paso($t) { Write-Host "`n== $t" -ForegroundColor Cyan }
 function Alto($t) { Write-Host "DETENIDO: $t" -ForegroundColor Red; exit 1 }
-function Git($repo) { $a = $args; $o = & git -C $repo @a 2>&1; if ($LASTEXITCODE -ne 0) { Alto "git $($a -join ' ') en $repo :: $o" }; $o }
+function Invoke-GitP($repo) { $a = $args; $o = & git.exe -C $repo @a 2>&1 | ForEach-Object { "$_" }; if ($LASTEXITCODE -ne 0) { Alto "git $($a -join ' ') en $repo :: $o" }; $o }
 
 # 1. Rutas
 Paso 'Repositorios'
@@ -50,24 +51,24 @@ if ($Detener) {
 # 2-3. Estado Git: no continuar con cambios que puedan perderse
 Paso 'Estado Git'
 foreach ($r in $Backend, $Front) {
-  $sucio = Git $r status --porcelain --untracked-files=no
+  $sucio = Invoke-GitP $r status --porcelain --untracked-files=no
   if ($sucio) { Alto "Hay cambios sin confirmar en $r. Confírmalos o guárdalos (git stash) y vuelve a ejecutar." }
-  "$r : limpio (rama actual $(Git $r branch --show-current)) — no se modificará."
+  "$r : limpio (rama actual $(Invoke-GitP $r branch --show-current)) — no se modificará."
 }
 
 # 4. Descargar referencias publicadas
 Paso "Descargando $Rama"
-foreach ($r in $Backend, $Front) { Git $r fetch origin "+refs/heads/${Rama}:refs/remotes/origin/$Rama" | Out-Null }
+foreach ($r in $Backend, $Front) { Invoke-GitP $r fetch origin "+refs/heads/${Rama}:refs/remotes/origin/$Rama" | Out-Null }
 
 # 5. Manifiesto canónico (Backend) y verificación de SHA
 Paso 'Manifiesto'
-$texto = Git $Backend show "origin/${Rama}:ops/alineacion-final/PRISALY-INTEGRACION-MANIFEST.json"
+$texto = Invoke-GitP $Backend show "origin/${Rama}:ops/alineacion-final/PRISALY-INTEGRACION-MANIFEST.json"
 $m = ($texto -join "`n") | ConvertFrom-Json
 $shaBack = $m.backend.shaCodigo; $shaFront = $m.frontend.shaCodigo
 foreach ($p in @(@($Backend, $shaBack, 'Backend'), @($Front, $shaFront, 'Frontend'))) {
-  & git -C $p[0] cat-file -e "$($p[1])^{commit}" 2>$null
+  & git.exe -C $p[0] cat-file -e "$($p[1])^{commit}" 2>$null
   if ($LASTEXITCODE -ne 0) { Alto "$($p[2]): el SHA $($p[1]) del manifiesto no existe tras el fetch." }
-  & git -C $p[0] merge-base --is-ancestor $p[1] "origin/$Rama"
+  & git.exe -C $p[0] merge-base --is-ancestor $p[1] "origin/$Rama"
   if ($LASTEXITCODE -ne 0) { Alto "$($p[2]): $($p[1]) no pertenece a origin/$Rama. El manifiesto y la rama no coinciden." }
   "$($p[2]): $($p[1]) verificado en origin/$Rama"
 }
@@ -78,16 +79,16 @@ $wtB = Join-Path $Ejecucion 'backend'; $wtF = Join-Path $Ejecucion 'frontend'; $
 New-Item -ItemType Directory -Force $Ejecucion | Out-Null
 foreach ($w in @(@($Backend, $wtB, $shaBack), @($Front, $wtF, $shaFront))) {
   if (Test-Path $w[1]) {
-    $sucio = & git -C $w[1] status --porcelain --untracked-files=no
+    $sucio = & git.exe -C $w[1] status --porcelain --untracked-files=no
     if ($sucio) { Alto "El worktree $($w[1]) tiene cambios; no se sobrescribe." }
-    Git $w[1] checkout --detach $w[2] | Out-Null
-  } else { Git $w[0] worktree add --detach $w[1] $w[2] | Out-Null }
-  "$($w[1]) -> $(Git $w[1] rev-parse --short HEAD)"
+    Invoke-GitP $w[1] checkout --detach $w[2] | Out-Null
+  } else { Invoke-GitP $w[0] worktree add --detach $w[1] $w[2] | Out-Null }
+  "$($w[1]) -> $(Invoke-GitP $w[1] rev-parse --short HEAD)"
 }
 # Configuración de ejecución tomada de la rama publicada (no del worktree de código).
 if (Test-Path $ops) { Remove-Item $ops -Recurse -Force }
 $tar = Join-Path $Ejecucion 'ops.tar'
-& git -C $Backend archive --format=tar -o $tar "origin/$Rama" ops/alineacion-final
+& git.exe -C $Backend archive --format=tar -o $tar "origin/$Rama" ops/alineacion-final
 if ($LASTEXITCODE -ne 0) { Alto 'git archive de ops/alineacion-final falló.' }
 $tmp = Join-Path $Ejecucion 'ops-extraido'; if (Test-Path $tmp) { Remove-Item $tmp -Recurse -Force }
 New-Item -ItemType Directory -Force $tmp | Out-Null
@@ -99,7 +100,7 @@ Copy-Item (Join-Path $ops 'compose.bootstrap.yaml') (Join-Path $Ejecucion 'compo
 
 # 7. Dependencias
 Paso 'Dependencias'
-foreach ($c in 'docker', 'java', 'javac', 'node', 'npm') { if (-not (Get-Command $c -ErrorAction SilentlyContinue)) { Alto "Falta $c en el PATH." } }
+foreach ($c in 'docker', 'java', 'javac', 'node', 'npm') { if (-not (Get-Command $c -CommandType Application -ErrorAction SilentlyContinue)) { Alto "Falta $c en el PATH." } }
 docker compose version | Out-Null; if ($LASTEXITCODE -ne 0) { Alto 'Docker Compose no disponible (¿Docker Desktop arrancado?).' }
 $java = (& java -version 2>&1 | Select-Object -First 1).ToString()
 if ($java -notmatch '"(2[1-9]|[3-9]\d)') { Alto "Se requiere JDK 21 o superior (detectado: $java)." }
