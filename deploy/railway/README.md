@@ -16,7 +16,7 @@ MUNDO-24 (Unreal + PS2) ── fuera de Railway: equipo o servidor con GPU (Rail
 
 - El navegador solo conoce el dominio del Frontend. El Backend y PostgreSQL no se exponen.
 - Ramas: `deploy/railway-staging` en PRISALY-Front y PRISALY-Backen. Railway despliega solo esa rama.
-- Configuración como código: `railway.json` + `Dockerfile.railway` en cada repositorio.
+- Configuración como código: `Dockerfile.railway` en cada repositorio y `deploy/railway/configurar-servicios.mjs`, que guarda en cada servicio de Railway (API pública) el Dockerfile, el healthcheck, la política de reinicio y el sueño. Sustituye a `railway.json`, que Railway deja de leer el 01/12/2026.
 
 ## Servicios y variables
 
@@ -24,7 +24,7 @@ MUNDO-24 (Unreal + PS2) ── fuera de Railway: equipo o servidor con GPU (Rail
 Sin TCP proxy. Activar copias de seguridad programadas del volumen (pestaña *Backups*).
 
 ### backend (repo PRISALY-Backen, rama `deploy/railway-staging`)
-Sin dominio público. Healthcheck `GET /api/health` (definido en `railway.json`).
+Sin dominio público. Healthcheck `GET /api/health` (aplicado por `configurar-servicios.mjs`).
 
 | Variable | Valor en Railway | Nota |
 |---|---|---|
