@@ -33,8 +33,8 @@ import java.util.regex.Pattern;
  *   <li>Identificadores locales {@code [a-z0-9][a-z0-9-]{0,63}}, únicos por tipo; referencias existentes.</li>
  *   <li>Solo texto plano: sin marcado ({@code <} seguido de letra, {@code /}, {@code !} o {@code ?}) ni caracteres de
  *       control salvo salto de línea y tabulador.</li>
- *   <li>{@code recursoVisual} debe pertenecer al catálogo suministrado. El catálogo productivo está vacío mientras
- *       D-SIM-7 no se apruebe: cualquier recurso visual se rechaza.</li>
+ *   <li>{@code recursoVisual} debe pertenecer al catálogo suministrado. Con el {@link CatalogoVisual} canónico
+ *       (D-SIM-7 aprobada en DC-CB-03) se aplican además las reglas de edificio, puesto, compatibilidad y capacidad.</li>
  * </ul>
  */
 public final class ValidadorGuionNarrativo {
@@ -49,9 +49,22 @@ public final class ValidadorGuionNarrativo {
     private static final Pattern MARCADO = Pattern.compile("<[A-Za-z/!?]");
 
     private final Set<String> catalogoVisual;
+    private final CatalogoVisual catalogo;
 
+    /** Catálogo plano (candidato A-15): solo comprueba pertenencia. Se conserva por compatibilidad. */
     public ValidadorGuionNarrativo(Set<String> catalogoVisual) {
         this.catalogoVisual = Set.copyOf(Objects.requireNonNull(catalogoVisual, "catalogoVisual"));
+        this.catalogo = null;
+    }
+
+    /**
+     * Catálogo estructurado del Case Builder (DC-CB-03 §4): además de la pertenencia exige que los espacios usen
+     * edificios y los personajes puestos, sin repetir ninguno, que cada personaje intervenga solo en su edificio y que
+     * no se supere la capacidad efectiva.
+     */
+    public ValidadorGuionNarrativo(CatalogoVisual catalogo) {
+        this.catalogo = Objects.requireNonNull(catalogo, "catalogo");
+        this.catalogoVisual = Set.copyOf(catalogo.claves());
     }
 
     /**
@@ -168,8 +181,60 @@ public final class ValidadorGuionNarrativo {
             }
             intervenciones.add(new Intervencion(id, espacio, personaje, dialogos, condicion, consecuencias));
         }
+        if (catalogo != null) { reglasDelCatalogo(v, espacios, personajes, intervenciones); }
         if (!v.errores.isEmpty()) { throw v.fallo(); }
         return new GuionNarrativo(inicio, espacios, personajes, intervenciones);
+    }
+
+    /**
+     * Reglas del Case Builder sobre el modelo ya leído. Los recursos inexistentes ya se rechazaron en
+     * {@code recurso(...)}; aquí solo se evalúan los que pertenecen al catálogo.
+     */
+    private void reglasDelCatalogo(Recorrido v, List<Espacio> espacios, List<Personaje> personajes,
+            List<Intervencion> intervenciones) {
+        Map<String, String> edificioDeEspacio = new java.util.HashMap<>();
+        Map<String, Integer> personajesPorEdificio = new java.util.HashMap<>();
+        Set<String> edificiosUsados = new HashSet<>(), puestosUsados = new HashSet<>();
+        for (int i = 0; i < espacios.size(); i++) {
+            Optional<String> recurso = espacios.get(i).recursoVisual();
+            if (recurso.isEmpty()) { continue; }
+            String ruta = "espacios[" + i + "].recursoVisual";
+            if (catalogo.edificio(recurso.get()).isEmpty()) { v.error(ruta, "RECURSO_VISUAL_TIPO_INCORRECTO"); continue; }
+            if (!edificiosUsados.add(recurso.get())) { v.error(ruta, "EDIFICIO_DUPLICADO"); }
+            edificioDeEspacio.put(espacios.get(i).idEspacio(), recurso.get());
+        }
+        Map<String, String> edificioDePersonaje = new java.util.HashMap<>();
+        for (int i = 0; i < personajes.size(); i++) {
+            Optional<String> recurso = personajes.get(i).recursoVisual();
+            if (recurso.isEmpty()) { continue; }
+            String ruta = "personajes[" + i + "].recursoVisual";
+            Optional<CatalogoVisual.Puesto> puesto = catalogo.puesto(recurso.get());
+            if (puesto.isEmpty()) { v.error(ruta, "RECURSO_VISUAL_TIPO_INCORRECTO"); continue; }
+            if (!puestosUsados.add(recurso.get())) { v.error(ruta, "PUESTO_DUPLICADO"); }
+            String edificio = puesto.get().edificio();
+            if (!edificiosUsados.contains(edificio)) { v.error(ruta, "EDIFICIO_NO_SELECCIONADO"); }
+            edificioDePersonaje.put(personajes.get(i).idPersonaje(), edificio);
+            if (personajesPorEdificio.merge(edificio, 1, Integer::sum) > catalogo.capacidadEfectiva(edificio)) {
+                v.error(ruta, "CAPACIDAD_EXCEDIDA");
+            }
+        }
+        for (int i = 0; i < intervenciones.size(); i++) {
+            Intervencion it = intervenciones.get(i);
+            String edificioEspacio = edificioDeEspacio.get(it.idEspacio());
+            String r = "intervenciones[" + i + "]";
+            fueraDeSuEdificio(v, r + ".idPersonaje", it.idPersonaje(), edificioEspacio, edificioDePersonaje);
+            for (int j = 0; j < it.dialogos().size(); j++) {
+                fueraDeSuEdificio(v, r + ".dialogos[" + j + "].idPersonaje", it.dialogos().get(j).idPersonaje(),
+                        edificioEspacio, edificioDePersonaje);
+            }
+        }
+    }
+
+    /** Un personaje con puesto solo habla en el espacio de su edificio (DC-CB-ING-MASTER-01 §10.4). */
+    private static void fueraDeSuEdificio(Recorrido v, String ruta, String idPersonaje, String edificioEspacio,
+            Map<String, String> edificioDePersonaje) {
+        String suEdificio = idPersonaje == null ? null : edificioDePersonaje.get(idPersonaje);
+        if (suEdificio != null && !suEdificio.equals(edificioEspacio)) { v.error(ruta, "PERSONAJE_FUERA_DE_SU_EDIFICIO"); }
     }
 
     private static String texto(Object valor) {

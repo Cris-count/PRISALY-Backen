@@ -24,6 +24,22 @@ server:
     context-path: /api
 
 prisaly:
+  # DC-115 · Acceso rápido QA. DESACTIVADO por defecto y prohibido en producción (el arranque falla con perfil prod
+  # o cookie segura). Solo automatiza el login oficial y el flujo oficial de código para cuentas @prisaly.test, con
+  # credenciales leídas de secretos del servidor; nunca desde Angular.
+  qa:
+    acceso-rapido:
+      enabled: ${PRISALY_QA_ACCESO_RAPIDO_ENABLED:false}
+      origen: ${PRISALY_QA_ACCESO_RAPIDO_ORIGEN:http://localhost:18175}
+      mailpit-api: ${PRISALY_QA_ACCESO_RAPIDO_MAILPIT:http://mailpit:8025}
+      administrador:
+        correo: ${PRISALY_QA_ACCESO_RAPIDO_ADMIN_CORREO:administrador.dc106@prisaly.test}
+        archivo-clave: ${PRISALY_QA_ACCESO_RAPIDO_ADMIN_CLAVE:/run/secrets/qa_admin}
+      docente:
+        correo: ${PRISALY_QA_ACCESO_RAPIDO_DOCENTE_CORREO:docente.demo@prisaly.test}
+        archivo-clave: ${PRISALY_QA_ACCESO_RAPIDO_DOCENTE_CLAVE:/run/secrets/qa_docente}
+      estudiante:
+        correo: ${PRISALY_QA_ACCESO_RAPIDO_ESTUDIANTE_CORREO:estudiante.demo@prisaly.test}
   auditoria:
     # PD-01: persistent permission audit. The operating environment must back up this directory
     # and restrict access to it.

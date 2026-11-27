@@ -4,15 +4,11 @@ import com.prisaly.m3.application.port.CaseAuthorizationPort;
 import com.prisaly.m3.application.port.CasoCurrentUserPort;
 import com.prisaly.m3.application.port.UnidadTransaccionalNarrativa;
 import com.prisaly.m3.application.service.GuionNarrativoService;
+import com.prisaly.m3.domain.narrativa.CatalogoVisual;
 import com.prisaly.m3.domain.narrativa.ValidadorGuionNarrativo;
 import com.prisaly.m3.infrastructure.persistence.jdbc.GuionNarrativoJdbcAdapter;
 
-import java.util.Arrays;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,8 +22,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * {@code bd0052-v013-sim-a} / {@code bd0052-v013-dd02b-sim-a}). Con el valor productivo ({@code false}) no se registra
  * ningún bean, ni el puerto hacia M5, ni el controlador docente.
  *
- * <p>{@code prisaly.m3.narrativa.recursos-visuales}: catálogo cerrado de recursos visuales, vacío mientras D-SIM-7 no
- * se apruebe (cualquier {@code recursoVisual} se rechaza).
+ * <p>Catálogo visual: el recurso canónico {@link CatalogoVisualRecurso#VIGENTE} (D-SIM-7 aprobada en DC-CB-03). Sustituye
+ * a la lista plana {@code prisaly.m3.narrativa.recursos-visuales}, que no figuraba en {@code application.yml}.
  */
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnProperty(name = M3NarrativaConfig.PROPIEDAD, havingValue = "true")
@@ -40,10 +36,13 @@ public class M3NarrativaConfig {
     }
 
     @Bean
-    ValidadorGuionNarrativo validadorGuionNarrativo(@Value("${prisaly.m3.narrativa.recursos-visuales:}") String catalogo) {
-        Set<String> claves = Arrays.stream(catalogo.split(",")).map(String::trim).filter(s -> !s.isEmpty())
-                .collect(Collectors.toUnmodifiableSet());
-        return new ValidadorGuionNarrativo(claves);
+    CatalogoVisual catalogoVisual() {
+        return CatalogoVisualRecurso.cargarVigente();
+    }
+
+    @Bean
+    ValidadorGuionNarrativo validadorGuionNarrativo(CatalogoVisual catalogo) {
+        return new ValidadorGuionNarrativo(catalogo);
     }
 
     @Bean

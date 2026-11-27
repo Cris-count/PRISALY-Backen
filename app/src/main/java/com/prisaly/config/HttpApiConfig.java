@@ -34,10 +34,13 @@ public class HttpApiConfig {
     private final EstudianteSessionFilter estudianteSessionFilter;
     private final StudentAccessPort studentAccess;
     private final boolean activacionDocente;
+    /** DC-115: acceso rápido QA (desactivado por defecto; ver AccesoRapidoQaController). */
+    private final boolean accesoRapidoQa;
 
     public HttpApiConfig(
             @Value("${prisaly.cors.allowed-origins}") String allowedOrigins,
             @Value("${prisaly.m1.activacion-docente.enabled:false}") boolean activacionDocente,
+            @Value("${prisaly.qa.acceso-rapido.enabled:false}") boolean accesoRapidoQa,
             ProvisionalBearerAuthenticationFilter provisionalBearerAuthenticationFilter,
             ObjectProvider<EstudianteSessionFilter> estudianteSessionFilter,
             ObjectProvider<StudentAccessPort> studentAccess) {
@@ -49,6 +52,7 @@ public class HttpApiConfig {
         this.estudianteSessionFilter = estudianteSessionFilter.getIfAvailable();
         this.studentAccess = studentAccess.getIfAvailable();
         this.activacionDocente = activacionDocente;
+        this.accesoRapidoQa = accesoRapidoQa;
         if (this.estudianteSessionFilter != null) {
             for (String origin : this.allowedOrigins) {
                 URI uri = URI.create(origin);
@@ -104,6 +108,12 @@ public class HttpApiConfig {
                             }
                         });
                         auth.requestMatchers(HttpMethod.POST, "/v1/acceso-estudiante/**")
+                                .access((identity, context) -> new AuthorizationDecision(trustedOrigin(context.getRequest())));
+                    }
+                    if (accesoRapidoQa) {
+                        // DC-115 (QA local): sin sesión previa; el controlador exige loopback/red privada y el Origin
+                        // configurado, y solo usa el login y el flujo de código oficiales.
+                        auth.requestMatchers(HttpMethod.POST, "/v1/qa/acceso-rapido/**")
                                 .access((identity, context) -> new AuthorizationDecision(trustedOrigin(context.getRequest())));
                     }
                     if (activacionDocente) {
