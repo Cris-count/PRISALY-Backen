@@ -26,7 +26,7 @@ tar -xf $env:TEMP\prisaly-ops.tar -C $env:TEMP
 powershell -ExecutionPolicy Bypass -File $env:TEMP\ops\alineacion-final\ACTUALIZAR-PRISALY.ps1 -Backend <ruta>\PRISALY-Backen -Front <ruta>\PRISALY-Front -SoloPreparar
 ```
 
-Requisitos: repositorios sin cambios sin confirmar (si los hay, el script se detiene), Docker Desktop, JDK 21, Node y npm. No cambia tus ramas: usa worktrees detached en `%LOCALAPPDATA%\prisaly-alineacion\{backend,frontend}` y genera los secretos en `%LOCALAPPDATA%\prisaly-alineacion\secretos` (nunca en el repositorio).
+Requisitos: repositorios sin cambios sin confirmar (si los hay, el script se detiene), Docker Desktop, JDK 21, Node y npm. No cambia tus ramas: usa worktrees detached en `%USERPROFILE%\prisaly-alineacion\{backend,frontend}` y genera los secretos en `%USERPROFILE%\prisaly-alineacion\secretos` (nunca en el repositorio).
 
 ## Arrancar
 

@@ -8,7 +8,7 @@ Detener sin perder datos:
 powershell -ExecutionPolicy Bypass -File ACTUALIZAR-PRISALY.ps1 -Backend <ruta> -Front <ruta> -Detener
 ```
 
-Este proyecto usa volúmenes propios (`prisaly-alineacion_pg_data`, `prisaly-alineacion_audit_data`). Su entorno anterior y sus ramas no se modifican, así que basta con volver a arrancar su entorno habitual. Los worktrees (`%LOCALAPPDATA%\prisaly-alineacion\backend|frontend`) se retiran con `git worktree remove <ruta>` cuando ya no se necesiten.
+Este proyecto usa volúmenes propios (`prisaly-alineacion_pg_data`, `prisaly-alineacion_audit_data`). Su entorno anterior y sus ramas no se modifican, así que basta con volver a arrancar su entorno habitual. Los worktrees (`%USERPROFILE%\prisaly-alineacion\backend|frontend`) se retiran con `git worktree remove <ruta>` cuando ya no se necesiten.
 
 ## Entorno QA de Ingrid (`prisaly-dc105-local`)
 

@@ -1,6 +1,6 @@
 # Secretos locales (nunca se versionan)
 
-`ACTUALIZAR-PRISALY.ps1` los genera en la carpeta de ejecución (`%LOCALAPPDATA%\prisaly-alineacion\secretos` por defecto), no aquí.
+`ACTUALIZAR-PRISALY.ps1` los genera en la carpeta de ejecución (`%USERPROFILE%\prisaly-alineacion\secretos` por defecto), no aquí.
 
 | Archivo | Contenido | Generado |
 |---|---|---|

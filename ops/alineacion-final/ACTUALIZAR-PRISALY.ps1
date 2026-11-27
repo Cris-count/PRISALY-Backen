@@ -19,7 +19,7 @@ param(
   [string]$Front,
   [string]$Rama = 'integracion/alineacion-final',
   [string]$Proyecto = 'prisaly-alineacion',
-  [string]$Ejecucion = (Join-Path $env:LOCALAPPDATA 'prisaly-alineacion'),
+  [string]$Ejecucion = (Join-Path $env:USERPROFILE 'prisaly-alineacion'),
   [switch]$SoloPreparar,
   [switch]$Detener,
   [switch]$Reconstruir,
