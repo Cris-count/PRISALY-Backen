@@ -1,0 +1,20 @@
+# DC-DEPLOY-01: la imagen solo necesita el código Maven del Backend.
+.git
+.github
+**/target
+**/logs
+logs
+*.log
+*.log.gz
+.env*
+**/.env*
+qa
+postman
+bruno
+docs
+ops
+scripts
+resultado.txt
+opencode.jsonc
+compose.yaml
+!deploy/railway/arranque-backend.sh
